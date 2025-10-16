@@ -8,13 +8,13 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.insert.vehicle-data-1.0.sql
   - include:
-      file: db/changelog/db.create-route-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-route-data-1.0.sql
-  - include:
       file: db/changelog/db.create-request-status-table-1.0.sql
   - include:
       file: db/changelog/db.insert-request-status-data-1.0.sql
+  - include:
+      file: db/changelog/db.create-trip-purpose-table-1.0.sql
+  - include:
+      file: db/changelog/db.insert-trip-purpose-data-1.0.sql
   - include:
       file: db/changelog/db.create-request-table-1.0.sql
   - include:
