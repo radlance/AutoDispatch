@@ -8,8 +8,7 @@ CREATE TABLE request
     destination   VARCHAR(255) NOT NULL,
     purpose       VARCHAR(150) NOT NULL,
     trip_date     DATE         NOT NULL,
-    start_time    TIME,
-    end_time      TIME,
-    notes         TEXT,
+    started_trip_at    TIMESTAMP,
+    ended_trip_at      TIMESTAMP,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
