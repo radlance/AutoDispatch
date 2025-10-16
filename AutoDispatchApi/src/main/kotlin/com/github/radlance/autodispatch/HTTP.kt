@@ -1,4 +1,4 @@
-package com.github.radlance
+package com.github.radlance.com.github.radlance.autodispatch
 
 import io.ktor.server.application.*
 import io.ktor.server.plugins.swagger.*

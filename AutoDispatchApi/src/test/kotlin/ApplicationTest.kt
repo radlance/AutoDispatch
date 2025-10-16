@@ -1,5 +1,6 @@
 package com.github.radlance
 
+import com.github.radlance.com.github.radlance.autodispatch.module
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*

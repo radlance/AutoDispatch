@@ -12,6 +12,7 @@ application {
 }
 
 dependencies {
+    implementation(libs.liquibase.core)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.websockets)
     implementation(libs.koin.ktor)

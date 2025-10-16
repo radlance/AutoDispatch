@@ -1,4 +1,4 @@
-package com.github.radlance
+package com.github.radlance.com.github.radlance.autodispatch
 
 import io.ktor.server.application.*
 
@@ -7,6 +7,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    configureDatabases(config = environment.config)
     configureSockets()
     configureFrameworks()
     configureSerialization()
