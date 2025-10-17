@@ -1,4 +1,4 @@
-package com.github.radlance.com.github.radlance.autodispatch
+package com.github.radlance.autodispatch.plugins
 
 import io.ktor.server.application.*
 
@@ -10,7 +10,9 @@ fun Application.module() {
     configureDatabases(config = environment.config)
     configureSockets()
     configureFrameworks()
+    configureValidation()
     configureSerialization()
     configureHTTP()
+    configureSecurity()
     configureRouting()
 }
