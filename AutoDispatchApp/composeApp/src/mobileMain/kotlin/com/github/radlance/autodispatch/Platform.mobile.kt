@@ -10,6 +10,6 @@ import androidx.compose.ui.Modifier
 @Composable
 actual fun PlatformApp() {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-        Text(text = "JVM")
+        Text(text = "Mobile")
     }
 }

@@ -10,6 +10,8 @@ plugins {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
@@ -27,8 +29,15 @@ kotlin {
     }
     
     jvm()
-    
+
     sourceSets {
+        val mobileMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        androidMain.get().dependsOn(mobileMain)
+        iosMain.get().dependsOn(mobileMain)
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
