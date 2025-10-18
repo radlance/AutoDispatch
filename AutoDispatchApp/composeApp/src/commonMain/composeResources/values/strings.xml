@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_management">Управление заявками</string>
+    <string name="create_view_and_manage_transport">Создавайте, просматривайте и управляйте заявками на транспорт в реальном времени</string>
+    <string name="fleet_control">Контроль автопарка</string>
+    <string name="assign_track_and_schedule_maintenance">Назначайте водителей, отслеживайте автомобили и планируйте техническое обслуживание</string>
+    <string name="analytic_and_reports">Аналитика и отчёты</string>
+    <string name="get_reports_mileage_and_efficiency">Получайте детальные отчёты о расходах, пробеге и эффективности автопарка</string>
+    <string name="welcome">Добро пожаловать!</string>
+    <string name="log_in_to_control_panel">Войдите в панель диспетчера</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="sign_in">Войти в систему</string>
+    <string name="auto_request">АвтоЗаявка</string>
+    <string name="control_panel">Панель диспетчера</string>
+</resources>

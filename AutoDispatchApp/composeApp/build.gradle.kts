@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
@@ -43,6 +42,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation(libs.material.kolor)
+            implementation(compose.materialIconsExtended)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)

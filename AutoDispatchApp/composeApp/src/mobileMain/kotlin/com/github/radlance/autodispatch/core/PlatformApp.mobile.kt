@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch
+package com.github.radlance.autodispatch.core
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +10,6 @@ import androidx.compose.ui.Modifier
 @Composable
 actual fun PlatformApp() {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-        Text(text = "JVM")
+        Text(text = "Mobile")
     }
 }

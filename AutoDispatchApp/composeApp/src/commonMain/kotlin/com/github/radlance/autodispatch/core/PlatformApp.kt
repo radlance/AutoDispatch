@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch
+package com.github.radlance.autodispatch.core
 
 import androidx.compose.runtime.Composable
 
