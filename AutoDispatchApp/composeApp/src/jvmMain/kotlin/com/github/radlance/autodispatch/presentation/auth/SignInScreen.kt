@@ -26,7 +26,10 @@ import androidx.compose.ui.unit.dp
 import com.github.radlance.autodispatch.presentation.common.BaseColumn
 
 @Composable
-internal fun SignInScreen(modifier: Modifier = Modifier) {
+internal fun SignInScreen(
+    onSignInClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     var loginFieldValue by rememberSaveable { mutableStateOf("") }
     var passwordFieldValue by rememberSaveable { mutableStateOf("") }
     val scrollState = rememberScrollState()
@@ -52,6 +55,7 @@ internal fun SignInScreen(modifier: Modifier = Modifier) {
                     FeaturesColumn(modifier = Modifier.weight(1f))
                     Spacer(Modifier.width(36.dp))
                     SignInFields(
+                        onSignInClick = onSignInClick,
                         loginFieldValue = loginFieldValue,
                         onLoginFieldChange = { loginFieldValue = it },
                         passwordFieldValue = passwordFieldValue,

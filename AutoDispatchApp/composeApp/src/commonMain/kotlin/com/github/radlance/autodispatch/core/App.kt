@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.github.radlance.autodispatch.navigation.NavGraph
 import com.github.radlance.autodispatch.uikit.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -12,7 +14,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun App() {
     AppTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) {
-            PlatformApp()
+            NavGraph(rememberNavController())
         }
     }
 }

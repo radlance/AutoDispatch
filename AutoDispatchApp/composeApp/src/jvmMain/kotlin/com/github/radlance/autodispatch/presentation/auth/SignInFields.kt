@@ -41,6 +41,7 @@ import java.awt.Cursor
 
 @Composable
 fun SignInFields(
+    onSignInClick: () -> Unit,
     loginFieldValue: String,
     onLoginFieldChange: (String) -> Unit,
     passwordFieldValue: String,
@@ -93,7 +94,7 @@ fun SignInFields(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(24.dp))
-                Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = onSignInClick, modifier = Modifier.fillMaxWidth()) {
                     Text(text = stringResource(Res.string.sign_in))
                 }
             }

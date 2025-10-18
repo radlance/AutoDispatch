@@ -12,7 +12,7 @@ fun main() = application {
         state = rememberWindowState(width = 1100.dp, height = 750.dp),
         title = "AutoDispatch",
     ) {
-        window.minimumSize = Dimension(750, 500)
+        window.minimumSize = Dimension(750, 600)
         App()
     }
 }
