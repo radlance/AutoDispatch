@@ -1,0 +1,43 @@
+package com.github.radlance.autodispatch.di
+
+import com.github.radlance.autodispatch.auth.data.RemoteAuthRepository
+import com.github.radlance.autodispatch.auth.domain.AuthRepository
+import com.github.radlance.autodispatch.auth.presentation.BaseValidateSignIn
+import com.github.radlance.autodispatch.auth.presentation.SignInViewModel
+import com.github.radlance.autodispatch.auth.presentation.ValidateSignIn
+import com.github.radlance.autodispatch.common.data.ApiService
+import com.github.radlance.autodispatch.common.data.BaseDataStoreManager
+import com.github.radlance.autodispatch.common.data.BaseHandleRequest
+import com.github.radlance.autodispatch.common.data.DataStoreManager
+import com.github.radlance.autodispatch.common.data.HandleRequest
+import com.github.radlance.autodispatch.common.data.KtorApiService
+import com.github.radlance.autodispatch.common.presentation.BaseRunAsync
+import com.github.radlance.autodispatch.common.presentation.RunAsync
+import com.github.radlance.autodispatch.navigation.core.NavigationViewModel
+import com.github.radlance.autodispatch.navigation.data.LocalNavigationRepository
+import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
+import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
+
+val commonModule = module {
+    singleOf(::BaseRunAsync).bind<RunAsync>()
+    singleOf(::KtorApiService).bind<ApiService>()
+    singleOf(::BaseHandleRequest).bind<HandleRequest>()
+    singleOf(::BaseDataStoreManager).bind<DataStoreManager>()
+    single { createHttpClient(dataStoreManager = get()) }
+}
+
+val navigationModule = module {
+    singleOf(::LocalNavigationRepository).bind<NavigationRepository>()
+    viewModelOf(::NavigationViewModel)
+}
+
+val authModule = module {
+    singleOf(::RemoteAuthRepository).bind<AuthRepository>()
+    singleOf(::BaseHandleRequest).bind<HandleRequest>()
+    singleOf(::BaseValidateSignIn).bind<ValidateSignIn>()
+
+    viewModelOf(::SignInViewModel)
+}
