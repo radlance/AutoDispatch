@@ -1,11 +1,13 @@
 package com.github.radlance.autodispatch.di
 
 import com.github.radlance.autodispatch.repository.AuthRepository
+import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.security.hashing.HashingService
 import com.github.radlance.autodispatch.security.hashing.SHA256HashingService
 import com.github.radlance.autodispatch.security.token.TokenConfig
 import com.github.radlance.autodispatch.security.token.TokenService
 import com.github.radlance.autodispatch.service.AuthService
+import com.github.radlance.autodispatch.service.ProfileService
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import org.koin.core.module.dsl.singleOf
@@ -15,15 +17,9 @@ import org.koin.dsl.module
 val Application.authModule
     get() = module {
         singleOf(::SHA256HashingService) bind HashingService::class
-        single { AuthRepository() }
-        single { TokenService(get()) }
-        single {
-            AuthService(
-                authRepository = get(),
-                hashingService = get(),
-                tokenService = get()
-            )
-        }
+        singleOf(::AuthRepository)
+        singleOf(::TokenService)
+        singleOf(::AuthService)
         single {
             TokenConfig(
                 issuer = environment.config.property("jwt.issuer").getString(),
@@ -33,4 +29,10 @@ val Application.authModule
                 totalExpiresIn = environment.config.property("jwt.total-expiration").getAs()
             )
         }
+    }
+
+val profileModule
+    get() = module {
+        singleOf(::ProfileRepository)
+        singleOf(::ProfileService)
     }
