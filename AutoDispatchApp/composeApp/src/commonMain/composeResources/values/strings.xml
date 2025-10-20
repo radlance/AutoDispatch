@@ -15,4 +15,13 @@
     <string name="ok">ОК</string>
     <string name="session_expired">Сессия истекла</string>
     <string name="session_expired_description">Сессия истекла, вам необходимо снова войти в систему, чтобы продолжить использование приложения</string>
+    <string name="dispatcher">Диспетчер</string>
+    <string name="applications">Заявки</string>
+    <string name="destinations">Назначения</string>
+    <string name="cars">Автомобили</string>
+    <string name="drivers">Водители</string>
+    <string name="refills">Заправки</string>
+    <string name="maintenance">ТО</string>
+    <string name="reports">Отчеты</string>
+    <string name="notifications">Уведомления</string>
 </resources>
