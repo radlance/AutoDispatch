@@ -10,7 +10,7 @@ import io.ktor.server.routing.*
 fun Route.profile(profileService: ProfileService) {
     authenticate {
         route("/users") {
-            get("/") {
+            get {
                 val userLogin = call.claimByNameOrUnauthorized<String>(name = "login")
 
                 val user = profileService.userByLogin(userLogin)
