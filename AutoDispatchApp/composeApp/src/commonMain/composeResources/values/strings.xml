@@ -24,4 +24,5 @@
     <string name="maintenance">ТО</string>
     <string name="reports">Отчеты</string>
     <string name="notifications">Уведомления</string>
+    <string name="retry">Повторить</string>
 </resources>

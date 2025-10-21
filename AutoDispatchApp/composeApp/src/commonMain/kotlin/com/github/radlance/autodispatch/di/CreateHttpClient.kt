@@ -29,7 +29,7 @@ fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
     return HttpClient(engine = httpClientEngine) {
         expectSuccess = true
         defaultRequest {
-            url("http://192.168.0.101:8084/api/")
+            url("http://127.0.0.1:8084/api/")
             contentType(ContentType.Application.Json)
         }
         install(ContentNegotiation) {

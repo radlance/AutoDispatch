@@ -4,6 +4,7 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
+import kotlinx.io.IOException
 
 interface HandleRequest {
 
@@ -19,6 +20,8 @@ internal class BaseHandleRequest : HandleRequest {
             FetchResult.Error(e.response.bodyAsText())
         } catch (e: SocketTimeoutException) {
             FetchResult.Error("Таймаут соединения")
+        } catch (e: IOException) {
+            FetchResult.Error("Ошибка подключения")
         }catch (e: Exception) {
             FetchResult.Error(e.message ?: "Неизвестная ошибка")
         }

@@ -12,8 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.auto_request
 import com.github.radlance.autodispatch.common.presentation.AppIconBox
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SplashScreen(
@@ -36,6 +39,6 @@ fun SplashScreen(
             iconSize = 70.dp
         )
         Spacer(Modifier.height(32.dp))
-        Text(text = "АвтоЗаявка", fontSize = 40.sp)
+        Text(text = stringResource(Res.string.auto_request), fontSize = 40.sp)
     }
 }

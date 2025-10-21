@@ -16,6 +16,8 @@ import com.github.radlance.autodispatch.common.presentation.RunAsync
 import com.github.radlance.autodispatch.navigation.core.NavigationViewModel
 import com.github.radlance.autodispatch.navigation.data.LocalNavigationRepository
 import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
+import com.github.radlance.autodispatch.profile.data.RemoteProfileRepository
+import com.github.radlance.autodispatch.profile.domain.ProfileRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -40,4 +42,8 @@ val authModule = module {
     singleOf(::BaseValidateSignIn).bind<ValidateSignIn>()
 
     viewModelOf(::SignInViewModel)
+}
+
+val profileModule = module {
+    singleOf(::RemoteProfileRepository).bind<ProfileRepository>()
 }

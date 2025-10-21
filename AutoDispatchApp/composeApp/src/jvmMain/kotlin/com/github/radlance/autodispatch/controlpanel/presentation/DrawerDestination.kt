@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.controlpanel
+package com.github.radlance.autodispatch.controlpanel.presentation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
