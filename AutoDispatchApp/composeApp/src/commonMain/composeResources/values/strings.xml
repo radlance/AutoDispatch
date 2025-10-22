@@ -16,7 +16,7 @@
     <string name="session_expired">Сессия истекла</string>
     <string name="session_expired_description">Сессия истекла, вам необходимо снова войти в систему, чтобы продолжить использование приложения</string>
     <string name="dispatcher">Диспетчер</string>
-    <string name="applications">Заявки</string>
+    <string name="requests">Заявки</string>
     <string name="destinations">Назначения</string>
     <string name="cars">Автомобили</string>
     <string name="drivers">Водители</string>
@@ -26,5 +26,5 @@
     <string name="notifications">Уведомления</string>
     <string name="retry">Повторить</string>
     <string name="log_in_to_the_system">Вход в систему…</string>
-    <string name="create_application">Создать заявку</string>
+    <string name="create_request">Создать заявку</string>
 </resources>

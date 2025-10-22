@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.applications
+package com.github.radlance.autodispatch.requests
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,12 +48,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.create_application
+import autodispatch.composeapp.generated.resources.create_request
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApplicationsScreen(modifier: Modifier = Modifier) {
+fun RequestsScreen(modifier: Modifier = Modifier) {
     var query by rememberSaveable { mutableStateOf("") }
     val searchBarState = rememberSearchBarState()
     var expanded by remember { mutableStateOf(false) }
@@ -168,7 +168,7 @@ fun ApplicationsScreen(modifier: Modifier = Modifier) {
                 Button(
                     onClick = {}
                 ) {
-                    Text(text = stringResource(Res.string.create_application))
+                    Text(text = stringResource(Res.string.create_request))
                 }
             }
         }

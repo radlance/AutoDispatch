@@ -59,7 +59,7 @@ fun ControlPanelScreen(
 
     val items =
         listOf(
-            Applications,
+            Requests,
             Destinations,
             Cars,
             Drivers,

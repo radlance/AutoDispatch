@@ -8,7 +8,7 @@ import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.graphics.vector.ImageVector
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.applications
+import autodispatch.composeapp.generated.resources.requests
 import autodispatch.composeapp.generated.resources.cars
 import autodispatch.composeapp.generated.resources.destinations
 import autodispatch.composeapp.generated.resources.drivers
@@ -28,9 +28,9 @@ interface DrawerDestination {
 }
 
 @Serializable
-object Applications : DrawerDestination {
+object Requests : DrawerDestination {
     override val icon: ImageVector = DocumentIcon
-    override val titleRes: StringResource = Res.string.applications
+    override val titleRes: StringResource = Res.string.requests
 }
 
 @Serializable
