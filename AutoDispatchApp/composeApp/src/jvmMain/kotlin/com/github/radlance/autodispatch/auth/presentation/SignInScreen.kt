@@ -21,6 +21,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,9 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.log_in_to_the_system
 import com.github.radlance.autodispatch.common.presentation.BaseColumn
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -62,6 +66,7 @@ private fun SignInScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarMessage = stringResource(Res.string.log_in_to_the_system)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -72,18 +77,21 @@ private fun SignInScreen(
     ) {
         signInResultUiState.Reduce(
             onLoading = {
+
                 scope.launch {
                     snackbarHostState.showSnackbar(
-                        "Вход в систему...",
+                        snackBarMessage,
                         duration = SnackbarDuration.Indefinite
                     )
                 }
             },
             onSuccess = { navigateToControlPanel() },
             onError = {
-                scope.launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(it)
+                LaunchedEffect(signInResultUiState) {
+                    scope.launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.showSnackbar(it)
+                    }
                 }
             }
         )

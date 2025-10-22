@@ -1,16 +1,21 @@
 package com.github.radlance.autodispatch.controlpanel.presentation
 
 import ShimmerPlaceholder
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Refresh
@@ -95,96 +100,108 @@ fun ControlPanelScreen(
                     }
                 }
                 Spacer(Modifier.height(24.dp))
-                items.forEachIndexed { index, item ->
-                    NavigationDrawerItem(
-                        icon = { Icon(item.icon, contentDescription = null) },
-                        label = { Text(stringResource(item.titleRes)) },
-                        selected = index == selectedItem,
-                        onClick = {
-                            selectedItem = index
-                            navigationState.navigateTo(item)
-                        },
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                Spacer(Modifier.height(18.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(40.dp).clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.tertiaryContainer)
+                Box(modifier = Modifier.weight(1f)) {
+                    val scrollState = rememberScrollState()
+                    Column(
+                        modifier = Modifier.fillMaxHeight().verticalScroll(scrollState)
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(25.dp),
-                            tint = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
-                    }
-
-                    Spacer(Modifier.width(18.dp))
-                    loadProfileUiState.Reduce(
-                        onLoading = {
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    ShimmerPlaceholder(
-                                        modifier = Modifier
-                                            .height(20.dp)
-                                            .width(120.dp)
-                                    )
-                                }
-                                Spacer(Modifier.width(40.dp))
-                            }
-                        },
-                        onSuccess = { user ->
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = abbreviateName(user.fullName),
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Spacer(Modifier.width(40.dp))
-                            }
-                        },
-                        onError = { message ->
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = message,
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontSize = 13.sp,
-                                        softWrap = true,
-                                        lineHeight = 15.sp
-                                    )
-                                }
-                                IconButton(
-                                    modifier = Modifier.size(40.dp),
-                                    onClick = viewModel::loadProfile
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Refresh,
-                                        contentDescription = stringResource(Res.string.retry),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
+                        items.forEachIndexed { index, item ->
+                            NavigationDrawerItem(
+                                icon = { Icon(item.icon, contentDescription = null) },
+                                label = { Text(stringResource(item.titleRes)) },
+                                selected = index == selectedItem,
+                                onClick = {
+                                    selectedItem = index
+                                    navigationState.navigateTo(item)
+                                },
+                                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                            )
                         }
+                        Spacer(Modifier.weight(1f))
+                        Spacer(Modifier.height(18.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(40.dp).clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.tertiaryContainer)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(25.dp),
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+
+                            Spacer(Modifier.width(18.dp))
+                            loadProfileUiState.Reduce(
+                                onLoading = {
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            ShimmerPlaceholder(
+                                                modifier = Modifier
+                                                    .height(20.dp)
+                                                    .width(120.dp)
+                                            )
+                                        }
+                                        Spacer(Modifier.width(40.dp))
+                                    }
+                                },
+                                onSuccess = { user ->
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = abbreviateName(user.fullName),
+                                            fontSize = 16.sp,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Spacer(Modifier.width(40.dp))
+                                    }
+                                },
+                                onError = { message ->
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = message,
+                                                color = MaterialTheme.colorScheme.error,
+                                                fontSize = 13.sp,
+                                                softWrap = true,
+                                                lineHeight = 15.sp
+                                            )
+                                        }
+                                        IconButton(
+                                            modifier = Modifier.size(40.dp),
+                                            onClick = viewModel::loadProfile
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Refresh,
+                                                contentDescription = stringResource(Res.string.retry),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        Spacer(Modifier.height(18.dp))
+                    }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight()
+                            .padding(end = 2.dp),
+                        adapter = rememberScrollbarAdapter(scrollState)
                     )
                 }
-                Spacer(Modifier.height(18.dp))
             }
         }
     ) {

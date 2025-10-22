@@ -25,4 +25,6 @@
     <string name="reports">Отчеты</string>
     <string name="notifications">Уведомления</string>
     <string name="retry">Повторить</string>
+    <string name="log_in_to_the_system">Вход в систему…</string>
+    <string name="create_application">Создать заявку</string>
 </resources>

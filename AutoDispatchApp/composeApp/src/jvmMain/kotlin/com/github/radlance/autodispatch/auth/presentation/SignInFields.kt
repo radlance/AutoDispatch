@@ -37,7 +37,6 @@ import autodispatch.composeapp.generated.resources.password
 import autodispatch.composeapp.generated.resources.sign_in
 import autodispatch.composeapp.generated.resources.welcome
 import org.jetbrains.compose.resources.stringResource
-import java.awt.Cursor
 
 @Composable
 fun SignInFields(
@@ -94,11 +93,7 @@ fun SignInFields(
                     trailingIcon = {
                         IconButton(
                             onClick = { showPassword = !showPassword },
-                            modifier = Modifier.pointerHoverIcon(
-                                PointerIcon(
-                                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
-                                )
-                            )
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Default)
                         ) {
                             val icon = if (showPassword) {
                                 Icons.Default.VisibilityOff

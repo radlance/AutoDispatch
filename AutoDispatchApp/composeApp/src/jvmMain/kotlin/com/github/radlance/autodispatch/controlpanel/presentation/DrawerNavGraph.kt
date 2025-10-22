@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.github.radlance.autodispatch.applications.ApplicationsScreen
 import com.github.radlance.autodispatch.navigation.core.NavigationState
 
 @Composable
@@ -36,9 +37,7 @@ fun DrawerNavGraph(
         modifier = modifier
     ) {
         composable<Applications> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Applications")
-            }
+            ApplicationsScreen()
         }
         composable<Destinations> {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
