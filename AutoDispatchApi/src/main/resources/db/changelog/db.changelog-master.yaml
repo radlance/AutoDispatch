@@ -4,6 +4,10 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.insert-users-data-1.0.sql
   - include:
+      file: db/changelog/db.create-customer-table-1.0.sql
+  - include:
+      file: db/changelog/db.insert-customer-data-1.0.sql
+  - include:
       file: db/changelog/db.create-vehicle-table-1.0.sql
   - include:
       file: db/changelog/db.insert.vehicle-data-1.0.sql
@@ -12,9 +16,9 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.insert-request-status-data-1.0.sql
   - include:
-      file: db/changelog/db.create-trip-purpose-table-1.0.sql
+      file: db/changelog/db.create-cargo-type-table-1.0.sql
   - include:
-      file: db/changelog/db.insert-trip-purpose-data-1.0.sql
+      file: db/changelog/db.insert-cargo-type-data-1.0.sql
   - include:
       file: db/changelog/db.create-request-table-1.0.sql
   - include:
@@ -31,3 +35,5 @@ databaseChangeLog:
       file: db/changelog/db.create-maintenance-table-1.0.sql
   - include:
       file: db/changelog/db.create-notification-table-1.0.sql
+  - include:
+      file: db/changelog/db.create-tables-indexes-1.0.sql
