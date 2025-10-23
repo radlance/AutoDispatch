@@ -21,5 +21,6 @@ data class Request(
     val organizationName: String?,
     val organizationPhoneNumber: String?,
     val organizationEmail: String?,
-    val vehicleInfo: String?
+    val vehicleInfo: String?,
+    val createdAt: String?
 )

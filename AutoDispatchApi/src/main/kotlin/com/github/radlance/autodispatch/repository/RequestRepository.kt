@@ -17,6 +17,7 @@ class RequestRepository {
                        r.origin,
                        r.destination,
                        r.trip_date,
+                       r.created_at,
                        ct.id     as cargo_type_id,
                        ct.name     as cargo_type_name,
                        r.cargo_weight,
@@ -66,7 +67,8 @@ class RequestRepository {
                         organizationName = rs.getString("organization_name"),
                         organizationPhoneNumber = rs.getString("organization_phone_number"),
                         organizationEmail = rs.getString("organization_email"),
-                        vehicleInfo = rs.getString("vehicle_info")
+                        vehicleInfo = rs.getString("vehicle_info"),
+                        createdAt = rs.getTimestamp("created_at")?.toString()
                     )
                 )
             }
