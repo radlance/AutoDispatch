@@ -1,7 +1,9 @@
 package com.github.radlance.autodispatch.common.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 
+@Stable
 interface FetchResultUiState<out D, out E> {
 
     @Composable

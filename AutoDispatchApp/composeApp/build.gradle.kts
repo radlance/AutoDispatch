@@ -44,6 +44,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation(libs.kotlinx.datetime)
             api(libs.slf4j.simple)
             implementation(libs.atomicfu)
             implementation(libs.androidx.datastore)

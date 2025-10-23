@@ -11,8 +11,6 @@ import com.github.radlance.autodispatch.common.data.BaseHandleRequest
 import com.github.radlance.autodispatch.common.data.DataStoreManager
 import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.KtorApiService
-import com.github.radlance.autodispatch.common.presentation.BaseRunAsync
-import com.github.radlance.autodispatch.common.presentation.RunAsync
 import com.github.radlance.autodispatch.navigation.core.NavigationViewModel
 import com.github.radlance.autodispatch.navigation.data.LocalNavigationRepository
 import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
@@ -24,7 +22,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val commonModule = module {
-    singleOf(::BaseRunAsync).bind<RunAsync>()
     singleOf(::KtorApiService).bind<ApiService>()
     singleOf(::BaseHandleRequest).bind<HandleRequest>()
     singleOf(::BaseDataStoreManager).bind<DataStoreManager>()

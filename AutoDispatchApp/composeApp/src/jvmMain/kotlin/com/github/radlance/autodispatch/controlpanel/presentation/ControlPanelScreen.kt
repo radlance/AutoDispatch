@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.controlpanel.presentation
 
-import ShimmerPlaceholder
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,6 +27,7 @@ import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,7 +38,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.auto_request
@@ -54,7 +53,7 @@ fun ControlPanelScreen(
     modifier: Modifier = Modifier,
     viewModel: ControlPanelViewModel = koinViewModel()
 ) {
-    val loadProfileUiState by viewModel.loadProfileUiState.collectAsStateWithLifecycle()
+    val loadProfileUiState by viewModel.loadProfileUiState.collectAsState()
     var selectedItem by rememberSaveable { mutableStateOf(0) }
 
     val items =
@@ -144,8 +143,9 @@ fun ControlPanelScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
-                                            ShimmerPlaceholder(
+                                            Box(
                                                 modifier = Modifier
+                                                    .shimmerBackground()
                                                     .height(20.dp)
                                                     .width(120.dp)
                                             )
@@ -205,7 +205,11 @@ fun ControlPanelScreen(
             }
         }
     ) {
-        DrawerNavGraph(navigationState = navigationState)
+        DrawerNavGraph(
+            navigationState = navigationState,
+            loadProfileUiState = loadProfileUiState,
+            onReloadProfile = viewModel::loadProfile
+        )
     }
 }
 

@@ -3,17 +3,15 @@ package com.github.radlance.autodispatch.auth.presentation
 import com.github.radlance.autodispatch.auth.domain.AuthRepository
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.common.presentation.RunAsync
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class SignInViewModel(
-    runAsync: RunAsync,
     private val validateSignIn: ValidateSignIn,
     private val signInRepository: AuthRepository,
-) : BaseViewModel(runAsync), SignInAction {
+) : BaseViewModel(), SignInAction {
 
     private val fieldsUiStateMutable = MutableStateFlow(SignInFieldsUiState())
 

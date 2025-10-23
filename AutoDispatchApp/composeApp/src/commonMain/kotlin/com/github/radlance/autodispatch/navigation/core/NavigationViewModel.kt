@@ -1,14 +1,12 @@
 package com.github.radlance.autodispatch.navigation.core
 
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
-import com.github.radlance.autodispatch.common.presentation.RunAsync
 import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
 import kotlinx.coroutines.flow.StateFlow
 
 class NavigationViewModel(
-    runAsync: RunAsync,
     navigationRepository: NavigationRepository
-) : BaseViewModel(runAsync) {
+) : BaseViewModel() {
 
     val authorizedState: StateFlow<Boolean> = navigationRepository.authorized.stateInViewModel(
         initialValue = false

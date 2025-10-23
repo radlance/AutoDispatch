@@ -16,8 +16,10 @@ koin = "4.1.1"
 datastore = "1.1.7"
 atomicfu = "0.29.0"
 slf4jSimple = "2.0.17"
+kotlinxDateTime = "0.7.1"
 
 [libraries]
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4jSimple" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }

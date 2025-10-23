@@ -10,6 +10,7 @@ import com.github.radlance.autodispatch.di.controlPanelModule
 import com.github.radlance.autodispatch.di.dataStoreModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.profileModule
+import com.github.radlance.autodispatch.di.requestModule
 import org.koin.core.context.startKoin
 import java.awt.Dimension
 
@@ -21,7 +22,8 @@ fun main() = application {
             navigationModule,
             authModule,
             profileModule,
-            controlPanelModule
+            controlPanelModule,
+            requestModule,
         )
     }
     Window(
@@ -29,7 +31,7 @@ fun main() = application {
         state = rememberWindowState(width = 1100.dp, height = 750.dp),
         title = "АвтоЗаявка",
     ) {
-        window.minimumSize = Dimension(750, 600)
+        window.minimumSize = Dimension(1100, 750)
         App()
     }
 }

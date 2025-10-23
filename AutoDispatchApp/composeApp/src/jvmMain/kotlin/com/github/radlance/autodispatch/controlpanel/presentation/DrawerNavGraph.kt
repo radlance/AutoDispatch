@@ -11,11 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.github.radlance.autodispatch.requests.RequestsScreen
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.request.presentation.RequestsScreen
 import com.github.radlance.autodispatch.navigation.core.NavigationState
+import com.github.radlance.autodispatch.profile.domain.User
 
 @Composable
 fun DrawerNavGraph(
+    loadProfileUiState: FetchResultUiState<User, String>,
+    onReloadProfile: () -> Unit,
     navigationState: NavigationState,
     modifier: Modifier = Modifier
 ) {
@@ -37,7 +41,10 @@ fun DrawerNavGraph(
         modifier = modifier
     ) {
         composable<Requests> {
-            RequestsScreen()
+            RequestsScreen(
+                loadProfileUiState = loadProfileUiState,
+                onReloadProfile = onReloadProfile,
+            )
         }
         composable<Destinations> {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
