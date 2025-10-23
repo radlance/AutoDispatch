@@ -8,7 +8,6 @@ data class RequestDto(
     val statusName: String?,
     val origin: String?,
     val destination: String?,
-    val tripDate: String?,
     val cargoTypeName: String?,
     val cargoWeight: Double?,
     val cargoVolume: Double?,
