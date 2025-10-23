@@ -6,6 +6,7 @@ android-targetSdk = "36"
 androidxActivity = "1.11.0"
 androidxLifecycle = "2.9.5"
 composeMultiplatform = "1.9.1"
+datatableMaterial3 = "0.11.6"
 kotlin = "2.2.20"
 kotlinx-coroutines = "1.10.2"
 materialKolor = "3.0.1"
@@ -19,6 +20,7 @@ slf4jSimple = "2.0.17"
 kotlinxDateTime = "0.7.1"
 
 [libraries]
+datatable-material3 = { module = "com.seanproctor:datatable-material3", version.ref = "datatableMaterial3" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4jSimple" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }

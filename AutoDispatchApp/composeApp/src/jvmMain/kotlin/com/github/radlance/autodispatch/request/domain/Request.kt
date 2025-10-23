@@ -7,7 +7,6 @@ data class Request(
     val statusName: String?,
     val origin: String?,
     val destination: String?,
-    val tripDate: String?,
     val cargoTypeName: String?,
     val cargoWeight: Double?,
     val cargoVolume: Double?,
@@ -20,5 +19,6 @@ data class Request(
     val organizationName: String?,
     val organizationPhoneNumber: String?,
     val organizationEmail: String?,
-    val vehicleInfo: String?
+    val vehicleInfo: String?,
+    val createdAt: LocalDateTime?
 )

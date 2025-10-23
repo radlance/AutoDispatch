@@ -28,7 +28,6 @@ private fun RequestDto.toRequest(): Request {
         statusName = statusName,
         origin = origin,
         destination = destination,
-        tripDate = tripDate,
         cargoTypeName = cargoTypeName,
         cargoWeight = cargoWeight,
         cargoVolume = cargoVolume,
@@ -41,6 +40,7 @@ private fun RequestDto.toRequest(): Request {
         organizationName = organizationName,
         organizationPhoneNumber = organizationPhoneNumber,
         organizationEmail = organizationEmail,
-        vehicleInfo = vehicleInfo
+        vehicleInfo = vehicleInfo,
+        createdAt = createdAt?.let { LocalDateTime.parse(it.replace(" ", "T")) }
     )
 }

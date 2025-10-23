@@ -56,7 +56,7 @@ fun RequestCategories(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.height(TextFieldDefaults.MinHeight)
-                .width(250.dp)
+                .width(300.dp)
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .clip(RoundedCornerShape(16.dp))
                 .background(SearchBarDefaults.colors().containerColor)

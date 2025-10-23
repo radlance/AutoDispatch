@@ -27,4 +27,12 @@
     <string name="retry">Повторить</string>
     <string name="log_in_to_the_system">Вход в систему…</string>
     <string name="create_request">Создать заявку</string>
+    <string name="search_by_requests">Поиск по заявкам…</string>
+    <string name="all_requests">Все заявки</string>
+    <string name="route">Маршрут</string>
+    <string name="cargo_type">Тип груза</string>
+    <string name="date">Дата</string>
+    <string name="status">Статус</string>
+    <string name="driver">Водитель</string>
+    <string name="car">Автомобиль</string>
 </resources>

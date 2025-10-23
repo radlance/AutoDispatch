@@ -213,7 +213,7 @@ fun ControlPanelScreen(
     }
 }
 
-private fun abbreviateName(fullName: String): String {
+fun abbreviateName(fullName: String): String {
     val words = fullName.trim().split("\\s+".toRegex())
     if (words.isEmpty()) return ""
     val firstWord = words.first()
