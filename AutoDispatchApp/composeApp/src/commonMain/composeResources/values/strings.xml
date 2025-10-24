@@ -35,4 +35,5 @@
     <string name="status">Статус</string>
     <string name="driver">Водитель</string>
     <string name="car">Автомобиль</string>
+    <string name="request">Заявка</string>
 </resources>

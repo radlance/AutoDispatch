@@ -3,7 +3,7 @@ package com.github.radlance.autodispatch.request.domain
 import kotlinx.datetime.LocalDateTime
 
 data class Request(
-    val id: Int,
+    val requestNumber: String,
     val statusName: String?,
     val origin: String?,
     val destination: String?,

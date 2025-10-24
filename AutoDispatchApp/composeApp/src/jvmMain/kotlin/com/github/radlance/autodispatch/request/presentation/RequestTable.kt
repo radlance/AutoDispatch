@@ -17,6 +17,7 @@ import autodispatch.composeapp.generated.resources.car
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.date
 import autodispatch.composeapp.generated.resources.driver
+import autodispatch.composeapp.generated.resources.request
 import autodispatch.composeapp.generated.resources.route
 import autodispatch.composeapp.generated.resources.status
 import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
@@ -34,6 +35,9 @@ fun RequestTable(requests: List<Request>, modifier: Modifier = Modifier) {
         columns = listOf(
             DataColumn(width = TableColumnWidth.Flex(0.3f)) {
                 Text("№")
+            },
+            DataColumn(width = TableColumnWidth.Flex(0.3f)) {
+                Text(stringResource(Res.string.request))
             },
             DataColumn(width = TableColumnWidth.Flex(3f)) {
                 Text(stringResource(Res.string.route))
@@ -61,6 +65,13 @@ fun RequestTable(requests: List<Request>, modifier: Modifier = Modifier) {
                 cell {
                     Text(
                         text = (index + 1).toString(),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                cell {
+                    Text(
+                        text = item.requestNumber,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

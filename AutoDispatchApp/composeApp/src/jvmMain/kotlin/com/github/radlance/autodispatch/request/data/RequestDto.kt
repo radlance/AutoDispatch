@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RequestDto(
-    val id: Int,
+    val requestNumber: String,
     val statusName: String?,
     val origin: String?,
     val destination: String?,
