@@ -13,6 +13,7 @@ class RequestRepository {
         exec(
             """
                 SELECT r.id,
+                       r.request_number,
                        rs.name     AS status_name,
                        r.origin,
                        r.destination,
@@ -66,7 +67,8 @@ class RequestRepository {
                         organizationPhoneNumber = rs.getString("organization_phone_number"),
                         organizationEmail = rs.getString("organization_email"),
                         vehicleInfo = rs.getString("vehicle_info"),
-                        createdAt = rs.getTimestamp("created_at")?.toString()
+                        createdAt = rs.getTimestamp("created_at")?.toString(),
+                        requestNumber = rs.getString("request_number")
                     )
                 )
             }
