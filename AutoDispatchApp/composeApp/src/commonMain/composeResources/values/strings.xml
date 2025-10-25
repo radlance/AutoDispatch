@@ -46,4 +46,5 @@
     <string name="no_results_query">По запросу "%1$s" ничего не найдено</string>
     <string name="no_results_filters">По выбранным фильтрам ничего не найдено</string>
     <string name="no_results_generic">Ничего не найдено</string>
+    <string name="created">Создана</string>
 </resources>

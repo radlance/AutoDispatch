@@ -1,14 +1,21 @@
 package com.github.radlance.autodispatch.request.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +55,9 @@ import autodispatch.composeapp.generated.resources.no_results_query
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
+import com.seanproctor.datatable.DataTableState
+import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -58,6 +69,8 @@ fun RequestsScreen(
     modifier: Modifier = Modifier,
     viewModel: RequestViewModel = koinViewModel()
 ) {
+    var selectedRequestNumber by rememberSaveable { mutableStateOf("") }
+    var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
 
@@ -69,6 +82,9 @@ fun RequestsScreen(
     var selectedVehicles by remember { mutableStateOf(listOf<String>()) }
 
     val requestsUiState by viewModel.loadRequestUiState.collectAsState()
+    val pagingState = rememberPaginatedDataTableState(10)
+    val dataTableState = remember(pagingState.pageSize, pagingState.pageIndex) { DataTableState() }
+    val scope = rememberCoroutineScope()
 
     requestsUiState.Reduce(
         onLoading = {
@@ -104,8 +120,8 @@ fun RequestsScreen(
                         matchesCargo && matchesStatus && matchesDriver && matchesVehicle
             }
 
-            Column(modifier = modifier.fillMaxSize()) {
-                Box(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = modifier.weight(1f)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -120,7 +136,14 @@ fun RequestsScreen(
                         Spacer(Modifier.width(16.dp))
                         FilledTonalIconToggleButton(
                             checked = showSearchFilters,
-                            onCheckedChange = { showSearchFilters = it },
+                            onCheckedChange = {
+                                if (showSearchFilters) {
+                                    scope.launch {
+                                        dataTableState.verticalScrollState.scrollTo(0)
+                                    }
+                                }
+                                showSearchFilters = it
+                            },
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.FilterAlt,
@@ -134,90 +157,127 @@ fun RequestsScreen(
                             Text(text = stringResource(Res.string.create_request))
                         }
                     }
+
+                    AnimatedVisibility(
+                        visible = showSearchFilters,
+                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+                    ) {
+                        RequestFilters(
+                            selectedDepartureCities = selectedDepartureCities,
+                            selectedDestinationCities = selectedDestinationCities,
+                            selectedCargoTypes = selectedCargoTypes,
+                            selectedStatuses = selectedStatuses,
+                            selectedDrivers = selectedDrivers,
+                            selectedVehicles = selectedVehicles,
+                            filterDepartureCities = request.departureCities,
+                            filterDestinationCities = request.destinationCities,
+                            filterCargoTypes = request.cargoTypes,
+                            filterStatuses = request.statuses,
+                            filterDrivers = request.drivers,
+                            filterVehicles = request.vehicles,
+                            onDepartureCitiesChanged = { selectedDepartureCities = it },
+                            onDestinationCitiesChanged = { selectedDestinationCities = it },
+                            onCargoTypesChanged = { selectedCargoTypes = it },
+                            onStatusesChanged = { selectedStatuses = it },
+                            onDriversChanged = { selectedDrivers = it },
+                            onVehiclesChanged = { selectedVehicles = it },
+                            modifier = Modifier.padding(horizontal = 16.dp).animateContentSize(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessHigh
+                                )
+                            )
+                        )
+                    }
+
+
+                    if (filteredRequests.isEmpty()) {
+                        val maxLength = 100
+                        val displayQuery =
+                            if (query.length > maxLength) query.take(maxLength) + "…" else query
+
+                        val message = when {
+                            query.isNotBlank() -> stringResource(
+                                Res.string.no_results_query,
+                                displayQuery
+                            )
+
+                            selectedDepartureCities.isNotEmpty() ||
+                                    selectedDestinationCities.isNotEmpty() ||
+                                    selectedCargoTypes.isNotEmpty() ||
+                                    selectedStatuses.isNotEmpty() ||
+                                    selectedDrivers.isNotEmpty() ||
+                                    selectedVehicles.isNotEmpty() -> stringResource(Res.string.no_results_filters)
+
+                            else -> stringResource(Res.string.no_results_generic)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SearchOff,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(48.dp)
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append(message)
+                                    },
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 3
+                                )
+                            }
+                        }
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            RequestTable(
+                                requests = filteredRequests,
+                                onRequestClick = {
+                                    selectedRequestNumber = it.requestNumber
+//                                if (!showRequestDetailsPanel) {
+                                    showRequestDetailsPanel = !showRequestDetailsPanel
+//                                }
+                                },
+                                dataTableState = dataTableState,
+                                state = pagingState
+                            )
+                            VerticalScrollbar(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .padding(end = 4.dp, top = 54.dp, bottom = 54.dp),
+                                adapter = rememberDataTableScrollbarAdapter(
+                                    scrollState = dataTableState.verticalScrollState
+                                )
+                            )
+
+                        }
+                    }
                 }
 
                 AnimatedVisibility(
-                    visible = showSearchFilters,
-                    enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                    exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+                    visible = showRequestDetailsPanel,
+                    enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
+                    exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
                 ) {
-                    RequestFilters(
-                        selectedDepartureCities = selectedDepartureCities,
-                        selectedDestinationCities = selectedDestinationCities,
-                        selectedCargoTypes = selectedCargoTypes,
-                        selectedStatuses = selectedStatuses,
-                        selectedDrivers = selectedDrivers,
-                        selectedVehicles = selectedVehicles,
-                        filterDepartureCities = request.departureCities,
-                        filterDestinationCities = request.destinationCities,
-                        filterCargoTypes = request.cargoTypes,
-                        filterStatuses = request.statuses,
-                        filterDrivers = request.drivers,
-                        filterVehicles = request.vehicles,
-                        onDepartureCitiesChanged = { selectedDepartureCities = it },
-                        onDestinationCitiesChanged = { selectedDestinationCities = it },
-                        onCargoTypesChanged = { selectedCargoTypes = it },
-                        onStatusesChanged = { selectedStatuses = it },
-                        onDriversChanged = { selectedDrivers = it },
-                        onVehiclesChanged = { selectedVehicles = it },
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                    Column(modifier = Modifier.fillMaxHeight().width(280.dp)) {
+
+                    }
                 }
 
-
-                if (filteredRequests.isEmpty()) {
-                    val maxLength = 100
-                    val displayQuery =
-                        if (query.length > maxLength) query.take(maxLength) + "…" else query
-
-                    val message = when {
-                        query.isNotBlank() -> stringResource(
-                            Res.string.no_results_query,
-                            displayQuery
-                        )
-
-                        selectedDepartureCities.isNotEmpty() ||
-                                selectedDestinationCities.isNotEmpty() ||
-                                selectedCargoTypes.isNotEmpty() ||
-                                selectedStatuses.isNotEmpty() ||
-                                selectedDrivers.isNotEmpty() ||
-                                selectedVehicles.isNotEmpty() -> stringResource(Res.string.no_results_filters)
-
-                        else -> stringResource(Res.string.no_results_generic)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SearchOff,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(48.dp)
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = buildAnnotatedString {
-                                    append(message)
-                                },
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center,
-                                maxLines = 3
-                            )
-                        }
-                    }
-                } else {
-                    RequestTable(filteredRequests)
-                }
             }
         },
         onError = {

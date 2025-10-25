@@ -1,6 +1,9 @@
 package com.github.radlance.autodispatch.request.presentation
 
+import androidx.compose.foundation.HorizontalScrollbar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,22 +50,41 @@ fun CustomPaginationDataTable(
     logger: ((String) -> Unit)? = null,
     content: DataTableScope.() -> Unit,
 ) {
-    CustomPaginatedDataTable(
-        dataTableState = dataTableState,
-        columns = columns,
-        modifier = modifier,
-        separator = separator,
-        headerHeight = headerHeight,
-        rowHeight = rowHeight,
-        contentPadding = contentPadding,
-        headerBackgroundColor = headerBackgroundColor,
-        footerBackgroundColor = footerBackgroundColor,
-        state = state,
-        footer = {
-            Row(
-                modifier = Modifier.height(rowHeight).padding(horizontal = 16.dp)
+    Column(modifier = modifier.fillMaxWidth().padding(end = 16.dp)) {
+        CustomPaginatedDataTable(
+            dataTableState = dataTableState,
+            columns = columns,
+            modifier = Modifier.fillMaxWidth(),
+            separator = separator,
+            headerHeight = headerHeight,
+            rowHeight = rowHeight,
+            contentPadding = contentPadding,
+            headerBackgroundColor = headerBackgroundColor,
+            footerBackgroundColor = footerBackgroundColor,
+            state = state,
+            footer = {},
+            cellContentProvider = Material3CellContentProvider,
+            sortColumnIndex = sortColumnIndex,
+            sortAscending = sortAscending,
+            logger = logger,
+            content = content
+        )
+
+        Column {
+            HorizontalScrollbar(
+                modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.End),
+                adapter = rememberDataTableScrollbarAdapter(
+                    scrollState = dataTableState.horizontalScrollState
+                )
+            )
+            Row(
+                modifier = Modifier
+                    .height(rowHeight)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .background(footerBackgroundColor),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 val start = min(state.pageIndex * state.pageSize + 1, state.count)
@@ -106,11 +128,6 @@ fun CustomPaginationDataTable(
                     )
                 }
             }
-        },
-        cellContentProvider = Material3CellContentProvider,
-        sortColumnIndex = sortColumnIndex,
-        sortAscending = sortAscending,
-        logger = logger,
-        content = content
-    )
+        }
+    }
 }
