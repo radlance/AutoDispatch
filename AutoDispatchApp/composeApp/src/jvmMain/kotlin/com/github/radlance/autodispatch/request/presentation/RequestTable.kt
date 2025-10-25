@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,15 +25,24 @@ import autodispatch.composeapp.generated.resources.status
 import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
 import com.github.radlance.autodispatch.request.domain.Request
 import com.seanproctor.datatable.DataColumn
+import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth
 import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RequestTable(requests: List<Request>, modifier: Modifier = Modifier) {
+    val state = rememberPaginatedDataTableState(10)
+    val dataTableState = remember(state.pageSize, state.pageIndex) { DataTableState() }
+
+    LaunchedEffect(requests.size) {
+        dataTableState.verticalScrollState.scrollTo(0)
+    }
+
     CustomPaginationDataTable(
         modifier = modifier.fillMaxWidth(),
-        state = rememberPaginatedDataTableState(10),
+        state = state,
+        dataTableState = dataTableState,
         columns = listOf(
             DataColumn(width = TableColumnWidth.Flex(0.3f)) {
                 Text("№")
@@ -48,7 +59,7 @@ fun RequestTable(requests: List<Request>, modifier: Modifier = Modifier) {
             DataColumn(width = TableColumnWidth.Flex(0.5f)) {
                 Text(stringResource(Res.string.date))
             },
-            DataColumn {
+            DataColumn(width = TableColumnWidth.Flex(1.2f)) {
                 Text(stringResource(Res.string.status))
             },
             DataColumn(width = TableColumnWidth.Flex(1.5f)) {
@@ -135,7 +146,7 @@ private fun StatusWithColor(status: String?) {
     ) {
         Text(
             text = status ?: "-",
-            maxLines = 2,
+            maxLines = 1,
             color = textColor,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

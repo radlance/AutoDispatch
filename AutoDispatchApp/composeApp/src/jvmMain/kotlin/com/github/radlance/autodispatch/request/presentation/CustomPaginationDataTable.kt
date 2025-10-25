@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,8 +25,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableScope
+import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.material3.Material3CellContentProvider
-import com.seanproctor.datatable.paging.BasicPaginatedDataTable
 import com.seanproctor.datatable.paging.PaginatedDataTableState
 import kotlin.math.min
 
@@ -34,6 +35,7 @@ fun CustomPaginationDataTable(
     columns: List<DataColumn>,
     state: PaginatedDataTableState,
     modifier: Modifier = Modifier,
+    dataTableState: DataTableState = remember(state.pageSize, state.pageIndex) { DataTableState() },
     separator: @Composable () -> Unit = { HorizontalDivider() },
     headerHeight: Dp = 56.dp,
     rowHeight: Dp = 52.dp,
@@ -45,7 +47,8 @@ fun CustomPaginationDataTable(
     logger: ((String) -> Unit)? = null,
     content: DataTableScope.() -> Unit,
 ) {
-    BasicPaginatedDataTable(
+    CustomPaginatedDataTable(
+        dataTableState = dataTableState,
         columns = columns,
         modifier = modifier,
         separator = separator,

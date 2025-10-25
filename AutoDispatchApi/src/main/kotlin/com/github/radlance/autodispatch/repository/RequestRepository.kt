@@ -1,15 +1,19 @@
 package com.github.radlance.autodispatch.repository
 
-import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.RequestResponse
 import com.github.radlance.autodispatch.util.loggedTransaction
 
 class RequestRepository {
     suspend fun requests(): RequestResponse = loggedTransaction {
-        val cargoTypes = mutableSetOf<CargoType>()
-        val requests = mutableListOf<Request>()
+        val departureCities = mutableSetOf<String>()
+        val destinationCities = mutableSetOf<String>()
+        val cargoTypes = mutableSetOf<String>()
+        val statuses = mutableSetOf<String>()
+        val drivers = mutableSetOf<String>()
+        val vehicles = mutableSetOf<String>()
 
+        val requests = mutableListOf<Request>()
         exec(
             """
                 SELECT r.id,
@@ -18,7 +22,6 @@ class RequestRepository {
                        r.origin,
                        r.destination,
                        r.created_at,
-                       ct.id     as cargo_type_id,
                        ct.name     as cargo_type_name,
                        r.cargo_weight,
                        r.cargo_volume,
@@ -46,14 +49,26 @@ class RequestRepository {
             """.trimIndent()
         ) { rs ->
             while (rs.next()) {
+                val departureCity = rs.getString("origin")
+                val destinationCity = rs.getString("destination")
                 val cargoTypeName = rs.getString("cargo_type_name")
-                cargoTypes.add(CargoType(id = rs.getInt("cargo_type_id"), name = cargoTypeName))
+                val status = rs.getString("status_name")
+                val driver = rs.getString("driver_full_name")
+                val vehicle = rs.getString("vehicle_info")
+
+                cargoTypes.add(cargoTypeName)
+                departureCities.add(departureCity)
+                destinationCities.add(destinationCity)
+                statuses.add(status)
+                driver?.let { drivers.add(it) }
+                vehicle?.let { vehicles.add(it) }
+
                 requests.add(
                     Request(
                         id = rs.getInt("id"),
-                        statusName = rs.getString("status_name"),
-                        origin = rs.getString("origin"),
-                        destination = rs.getString("destination"),
+                        statusName = status,
+                        origin = departureCity,
+                        destination = destinationCity,
                         cargoTypeName = cargoTypeName,
                         cargoWeight = rs.getFloat("cargo_weight").toDouble(),
                         cargoVolume = rs.getFloat("cargo_volume").toDouble(),
@@ -62,11 +77,11 @@ class RequestRepository {
                         unloadingPoint = rs.getString("unloading_point"),
                         startedTripAt = rs.getTimestamp("started_trip_at")?.toString(),
                         endedTripAt = rs.getTimestamp("ended_trip_at")?.toString(),
-                        driverFullName = rs.getString("driver_full_name"),
+                        driverFullName = driver,
                         organizationName = rs.getString("organization_name"),
                         organizationPhoneNumber = rs.getString("organization_phone_number"),
                         organizationEmail = rs.getString("organization_email"),
-                        vehicleInfo = rs.getString("vehicle_info"),
+                        vehicleInfo = vehicle,
                         createdAt = rs.getTimestamp("created_at")?.toString(),
                         requestNumber = rs.getString("request_number")
                     )
@@ -75,7 +90,12 @@ class RequestRepository {
         }
         return@loggedTransaction RequestResponse(
             cargoTypes = cargoTypes.toList(),
-            requests = requests
+            requests = requests,
+            departureCities = departureCities.toList(),
+            destinationCities = destinationCities.toList(),
+            statuses = statuses.toList(),
+            drivers = drivers.toList(),
+            vehicles = vehicles.toList()
         )
     }
 }

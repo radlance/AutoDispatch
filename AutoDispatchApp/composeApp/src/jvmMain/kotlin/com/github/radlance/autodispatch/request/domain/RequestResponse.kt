@@ -1,6 +1,11 @@
 package com.github.radlance.autodispatch.request.domain
 
 data class RequestResponse(
-    val cargoTypes: List<CargoType>,
+    val departureCities: List<String>,
+    val destinationCities: List<String>,
+    val cargoTypes: List<String>,
+    val statuses: List<String>,
+    val drivers: List<String>,
+    val vehicles: List<String>,
     val requests: List<Request>
 )

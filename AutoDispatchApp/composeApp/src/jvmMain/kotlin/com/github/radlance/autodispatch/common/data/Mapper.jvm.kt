@@ -1,30 +1,26 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.request.data.CargoTypeDto
 import com.github.radlance.autodispatch.request.data.RequestDto
 import com.github.radlance.autodispatch.request.data.RequestResponseDto
-import com.github.radlance.autodispatch.request.domain.CargoType
 import com.github.radlance.autodispatch.request.domain.Request
 import com.github.radlance.autodispatch.request.domain.RequestResponse
 import kotlinx.datetime.LocalDateTime
 
 internal fun RequestResponseDto.toRequestResponse(): RequestResponse {
     return RequestResponse(
-        cargoTypes = cargoTypes.map { it.toCargoType() },
-        requests = requests.map { it.toRequest() }
-    )
-}
-
-private fun CargoTypeDto.toCargoType(): CargoType {
-    return CargoType(
-        id = id,
-        name = name
+        cargoTypes = cargoTypes,
+        requests = requests.map { it.toRequest() },
+        departureCities = departureCities,
+        destinationCities = destinationCities,
+        statuses = statuses,
+        drivers = drivers,
+        vehicles = vehicles
     )
 }
 
 private fun RequestDto.toRequest(): Request {
     return Request(
-        id = id,
+        requestNumber = requestNumber,
         statusName = statusName,
         origin = origin,
         destination = destination,

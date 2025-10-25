@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -51,12 +50,13 @@ fun RequestsScreen(
 ) {
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
-    var selectedDepartureCity by remember { mutableStateOf("") }
-    var selectedDestinationCity by remember { mutableStateOf("") }
-    var selectedCargoType by remember { mutableStateOf("") }
-    var selectedStatus by remember { mutableStateOf("") }
-    var selectedDriver by remember { mutableStateOf("") }
-    var selectedVehicle by remember { mutableStateOf("") }
+
+    var selectedDepartureCities by remember { mutableStateOf(listOf<String>()) }
+    var selectedDestinationCities by remember { mutableStateOf(listOf<String>()) }
+    var selectedCargoTypes by remember { mutableStateOf(listOf<String>()) }
+    var selectedStatuses by remember { mutableStateOf(listOf<String>()) }
+    var selectedDrivers by remember { mutableStateOf(listOf<String>()) }
+    var selectedVehicles by remember { mutableStateOf(listOf<String>()) }
 
     val requestsUiState by viewModel.loadRequestUiState.collectAsState()
 
@@ -67,36 +67,50 @@ fun RequestsScreen(
             }
         },
         onSuccess = { request ->
-            val filterDepartureCities = listOf("Все города")
-            val filterDestinationCities = listOf("Все города")
-            val filterCargoTypes = listOf("Все типы") + request.cargoTypes.map { it.name }
-            val filterStatuses = listOf("Все статусы")
-            val filterDrivers = listOf("Все водители")
-            val filterVehicles = listOf("Все автомобили")
+            val filteredRequests = request.requests.filter { req ->
+                val matchesQuery = query.isBlank() || listOfNotNull(
+                    req.requestNumber,
+                    req.origin,
+                    req.destination,
+                    req.cargoDescription,
+                    req.driverFullName,
+                    req.vehicleInfo
+                ).any { it.contains(query, ignoreCase = true) }
+
+                val matchesDepartureCity = selectedDepartureCities.isEmpty() ||
+                        req.origin in selectedDepartureCities
+
+                val matchesDestinationCity = selectedDestinationCities.isEmpty() ||
+                        req.destination in selectedDestinationCities
+
+                val matchesCargoType = selectedCargoTypes.isEmpty() ||
+                        req.cargoTypeName in selectedCargoTypes
+
+                val matchesStatus = selectedStatuses.isEmpty() ||
+                        req.statusName in selectedStatuses
+
+                val matchesDriver = selectedDrivers.isEmpty() ||
+                        req.driverFullName in selectedDrivers
+
+                val matchesVehicle = selectedVehicles.isEmpty() ||
+                        req.vehicleInfo in selectedVehicles
+
+                matchesQuery &&
+                        matchesDepartureCity &&
+                        matchesDestinationCity &&
+                        matchesCargoType &&
+                        matchesStatus &&
+                        matchesDriver &&
+                        matchesVehicle
+            }
 
             Column(modifier = modifier.fillMaxSize()) {
-                if (selectedDepartureCity.isEmpty()) {
-                    selectedDepartureCity = filterDepartureCities.first()
-                }
-                if (selectedDestinationCity.isEmpty()) {
-                    selectedDestinationCity = filterDestinationCities.first()
-                }
-                if (selectedCargoType.isEmpty()) {
-                    selectedCargoType = filterCargoTypes.first()
-                }
-                if (selectedStatus.isEmpty()) {
-                    selectedStatus = filterStatuses.first()
-                }
-                if (selectedDriver.isEmpty()) {
-                    selectedDriver = filterDrivers.first()
-                }
-                if (selectedVehicle.isEmpty()) {
-                    selectedVehicle = filterVehicles.first()
-                }
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     ) {
                         SearchField(
                             query = query,
@@ -107,7 +121,6 @@ fun RequestsScreen(
                         FilledTonalIconToggleButton(
                             checked = showSearchFilters,
                             onCheckedChange = { showSearchFilters = it },
-                            modifier = Modifier
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.FilterAlt,
@@ -121,7 +134,6 @@ fun RequestsScreen(
                             Text(text = stringResource(Res.string.create_request))
                         }
                     }
-                    Spacer(Modifier.height(4.dp))
                 }
 
                 AnimatedVisibility(
@@ -130,29 +142,30 @@ fun RequestsScreen(
                     exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
                 ) {
                     RequestFilters(
-                        selectedDepartureCity = selectedDepartureCity,
-                        selectedDestinationCity = selectedDestinationCity,
-                        selectedCargoType = selectedCargoType,
-                        selectedStatus = selectedStatus,
-                        selectedDriver = selectedDriver,
-                        selectedVehicle = selectedVehicle,
-                        filterDepartureCities = filterDepartureCities,
-                        filterDestinationCities = filterDestinationCities,
-                        filterCargoTypes = filterCargoTypes,
-                        filterStatuses = filterStatuses,
-                        filterDrivers = filterDrivers,
-                        filterVehicles = filterVehicles,
-                        onDepartureCitySelected = { selectedDepartureCity = it },
-                        onDestinationCitySelected = { selectedDestinationCity = it },
-                        onCargoTypeSelected = { selectedCargoType = it },
-                        onStatusSelected = { selectedStatus = it },
-                        onDriverSelected = { selectedDriver = it },
-                        onVehicleSelected = { selectedVehicle = it },
+                        selectedDepartureCities = selectedDepartureCities,
+                        selectedDestinationCities = selectedDestinationCities,
+                        selectedCargoTypes = selectedCargoTypes,
+                        selectedStatuses = selectedStatuses,
+                        selectedDrivers = selectedDrivers,
+                        selectedVehicles = selectedVehicles,
+                        filterDepartureCities = request.departureCities,
+                        filterDestinationCities = request.destinationCities,
+                        filterCargoTypes = request.cargoTypes,
+                        filterStatuses = request.statuses,
+                        filterDrivers = request.drivers,
+                        filterVehicles = request.vehicles,
+                        onDepartureCitiesChanged = { selectedDepartureCities = it },
+                        onDestinationCitiesChanged = { selectedDestinationCities = it },
+                        onCargoTypesChanged = { selectedCargoTypes = it },
+                        onStatusesChanged = { selectedStatuses = it },
+                        onDriversChanged = { selectedDrivers = it },
+                        onVehiclesChanged = { selectedVehicles = it },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
 
-                RequestTable(request.requests)
+
+                RequestTable(filteredRequests)
             }
         },
         onError = {
@@ -169,4 +182,3 @@ fun RequestsScreen(
         }
     )
 }
-
