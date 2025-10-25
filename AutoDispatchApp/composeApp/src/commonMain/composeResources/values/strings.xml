@@ -43,4 +43,7 @@
     <string name="extended_search">Расширенный поиск</string>
     <string name="from">Откуда</string>
     <string name="to">Куда</string>
+    <string name="no_results_query">По запросу "%1$s" ничего не найдено</string>
+    <string name="no_results_filters">По выбранным фильтрам ничего не найдено</string>
+    <string name="no_results_generic">Ничего не найдено</string>
 </resources>
