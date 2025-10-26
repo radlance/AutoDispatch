@@ -1,6 +1,16 @@
 databaseChangeLog:
   - include:
+      file: db/changelog/db.create-role-table-1.0.sql
+  - include:
+      file: db/changelog/db.insert-role-data-1.0.sql
+  - include:
+      file: db/changelog/db.create-city-table-1.0.sql
+  - include:
+      file: db/changelog/db.insert-city-data-1.0.sql
+  - include:
       file: db/changelog/db.create-users-table-1.0.sql
+  - include:
+      file: db/changelog/db.create-users-table-2.0.sql
   - include:
       file: db/changelog/db.insert-users-data-1.0.sql
   - include:
@@ -10,7 +20,7 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.create-vehicle-table-1.0.sql
   - include:
-      file: db/changelog/db.insert.vehicle-data-1.0.sql
+      file: db/changelog/db.insert-vehicle-data-1.0.sql
   - include:
       file: db/changelog/db.create-request-status-table-1.0.sql
   - include:
@@ -26,6 +36,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.create-request-table-2.0.sql
   - include:
+      file: db/changelog/db.create-request-table-3.0.sql
+  - include:
       file: db/changelog/db.create-request-table-2.1.sql
   - include:
       file: db/changelog/db.create-request-number-trigger-1.0.sql
@@ -34,7 +46,7 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.create-assignment-table-1.0.sql
   - include:
-      file: db/changelog/db.insert.assignment-data-1.0.sql
+      file: db/changelog/db.insert-assignment-data-1.0.sql
   - include:
       file: db/changelog/db.create-trip-report-table-1.0.sql
   - include:

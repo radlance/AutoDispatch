@@ -15,7 +15,7 @@ class AuthRepository {
             this.salt = salt
             fullName = user.fullName
             phoneNumber = user.phoneNumber
-            role = user.role
+            roleId = user.roleId
         }.toUser()
     }
 

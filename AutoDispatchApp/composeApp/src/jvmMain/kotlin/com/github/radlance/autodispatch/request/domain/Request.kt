@@ -1,9 +1,11 @@
 package com.github.radlance.autodispatch.request.domain
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Request(
-    val requestNumber: String,
+    val id: Int,
     val statusName: String?,
     val origin: String?,
     val destination: String?,
@@ -20,5 +22,6 @@ data class Request(
     val organizationPhoneNumber: String?,
     val organizationEmail: String?,
     val vehicleInfo: String?,
-    val createdAt: LocalDateTime?
+    val createdAt: LocalDateTime?,
+    val requestNumber: String?
 )

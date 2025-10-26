@@ -11,6 +11,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,14 +25,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.outlined.FilterAlt
+import androidx.compose.material.icons.outlined.FirstPage
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,15 +50,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create_request
-import autodispatch.composeapp.generated.resources.no_results_filters
-import autodispatch.composeapp.generated.resources.no_results_generic
-import autodispatch.composeapp.generated.resources.no_results_query
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
@@ -60,6 +62,7 @@ import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,47 +84,22 @@ fun RequestsScreen(
     var selectedDrivers by remember { mutableStateOf(listOf<String>()) }
     var selectedVehicles by remember { mutableStateOf(listOf<String>()) }
 
-    val requestsUiState by viewModel.loadRequestUiState.collectAsState()
+    val requestsUiState by viewModel.requestScreenState.collectAsState()
     val pagingState = rememberPaginatedDataTableState(10)
     val dataTableState = remember(pagingState.pageSize, pagingState.pageIndex) { DataTableState() }
     val scope = rememberCoroutineScope()
 
-    requestsUiState.Reduce(
-        onLoading = {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator()
-            }
-        },
-        onSuccess = { request ->
-            val filteredRequests = request.requests.filter { req ->
-                val matchesQuery = query.isBlank() || listOfNotNull(
-                    req.requestNumber,
-                    req.origin,
-                    req.destination,
-                    req.cargoTypeName,
-                    req.createdAt.toString(),
-                    req.driverFullName,
-                    req.vehicleInfo
-                ).any { it.contains(query, ignoreCase = true) }
+    Row(modifier = modifier.fillMaxSize()) {
 
-                val matchesDeparture =
-                    selectedDepartureCities.isEmpty() || req.origin in selectedDepartureCities
-                val matchesDestination =
-                    selectedDestinationCities.isEmpty() || req.destination in selectedDestinationCities
-                val matchesCargo =
-                    selectedCargoTypes.isEmpty() || req.cargoTypeName in selectedCargoTypes
-                val matchesStatus = selectedStatuses.isEmpty() || req.statusName in selectedStatuses
-                val matchesDriver =
-                    selectedDrivers.isEmpty() || req.driverFullName in selectedDrivers
-                val matchesVehicle =
-                    selectedVehicles.isEmpty() || req.vehicleInfo in selectedVehicles
+        Column(modifier = Modifier.weight(1f)) {
+            requestsUiState.filters.Reduce(
+                onLoading = {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        CircularProgressIndicator()
+                    }
+                },
+                onSuccess = { request ->
 
-                matchesQuery && matchesDeparture && matchesDestination &&
-                        matchesCargo && matchesStatus && matchesDriver && matchesVehicle
-            }
-
-            Row(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = modifier.weight(1f)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -170,8 +148,7 @@ fun RequestsScreen(
                             selectedStatuses = selectedStatuses,
                             selectedDrivers = selectedDrivers,
                             selectedVehicles = selectedVehicles,
-                            filterDepartureCities = request.departureCities,
-                            filterDestinationCities = request.destinationCities,
+                            cities = request.cities,
                             filterCargoTypes = request.cargoTypes,
                             filterStatuses = request.statuses,
                             filterDrivers = request.drivers,
@@ -182,115 +159,159 @@ fun RequestsScreen(
                             onStatusesChanged = { selectedStatuses = it },
                             onDriversChanged = { selectedDrivers = it },
                             onVehiclesChanged = { selectedVehicles = it },
-                            modifier = Modifier.padding(horizontal = 16.dp).animateContentSize(
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioNoBouncy,
-                                    stiffness = Spring.StiffnessHigh
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .animateContentSize(
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessHigh
+                                    )
                                 )
-                            )
                         )
                     }
+                },
+                onError = {
+                    ErrorMessage(
+                        message = it,
+                        onRetry = {
+                            viewModel.loadAllInformation()
+                            if (loadProfileUiState is FetchResultUiState.Error) {
+                                onReloadProfile()
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            )
 
+            requestsUiState.requestsResultState.Reduce(
+                onSuccess = { request ->
+                    val filteredRequests = request.items.filter { req ->
+                        val matchesQuery = query.isBlank() || listOfNotNull(
+                            req.requestNumber,
+                            req.origin,
+                            req.destination,
+                            req.cargoTypeName,
+                            req.createdAt.toString(),
+                            req.driverFullName,
+                            req.vehicleInfo
+                        ).any { it.contains(query, ignoreCase = true) }
+
+                        val matchesDeparture =
+                            selectedDepartureCities.isEmpty() || req.origin in selectedDepartureCities
+                        val matchesDestination =
+                            selectedDestinationCities.isEmpty() || req.destination in selectedDestinationCities
+                        val matchesCargo =
+                            selectedCargoTypes.isEmpty() || req.cargoTypeName in selectedCargoTypes
+                        val matchesStatus =
+                            selectedStatuses.isEmpty() || req.statusName in selectedStatuses
+                        val matchesDriver =
+                            selectedDrivers.isEmpty() || req.driverFullName in selectedDrivers
+                        val matchesVehicle =
+                            selectedVehicles.isEmpty() || req.vehicleInfo in selectedVehicles
+
+                        matchesQuery && matchesDeparture && matchesDestination &&
+                                matchesCargo && matchesStatus && matchesDriver && matchesVehicle
+                    }
 
                     if (filteredRequests.isEmpty()) {
-                        val maxLength = 100
-                        val displayQuery =
-                            if (query.length > maxLength) query.take(maxLength) + "…" else query
-
-                        val message = when {
-                            query.isNotBlank() -> stringResource(
-                                Res.string.no_results_query,
-                                displayQuery
-                            )
-
-                            selectedDepartureCities.isNotEmpty() ||
-                                    selectedDestinationCities.isNotEmpty() ||
-                                    selectedCargoTypes.isNotEmpty() ||
-                                    selectedStatuses.isNotEmpty() ||
-                                    selectedDrivers.isNotEmpty() ||
-                                    selectedVehicles.isNotEmpty() -> stringResource(Res.string.no_results_filters)
-
-                            else -> stringResource(Res.string.no_results_generic)
-                        }
-
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(16.dp)
-                            ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(
                                     imageVector = Icons.Default.SearchOff,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(48.dp)
                                 )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Text(
-                                    text = buildAnnotatedString {
-                                        append(message)
-                                    },
-                                    fontSize = 16.sp,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 3
-                                )
+                                Text("Ничего не найдено", textAlign = TextAlign.Center)
                             }
                         }
                     } else {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            RequestTable(
-                                requests = filteredRequests,
-                                onRequestClick = {
-                                    selectedRequestNumber = it.requestNumber
-//                                if (!showRequestDetailsPanel) {
-                                    showRequestDetailsPanel = !showRequestDetailsPanel
-//                                }
-                                },
-                                dataTableState = dataTableState,
-                                state = pagingState
-                            )
-                            VerticalScrollbar(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(end = 4.dp, top = 54.dp, bottom = 54.dp),
-                                adapter = rememberDataTableScrollbarAdapter(
-                                    scrollState = dataTableState.verticalScrollState
-                                )
-                            )
+                        Column(modifier = Modifier.fillMaxSize()) {
 
+                            Box(modifier = Modifier.weight(1f)) {
+                                RequestTable(
+                                    requests = filteredRequests,
+                                    onRequestClick = {
+                                        selectedRequestNumber = it.requestNumber!!
+                                        showRequestDetailsPanel = !showRequestDetailsPanel
+                                    },
+                                    dataTableState = dataTableState,
+                                    state = pagingState
+                                )
+
+                                VerticalScrollbar(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .padding(end = 4.dp, top = 50.dp),
+                                    adapter = rememberDataTableScrollbarAdapter(
+                                        scrollState = dataTableState.verticalScrollState
+                                    )
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp)
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                val start = min(pagingState.pageIndex * pagingState.pageSize + 1, pagingState.count)
+                                val end = min(start + pagingState.pageSize - 1, pagingState.count)
+                                val pageCount = (pagingState.count + pagingState.pageSize - 1) / pagingState.pageSize
+                                Text("$start-$end из ${pagingState.count}")
+                                IconButton(
+                                    onClick = { pagingState.pageIndex = 0 },
+                                    enabled = pagingState.pageIndex > 0
+                                ) { Icon(Icons.Outlined.FirstPage, null) }
+                                IconButton(
+                                    onClick = { pagingState.pageIndex-- },
+                                    enabled = pagingState.pageIndex > 0
+                                ) { Icon(Icons.Default.ChevronLeft, null) }
+                                IconButton(
+                                    onClick = {
+                                        pagingState.pageIndex++
+                                        viewModel.loadRequests(page = pagingState.pageIndex + 1)
+                                    },
+                                    enabled = pagingState.pageIndex < pageCount - 1
+                                ) { Icon(Icons.Default.ChevronRight, null) }
+                                IconButton(
+                                    onClick = { pagingState.pageIndex = pageCount - 1 },
+                                    enabled = pagingState.pageIndex < pageCount - 1
+                                ) { Icon(Icons.AutoMirrored.Default.LastPage, null) }
+                            }
                         }
                     }
-                }
-
-                AnimatedVisibility(
-                    visible = showRequestDetailsPanel,
-                    enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
-                    exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
-                ) {
-                    Column(modifier = Modifier.fillMaxHeight().width(280.dp)) {
-
-                    }
-                }
-
-            }
-        },
-        onError = {
-            ErrorMessage(
-                message = it,
-                onRetry = {
-                    viewModel.loadRequests()
-                    if (loadProfileUiState is FetchResultUiState.Error) {
-                        onReloadProfile()
-                    }
                 },
-                modifier = Modifier.fillMaxSize()
+                onLoading = {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        CircularProgressIndicator()
+                    }
+                }
             )
         }
-    )
+
+        AnimatedVisibility(
+            visible = showRequestDetailsPanel,
+            enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
+            exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(280.dp)
+                    .padding(8.dp)
+            ) {
+                Text("Детали запроса: $selectedRequestNumber")
+            }
+        }
+    }
 }

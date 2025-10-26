@@ -92,7 +92,7 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = item.requestNumber,
+                        text = item.requestNumber!!,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

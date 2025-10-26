@@ -20,6 +20,11 @@ import autodispatch.composeapp.generated.resources.extended_search
 import autodispatch.composeapp.generated.resources.from
 import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.to
+import com.github.radlance.autodispatch.request.domain.CargoType
+import com.github.radlance.autodispatch.request.domain.City
+import com.github.radlance.autodispatch.request.domain.RequestStatus
+import com.github.radlance.autodispatch.request.domain.UserFilter
+import com.github.radlance.autodispatch.request.domain.VehicleFilter
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -30,12 +35,11 @@ fun RequestFilters(
     selectedStatuses: List<String>,
     selectedDrivers: List<String>,
     selectedVehicles: List<String>,
-    filterDepartureCities: List<String>,
-    filterDestinationCities: List<String>,
-    filterCargoTypes: List<String>,
-    filterStatuses: List<String>,
-    filterDrivers: List<String>,
-    filterVehicles: List<String>,
+    cities: List<City>,
+    filterCargoTypes: List<CargoType>,
+    filterStatuses: List<RequestStatus>,
+    filterDrivers: List<UserFilter>,
+    filterVehicles: List<VehicleFilter>,
     onDepartureCitiesChanged: (List<String>) -> Unit,
     onDestinationCitiesChanged: (List<String>) -> Unit,
     onCargoTypesChanged: (List<String>) -> Unit,
@@ -66,37 +70,37 @@ fun RequestFilters(
             ) {
                 FilterDialogSelector(
                     title = stringResource(Res.string.from),
-                    options = filterDepartureCities,
+                    options = cities.map { it.name },
                     selected = selectedDepartureCities,
                     onSelectionChanged = onDepartureCitiesChanged
                 )
                 FilterDialogSelector(
                     title = stringResource(Res.string.to),
-                    options = filterDestinationCities,
+                    options = cities.map { it.name },
                     selected = selectedDestinationCities,
                     onSelectionChanged = onDestinationCitiesChanged
                 )
                 FilterDialogSelector(
                     title = stringResource(Res.string.cargo_type),
-                    options = filterCargoTypes,
+                    options = filterCargoTypes.map { it.name },
                     selected = selectedCargoTypes,
                     onSelectionChanged = onCargoTypesChanged
                 )
                 FilterDialogSelector(
                     title = stringResource(Res.string.status),
-                    options = filterStatuses,
+                    options = filterStatuses.map { it.name },
                     selected = selectedStatuses,
                     onSelectionChanged = onStatusesChanged
                 )
                 FilterDialogSelector(
                     title = stringResource(Res.string.driver),
-                    options = filterDrivers,
+                    options = filterDrivers.map { it.fullName },
                     selected = selectedDrivers,
                     onSelectionChanged = onDriversChanged
                 )
                 FilterDialogSelector(
                     title = stringResource(Res.string.car),
-                    options = filterVehicles,
+                    options = filterVehicles.map { it.model },
                     selected = selectedVehicles,
                     onSelectionChanged = onVehiclesChanged
                 )

@@ -4,7 +4,5 @@ data class User(
     val id: Int,
     val login: String,
     val fullName: String,
-    val phoneNumber: String,
-    val role: String,
-    val isActive: Boolean
+    val phoneNumber: String
 )

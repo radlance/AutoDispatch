@@ -4,5 +4,17 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 
 interface RequestRepository {
 
-    suspend fun requests(): FetchResult<RequestResponse, String>
+    suspend fun filters(): FetchResult<Filters, String>
+
+    suspend fun requests(
+        page: Int = 1,
+        pageSize: Int = 10,
+        searchQuery: String? = null,
+        originCityIds: List<Int> = emptyList(),
+        destinationCityIds: List<Int> = emptyList(),
+        cargoTypeIds: List<Int> = emptyList(),
+        statusIds: List<Int> = emptyList(),
+        driverIds: List<Int> = emptyList(),
+        vehicleIds: List<Int> = emptyList()
+    ): FetchResult<PaginatedResult<Request>, String>
 }

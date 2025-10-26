@@ -7,6 +7,6 @@ import com.github.radlance.autodispatch.util.loggedTransaction
 
 class ProfileRepository {
     suspend fun userByLogin(login: String): User = loggedTransaction {
-        UserEntity.find { UserTable.login eq login }.limit(1).first().toUser()
+        return@loggedTransaction UserEntity.find { UserTable.login eq login }.limit(1).first().toUser()
     }
 }

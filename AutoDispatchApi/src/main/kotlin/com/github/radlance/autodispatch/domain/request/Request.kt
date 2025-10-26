@@ -22,5 +22,11 @@ data class Request(
     val organizationEmail: String?,
     val vehicleInfo: String?,
     val createdAt: String?,
-    val requestNumber: String,
+    val requestNumber: String?,
+)
+
+@Serializable
+data class PaginatedResult<T>(
+    val items: List<T>,
+    val totalCount: Long
 )

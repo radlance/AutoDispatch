@@ -17,8 +17,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
     var salt by UserTable.salt
     var fullName by UserTable.fullName
     var phoneNumber by UserTable.phoneNumber
-    var role by UserTable.role
-    private var isActive by UserTable.isActive
+    var roleId by UserTable.roleId
     private val createdAt by UserTable.createdAt
 
     fun toUser(): User = User(
@@ -26,8 +25,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
         login = login,
         fullName = fullName,
         phoneNumber = phoneNumber,
-        role = role,
-        isActive = isActive ?: false,
+        isDispatcher = roleId == 1,
         createdAt = createdAt?.toString(),
     )
 
@@ -38,8 +36,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
         salt = salt,
         fullName = fullName,
         phoneNumber = phoneNumber,
-        role = role,
-        isActive = isActive ?: false,
+        roleId = roleId,
         createdAt = createdAt?.toHttpDateString()
     )
 }

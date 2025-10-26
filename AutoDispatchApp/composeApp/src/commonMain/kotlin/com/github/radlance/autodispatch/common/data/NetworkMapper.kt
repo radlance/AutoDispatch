@@ -8,8 +8,6 @@ internal fun UserDto.toUser(): User {
         id = id,
         login = login,
         fullName = fullName,
-        phoneNumber = phoneNumber,
-        role = role,
-        isActive = isActive
+        phoneNumber = phoneNumber
     )
 }

@@ -10,7 +10,6 @@ data class UserWithPassword(
     val salt: String,
     val fullName: String,
     val phoneNumber: String,
-    val role: String,
-    val isActive: Boolean,
+    val roleId: Int,
     val createdAt: String?
 )
