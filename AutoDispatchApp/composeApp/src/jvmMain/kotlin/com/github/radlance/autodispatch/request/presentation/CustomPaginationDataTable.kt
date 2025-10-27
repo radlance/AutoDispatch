@@ -19,15 +19,13 @@ import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableScope
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.material3.Material3CellContentProvider
-import com.seanproctor.datatable.paging.PaginatedDataTableState
 
 @Composable
 fun CustomPaginationDataTable(
     columns: List<DataColumn>,
-    state: PaginatedDataTableState,
     modifier: Modifier = Modifier,
-    dataTableState: DataTableState = remember(state.pageSize, state.pageIndex) { DataTableState() },
     separator: @Composable () -> Unit = { HorizontalDivider() },
+    dataTableState: DataTableState = remember { DataTableState() },
     headerHeight: Dp = 56.dp,
     rowHeight: Dp = 52.dp,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
@@ -50,7 +48,6 @@ fun CustomPaginationDataTable(
                 contentPadding = contentPadding,
                 headerBackgroundColor = headerBackgroundColor,
                 footerBackgroundColor = footerBackgroundColor,
-                state = state,
                 footer = {},
                 cellContentProvider = Material3CellContentProvider,
                 sortColumnIndex = sortColumnIndex,

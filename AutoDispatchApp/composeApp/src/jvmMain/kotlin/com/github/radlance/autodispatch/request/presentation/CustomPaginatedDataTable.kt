@@ -13,17 +13,15 @@ import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableScope
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.DefaultCellContentProvider
-import com.seanproctor.datatable.paging.PaginatedDataTableState
 
 @Composable
 fun CustomPaginatedDataTable(
     columns: List<DataColumn>,
-    state: PaginatedDataTableState,
     modifier: Modifier = Modifier,
-    dataTableState: DataTableState = remember(state.pageSize, state.pageIndex) { DataTableState() },
     separator: @Composable () -> Unit = { },
     headerHeight: Dp = Dp.Unspecified,
     rowHeight: Dp = Dp.Unspecified,
+    dataTableState: DataTableState = remember { DataTableState() },
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     headerBackgroundColor: Color = Color.Unspecified,
     footerBackgroundColor: Color = Color.Unspecified,
@@ -50,11 +48,6 @@ fun CustomPaginatedDataTable(
         sortAscending = sortAscending,
         logger = logger,
     ) {
-        val start = state.pageIndex * state.pageSize
-        val scope = CustomPaginatedRowScope(start, start + state.pageSize, this)
-        content(scope)
-        if (state.count != scope.index) {
-            state.count = scope.index
-        }
+        content(this)
     }
 }

@@ -26,7 +26,6 @@ import com.github.radlance.autodispatch.request.domain.Request
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth
-import com.seanproctor.datatable.paging.PaginatedDataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -34,8 +33,9 @@ import org.jetbrains.compose.resources.stringResource
 fun RequestTable(
     requests: List<Request>,
     onRequestClick: (Request) -> Unit,
-    state: PaginatedDataTableState,
     dataTableState: DataTableState,
+    pageIndex: Int,
+    pageSize: Int,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -46,7 +46,6 @@ fun RequestTable(
 
     CustomPaginationDataTable(
         modifier = modifier,
-        state = state,
         dataTableState = dataTableState,
         columns = listOf(
             DataColumn(width = TableColumnWidth.Flex(0.3f)) {
@@ -85,7 +84,7 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = (index + 1).toString(),
+                        text = (pageIndex * pageSize + index + 1).toString(),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

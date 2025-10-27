@@ -32,7 +32,7 @@ interface FetchResultUiState<out D, out E> {
         ) = onLoading()
     }
 
-    data class Success<D>(private val data: D) : FetchResultUiState<D, Nothing> {
+    data class Success<D>(val data: D) : FetchResultUiState<D, Nothing> {
         @Composable
         override fun Reduce(
             onLoading: @Composable () -> Unit,
@@ -41,7 +41,7 @@ interface FetchResultUiState<out D, out E> {
         ) = onSuccess(data)
     }
 
-    data class Error<E>(private val error: E) : FetchResultUiState<Nothing, E> {
+    data class Error<E>(val error: E) : FetchResultUiState<Nothing, E> {
         @Composable
         override fun Reduce(
             onLoading: @Composable () -> Unit,

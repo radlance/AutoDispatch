@@ -12,7 +12,6 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,19 +24,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.outlined.FilterAlt
-import androidx.compose.material.icons.outlined.FirstPage
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,7 +52,6 @@ import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
 import com.seanproctor.datatable.DataTableState
-import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -75,18 +68,19 @@ fun RequestsScreen(
     var selectedRequestNumber by rememberSaveable { mutableStateOf("") }
     var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
-    var query by rememberSaveable { mutableStateOf("") }
-
-    var selectedDepartureCities by remember { mutableStateOf(listOf<String>()) }
-    var selectedDestinationCities by remember { mutableStateOf(listOf<String>()) }
-    var selectedCargoTypes by remember { mutableStateOf(listOf<String>()) }
-    var selectedStatuses by remember { mutableStateOf(listOf<String>()) }
-    var selectedDrivers by remember { mutableStateOf(listOf<String>()) }
-    var selectedVehicles by remember { mutableStateOf(listOf<String>()) }
 
     val requestsUiState by viewModel.requestScreenState.collectAsState()
-    val pagingState = rememberPaginatedDataTableState(10)
-    val dataTableState = remember(pagingState.pageSize, pagingState.pageIndex) { DataTableState() }
+    val pageIndex = requestsUiState.pageIndex
+    val pageSize = requestsUiState.pageSize
+    val query = requestsUiState.query
+    val selectedDepartureCities = requestsUiState.selectedDepartureCities
+    val selectedDestinationCities = requestsUiState.selectedDestinationCities
+    val selectedCargoTypes = requestsUiState.selectedCargoTypes
+    val selectedStatuses = requestsUiState.selectedStatuses
+    val selectedDrivers = requestsUiState.selectedDrivers
+    val selectedVehicles = requestsUiState.selectedVehicles
+
+    val dataTableState = remember { DataTableState() }
     val scope = rememberCoroutineScope()
 
     Row(modifier = modifier.fillMaxSize()) {
@@ -98,8 +92,7 @@ fun RequestsScreen(
                         CircularProgressIndicator()
                     }
                 },
-                onSuccess = { request ->
-
+                onSuccess = { filters ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -108,7 +101,9 @@ fun RequestsScreen(
                     ) {
                         SearchField(
                             query = query,
-                            onQueryChange = { query = it },
+                            onQueryChange = {
+                                viewModel.onQueryChanged(it)
+                            },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(Modifier.width(16.dp))
@@ -129,7 +124,7 @@ fun RequestsScreen(
                             )
                         }
                         Spacer(Modifier.width(16.dp))
-                        Button(onClick = {}) {
+                        Button(onClick = { /* TODO */ }) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text(text = stringResource(Res.string.create_request))
@@ -148,17 +143,17 @@ fun RequestsScreen(
                             selectedStatuses = selectedStatuses,
                             selectedDrivers = selectedDrivers,
                             selectedVehicles = selectedVehicles,
-                            cities = request.cities,
-                            filterCargoTypes = request.cargoTypes,
-                            filterStatuses = request.statuses,
-                            filterDrivers = request.drivers,
-                            filterVehicles = request.vehicles,
-                            onDepartureCitiesChanged = { selectedDepartureCities = it },
-                            onDestinationCitiesChanged = { selectedDestinationCities = it },
-                            onCargoTypesChanged = { selectedCargoTypes = it },
-                            onStatusesChanged = { selectedStatuses = it },
-                            onDriversChanged = { selectedDrivers = it },
-                            onVehiclesChanged = { selectedVehicles = it },
+                            cities = filters.cities,
+                            filterCargoTypes = filters.cargoTypes,
+                            filterStatuses = filters.statuses,
+                            filterDrivers = filters.drivers,
+                            filterVehicles = filters.vehicles,
+                            onDepartureCitiesChanged = viewModel::onDepartureCitiesChanged,
+                            onDestinationCitiesChanged = viewModel::onDestinationCitiesChanged,
+                            onCargoTypesChanged = viewModel::onCargoTypesChanged,
+                            onStatusesChanged = viewModel::onStatusesChanged,
+                            onDriversChanged = viewModel::onDriversChanged,
+                            onVehiclesChanged = viewModel::onVehiclesChanged,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .animateContentSize(
@@ -169,12 +164,157 @@ fun RequestsScreen(
                                 )
                         )
                     }
+
+                    requestsUiState.requestsResultState.Reduce(
+                        onSuccess = { request ->
+                            val requestsToShow = request.items
+
+                            if (requestsToShow.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.Default.SearchOff,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(48.dp)
+                                        )
+                                        Text("Ничего не найдено", textAlign = TextAlign.Center)
+                                    }
+                                }
+                            } else {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        RequestTable(
+                                            requests = requestsToShow,
+                                            onRequestClick = {
+                                                selectedRequestNumber = it.requestNumber!!
+                                                showRequestDetailsPanel = !showRequestDetailsPanel
+                                            },
+                                            dataTableState = dataTableState,
+                                            pageIndex = pageIndex,
+                                            pageSize = pageSize
+                                        )
+
+                                        VerticalScrollbar(
+                                            modifier = Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .padding(end = 4.dp, top = 50.dp),
+                                            adapter = rememberDataTableScrollbarAdapter(
+                                                scrollState = dataTableState.verticalScrollState
+                                            )
+                                        )
+                                    }
+
+                                    val totalCount = request.totalCount.toInt()
+                                    val start = min(pageIndex * pageSize + 1, totalCount)
+                                    val end = min(start + pageSize - 1, totalCount)
+                                    val pageCount = (totalCount + pageSize - 1) / pageSize
+
+                                    BottomPagingBar(
+                                        start = start,
+                                        end = end,
+                                        totalCount = totalCount,
+                                        pageIndex = pageIndex,
+                                        pageCount = pageCount,
+                                        onFirst = { viewModel.onPageIndexChanged(0) },
+                                        onPrev = { viewModel.onPageIndexChanged(pageIndex - 1) },
+                                        onNext = { viewModel.onPageIndexChanged(pageIndex + 1) },
+                                        onLast = { viewModel.onPageIndexChanged(pageCount - 1) }
+                                    )
+                                }
+                            }
+                        },
+                        onLoading = {
+                            val previous = requestsUiState.lastSuccessfulRequests
+                            val requestsToShow = previous?.items ?: emptyList()
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    RequestTable(
+                                        requests = requestsToShow,
+                                        onRequestClick = {
+                                            selectedRequestNumber = it.requestNumber!!
+                                            showRequestDetailsPanel = !showRequestDetailsPanel
+                                        },
+                                        dataTableState = dataTableState,
+                                        pageIndex = pageIndex,
+                                        pageSize = pageSize
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+
+                                    VerticalScrollbar(
+                                        modifier = Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .padding(end = 4.dp, top = 50.dp),
+                                        adapter = rememberDataTableScrollbarAdapter(
+                                            scrollState = dataTableState.verticalScrollState
+                                        )
+                                    )
+                                }
+
+                                val totalCount = previous?.totalCount?.toInt() ?: 0
+                                val start =
+                                    if (totalCount > 0) min(
+                                        pageIndex * pageSize + 1,
+                                        totalCount
+                                    ) else 0
+                                val end =
+                                    if (totalCount > 0) min(start + pageSize - 1, totalCount) else 0
+                                val pageCount =
+                                    if (totalCount > 0) (totalCount + pageSize - 1) / pageSize else 1
+
+                                BottomPagingBar(
+                                    start = start,
+                                    end = end,
+                                    totalCount = totalCount,
+                                    pageIndex = pageIndex,
+                                    pageCount = pageCount,
+                                    onFirst = {},
+                                    onPrev = {},
+                                    onNext = {},
+                                    onLast = {}
+                                )
+                            }
+                        },
+                        onError = { errorMsg ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = errorMsg, textAlign = TextAlign.Center)
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Button(
+                                        onClick = {
+                                            viewModel.retryLoadRequests()
+                                        }
+                                    ) {
+                                        Text("Повторить")
+                                    }
+                                }
+                            }
+                        }
+                    )
                 },
                 onError = {
                     ErrorMessage(
                         message = it,
                         onRetry = {
-                            viewModel.loadAllInformation()
+                            viewModel.loadFilters()
                             if (loadProfileUiState is FetchResultUiState.Error) {
                                 onReloadProfile()
                             }
@@ -184,119 +324,6 @@ fun RequestsScreen(
                 }
             )
 
-            requestsUiState.requestsResultState.Reduce(
-                onSuccess = { request ->
-                    val filteredRequests = request.items.filter { req ->
-                        val matchesQuery = query.isBlank() || listOfNotNull(
-                            req.requestNumber,
-                            req.origin,
-                            req.destination,
-                            req.cargoTypeName,
-                            req.createdAt.toString(),
-                            req.driverFullName,
-                            req.vehicleInfo
-                        ).any { it.contains(query, ignoreCase = true) }
-
-                        val matchesDeparture =
-                            selectedDepartureCities.isEmpty() || req.origin in selectedDepartureCities
-                        val matchesDestination =
-                            selectedDestinationCities.isEmpty() || req.destination in selectedDestinationCities
-                        val matchesCargo =
-                            selectedCargoTypes.isEmpty() || req.cargoTypeName in selectedCargoTypes
-                        val matchesStatus =
-                            selectedStatuses.isEmpty() || req.statusName in selectedStatuses
-                        val matchesDriver =
-                            selectedDrivers.isEmpty() || req.driverFullName in selectedDrivers
-                        val matchesVehicle =
-                            selectedVehicles.isEmpty() || req.vehicleInfo in selectedVehicles
-
-                        matchesQuery && matchesDeparture && matchesDestination &&
-                                matchesCargo && matchesStatus && matchesDriver && matchesVehicle
-                    }
-
-                    if (filteredRequests.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Default.SearchOff,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Text("Ничего не найдено", textAlign = TextAlign.Center)
-                            }
-                        }
-                    } else {
-                        Column(modifier = Modifier.fillMaxSize()) {
-
-                            Box(modifier = Modifier.weight(1f)) {
-                                RequestTable(
-                                    requests = filteredRequests,
-                                    onRequestClick = {
-                                        selectedRequestNumber = it.requestNumber!!
-                                        showRequestDetailsPanel = !showRequestDetailsPanel
-                                    },
-                                    dataTableState = dataTableState,
-                                    state = pagingState
-                                )
-
-                                VerticalScrollbar(
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                        .padding(end = 4.dp, top = 50.dp),
-                                    adapter = rememberDataTableScrollbarAdapter(
-                                        scrollState = dataTableState.verticalScrollState
-                                    )
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(52.dp)
-                                    .background(MaterialTheme.colorScheme.surface)
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                val start = min(pagingState.pageIndex * pagingState.pageSize + 1, pagingState.count)
-                                val end = min(start + pagingState.pageSize - 1, pagingState.count)
-                                val pageCount = (pagingState.count + pagingState.pageSize - 1) / pagingState.pageSize
-                                Text("$start-$end из ${pagingState.count}")
-                                IconButton(
-                                    onClick = { pagingState.pageIndex = 0 },
-                                    enabled = pagingState.pageIndex > 0
-                                ) { Icon(Icons.Outlined.FirstPage, null) }
-                                IconButton(
-                                    onClick = { pagingState.pageIndex-- },
-                                    enabled = pagingState.pageIndex > 0
-                                ) { Icon(Icons.Default.ChevronLeft, null) }
-                                IconButton(
-                                    onClick = {
-                                        pagingState.pageIndex++
-                                        viewModel.loadRequests(page = pagingState.pageIndex + 1)
-                                    },
-                                    enabled = pagingState.pageIndex < pageCount - 1
-                                ) { Icon(Icons.Default.ChevronRight, null) }
-                                IconButton(
-                                    onClick = { pagingState.pageIndex = pageCount - 1 },
-                                    enabled = pagingState.pageIndex < pageCount - 1
-                                ) { Icon(Icons.AutoMirrored.Default.LastPage, null) }
-                            }
-                        }
-                    }
-                },
-                onLoading = {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator()
-                    }
-                }
-            )
         }
 
         AnimatedVisibility(
