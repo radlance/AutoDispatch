@@ -1,21 +1,27 @@
 package com.github.radlance.autodispatch.request.presentation
 
+import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.domain.RequestRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class RequestViewModel(
     private val requestRepository: RequestRepository
 ) : BaseViewModel() {
 
     private val requestScreenStateMutable = MutableStateFlow(RequestScreenState())
-
     val requestScreenState = requestScreenStateMutable.asStateFlow()
+
+    private var searchJob: Job? = null
+    private val debounceTime = 500L
 
     init {
         loadFilters()
@@ -37,7 +43,6 @@ class RequestViewModel(
 
     private fun triggerRequestLoad() {
         val state = requestScreenStateMutable.value
-
         val filters = (state.filters as? FetchResultUiState.Success)?.data ?: return
 
         val departureIds =
@@ -128,7 +133,13 @@ class RequestViewModel(
 
     fun onQueryChanged(query: String) {
         requestScreenStateMutable.update { it.copy(query = query, pageIndex = 0) }
-        triggerRequestLoad()
+
+        searchJob?.cancel()
+
+        searchJob = viewModelScope.launch {
+            delay(debounceTime)
+            triggerRequestLoad()
+        }
     }
 
     fun onDepartureCitiesChanged(cities: List<String>) {
