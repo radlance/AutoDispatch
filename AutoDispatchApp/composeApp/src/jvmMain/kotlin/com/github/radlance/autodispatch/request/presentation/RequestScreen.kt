@@ -51,6 +51,7 @@ import autodispatch.composeapp.generated.resources.create_request
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
+import com.github.radlance.autodispatch.request.domain.Request
 import com.seanproctor.datatable.DataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -65,9 +66,9 @@ fun RequestsScreen(
     modifier: Modifier = Modifier,
     viewModel: RequestViewModel = koinViewModel()
 ) {
-    var selectedRequestNumber by rememberSaveable { mutableStateOf("") }
     var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
+    var selectedRequest by rememberSaveable { mutableStateOf<Request?>(null) }
 
     val requestsUiState by viewModel.requestScreenState.collectAsState()
     val pageIndex = requestsUiState.pageIndex
@@ -190,10 +191,27 @@ fun RequestsScreen(
                                 Column(modifier = Modifier.fillMaxSize()) {
                                     Box(modifier = Modifier.weight(1f)) {
                                         RequestTable(
-                                            requests = requestsToShow,
-                                            onRequestClick = {
-                                                selectedRequestNumber = it.requestNumber!!
-                                                showRequestDetailsPanel = !showRequestDetailsPanel
+                                            requests = run {
+                                                selectedRequest?.let { selected ->
+                                                    val find =
+                                                        requestsToShow.find { r ->
+                                                            r.requestNumber == selected.requestNumber
+                                                        }
+                                                    find?.let {
+                                                        if (it != selected) {
+                                                            selectedRequest = find
+                                                        }
+                                                    }
+                                                }
+                                                requestsToShow
+                                            },
+                                            onRequestClick = { req ->
+                                                showRequestDetailsPanel =
+                                                    if (req == selectedRequest) {
+                                                        !showRequestDetailsPanel
+                                                    } else true
+
+                                                selectedRequest = req
                                             },
                                             dataTableState = dataTableState,
                                             pageIndex = pageIndex,
@@ -236,9 +254,12 @@ fun RequestsScreen(
                                 Box(modifier = Modifier.weight(1f)) {
                                     RequestTable(
                                         requests = requestsToShow,
-                                        onRequestClick = {
-                                            selectedRequestNumber = it.requestNumber!!
-                                            showRequestDetailsPanel = !showRequestDetailsPanel
+                                        onRequestClick = { req ->
+                                            showRequestDetailsPanel = if (req == selectedRequest) {
+                                                !showRequestDetailsPanel
+                                            } else true
+
+                                            selectedRequest = req
                                         },
                                         dataTableState = dataTableState,
                                         pageIndex = pageIndex,
@@ -331,14 +352,13 @@ fun RequestsScreen(
             enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
             exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
         ) {
-            Column(
+            RequestDetailsPanel(
+                onClosePanel = { showRequestDetailsPanel = false },
+                request = selectedRequest!!,
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(280.dp)
-                    .padding(8.dp)
-            ) {
-                Text("Детали запроса: $selectedRequestNumber")
-            }
+                    .width(350.dp)
+            )
         }
     }
 }

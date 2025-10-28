@@ -47,4 +47,19 @@
     <string name="no_results_filters">По выбранным фильтрам ничего не найдено</string>
     <string name="no_results_generic">Ничего не найдено</string>
     <string name="created">Создана</string>
+    <string name="request_details">Детали заявки</string>
+    <string name="close_panel">Закрыть панель</string>
+    <string name="request_creation_date">Дата создания заявки</string>
+    <string name="creation_date">Дата создания</string>
+    <string name="cargo_info">Информация о грузе</string>
+    <string name="weight">Вес</string>
+    <string name="volume">Объём</string>
+    <string name="description">Описание</string>
+    <string name="loading_unloading_points">Точка погрузки / разгрузки</string>
+    <string name="loading_point">Точка погрузки</string>
+    <string name="unloading_point">Точка разгрузки</string>
+    <string name="customer">Заказчик</string>
+    <string name="customer_phone">Телефон заказчика</string>
+    <string name="customer_email">Почта заказчика</string>
+    <string name="driver_and_vehicle">Водитель / Автомобиль</string>
 </resources>

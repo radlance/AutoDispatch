@@ -52,9 +52,9 @@ class RequestRepository {
             .When(VehicleTable.id.isNull(), stringLiteral(""))
             .Else(
                 Concat(
-                    " ",
+                    "",
                     VehicleTable.model,
-                    stringLiteral("("),
+                    stringLiteral(" ("),
                     VehicleTable.licensePlate,
                     stringLiteral(")")
                 )

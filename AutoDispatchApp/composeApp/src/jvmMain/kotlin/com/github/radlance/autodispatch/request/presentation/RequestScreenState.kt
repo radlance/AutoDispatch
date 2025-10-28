@@ -18,7 +18,7 @@ data class RequestScreenState(
     val selectedVehicles: List<String> = emptyList(),
 
     val pageIndex: Int = 0,
-    val pageSize: Int = 5,
+    val pageSize: Int = 8,
 
     val lastSuccessfulRequests: PaginatedResult<Request>? = null,
     val lastAttemptedRequest: LastRequestParams? = null

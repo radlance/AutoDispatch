@@ -17,6 +17,7 @@ import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.search_by_requests
@@ -36,7 +37,10 @@ fun SearchField(
                 value = query,
                 onValueChange = onQueryChange,
                 placeholder = {
-                    Text(stringResource(Res.string.search_by_requests))
+                    Text(
+                        stringResource(Res.string.search_by_requests),
+                        overflow = TextOverflow.Ellipsis
+                    )
                 },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
