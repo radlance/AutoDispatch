@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -52,7 +54,9 @@ fun CustomTextField(
     searchBarColors: SearchBarColors = SearchBarDefaults.colors(),
     placeholderFontSize: TextUnit = TextUnit.Unspecified,
     singleLine: Boolean = true,
-    height: Dp = Dp.Unspecified
+    height: Dp = Dp.Unspecified,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(16.dp)
@@ -122,7 +126,9 @@ fun CustomTextField(
                             }
                         }
                     },
-                    singleLine = singleLine
+                    singleLine = singleLine,
+                    keyboardOptions = keyboardOptions,
+                    visualTransformation = visualTransformation,
                 )
             },
             state = rememberSearchBarState(),

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
@@ -36,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
@@ -168,7 +170,14 @@ fun RequestCreationDialog(
                         CustomTextField(
                             labelText = stringResource(Res.string.phone),
                             value = companyPhone,
-                            onValueChange = { companyPhone = it },
+                            onValueChange = { newValue ->
+                                val digits = newValue.filter { it.isDigit() }
+                                if (digits.length <= 10) {
+                                    companyPhone = digits
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                            visualTransformation = PhoneVisualTransformation(),
                             placeholder = "+ 7 (999) 123-45-67",
                             leadingIcon = Icons.Outlined.Phone,
                             modifier = Modifier.weight(1f),
