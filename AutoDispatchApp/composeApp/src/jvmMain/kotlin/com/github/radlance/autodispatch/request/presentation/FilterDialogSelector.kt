@@ -23,6 +23,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,7 +93,13 @@ private fun SelectionDialog(
     onDismiss: () -> Unit
 ) {
     var tempSelection by remember { mutableStateOf(initiallySelected) }
+    var searchQuery by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+
+    val filteredOptions = remember(searchQuery, options) {
+        if (searchQuery.isBlank()) options
+        else options.filter { it.contains(searchQuery, ignoreCase = true) }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -103,97 +112,123 @@ private fun SelectionDialog(
         },
         text = {
             Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(scrollState)
-                        .padding(vertical = 4.dp)
-                ) {
-                    val masterState = when {
-                        tempSelection.isEmpty() -> ToggleableState.Off
-                        tempSelection.size == options.size -> ToggleableState.On
-                        else -> ToggleableState.Indeterminate
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                Column {
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Поиск…") },
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                tempSelection = when (masterState) {
-                                    ToggleableState.On -> emptyList()
-                                    else -> options.toList()
-                                }
+                            .padding(bottom = 8.dp)
+                    )
+
+                    Box {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(scrollState)
+                                .padding(vertical = 4.dp)
+                        ) {
+                            val masterState = when {
+                                tempSelection.isEmpty() -> ToggleableState.Off
+                                tempSelection.size == options.size -> ToggleableState.On
+                                else -> ToggleableState.Indeterminate
                             }
-                            .padding(vertical = 6.dp, horizontal = 4.dp)
-                    ) {
-                        TriStateCheckbox(
-                            state = masterState,
-                            onClick = {
 
-                                tempSelection = when (masterState) {
-
-                                    ToggleableState.On -> emptyList()
-
-                                    else -> options.toList()
-
-                                }
-
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            stringResource(Res.string.select_all),
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-
-                    HorizontalDivider(thickness = 1.dp)
-
-                    options.forEach { option ->
-                        val isChecked = option in tempSelection
-                        Box(modifier = Modifier.clickable {
-                            tempSelection = if (isChecked) {
-                                tempSelection - option
-                            } else {
-                                tempSelection + option
-                            }
-                        }) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-
+                                    .clickable {
+                                        tempSelection = when (masterState) {
+                                            ToggleableState.On -> emptyList()
+                                            else -> options.toList()
+                                        }
+                                    }
                                     .padding(vertical = 6.dp, horizontal = 4.dp)
                             ) {
-                                Checkbox(
-                                    checked = isChecked,
-                                    onCheckedChange = { checked ->
-                                        tempSelection = if (checked) {
-                                            tempSelection + option
-                                        } else {
-                                            tempSelection - option
+                                TriStateCheckbox(
+                                    state = masterState,
+                                    onClick = {
+                                        tempSelection = when (masterState) {
+                                            ToggleableState.On -> emptyList()
+                                            else -> options.toList()
                                         }
                                     }
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    option,
+                                    stringResource(Res.string.select_all),
                                     fontSize = 16.sp,
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyLarge
                                 )
                             }
+
+                            HorizontalDivider(thickness = 1.dp)
+
+                            if (filteredOptions.isEmpty()) {
+                                Text(
+                                    "Ничего не найдено",
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .align(Alignment.CenterHorizontally),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                filteredOptions.forEach { option ->
+                                    val isChecked = option in tempSelection
+                                    Box(modifier = Modifier.clickable {
+                                        tempSelection = if (isChecked) {
+                                            tempSelection - option
+                                        } else {
+                                            tempSelection + option
+                                        }
+                                    }) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 6.dp, horizontal = 4.dp)
+                                        ) {
+                                            Checkbox(
+                                                checked = isChecked,
+                                                onCheckedChange = { checked ->
+                                                    tempSelection = if (checked) {
+                                                        tempSelection + option
+                                                    } else {
+                                                        tempSelection - option
+                                                    }
+                                                }
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                option,
+                                                fontSize = 16.sp,
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
+                        VerticalScrollbar(
+                            adapter = rememberScrollbarAdapter(scrollState),
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .align(Alignment.CenterEnd)
+                                .offset(x = 10.dp)
+                        )
                     }
                 }
-
-                VerticalScrollbar(
-                    adapter = rememberScrollbarAdapter(scrollState),
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .align(Alignment.CenterEnd)
-                        .offset(x = 10.dp)
-                )
             }
         },
         confirmButton = {

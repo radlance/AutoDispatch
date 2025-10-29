@@ -66,6 +66,7 @@ fun RequestsScreen(
     modifier: Modifier = Modifier,
     viewModel: RequestViewModel = koinViewModel()
 ) {
+    var showCreationDialog by rememberSaveable { mutableStateOf(false) }
     var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
     var selectedRequest by rememberSaveable { mutableStateOf<Request?>(null) }
@@ -83,6 +84,14 @@ fun RequestsScreen(
 
     val dataTableState = remember { DataTableState() }
     val scope = rememberCoroutineScope()
+
+    if (showCreationDialog) {
+        RequestCreationDialog(
+            onDismiss = {
+                showCreationDialog = false
+            }
+        )
+    }
 
     Row(modifier = modifier.fillMaxSize()) {
 
@@ -125,7 +134,9 @@ fun RequestsScreen(
                             )
                         }
                         Spacer(Modifier.width(16.dp))
-                        Button(onClick = { /* TODO */ }) {
+                        Button(
+                            onClick = { showCreationDialog = true }
+                        ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text(text = stringResource(Res.string.create_request))
