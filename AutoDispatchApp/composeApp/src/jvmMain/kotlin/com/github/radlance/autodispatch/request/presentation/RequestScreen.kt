@@ -35,6 +35,7 @@ import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -119,6 +120,7 @@ fun RequestsScreen(
                             placeholder = stringResource(Res.string.search_by_requests),
                             leadingIcon = Icons.Default.Search,
                             labelText = null,
+                            height = TextFieldDefaults.MinHeight,
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(Modifier.width(16.dp))

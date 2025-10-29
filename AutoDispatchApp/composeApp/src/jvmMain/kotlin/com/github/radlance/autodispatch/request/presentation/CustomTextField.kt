@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +51,8 @@ fun CustomTextField(
     isRequired: Boolean = false,
     searchBarColors: SearchBarColors = SearchBarDefaults.colors(),
     placeholderFontSize: TextUnit = TextUnit.Unspecified,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    height: Dp = Dp.Unspecified
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(16.dp)
@@ -72,6 +73,8 @@ fun CustomTextField(
                     }
                 },
                 fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         } else {
@@ -86,9 +89,10 @@ fun CustomTextField(
                     onValueChange = onValueChange,
                     placeholder = {
                         Text(
-                            placeholder,
+                            text = placeholder,
+                            fontSize = placeholderFontSize,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = placeholderFontSize
                         )
                     },
                     colors = TextFieldDefaults.colors(
@@ -125,7 +129,7 @@ fun CustomTextField(
             shape = shape,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = TextFieldDefaults.MinHeight)
+                .height(height)
                 .onFocusChanged { focusState ->
                     isFocused = focusState.isFocused
                 }
