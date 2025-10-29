@@ -36,8 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -49,7 +52,8 @@ fun CustomDropDownMenu(
     filterOptions: List<String>,
     onOptionSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    hint: String = ""
+    hint: String = "",
+    isRequired: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -67,7 +71,14 @@ fun CustomDropDownMenu(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = label,
+            text = buildAnnotatedString {
+                append(label)
+                if (isRequired) {
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                        append(" *")
+                    }
+                }
+            },
             fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 8.dp)
         )

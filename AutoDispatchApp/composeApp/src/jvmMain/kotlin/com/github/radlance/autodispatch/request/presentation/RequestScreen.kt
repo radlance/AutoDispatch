@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.Button
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create_request
+import autodispatch.composeapp.generated.resources.search_by_requests
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
@@ -85,14 +87,6 @@ fun RequestsScreen(
     val dataTableState = remember { DataTableState() }
     val scope = rememberCoroutineScope()
 
-    if (showCreationDialog) {
-        RequestCreationDialog(
-            onDismiss = {
-                showCreationDialog = false
-            }
-        )
-    }
-
     Row(modifier = modifier.fillMaxSize()) {
 
         Column(modifier = Modifier.weight(1f)) {
@@ -103,17 +97,28 @@ fun RequestsScreen(
                     }
                 },
                 onSuccess = { filters ->
+                    if (showCreationDialog) {
+                        RequestCreationDialog(
+                            cities = filters.cities,
+                            cargoTypes = filters.cargoTypes,
+                            onDismiss = {
+                                showCreationDialog = false
+                            }
+                        )
+                    }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) {
-                        SearchField(
-                            query = query,
-                            onQueryChange = {
-                                viewModel.onQueryChanged(it)
-                            },
+                        CustomTextField(
+                            value = query,
+                            onValueChange = viewModel::onQueryChanged,
+                            placeholder = stringResource(Res.string.search_by_requests),
+                            leadingIcon = Icons.Default.Search,
+                            labelText = null,
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(Modifier.width(16.dp))
