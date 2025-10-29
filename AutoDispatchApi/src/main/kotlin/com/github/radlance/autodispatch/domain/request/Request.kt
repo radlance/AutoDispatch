@@ -8,6 +8,7 @@ data class Request(
     val statusName: String?,
     val origin: String?,
     val destination: String?,
+    val transportationDescription: String?,
     val cargoTypeName: String?,
     val cargoWeight: Double?,
     val cargoVolume: Double?,
