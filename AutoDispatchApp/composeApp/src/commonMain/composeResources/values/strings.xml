@@ -62,4 +62,19 @@
     <string name="customer_phone">Телефон заказчика</string>
     <string name="customer_email">Почта заказчика</string>
     <string name="driver_and_vehicle">Водитель / Автомобиль</string>
+    <string name="creating_new_request">Создание новой заявки</string>
+    <string name="choice_city">Выберите город</string>
+    <string name="client_info">Информация о клиенте</string>
+    <string name="company_name">Название/ФИО</string>
+    <string name="company_placeholder">ООО "Компания"</string>
+    <string name="email">Email</string>
+    <string name="phone">Телефон</string>
+    <string name="choice_type">Выберите тип</string>
+    <string name="weight_label">Вес (кг)</string>
+    <string name="volume_label">Объём (м³)</string>
+    <string name="loading_and_unloading_addresses">Адреса погрузки и выгрузки</string>
+    <string name="loading_point_placeholder">Склад, Москва, ул. Промышленная 5</string>
+    <string name="unloading_point_placeholder">Склад получателя, СПБ, пр. Обуховской обороны 120</string>
+    <string name="additional_info">Дополнительная информация</string>
+    <string name="special_req">Особые требования к перевозке, условия загрузки/разгрузки…</string>
 </resources>

@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.additional_info
 import autodispatch.composeapp.generated.resources.car
 import autodispatch.composeapp.generated.resources.cargo_info
 import autodispatch.composeapp.generated.resources.cargo_type
@@ -87,7 +88,7 @@ fun RequestDetailsPanel(
 
                 Section(header = stringResource(Res.string.status)) {
                     StatusWithColor(
-                        status = request.statusName ?: "—",
+                        status = request.statusName,
                         fontSize = 14.sp
                     )
                 }
@@ -112,9 +113,7 @@ fun RequestDetailsPanel(
                     InfoRow(
                         icon = Icons.Outlined.CalendarToday,
                         iconDesc = stringResource(Res.string.creation_date),
-                        text = request.createdAt?.let {
-                            "${request.createdAt.date}, ${request.createdAt.hour}:${request.createdAt.minute}:${request.createdAt.second}"
-                        } ?: "—"
+                        text = "${request.createdAt.date}, ${request.createdAt.hour}:${request.createdAt.minute}:${request.createdAt.second}"
                     )
                 }
 
@@ -128,7 +127,7 @@ fun RequestDetailsPanel(
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = stringResource(Res.string.weight),
-                        value = request.cargoWeight?.formatKg()
+                        value = request.cargoWeight.formatKg()
                     )
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
@@ -156,6 +155,13 @@ fun RequestDetailsPanel(
                         label = stringResource(Res.string.unloading_point),
                         value = request.unloadingPoint
                     )
+                    request.transportationDescription?.let {
+                        Spacer(modifier = Modifier.height(ITEM_GAP))
+                        LabeledValue(
+                            label = stringResource(Res.string.additional_info),
+                            value = request.transportationDescription
+                        )
+                    }
                 }
 
                 HorizontalDivider(
@@ -166,7 +172,7 @@ fun RequestDetailsPanel(
                     InfoRow(
                         icon = Icons.Outlined.Person,
                         iconDesc = stringResource(Res.string.customer),
-                        text = request.organizationName ?: "—"
+                        text = request.organizationName
                     )
 
                     request.organizationPhoneNumber?.let {
@@ -178,14 +184,12 @@ fun RequestDetailsPanel(
                         )
                     }
 
-                    request.organizationEmail?.let {
-                        Spacer(modifier = Modifier.height(ITEM_GAP))
-                        InfoRow(
-                            icon = Icons.Outlined.Mail,
-                            iconDesc = stringResource(Res.string.customer_email),
-                            text = it
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
+                    InfoRow(
+                        icon = Icons.Outlined.Mail,
+                        iconDesc = stringResource(Res.string.customer_email),
+                        text = request.organizationEmail
+                    )
                 }
 
                 HorizontalDivider(
@@ -308,7 +312,7 @@ private fun LabeledValue(label: String, value: String?) {
 }
 
 private fun routeText(request: Request): String =
-    listOf(request.origin.orEmpty(), request.destination.orEmpty())
+    listOf(request.origin, request.destination)
         .filter { it.isNotBlank() }
         .takeIf { it.isNotEmpty() }
         ?.joinToString(" → ")

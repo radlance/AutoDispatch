@@ -97,6 +97,7 @@ class RequestRepository {
             val searchConditions = OrOp(
                 listOfNotNull(
                     RequestTable.requestNumber.lowerCase() like pattern,
+                    RequestTable.transportationDescription.lowerCase() like pattern,
                     RequestStatusTable.name.lowerCase() like pattern,
                     originCity[CityTable.name].lowerCase() like pattern,
                     destCity[CityTable.name].lowerCase() like pattern,
@@ -125,6 +126,7 @@ class RequestRepository {
         val columns = listOf(
             RequestTable.id,
             RequestTable.requestNumber,
+            RequestTable.transportationDescription,
             RequestStatusTable.name,
             originCity[CityTable.name].alias("origin_name"),
             destCity[CityTable.name].alias("destination_name"),
@@ -156,6 +158,7 @@ class RequestRepository {
                     id = row[RequestTable.id].value,
                     requestNumber = row[RequestTable.requestNumber],
                     statusName = row[RequestStatusTable.name],
+                    transportationDescription = row[RequestTable.transportationDescription],
                     origin = row[originCity[CityTable.name].alias("origin_name")],
                     destination = row[destCity[CityTable.name].alias("destination_name")],
                     createdAt = row[RequestTable.createdAt]?.toString(),

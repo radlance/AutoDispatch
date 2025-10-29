@@ -91,6 +91,7 @@ private fun RequestDto.toRequest(): Request {
         organizationPhoneNumber = organizationPhoneNumber,
         organizationEmail = organizationEmail,
         vehicleInfo = vehicleInfo,
-        createdAt = createdAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) }
+        transportationDescription = transportationDescription,
+        createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) }
     )
 }

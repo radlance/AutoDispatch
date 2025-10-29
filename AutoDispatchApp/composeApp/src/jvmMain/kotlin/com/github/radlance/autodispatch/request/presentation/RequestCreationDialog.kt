@@ -22,11 +22,13 @@ import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +38,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.additional_info
+import autodispatch.composeapp.generated.resources.cancel
+import autodispatch.composeapp.generated.resources.cargo_info
+import autodispatch.composeapp.generated.resources.cargo_type
+import autodispatch.composeapp.generated.resources.choice_city
+import autodispatch.composeapp.generated.resources.choice_type
+import autodispatch.composeapp.generated.resources.client_info
+import autodispatch.composeapp.generated.resources.company_placeholder
+import autodispatch.composeapp.generated.resources.create_request
+import autodispatch.composeapp.generated.resources.creating_new_request
+import autodispatch.composeapp.generated.resources.email
+import autodispatch.composeapp.generated.resources.from
+import autodispatch.composeapp.generated.resources.loading_and_unloading_addresses
+import autodispatch.composeapp.generated.resources.loading_point
+import autodispatch.composeapp.generated.resources.loading_point_placeholder
+import autodispatch.composeapp.generated.resources.phone
+import autodispatch.composeapp.generated.resources.route
+import autodispatch.composeapp.generated.resources.special_req
+import autodispatch.composeapp.generated.resources.to
+import autodispatch.composeapp.generated.resources.unloading_point
+import autodispatch.composeapp.generated.resources.unloading_point_placeholder
+import autodispatch.composeapp.generated.resources.volume_label
+import autodispatch.composeapp.generated.resources.weight_label
 import com.github.radlance.autodispatch.request.domain.CargoType
 import com.github.radlance.autodispatch.request.domain.City
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.WeightIcon
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +94,7 @@ fun RequestCreationDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Создание новой заявки",
+                stringResource(Res.string.creating_new_request),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
@@ -75,17 +102,17 @@ fun RequestCreationDialog(
         text = {
             Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
                 Column(modifier = Modifier.verticalScroll(scrollState)) {
-                    Text(text = "Маршрут", fontSize = 18.sp)
+                    Text(text = stringResource(Res.string.route), fontSize = 18.sp)
                     HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
                     Row {
                         CustomDropDownMenu(
-                            label = "Откуда",
+                            label = stringResource(Res.string.from),
                             selectedOption = cities.find { selectedDepartureCityId == it.id }?.name,
                             filterOptions = cities.map { it.name },
                             onOptionSelected = { option ->
                                 selectedDepartureCityId = cities.first { option == it.name }.id
                             },
-                            hint = "Выберите город",
+                            hint = stringResource(Res.string.choice_city),
                             modifier = Modifier.weight(1f),
                             isRequired = true
                         )
@@ -93,27 +120,27 @@ fun RequestCreationDialog(
                         Spacer(Modifier.width(16.dp))
 
                         CustomDropDownMenu(
-                            label = "Куда",
+                            label = stringResource(Res.string.to),
                             selectedOption = cities.find { selectedDestinationCityId == it.id }?.name,
                             filterOptions = cities.map { it.name },
                             onOptionSelected = { option ->
                                 selectedDestinationCityId = cities.first { option == it.name }.id
                             },
-                            hint = "Выберите город",
+                            hint = stringResource(Res.string.choice_city),
                             modifier = Modifier.weight(1f),
                             isRequired = true
                         )
                     }
 
                     Spacer(Modifier.height(32.dp))
-                    Text(text = "Информация о клиенте", fontSize = 18.sp)
+                    Text(text = stringResource(Res.string.client_info), fontSize = 18.sp)
                     HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
 
                     CustomTextField(
-                        labelText = "Название/ФИО",
+                        labelText = stringResource(Res.string.client_info),
                         value = companyName,
                         onValueChange = { companyName = it },
-                        placeholder = "ООО \"Компания\"",
+                        placeholder = stringResource(Res.string.company_placeholder),
                         leadingIcon = Icons.Outlined.Person,
                         modifier = Modifier.fillMaxWidth(),
                         isRequired = true,
@@ -125,7 +152,7 @@ fun RequestCreationDialog(
                     Spacer(Modifier.height(16.dp))
                     Row(modifier = Modifier.fillMaxWidth()) {
                         CustomTextField(
-                            labelText = "Email",
+                            labelText = stringResource(Res.string.email),
                             value = companyEmail,
                             onValueChange = { companyEmail = it },
                             placeholder = "email@example.com",
@@ -139,7 +166,7 @@ fun RequestCreationDialog(
                         )
                         Spacer(Modifier.width(16.dp))
                         CustomTextField(
-                            labelText = "Телефон",
+                            labelText = stringResource(Res.string.phone),
                             value = companyPhone,
                             onValueChange = { companyPhone = it },
                             placeholder = "+ 7 (999) 123-45-67",
@@ -154,17 +181,17 @@ fun RequestCreationDialog(
                     }
 
                     Spacer(Modifier.height(32.dp))
-                    Text(text = "Информация о грузе", fontSize = 18.sp)
+                    Text(text = stringResource(Res.string.cargo_info), fontSize = 18.sp)
                     HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
 
                     CustomDropDownMenu(
-                        label = "Тип груза",
+                        label = stringResource(Res.string.cargo_type),
                         selectedOption = cargoTypes.find { selectedCargoTypeId == it.id }?.name,
                         filterOptions = cargoTypes.map { it.name },
                         onOptionSelected = { option ->
                             selectedCargoTypeId = cargoTypes.first { option == it.name }.id
                         },
-                        hint = "Выберите тип",
+                        hint = stringResource(Res.string.choice_type),
                         modifier = Modifier.fillMaxWidth(),
                         isRequired = true
                     )
@@ -172,7 +199,7 @@ fun RequestCreationDialog(
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         CustomTextField(
-                            labelText = "Вес (кг)",
+                            labelText = stringResource(Res.string.weight_label),
                             value = cargoWeight,
                             onValueChange = {
                                 cargoWeight = it
@@ -190,7 +217,7 @@ fun RequestCreationDialog(
                         Spacer(Modifier.width(16.dp))
 
                         CustomTextField(
-                            labelText = "Объём (м\u00B3)",
+                            labelText = stringResource(Res.string.volume_label),
                             value = cargoVolume,
                             onValueChange = {
                                 cargoVolume = it
@@ -207,15 +234,18 @@ fun RequestCreationDialog(
                     }
 
                     Spacer(Modifier.height(32.dp))
-                    Text(text = "Адреса погрузки и выгрузки", fontSize = 18.sp)
+                    Text(
+                        text = stringResource(Res.string.loading_and_unloading_addresses),
+                        fontSize = 18.sp
+                    )
                     HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
                     CustomTextField(
-                        labelText = "Точка погрузки",
+                        labelText = stringResource(Res.string.loading_point),
                         value = loadingPoint,
                         onValueChange = {
                             loadingPoint = it
                         },
-                        placeholder = "Склад, Москва, ул. Промышленная 5",
+                        placeholder = stringResource(Res.string.loading_point_placeholder),
                         leadingIcon = Icons.Outlined.LocationOn,
                         modifier = Modifier.fillMaxWidth(),
                         isRequired = true,
@@ -226,12 +256,12 @@ fun RequestCreationDialog(
                     )
                     Spacer(Modifier.height(16.dp))
                     CustomTextField(
-                        labelText = "Точка выгрузки",
+                        labelText = stringResource(Res.string.unloading_point),
                         value = unloadingPoint,
                         onValueChange = {
                             unloadingPoint = it
                         },
-                        placeholder = "Склад получателя, СПБ, пр. Обуховской обороны 120",
+                        placeholder = stringResource(Res.string.unloading_point_placeholder),
                         leadingIcon = Icons.Outlined.LocationOn,
                         modifier = Modifier.fillMaxWidth(),
                         isRequired = true,
@@ -242,12 +272,12 @@ fun RequestCreationDialog(
                     )
                     Spacer(Modifier.height(16.dp))
                     CustomTextField(
-                        labelText = "Дополнительная информация",
+                        labelText = stringResource(Res.string.additional_info),
                         value = additionalInfo,
                         onValueChange = {
                             additionalInfo = it
                         },
-                        placeholder = "Особые требования к перевозке, условия загрузки/разгрузки…",
+                        placeholder = stringResource(Res.string.special_req),
                         modifier = Modifier.fillMaxWidth(),
                         isRequired = false,
                         singleLine = false,
@@ -267,10 +297,14 @@ fun RequestCreationDialog(
             }
         },
         confirmButton = {
-
+            Button(onClick = {}) {
+                Text(text = stringResource(Res.string.create_request))
+            }
         },
         dismissButton = {
-
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(Res.string.cancel))
+            }
         },
         shape = RoundedCornerShape(16.dp)
     )
