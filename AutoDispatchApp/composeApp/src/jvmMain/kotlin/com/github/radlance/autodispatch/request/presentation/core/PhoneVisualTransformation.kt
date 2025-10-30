@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.core
 
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping

@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.core
 
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.domain.Filters

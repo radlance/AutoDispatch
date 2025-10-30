@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.core
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -55,6 +55,8 @@ import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.domain.Request
+import com.github.radlance.autodispatch.request.presentation.common.CustomTextField
+import com.github.radlance.autodispatch.request.presentation.create.CreateRequestDialog
 import com.seanproctor.datatable.DataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -99,7 +101,7 @@ fun RequestsScreen(
                 },
                 onSuccess = { filters ->
                     if (showCreationDialog) {
-                        RequestCreationDialog(
+                        CreateRequestDialog(
                             cities = filters.cities,
                             cargoTypes = filters.cargoTypes,
                             onDismiss = {

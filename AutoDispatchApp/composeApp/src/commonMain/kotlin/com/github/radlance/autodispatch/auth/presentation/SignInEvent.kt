@@ -1,7 +1,6 @@
 package com.github.radlance.autodispatch.auth.presentation
 
 import com.github.radlance.autodispatch.common.presentation.Event
-import com.github.radlance.autodispatch.common.presentation.EventViewModel
 
 interface SignInEvent : Event {
 
@@ -23,7 +22,7 @@ interface SignInEvent : Event {
     }
 }
 
-interface SignInAction : EventViewModel<SignInEvent> {
+interface SignInAction {
 
     fun changeLogin(value: String)
 

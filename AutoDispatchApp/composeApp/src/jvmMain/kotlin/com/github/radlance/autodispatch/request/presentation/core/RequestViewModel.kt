@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.core
 
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.domain.FetchResult

@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.create
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background

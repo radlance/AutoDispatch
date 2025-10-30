@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.common
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border

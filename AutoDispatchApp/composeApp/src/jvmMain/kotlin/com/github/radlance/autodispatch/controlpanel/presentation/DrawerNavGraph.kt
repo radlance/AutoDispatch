@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.request.presentation.RequestsScreen
+import com.github.radlance.autodispatch.request.presentation.core.RequestsScreen
 import com.github.radlance.autodispatch.navigation.core.NavigationState
 import com.github.radlance.autodispatch.profile.domain.User
 

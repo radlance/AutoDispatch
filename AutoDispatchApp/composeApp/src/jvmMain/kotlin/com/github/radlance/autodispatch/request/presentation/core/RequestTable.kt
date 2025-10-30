@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.request.presentation.core
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -84,7 +84,7 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = item.requestNumber!!,
+                        text = item.requestNumber,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -98,14 +98,14 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = item.cargoTypeName ?: "-",
+                        text = item.cargoTypeName,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
                 cell {
                     Text(
-                        text = item.createdAt?.date?.toString() ?: "-",
+                        text = item.createdAt.date.toString(),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

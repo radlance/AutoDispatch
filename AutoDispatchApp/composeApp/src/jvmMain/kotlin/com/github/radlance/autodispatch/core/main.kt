@@ -7,6 +7,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.github.radlance.autodispatch.di.authModule
 import com.github.radlance.autodispatch.di.commonModule
 import com.github.radlance.autodispatch.di.controlPanelModule
+import com.github.radlance.autodispatch.di.createRequestModule
 import com.github.radlance.autodispatch.di.dataStoreModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.profileModule
@@ -24,6 +25,7 @@ fun main() = application {
             profileModule,
             controlPanelModule,
             requestModule,
+            createRequestModule
         )
     }
     Window(
