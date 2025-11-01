@@ -71,22 +71,27 @@ interface CreateRequestEvent : Event {
     }
 
     class ClickCreate(
+        private val originId: Int,
+        private val destinationId: Int,
         private val companyName: String,
         private val companyEmail: String,
         private val companyPhone: String,
+        private val cargoTypeId: Int,
         private val cargoWeight: String,
         private val cargoVolume: String,
         private val cargoDescription: String,
         private val cargoLoading: String,
         private val cargoUnloading: String,
         private val additionalInfo: String
-    ) :
-        CreateRequestEvent {
+    ) : CreateRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.createRequest(
+            originId = originId,
+            destinationId = destinationId,
             companyName = companyName,
             companyEmail = companyEmail,
             companyPhone = if (companyPhone.isBlank()) null else "+7$companyPhone",
+            cargoTypeId = cargoTypeId,
             cargoWeight = cargoWeight,
             cargoVolume = cargoVolume.ifBlank { null },
             cargoDescription = cargoDescription.ifBlank { null },
@@ -94,6 +99,12 @@ interface CreateRequestEvent : Event {
             cargoUnloading = cargoUnloading,
             additionalInfo = additionalInfo.ifBlank { null }
         )
+    }
+
+    object ResetState : CreateRequestEvent {
+        override fun apply(action: CreateRequestAction) {
+            action.resetState()
+        }
     }
 }
 
@@ -124,9 +135,12 @@ interface CreateRequestAction {
     fun changeAdditionalInfo(value: String)
 
     fun createRequest(
+        originId: Int,
+        destinationId: Int,
         companyName: String,
         companyEmail: String,
         companyPhone: String?,
+        cargoTypeId: Int,
         cargoWeight: String,
         cargoVolume: String?,
         cargoDescription: String?,
@@ -134,4 +148,6 @@ interface CreateRequestAction {
         cargoUnloading: String,
         additionalInfo: String?
     )
+
+    fun resetState()
 }

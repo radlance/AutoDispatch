@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.route
 
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.service.RequestService
+import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -60,8 +61,9 @@ fun Route.requestRoute(requestService: RequestService) {
             }
 
             post {
+                val login = call.claimByNameOrUnauthorized<String>(name = "login")
                 val request = call.receive<CreateRequest>()
-                requestService.createRequest(request)
+                requestService.createRequest(login = login, request = request)
                 call.respond(HttpStatusCode.Created)
             }
         }

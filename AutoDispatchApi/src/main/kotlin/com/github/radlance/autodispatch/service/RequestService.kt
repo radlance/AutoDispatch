@@ -2,13 +2,15 @@ package com.github.radlance.autodispatch.service
 
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
-import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Filters
+import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
+import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
 
 class RequestService(
-    private val requestRepository: RequestRepository
+    private val requestRepository: RequestRepository,
+    private val profileRepository: ProfileRepository
 ) {
     suspend fun requests(
         page: Int,
@@ -41,8 +43,9 @@ class RequestService(
         return filters
     }
 
-    suspend fun createRequest(request: CreateRequest) {
-        requestRepository.createRequest(request)
+    suspend fun createRequest(login: String, request: CreateRequest) {
+        val currentUser = profileRepository.userByLogin(login)
+        requestRepository.createRequest(currentUser.id, request)
     }
 
     suspend fun customers(query: String): List<Customer> {

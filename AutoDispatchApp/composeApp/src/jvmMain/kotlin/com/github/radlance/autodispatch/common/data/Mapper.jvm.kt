@@ -16,7 +16,9 @@ import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.request.create.data.CreateRequestDto
 import com.github.radlance.autodispatch.request.create.data.CustomerDto
+import com.github.radlance.autodispatch.request.create.domain.CreateRequest
 import com.github.radlance.autodispatch.request.create.domain.Customer
 import kotlinx.datetime.LocalDateTime
 
@@ -43,6 +45,23 @@ fun CustomerDto.toCustomer(): Customer {
         organizationName = organizationName,
         email = email,
         phoneNumber = phoneNumber
+    )
+}
+
+fun CreateRequest.toCreateRequestDto(): CreateRequestDto {
+    return CreateRequestDto(
+        loadingPoint = loadingPoint,
+        unloadingPoint = unloadingPoint,
+        cargoTypeId = cargoTypeId,
+        cargoWeight = cargoWeight,
+        cargoVolume = cargoVolume,
+        cargoDescription = cargoDescription,
+        customerName = customerName,
+        customerEmail = customerEmail,
+        customerPhone = customerPhone,
+        originId = originId,
+        destinationId = destinationId,
+        transportationDescription = transportationDescription
     )
 }
 

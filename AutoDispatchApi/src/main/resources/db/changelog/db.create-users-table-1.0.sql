@@ -6,7 +6,6 @@ CREATE TABLE users
     password_hash VARCHAR(255)       NOT NULL,
     salt          VARCHAR(255)       NOT NULL,
     phone_number  VARCHAR(20),
-    role          VARCHAR(20)        NOT NULL CHECK (role IN ('Диспетчер', 'Водитель')),
-    is_active     BOOLEAN            NOT NULL DEFAULT TRUE,
-    created_at    TIMESTAMP                   DEFAULT CURRENT_TIMESTAMP
+    role_id          INT REFERENCES role (id),
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -106,7 +106,8 @@ fun RequestsScreen(
                             cargoTypes = filters.cargoTypes,
                             onDismiss = {
                                 showCreationDialog = false
-                            }
+                            },
+                            onSuccessCreateRequest = viewModel::onRequestAdded
                         )
                     }
 

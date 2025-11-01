@@ -3,10 +3,14 @@ package com.github.radlance.autodispatch.common.data
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.create.data.CreateRequestDto
 import com.github.radlance.autodispatch.request.create.data.CustomerDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 
 interface ApiServiceJvm : ApiService {
 
@@ -25,6 +29,8 @@ interface ApiServiceJvm : ApiService {
     ): PaginatedResultDto<RequestDto>
 
     suspend fun customers(query: String): List<CustomerDto>
+
+    suspend fun createRequest(createRequestDto: CreateRequestDto)
 }
 
 internal class KtorApiServiceJvm(
@@ -78,9 +84,13 @@ internal class KtorApiServiceJvm(
 
     override suspend fun customers(query: String): List<CustomerDto> {
         return httpClient.get("requests/customers") {
-            url {
-                parameters.append("q", query)
-            }
+            parameter("q", query)
         }.body()
+    }
+
+    override suspend fun createRequest(createRequestDto: CreateRequestDto) {
+        httpClient.post("requests") {
+            setBody(createRequestDto)
+        }
     }
 }

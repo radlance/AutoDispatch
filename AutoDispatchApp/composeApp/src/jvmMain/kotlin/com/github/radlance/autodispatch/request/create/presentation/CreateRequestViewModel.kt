@@ -3,8 +3,11 @@ package com.github.radlance.autodispatch.request.create.presentation
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.request.create.domain.CreateRequest
 import com.github.radlance.autodispatch.request.create.domain.CreateRequestRepository
 import com.github.radlance.autodispatch.request.create.domain.Customer
 import kotlinx.coroutines.Job
@@ -26,6 +29,11 @@ class CreateRequestViewModel(
 
     private var searchJob: Job? = null
     private val debounceTime = 300L
+
+    private val createRequestStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+
+    val createRequestState = createRequestStateMutable.asStateFlow()
 
     override fun reduce(event: CreateRequestEvent) {
         val action = object : CreateRequestAction {
@@ -116,9 +124,12 @@ class CreateRequestViewModel(
             }
 
             override fun createRequest(
+                originId: Int,
+                destinationId: Int,
                 companyName: String,
                 companyEmail: String,
                 companyPhone: String?,
+                cargoTypeId: Int,
                 cargoWeight: String,
                 cargoVolume: String?,
                 cargoDescription: String?,
@@ -150,10 +161,53 @@ class CreateRequestViewModel(
                         && cargoWeightErrorMessage.isEmpty()
                         && cargoVolumeErrorMessage.isEmpty()
                     ) {
-                        // TODO
+                        createRequestStateMutable.value = FetchResultUiState.Loading
+                        val request = CreateRequest(
+                            loadingPoint = cargoLoading,
+                            unloadingPoint = cargoUnloading,
+                            cargoTypeId = cargoTypeId,
+                            cargoWeight = cargoWeight.toDouble(),
+                            cargoVolume = cargoVolume?.toDouble(),
+                            cargoDescription = cargoDescription,
+                            customerName = companyName,
+                            customerEmail = companyEmail,
+                            customerPhone = companyPhone,
+                            originId = originId,
+                            destinationId = destinationId,
+                            transportationDescription = additionalInfo
+                        )
+
+                        handle(background = { repository.createRequest(request) }) {
+                            createRequestStateMutable.value = it.toUiState()
+                        }
                     }
                 }
 
+            }
+
+            override fun resetState() {
+                fieldsUiStateMutable.update { state ->
+                    state.copy(
+                        departureCity = null,
+                        destinationCity = null,
+                        cargoType = null,
+                        companyNameFieldValue = "",
+                        companyEmailFieldValue = "",
+                        companyEmailErrorMessage = "",
+                        companyPhoneFieldValue = "",
+                        companyPhoneErrorMessage = "",
+                        cargoWeightFieldValue = "",
+                        cargoWeightErrorMessage = "",
+                        cargoVolumeFieldValue = "",
+                        cargoVolumeErrorMessage = "",
+                        cargoDescriptionFieldValue = "",
+                        loadingFieldValue = "",
+                        unloadingFieldValue = "",
+                        additionalInfoFieldValue = ""
+                    )
+                }
+
+                createRequestStateMutable.value = FetchResultUiState.Idle
             }
         }
         event.apply(action = action)

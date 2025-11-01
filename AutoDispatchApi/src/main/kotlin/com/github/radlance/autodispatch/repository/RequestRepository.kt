@@ -35,7 +35,6 @@ import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
-import java.time.Instant
 
 class RequestRepository {
     suspend fun requests(
@@ -218,30 +217,44 @@ class RequestRepository {
         )
     }
 
-    suspend fun createRequest(createRequest: CreateRequest) = loggedTransaction {
+    suspend fun createRequest(
+        userId: Int,
+        createRequest: CreateRequest
+    ) = loggedTransaction {
+        var customerId = CustomerTable
+            .select(CustomerTable.id)
+            .where { CustomerTable.organizationName eq createRequest.customerName }
+            .limit(1)
+            .map { it[CustomerTable.id] }
+            .firstOrNull()
+
+        if (customerId == null) {
+            customerId = CustomerTable.insert {
+                it[organizationName] = createRequest.customerName
+                it[email] = createRequest.customerEmail
+                it[phoneNumber] = createRequest.customerPhone
+            } get CustomerTable.id
+        }
+
         RequestTable.insert { row ->
-            row[createdById] = createRequest.createdById
-            row[statusId] = createRequest.statusId
+            row[createdById] = userId
+            row[statusId] = 1
             row[loadingPoint] = createRequest.loadingPoint
             row[unloadingPoint] = createRequest.unloadingPoint
             row[cargoTypeId] = createRequest.cargoTypeId
             row[cargoWeight] = createRequest.cargoWeight
             row[cargoVolume] = createRequest.cargoVolume
             row[cargoDescription] = createRequest.cargoDescription
-            row[customerId] = createRequest.customerId
-            row[startedTripAt] = createRequest.startedTripAt?.let { Instant.parse(it) }
-            row[endedTripAt] = createRequest.endedTripAt?.let { Instant.parse(it) }
-            row[createdAt] = createRequest.createdAt?.let { Instant.parse(it) }
+            row[this.customerId] = customerId
             row[originId] = createRequest.originId
             row[destinationId] = createRequest.destinationId
-            row[requestNumber] = createRequest.requestNumber
             row[transportationDescription] = createRequest.transportationDescription
-        } get RequestTable.id
+        }
     }
 
     suspend fun customers(query: String): List<Customer> = loggedTransaction {
         val searchQuery = "%${query}%".lowercase()
-        return@loggedTransaction CustomerEntity.find { CustomerTable.organizationName.lowerCase() like  searchQuery }
+        return@loggedTransaction CustomerEntity.find { CustomerTable.organizationName.lowerCase() like searchQuery }
             .limit(4)
             .map { it.toCustomer() }
     }
