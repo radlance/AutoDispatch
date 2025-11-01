@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.request.presentation.create
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -7,13 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -61,9 +60,9 @@ fun CreateRequestFields(
     cargoTypes: List<CargoType>,
     onEvent: (CreateRequestEvent) -> Unit,
     fieldsUiState: CreateRequestFieldsUiState,
+    scrollState: ScrollState,
     modifier: Modifier = Modifier
 ) {
-    val scrollState = rememberScrollState()
 
     Column(modifier = modifier.verticalScroll(scrollState)) {
         Text(text = stringResource(Res.string.route), fontSize = 18.sp)
@@ -103,20 +102,20 @@ fun CreateRequestFields(
         Spacer(Modifier.height(32.dp))
         Text(text = stringResource(Res.string.client_info), fontSize = 18.sp)
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
-
-        CustomTextField(
+        val recentCompanies = listOf("ООО ТрансАвто", "ИП Иванов", "РЖД Логистика")
+        CustomTextFieldWithDropdown(
             labelText = stringResource(Res.string.client_info),
             value = fieldsUiState.companyNameFieldValue,
             onValueChange = { onEvent(CreateRequestEvent.ChangeCompanyName(it)) },
             placeholder = stringResource(Res.string.company_placeholder),
-            leadingIcon = Icons.Outlined.Person,
+            suggestions = recentCompanies,
+            onSuggestionSelected = { selected ->
+                // TODO email and phone autocomplete
+            },
             modifier = Modifier.fillMaxWidth(),
-            isRequired = true,
-            placeholderFontSize = 14.sp,
-            searchBarColors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+            isRequired = true
         )
+
         Spacer(Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             CustomTextField(

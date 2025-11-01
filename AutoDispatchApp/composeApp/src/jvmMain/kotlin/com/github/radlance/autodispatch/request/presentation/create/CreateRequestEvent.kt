@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.request.presentation.create
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.github.radlance.autodispatch.common.presentation.Event
 import com.github.radlance.autodispatch.request.domain.CargoType
 import com.github.radlance.autodispatch.request.domain.City
@@ -25,7 +26,7 @@ interface CreateRequestEvent : Event {
     }
 
 
-    class ChangeCompanyName(private val value: String) : CreateRequestEvent {
+    class ChangeCompanyName(private val value: TextFieldValue) : CreateRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCompanyName(value)
     }
@@ -105,7 +106,7 @@ interface CreateRequestAction {
 
     fun changeCargoType(cargoType: CargoType)
 
-    fun changeCompanyName(value: String)
+    fun changeCompanyName(value: TextFieldValue)
 
     fun changeCompanyEmail(value: String)
 

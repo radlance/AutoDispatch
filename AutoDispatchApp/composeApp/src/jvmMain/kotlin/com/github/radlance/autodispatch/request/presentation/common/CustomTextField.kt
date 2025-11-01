@@ -2,6 +2,8 @@ package com.github.radlance.autodispatch.request.presentation.common
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberSearchBarState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +60,9 @@ fun CustomTextField(
     singleLine: Boolean = true,
     height: Dp = Dp.Unspecified,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    suggestions: List<String> = emptyList(),
+    onSuggestionSelected: ((String) -> Unit)? = null,
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(16.dp)
@@ -145,5 +151,25 @@ fun CustomTextField(
                     shape = shape
                 )
         )
+        if (isFocused && suggestions.isNotEmpty()) {
+            Card {
+                suggestions.forEach { suggestion ->
+                    Text(
+                        text = suggestion,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = ripple()
+                            ) {
+                                onSuggestionSelected?.invoke(suggestion)
+                                onValueChange(suggestion)
+                                isFocused = false
+                            }
+                    )
+                }
+            }
+        }
     }
 }

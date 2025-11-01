@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
@@ -40,6 +41,8 @@ fun CreateRequestDialog(
 ) {
     val scrollState = rememberScrollState()
     val fieldsUiState by viewModel.fieldsUiState.collectAsState()
+    val screenHeight = LocalWindowInfo.current.containerSize.height
+    val maxDialogHeight = screenHeight * 0.6f
 
     AlertDialog(
         modifier = modifier,
@@ -52,11 +55,12 @@ fun CreateRequestDialog(
             )
         },
         text = {
-            Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+            Box(modifier = Modifier.fillMaxWidth().heightIn(max = maxDialogHeight.dp)) {
                 CreateRequestFields(
                     cities = cities,
                     cargoTypes = cargoTypes,
                     onEvent = viewModel::reduce,
+                    scrollState = scrollState,
                     fieldsUiState = fieldsUiState
                 )
                 VerticalScrollbar(
@@ -74,7 +78,7 @@ fun CreateRequestDialog(
                     with(fieldsUiState) {
                         viewModel.reduce(
                             CreateRequestEvent.ClickCreate(
-                                companyName = companyNameFieldValue,
+                                companyName = companyNameFieldValue.text,
                                 companyEmail = companyEmailFieldValue,
                                 companyPhone = companyPhoneFieldValue,
                                 cargoWeight = cargoWeightFieldValue,

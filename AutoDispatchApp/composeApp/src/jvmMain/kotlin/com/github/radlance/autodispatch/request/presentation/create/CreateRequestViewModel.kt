@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.request.presentation.create
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.request.domain.CargoType
@@ -33,7 +34,7 @@ class CreateRequestViewModel : BaseViewModel(), EventViewModel<CreateRequestEven
                 }
             }
 
-            override fun changeCompanyName(value: String) {
+            override fun changeCompanyName(value: TextFieldValue) {
                 fieldsUiStateMutable.update { state ->
                     state.copy(companyNameFieldValue = value)
                 }
