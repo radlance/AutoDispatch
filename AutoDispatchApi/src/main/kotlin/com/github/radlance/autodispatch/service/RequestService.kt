@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.service
 
+import com.github.radlance.autodispatch.domain.request.CreateRequest
+import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.Request
@@ -37,5 +39,14 @@ class RequestService(
     suspend fun filters(): Filters {
         val filters = requestRepository.filters()
         return filters
+    }
+
+    suspend fun createRequest(request: CreateRequest) {
+        requestRepository.createRequest(request)
+    }
+
+    suspend fun customers(query: String): List<Customer> {
+        val customers = requestRepository.customers(query)
+        return customers
     }
 }

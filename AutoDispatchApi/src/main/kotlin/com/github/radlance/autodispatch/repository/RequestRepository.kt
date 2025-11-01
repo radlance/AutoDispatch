@@ -1,8 +1,8 @@
 package com.github.radlance.autodispatch.repository
 
-import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.database.entity.CargoTypeEntity
 import com.github.radlance.autodispatch.database.entity.CityEntity
+import com.github.radlance.autodispatch.database.entity.CustomerEntity
 import com.github.radlance.autodispatch.database.entity.RequestStatusEntity
 import com.github.radlance.autodispatch.database.table.AssignmentTable
 import com.github.radlance.autodispatch.database.table.CargoTypeTable
@@ -12,7 +12,10 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.request.CreateRequest
+import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.Filters
+import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
@@ -29,8 +32,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
+import java.time.Instant
 
 class RequestRepository {
     suspend fun requests(
@@ -211,5 +216,33 @@ class RequestRepository {
             drivers = users,
             vehicles = vehicles
         )
+    }
+
+    suspend fun createRequest(createRequest: CreateRequest) = loggedTransaction {
+        RequestTable.insert { row ->
+            row[createdById] = createRequest.createdById
+            row[statusId] = createRequest.statusId
+            row[loadingPoint] = createRequest.loadingPoint
+            row[unloadingPoint] = createRequest.unloadingPoint
+            row[cargoTypeId] = createRequest.cargoTypeId
+            row[cargoWeight] = createRequest.cargoWeight
+            row[cargoVolume] = createRequest.cargoVolume
+            row[cargoDescription] = createRequest.cargoDescription
+            row[customerId] = createRequest.customerId
+            row[startedTripAt] = createRequest.startedTripAt?.let { Instant.parse(it) }
+            row[endedTripAt] = createRequest.endedTripAt?.let { Instant.parse(it) }
+            row[createdAt] = createRequest.createdAt?.let { Instant.parse(it) }
+            row[originId] = createRequest.originId
+            row[destinationId] = createRequest.destinationId
+            row[requestNumber] = createRequest.requestNumber
+            row[transportationDescription] = createRequest.transportationDescription
+        } get RequestTable.id
+    }
+
+    suspend fun customers(query: String): List<Customer> = loggedTransaction {
+        val searchQuery = "%${query}%".lowercase()
+        return@loggedTransaction CustomerEntity.find { CustomerTable.organizationName.lowerCase() like  searchQuery }
+            .limit(4)
+            .map { it.toCustomer() }
     }
 }

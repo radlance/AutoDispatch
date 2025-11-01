@@ -1,8 +1,9 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.request.data.FiltersDto
-import com.github.radlance.autodispatch.request.data.PaginatedResultDto
-import com.github.radlance.autodispatch.request.data.RequestDto
+import com.github.radlance.autodispatch.request.core.data.FiltersDto
+import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
+import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.create.data.CustomerDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -22,6 +23,8 @@ interface ApiServiceJvm : ApiService {
         driverIds: List<Int>,
         vehicleIds: List<Int>
     ): PaginatedResultDto<RequestDto>
+
+    suspend fun customers(query: String): List<CustomerDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -69,6 +72,14 @@ internal class KtorApiServiceJvm(
                 if (vehicleIds.isNotEmpty()) {
                     parameters.append("vehicleIds", vehicleIds.joinToString(","))
                 }
+            }
+        }.body()
+    }
+
+    override suspend fun customers(query: String): List<CustomerDto> {
+        return httpClient.get("requests/customers") {
+            url {
+                parameters.append("q", query)
             }
         }.body()
     }

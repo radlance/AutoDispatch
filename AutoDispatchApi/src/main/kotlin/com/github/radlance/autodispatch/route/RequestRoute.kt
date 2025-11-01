@@ -1,8 +1,10 @@
 package com.github.radlance.autodispatch.route
 
+import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.service.RequestService
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -47,8 +49,20 @@ fun Route.requestRoute(requestService: RequestService) {
             }
 
             get("/filters") {
-                val requests = requestService.filters()
-                call.respond(HttpStatusCode.OK, requests)
+                val filters = requestService.filters()
+                call.respond(HttpStatusCode.OK, filters)
+            }
+
+            get("/customers") {
+                val query = call.request.queryParameters["q"] ?: ""
+                val customers = requestService.customers(query = query)
+                call.respond(HttpStatusCode.OK, customers)
+            }
+
+            post {
+                val request = call.receive<CreateRequest>()
+                requestService.createRequest(request)
+                call.respond(HttpStatusCode.Created)
             }
         }
     }

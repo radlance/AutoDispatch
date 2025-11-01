@@ -1,21 +1,23 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.request.data.CargoTypeDto
-import com.github.radlance.autodispatch.request.data.CityDto
-import com.github.radlance.autodispatch.request.data.FiltersDto
-import com.github.radlance.autodispatch.request.data.PaginatedResultDto
-import com.github.radlance.autodispatch.request.data.RequestDto
-import com.github.radlance.autodispatch.request.data.RequestStatusDto
-import com.github.radlance.autodispatch.request.data.UserFilterDto
-import com.github.radlance.autodispatch.request.data.VehicleFilterDto
-import com.github.radlance.autodispatch.request.domain.CargoType
-import com.github.radlance.autodispatch.request.domain.City
-import com.github.radlance.autodispatch.request.domain.Filters
-import com.github.radlance.autodispatch.request.domain.PaginatedResult
-import com.github.radlance.autodispatch.request.domain.Request
-import com.github.radlance.autodispatch.request.domain.RequestStatus
-import com.github.radlance.autodispatch.request.domain.UserFilter
-import com.github.radlance.autodispatch.request.domain.VehicleFilter
+import com.github.radlance.autodispatch.request.core.data.CargoTypeDto
+import com.github.radlance.autodispatch.request.core.data.CityDto
+import com.github.radlance.autodispatch.request.core.data.FiltersDto
+import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
+import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.request.core.data.UserFilterDto
+import com.github.radlance.autodispatch.request.core.data.VehicleFilterDto
+import com.github.radlance.autodispatch.request.core.domain.CargoType
+import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.request.core.domain.Filters
+import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.request.core.domain.RequestStatus
+import com.github.radlance.autodispatch.request.core.domain.UserFilter
+import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.request.create.data.CustomerDto
+import com.github.radlance.autodispatch.request.create.domain.Customer
 import kotlinx.datetime.LocalDateTime
 
 fun PaginatedResultDto<RequestDto>.toPaginatedResultRequest(): PaginatedResult<Request> {
@@ -32,6 +34,15 @@ fun FiltersDto.toFilters(): Filters {
         statuses = statuses.map { it.toRequestStatus() },
         drivers = drivers.map { it.toUserFilter() },
         vehicles = vehicles.map { it.toVehicleFilter() }
+    )
+}
+
+fun CustomerDto.toCustomer(): Customer {
+    return Customer(
+        id = id,
+        organizationName = organizationName,
+        email = email,
+        phoneNumber = phoneNumber
     )
 }
 
