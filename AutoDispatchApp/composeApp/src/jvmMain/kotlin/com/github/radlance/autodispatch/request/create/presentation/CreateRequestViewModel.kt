@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.request.create.presentation
 
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
@@ -16,7 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CreateRequestViewModel(
-    private val repository: CreateRequestRepository
+    private val repository: CreateRequestRepository,
+    private val validator: RequestValidator
 ) : BaseViewModel(), EventViewModel<CreateRequestEvent> {
     private val fieldsUiStateMutable = MutableStateFlow(CreateRequestFieldsUiState())
     val fieldsUiState get() = fieldsUiStateMutable.asStateFlow()
@@ -47,21 +47,21 @@ class CreateRequestViewModel(
                 }
             }
 
-            override fun changeCompanyName(value: TextFieldValue) {
+            override fun changeCompanyName(value: String) {
                 fieldsUiStateMutable.update { state ->
                     state.copy(companyNameFieldValue = value)
                 }
 
                 searchJob?.cancel()
 
-                if (value.text.isEmpty()) {
+                if (value.isEmpty()) {
                     customersStateMutable.value = emptyList()
                     return
                 }
 
                 searchJob = viewModelScope.launch {
                     delay(debounceTime)
-                    handle(background = { repository.customers(value.text) }) {
+                    handle(background = { repository.customers(value) }) {
                         customersStateMutable.value = it
                     }
                 }
@@ -126,7 +126,34 @@ class CreateRequestViewModel(
                 cargoUnloading: String,
                 additionalInfo: String?
             ) {
-                TODO("Not yet implemented")
+                with(validator) {
+                    fieldsUiStateMutable.update { state ->
+                        state.copy(
+                            companyEmailErrorMessage = validationEmailMessage(companyEmail),
+                            companyPhoneErrorMessage = companyPhone?.let {
+                                validationPhoneNumberMessage(
+                                    it
+                                )
+                            }
+                                ?: "",
+                            cargoWeightErrorMessage = validationWeightMessage(cargoWeight),
+                            cargoVolumeErrorMessage = cargoVolume?.let { validationVolumeMessage(it) }
+                                ?: ""
+                        )
+                    }
+                }
+
+                with(fieldsUiStateMutable.value) {
+                    if (
+                        companyEmailErrorMessage.isEmpty()
+                        && companyPhoneErrorMessage.isEmpty()
+                        && cargoWeightErrorMessage.isEmpty()
+                        && cargoVolumeErrorMessage.isEmpty()
+                    ) {
+                        // TODO
+                    }
+                }
+
             }
         }
         event.apply(action = action)

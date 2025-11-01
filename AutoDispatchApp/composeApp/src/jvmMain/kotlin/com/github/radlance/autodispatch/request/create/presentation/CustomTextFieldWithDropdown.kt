@@ -24,29 +24,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun CustomTextFieldWithDropdown(
     labelText: String,
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
+    value: String,
+    onValueChange: (String) -> Unit,
     placeholder: String,
     suggestions: List<String> = emptyList(),
     onSuggestionSelected: (String) -> Unit = {},
@@ -58,6 +54,7 @@ fun CustomTextFieldWithDropdown(
     var selectedIndex by remember { mutableStateOf(-1) }
 
     val shape = RoundedCornerShape(16.dp)
+    val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
         Text(
@@ -84,9 +81,9 @@ fun CustomTextFieldWithDropdown(
                 placeholder = { Text(placeholder) },
                 leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null) },
                 trailingIcon = {
-                    if (value.text.isNotEmpty()) {
+                    if (value.isNotEmpty()) {
                         IconButton(onClick = {
-                            onValueChange(TextFieldValue(""))
+                            onValueChange("")
                             expanded = false
                             selectedIndex = -1
                         }) {
@@ -104,42 +101,14 @@ fun CustomTextFieldWithDropdown(
                     .fillMaxWidth()
                     .onFocusChanged {
                         isFocused = it.isFocused
-                        expanded = it.isFocused && suggestions.isNotEmpty()
-                    }
-                    .onPreviewKeyEvent { event ->
-                        if (expanded && suggestions.isNotEmpty()) {
-                            when {
-                                event.key == Key.DirectionDown && event.type == KeyEventType.KeyDown -> {
-                                    selectedIndex = (selectedIndex + 1) % suggestions.size
-                                    true
-                                }
-
-                                event.key == Key.DirectionUp && event.type == KeyEventType.KeyDown -> {
-                                    selectedIndex =
-                                        if (selectedIndex <= 0) suggestions.lastIndex
-                                        else selectedIndex - 1
-                                    true
-                                }
-
-                                event.key == Key.Enter && event.type == KeyEventType.KeyDown -> {
-                                    if (selectedIndex in suggestions.indices) {
-                                        val selected = suggestions[selectedIndex]
-                                        onSuggestionSelected(selected)
-                                        onValueChange(
-                                            TextFieldValue(
-                                                text = selected,
-                                                selection = TextRange(selected.length)
-                                            )
-                                        )
-                                        expanded = false
-                                        selectedIndex = -1
-                                    }
-                                    true
-                                }
-
-                                else -> false
+                        if (it.isFocused) {
+                            expanded = suggestions.isNotEmpty()
+                        } else {
+                            coroutineScope.launch {
+                                delay(100)
+                                expanded = false
                             }
-                        } else false
+                        }
                     }
                     .border(
                         width = if (isFocused) 1.dp else 0.dp,
@@ -172,12 +141,7 @@ fun CustomTextFieldWithDropdown(
                             },
                             onClick = {
                                 onSuggestionSelected(suggestion)
-                                onValueChange(
-                                    TextFieldValue(
-                                        text = suggestion,
-                                        selection = TextRange(suggestion.length)
-                                    )
-                                )
+                                onValueChange(suggestion)
                                 expanded = false
                                 selectedIndex = -1
                             },
@@ -193,12 +157,7 @@ fun CustomTextFieldWithDropdown(
                                     indication = ripple()
                                 ) {
                                     onSuggestionSelected(suggestion)
-                                    onValueChange(
-                                        TextFieldValue(
-                                            text = suggestion,
-                                            selection = TextRange(suggestion.length)
-                                        )
-                                    )
+                                    onValueChange(suggestion)
                                     expanded = false
                                     selectedIndex = -1
                                 }

@@ -108,11 +108,22 @@ fun CreateRequestFields(
         CustomTextFieldWithDropdown(
             labelText = stringResource(Res.string.client_info),
             value = fieldsUiState.companyNameFieldValue,
-            onValueChange = { onEvent(CreateRequestEvent.ChangeCompanyName(it)) },
+            onValueChange = { value ->
+                if ((value != fieldsUiState.companyNameFieldValue)) {
+                    onEvent(CreateRequestEvent.ChangeCompanyName(value))
+                }
+            },
             placeholder = stringResource(Res.string.company_placeholder),
             suggestions = recentCompanies,
             onSuggestionSelected = { selected ->
-                // TODO email and phone autocomplete
+                val company = customers.first { it.organizationName == selected }
+                onEvent(
+                    CreateRequestEvent.ChangeCompanyName(company.organizationName)
+                )
+                onEvent(CreateRequestEvent.ChangeCompanyEmail(company.email))
+                company.phoneNumber?.let {
+                    onEvent(CreateRequestEvent.ChangeCompanyPhone(company.phoneNumber.drop(2)))
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             isRequired = true
@@ -131,7 +142,8 @@ fun CreateRequestFields(
                 placeholderFontSize = 14.sp,
                 searchBarColors = SearchBarDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                ),
+                errorMessage = fieldsUiState.companyEmailErrorMessage
             )
             Spacer(Modifier.width(16.dp))
             CustomTextField(
@@ -140,7 +152,7 @@ fun CreateRequestFields(
                 onValueChange = { newValue ->
                     val digits = newValue.filter { it.isDigit() }
                     if (digits.length <= 10) {
-                        onEvent(CreateRequestEvent.ChangeCompanyPhone(newValue))
+                        onEvent(CreateRequestEvent.ChangeCompanyPhone(digits))
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -152,7 +164,8 @@ fun CreateRequestFields(
                 placeholderFontSize = 14.sp,
                 searchBarColors = SearchBarDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                ),
+                errorMessage = fieldsUiState.companyPhoneErrorMessage
             )
         }
 
@@ -185,7 +198,8 @@ fun CreateRequestFields(
                 placeholderFontSize = 14.sp,
                 searchBarColors = SearchBarDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                ),
+                errorMessage = fieldsUiState.cargoWeightErrorMessage
             )
 
             Spacer(Modifier.width(16.dp))
@@ -201,7 +215,8 @@ fun CreateRequestFields(
                 placeholderFontSize = 14.sp,
                 searchBarColors = SearchBarDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                ),
+                errorMessage = fieldsUiState.cargoVolumeErrorMessage
             )
         }
         Spacer(Modifier.height(16.dp))

@@ -76,11 +76,20 @@ fun CreateRequestDialog(
         },
         confirmButton = {
             Button(
+                enabled = with(fieldsUiState) {
+                    departureCity != null
+                            && destinationCity != null
+                            && companyNameFieldValue.isNotBlank()
+                            && companyEmailFieldValue.isNotBlank()
+                            && cargoWeightFieldValue.isNotBlank()
+                            && loadingFieldValue.isNotBlank()
+                            && unloadingFieldValue.isNotBlank()
+                },
                 onClick = {
                     with(fieldsUiState) {
                         viewModel.reduce(
                             CreateRequestEvent.ClickCreate(
-                                companyName = companyNameFieldValue.text,
+                                companyName = companyNameFieldValue,
                                 companyEmail = companyEmailFieldValue,
                                 companyPhone = companyPhoneFieldValue,
                                 cargoWeight = cargoWeightFieldValue,

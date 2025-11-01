@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.request.create.presentation
 
-import androidx.compose.ui.text.input.TextFieldValue
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 
@@ -8,7 +7,7 @@ data class CreateRequestFieldsUiState(
     val departureCity: City? = null,
     val destinationCity: City? = null,
     val cargoType: CargoType? = null,
-    val companyNameFieldValue: TextFieldValue = TextFieldValue(""),
+    val companyNameFieldValue: String = "",
     val companyEmailFieldValue: String = "",
     val companyEmailErrorMessage: String = "",
     val companyPhoneFieldValue: String = "",

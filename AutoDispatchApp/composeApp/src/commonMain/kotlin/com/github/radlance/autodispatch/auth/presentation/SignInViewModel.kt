@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class SignInViewModel(
-    private val validateSignIn: ValidateSignIn,
+    private val signInValidator: SignInValidator,
     private val signInRepository: AuthRepository,
 ) : BaseViewModel(), EventViewModel<SignInEvent> {
 
@@ -45,10 +45,10 @@ class SignInViewModel(
 
             override fun signIn(email: String, password: String) {
                 fieldsUiStateMutable.update {
-                    with(validateSignIn) {
+                    with(signInValidator) {
                         it.copy(
-                            loginErrorMessage = validateLoginMessage(email),
-                            passwordErrorMessage = validatePasswordMessage(password)
+                            loginErrorMessage = validationLoginMessage(email),
+                            passwordErrorMessage = validationPasswordMessage(password)
                         )
                     }
                 }

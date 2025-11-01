@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.request.create.presentation
 
-import androidx.compose.ui.text.input.TextFieldValue
 import com.github.radlance.autodispatch.common.presentation.Event
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
@@ -26,7 +25,7 @@ interface CreateRequestEvent : Event {
     }
 
 
-    class ChangeCompanyName(private val value: TextFieldValue) : CreateRequestEvent {
+    class ChangeCompanyName(private val value: String) : CreateRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCompanyName(value)
     }
@@ -74,26 +73,26 @@ interface CreateRequestEvent : Event {
     class ClickCreate(
         private val companyName: String,
         private val companyEmail: String,
-        private val companyPhone: String?,
+        private val companyPhone: String,
         private val cargoWeight: String,
-        private val cargoVolume: String?,
-        private val cargoDescription: String?,
+        private val cargoVolume: String,
+        private val cargoDescription: String,
         private val cargoLoading: String,
         private val cargoUnloading: String,
-        private val additionalInfo: String?
+        private val additionalInfo: String
     ) :
         CreateRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.createRequest(
             companyName = companyName,
             companyEmail = companyEmail,
-            companyPhone = companyPhone,
+            companyPhone = if (companyPhone.isBlank()) null else "+7$companyPhone",
             cargoWeight = cargoWeight,
-            cargoVolume = cargoVolume,
-            cargoDescription = cargoDescription,
+            cargoVolume = cargoVolume.ifBlank { null },
+            cargoDescription = cargoDescription.ifBlank { null },
             cargoLoading = cargoLoading,
             cargoUnloading = cargoUnloading,
-            additionalInfo = additionalInfo
+            additionalInfo = additionalInfo.ifBlank { null }
         )
     }
 }
@@ -106,7 +105,7 @@ interface CreateRequestAction {
 
     fun changeCargoType(cargoType: CargoType)
 
-    fun changeCompanyName(value: TextFieldValue)
+    fun changeCompanyName(value: String)
 
     fun changeCompanyEmail(value: String)
 

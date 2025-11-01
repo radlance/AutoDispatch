@@ -2,9 +2,9 @@ package com.github.radlance.autodispatch.di
 
 import com.github.radlance.autodispatch.auth.data.RemoteAuthRepository
 import com.github.radlance.autodispatch.auth.domain.AuthRepository
-import com.github.radlance.autodispatch.auth.presentation.BaseValidateSignIn
+import com.github.radlance.autodispatch.auth.presentation.BaseSignInValidator
 import com.github.radlance.autodispatch.auth.presentation.SignInViewModel
-import com.github.radlance.autodispatch.auth.presentation.ValidateSignIn
+import com.github.radlance.autodispatch.auth.presentation.SignInValidator
 import com.github.radlance.autodispatch.common.data.ApiService
 import com.github.radlance.autodispatch.common.data.BaseDataStoreManager
 import com.github.radlance.autodispatch.common.data.BaseHandleRequest
@@ -36,7 +36,7 @@ val navigationModule = module {
 val authModule = module {
     singleOf(::RemoteAuthRepository).bind<AuthRepository>()
     singleOf(::BaseHandleRequest).bind<HandleRequest>()
-    singleOf(::BaseValidateSignIn).bind<ValidateSignIn>()
+    singleOf(::BaseSignInValidator).bind<SignInValidator>()
 
     viewModelOf(::SignInViewModel)
 }

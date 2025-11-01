@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.request.common.presentation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -63,11 +64,17 @@ fun CustomTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     suggestions: List<String> = emptyList(),
     onSuggestionSelected: ((String) -> Unit)? = null,
+    errorMessage: String = "",
 ) {
     var isFocused by remember { mutableStateOf(false) }
+
     val shape = RoundedCornerShape(16.dp)
     val borderColor by animateColorAsState(
-        targetValue = if (isFocused) MaterialTheme.colorScheme.primary else Color.Transparent,
+        targetValue = when {
+            errorMessage.isNotEmpty() -> MaterialTheme.colorScheme.error
+            isFocused -> MaterialTheme.colorScheme.primary
+            else -> Color.Transparent
+        },
         label = "borderColorAnimation"
     )
 
@@ -116,18 +123,16 @@ fun CustomTextField(
                         {
                             Icon(
                                 imageVector = it,
-                                contentDescription = "Search Icon"
+                                contentDescription = "Leading Icon"
                             )
                         }
                     },
                     trailingIcon = {
                         if (value.isNotEmpty()) {
-                            IconButton(
-                                onClick = { onValueChange("") }
-                            ) {
+                            IconButton(onClick = { onValueChange("") }) {
                                 Icon(
                                     imageVector = Icons.Default.Clear,
-                                    contentDescription = "Clear search"
+                                    contentDescription = "Clear text"
                                 )
                             }
                         }
@@ -142,15 +147,10 @@ fun CustomTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height)
-                .onFocusChanged { focusState ->
-                    isFocused = focusState.isFocused
-                }
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = shape
-                )
+                .onFocusChanged { focusState -> isFocused = focusState.isFocused }
+                .border(width = 1.dp, color = borderColor, shape = shape)
         )
+
         if (isFocused && suggestions.isNotEmpty()) {
             Card {
                 suggestions.forEach { suggestion ->
@@ -169,6 +169,18 @@ fun CustomTextField(
                             }
                     )
                 }
+            }
+        }
+
+        AnimatedVisibility(visible = errorMessage.isNotEmpty()) {
+            Column {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
             }
         }
     }

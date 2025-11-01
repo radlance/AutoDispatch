@@ -8,7 +8,9 @@ import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.request.core.presentation.core.RequestViewModel
 import com.github.radlance.autodispatch.request.create.data.RemoteCreateRequestRepository
 import com.github.radlance.autodispatch.request.create.domain.CreateRequestRepository
+import com.github.radlance.autodispatch.request.create.presentation.BaseRequestValidator
 import com.github.radlance.autodispatch.request.create.presentation.CreateRequestViewModel
+import com.github.radlance.autodispatch.request.create.presentation.RequestValidator
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -29,5 +31,6 @@ val requestModule
 val createRequestModule
     get() = module {
         singleOf(::RemoteCreateRequestRepository).bind<CreateRequestRepository>()
+        singleOf(::BaseRequestValidator).bind<RequestValidator>()
         viewModelOf(::CreateRequestViewModel)
     }
