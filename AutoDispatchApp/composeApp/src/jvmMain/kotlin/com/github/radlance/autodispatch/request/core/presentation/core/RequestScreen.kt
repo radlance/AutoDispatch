@@ -78,6 +78,7 @@ fun RequestsScreen(
     var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
     var selectedRequest by rememberSaveable { mutableStateOf<Request?>(null) }
+    var openFirstRequestAfterReload by rememberSaveable { mutableStateOf(false) }
 
     val requestsUiState by viewModel.requestScreenState.collectAsState()
     val pageIndex = requestsUiState.pageIndex
@@ -110,7 +111,11 @@ fun RequestsScreen(
                             onDismiss = {
                                 showCreationDialog = false
                             },
-                            onSuccessCreateRequest = viewModel::onRequestChanged
+                            onSuccessCreateRequest = {
+                                showCreationDialog = false
+                                openFirstRequestAfterReload = true
+                                viewModel.onRequestChanged()
+                            }
                         )
                     }
 
@@ -193,7 +198,14 @@ fun RequestsScreen(
                     requestsUiState.requestsResultState.Reduce(
                         onSuccess = { request ->
                             val requestsToShow = request.items
-
+                            if (openFirstRequestAfterReload) {
+                                val first = requestsToShow.firstOrNull()
+                                if (first != null) {
+                                    selectedRequest = first
+                                    showRequestDetailsPanel = true
+                                }
+                                openFirstRequestAfterReload = false
+                            }
                             selectedRequest?.let { selected ->
                                 val foundRequest = requestsToShow.find { r -> r.requestNumber == selected.requestNumber }
 
