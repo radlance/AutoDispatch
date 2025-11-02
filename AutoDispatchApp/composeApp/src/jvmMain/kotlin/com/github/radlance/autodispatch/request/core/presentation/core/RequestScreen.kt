@@ -194,6 +194,17 @@ fun RequestsScreen(
                         onSuccess = { request ->
                             val requestsToShow = request.items
 
+                            selectedRequest?.let { selected ->
+                                val foundRequest = requestsToShow.find { r -> r.requestNumber == selected.requestNumber }
+
+                                if (foundRequest == null) {
+                                    selectedRequest = null
+                                    showRequestDetailsPanel = false
+                                } else if (foundRequest != selected) {
+                                    selectedRequest = foundRequest
+                                }
+                            }
+
                             if (requestsToShow.isEmpty()) {
                                 Box(
                                     modifier = Modifier
@@ -218,20 +229,7 @@ fun RequestsScreen(
                                 Column(modifier = Modifier.fillMaxSize()) {
                                     Box(modifier = Modifier.weight(1f)) {
                                         RequestTable(
-                                            requests = run {
-                                                selectedRequest?.let { selected ->
-                                                    val find =
-                                                        requestsToShow.find { r ->
-                                                            r.requestNumber == selected.requestNumber
-                                                        }
-                                                    find?.let {
-                                                        if (it != selected) {
-                                                            selectedRequest = find
-                                                        }
-                                                    }
-                                                }
-                                                requestsToShow
-                                            },
+                                            requests = requestsToShow,
                                             onRequestClick = { req ->
                                                 showRequestDetailsPanel =
                                                     if (req == selectedRequest) {
@@ -242,6 +240,8 @@ fun RequestsScreen(
                                             },
                                             dataTableState = dataTableState,
                                             pageIndex = pageIndex,
+                                            selectedRequest = selectedRequest,
+                                            showPanel = showRequestDetailsPanel,
                                             pageSize = pageSize
                                         )
 
@@ -290,6 +290,8 @@ fun RequestsScreen(
                                         },
                                         dataTableState = dataTableState,
                                         pageIndex = pageIndex,
+                                        selectedRequest = selectedRequest,
+                                        showPanel = showRequestDetailsPanel,
                                         pageSize = pageSize
                                     )
 
@@ -380,16 +382,25 @@ fun RequestsScreen(
                 enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
                 exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
             ) {
-                RequestDetailsPanel(
-                    cities = success.cities,
-                    cargoTypes = success.cargoTypes,
-                    onSuccessCreateRequest = viewModel::onRequestChanged,
-                    onClosePanel = { showRequestDetailsPanel = false },
-                    request = selectedRequest!!,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(350.dp)
-                )
+                val request = selectedRequest
+                if (request != null) {
+                    RequestDetailsPanel(
+                        cities = success.cities,
+                        cargoTypes = success.cargoTypes,
+                        onSuccessCreateRequest = viewModel::onRequestChanged,
+                        onClosePanel = { showRequestDetailsPanel = false },
+                        request = request,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(350.dp)
+                    )
+                } else {
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .width(350.dp)
+                    )
+                }
             }
         }
     }

@@ -1,10 +1,14 @@
 package com.github.radlance.autodispatch.request.core.presentation.core
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.car
@@ -25,6 +29,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun RequestTable(
     requests: List<Request>,
+    selectedRequest: Request?,
+    showPanel: Boolean,
     onRequestClick: (Request) -> Unit,
     dataTableState: DataTableState,
     pageIndex: Int,
@@ -35,6 +41,17 @@ fun RequestTable(
 
     LaunchedEffect(requests.size) {
         dataTableState.verticalScrollState.scrollTo(0)
+    }
+
+    val highlight = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+
+    val animatedColors: Map<Request, Color> = requests.associateWith { req ->
+        val target = if (req == selectedRequest && showPanel) highlight else Color.Transparent
+        animateColorAsState(
+            targetValue = target,
+            animationSpec = tween(durationMillis = 200),
+            label = "rowColorAnimation_${req.requestNumber}"
+        ).value
     }
 
     CustomPaginationDataTable(
@@ -69,6 +86,7 @@ fun RequestTable(
     ) {
         requests.forEachIndexed { index, item ->
             row {
+                backgroundColor = animatedColors[item] ?: Color.Transparent
                 onClick = {
                     onRequestClick(item)
                     scope.launch {
