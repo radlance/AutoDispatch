@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 object RequestTable : IntIdTable(name = "request") {
+    val createdById = reference("created_by_id", UserTable)
     val statusId = reference("status_id", RequestStatusTable)
     val loadingPoint = varchar("loading_point", 255)
     val unloadingPoint = varchar("unloading_point", 255)

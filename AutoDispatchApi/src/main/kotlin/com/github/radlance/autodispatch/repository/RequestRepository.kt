@@ -243,10 +243,11 @@ class RequestRepository {
         return customerId
     }
 
-    suspend fun createRequest(createRequest: CreateRequest) = loggedTransaction {
+    suspend fun createRequest(createdById: Int, createRequest: CreateRequest) = loggedTransaction {
 
         RequestTable.insert { row ->
             row[statusId] = 1
+            row[this.createdById] = createdById
             row[loadingPoint] = createRequest.loadingPoint
             row[unloadingPoint] = createRequest.unloadingPoint
             row[cargoTypeId] = createRequest.cargoTypeId
@@ -271,8 +272,9 @@ class RequestRepository {
             .map { it.toCustomer() }
     }
 
-    suspend fun editRequest(requestId: Int, editRequest: CreateRequest) = loggedTransaction {
+    suspend fun editRequest(createdById: Int, requestId: Int, editRequest: CreateRequest) = loggedTransaction {
         RequestTable.update({ RequestTable.id eq requestId }) { row ->
+            row[this.createdById] = createdById
             row[loadingPoint] = editRequest.loadingPoint
             row[unloadingPoint] = editRequest.unloadingPoint
             row[cargoTypeId] = editRequest.cargoTypeId
