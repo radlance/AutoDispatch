@@ -114,13 +114,13 @@ fun RequestTable(
                     StatusWithColor(status = item.statusName)
                 }
                 cell {
-                    Text(text = item.driverFullName?.let { abbreviateName(it) } ?: "-",
+                    Text(text = item.driverFullName?.let { abbreviateName(it) } ?: "—",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis)
                 }
                 cell {
                     Text(
-                        text = item.vehicleInfo ?: "-",
+                        text = item.vehicleInfo?.ifEmpty { "—" } ?: "—",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

@@ -135,7 +135,8 @@ class CreateRequestViewModel(
                 cargoDescription: String?,
                 cargoLoading: String,
                 cargoUnloading: String,
-                additionalInfo: String?
+                additionalInfo: String?,
+                requestId: Int?
             ) {
                 with(validator) {
                     fieldsUiStateMutable.update { state ->
@@ -162,22 +163,29 @@ class CreateRequestViewModel(
                         && cargoVolumeErrorMessage.isEmpty()
                     ) {
                         createRequestStateMutable.value = FetchResultUiState.Loading
-                        val request = CreateRequest(
-                            loadingPoint = cargoLoading,
-                            unloadingPoint = cargoUnloading,
-                            cargoTypeId = cargoTypeId,
-                            cargoWeight = cargoWeight.toDouble(),
-                            cargoVolume = cargoVolume?.toDouble(),
-                            cargoDescription = cargoDescription,
-                            customerName = companyName,
-                            customerEmail = companyEmail,
-                            customerPhone = companyPhone,
-                            originId = originId,
-                            destinationId = destinationId,
-                            transportationDescription = additionalInfo
-                        )
 
-                        handle(background = { repository.createRequest(request) }) {
+
+                        handle(
+                            background = {
+                                val request = CreateRequest(
+                                    loadingPoint = cargoLoading,
+                                    unloadingPoint = cargoUnloading,
+                                    cargoTypeId = cargoTypeId,
+                                    cargoWeight = cargoWeight.toDouble(),
+                                    cargoVolume = cargoVolume?.toDouble(),
+                                    cargoDescription = cargoDescription,
+                                    customerName = companyName,
+                                    customerEmail = companyEmail,
+                                    customerPhone = companyPhone,
+                                    originId = originId,
+                                    destinationId = destinationId,
+                                    transportationDescription = additionalInfo
+                                )
+                                requestId?.let {
+                                    repository.editRequest(requestId, request)
+                                } ?: repository.createRequest(request)
+                            }
+                        ) {
                             createRequestStateMutable.value = it.toUiState()
                         }
                     }
@@ -208,6 +216,10 @@ class CreateRequestViewModel(
                 }
 
                 createRequestStateMutable.value = FetchResultUiState.Idle
+            }
+
+            override fun setupRequestFieldsState(fieldsUiState: CreateRequestFieldsUiState) {
+                fieldsUiStateMutable.value = fieldsUiState
             }
         }
         event.apply(action = action)

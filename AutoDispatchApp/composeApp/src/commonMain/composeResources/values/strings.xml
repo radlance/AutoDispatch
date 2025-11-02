@@ -77,4 +77,10 @@
     <string name="unloading_point_placeholder">Склад получателя, СПБ, пр. Обуховской обороны 120</string>
     <string name="additional_info">Дополнительная информация</string>
     <string name="special_req">Особые требования к перевозке, условия загрузки/разгрузки…</string>
+    <string name="request_editing">Редактирование заявки </string>
+    <string name="edit_request">Редактировать заявку</string>
+    <string name="remove">Удалить</string>
+    <string name="cargo_additional_description">Дополнительное описание груза</string>
+    <string name="cargo_additional_description_placeholder">Особенности груза, упаковки, хрупкость…</string>
+    <string name="search">Поиск…</string>
 </resources>

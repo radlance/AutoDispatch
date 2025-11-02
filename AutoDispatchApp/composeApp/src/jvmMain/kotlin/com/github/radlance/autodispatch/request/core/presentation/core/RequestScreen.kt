@@ -50,11 +50,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create_request
+import autodispatch.composeapp.generated.resources.no_results_generic
+import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.search_by_requests
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.create.presentation.CreateRequestDialog
 import com.seanproctor.datatable.DataTableState
@@ -107,7 +110,7 @@ fun RequestsScreen(
                             onDismiss = {
                                 showCreationDialog = false
                             },
-                            onSuccessCreateRequest = viewModel::onRequestAdded
+                            onSuccessCreateRequest = viewModel::onRequestChanged
                         )
                     }
 
@@ -205,7 +208,10 @@ fun RequestsScreen(
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(48.dp)
                                         )
-                                        Text("Ничего не найдено", textAlign = TextAlign.Center)
+                                        Text(
+                                            stringResource(Res.string.no_results_generic),
+                                            textAlign = TextAlign.Center
+                                        )
                                     }
                                 }
                             } else {
@@ -345,7 +351,7 @@ fun RequestsScreen(
                                             viewModel.retryLoadRequests()
                                         }
                                     ) {
-                                        Text("Повторить")
+                                        Text(stringResource(Res.string.retry))
                                     }
                                 }
                             }
@@ -367,19 +373,24 @@ fun RequestsScreen(
             )
 
         }
-
-        AnimatedVisibility(
-            visible = showRequestDetailsPanel,
-            enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
-            exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
-        ) {
-            RequestDetailsPanel(
-                onClosePanel = { showRequestDetailsPanel = false },
-                request = selectedRequest!!,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(350.dp)
-            )
+        val success = (requestsUiState.filters as? FetchResultUiState.Success<Filters>)?.data
+        success?.let {
+            AnimatedVisibility(
+                visible = showRequestDetailsPanel,
+                enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
+                exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
+            ) {
+                RequestDetailsPanel(
+                    cities = success.cities,
+                    cargoTypes = success.cargoTypes,
+                    onSuccessCreateRequest = viewModel::onRequestChanged,
+                    onClosePanel = { showRequestDetailsPanel = false },
+                    request = selectedRequest!!,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(350.dp)
+                )
+            }
         }
     }
 }

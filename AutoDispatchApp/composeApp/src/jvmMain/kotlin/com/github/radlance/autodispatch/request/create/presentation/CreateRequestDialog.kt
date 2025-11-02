@@ -8,11 +8,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,12 +38,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.create_request
 import autodispatch.composeapp.generated.resources.creating_new_request
+import autodispatch.composeapp.generated.resources.edit_request
+import autodispatch.composeapp.generated.resources.remove
+import autodispatch.composeapp.generated.resources.request_editing
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
@@ -53,6 +64,8 @@ fun CreateRequestDialog(
     onDismiss: () -> Unit,
     onSuccessCreateRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isEditRequest: Boolean = false,
+    currentFieldsUiState: CreateRequestFieldsUiState = CreateRequestFieldsUiState(),
     viewModel: CreateRequestViewModel = koinViewModel()
 ) {
     val fieldsUiState by viewModel.fieldsUiState.collectAsState()
@@ -62,6 +75,12 @@ fun CreateRequestDialog(
     val scrollState = rememberScrollState()
     val screenHeight = LocalWindowInfo.current.containerSize.height
     val maxDialogHeight = screenHeight * 0.6f
+
+    LaunchedEffect(Unit) {
+        if (isEditRequest) {
+            viewModel.reduce(CreateRequestEvent.SetupFieldsState(currentFieldsUiState))
+        }
+    }
 
     LaunchedEffect(createRequestState) {
         if (createRequestState is FetchResultUiState.Success) {
@@ -82,8 +101,19 @@ fun CreateRequestDialog(
             }
         },
         title = {
+            val title = if (isEditRequest) {
+                buildAnnotatedString {
+                    append(stringResource(Res.string.request_editing))
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append(fieldsUiState.requestNumber)
+                    }
+                }
+            } else {
+                buildAnnotatedString { append(stringResource(Res.string.creating_new_request)) }
+            }
+
             Text(
-                stringResource(Res.string.creating_new_request),
+                title,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
@@ -146,46 +176,65 @@ fun CreateRequestDialog(
                 }
             }
         },
-        confirmButton = {
-            Button(
-                enabled = with(fieldsUiState) {
-                    departureCity != null
-                            && destinationCity != null
-                            && cargoType != null
-                            && companyNameFieldValue.isNotBlank()
-                            && companyEmailFieldValue.isNotBlank()
-                            && cargoWeightFieldValue.isNotBlank()
-                            && loadingFieldValue.isNotBlank()
-                            && unloadingFieldValue.isNotBlank()
-                            && !isLoading
-                },
-                onClick = {
-                    with(fieldsUiState) {
-                        viewModel.reduce(
-                            CreateRequestEvent.ClickCreate(
-                                originId = departureCity!!.id,
-                                destinationId = destinationCity!!.id,
-                                companyName = companyNameFieldValue,
-                                companyEmail = companyEmailFieldValue,
-                                companyPhone = companyPhoneFieldValue,
-                                cargoTypeId = cargoType!!.id,
-                                cargoWeight = cargoWeightFieldValue,
-                                cargoVolume = cargoVolumeFieldValue,
-                                cargoDescription = cargoDescriptionFieldValue,
-                                cargoLoading = loadingFieldValue,
-                                cargoUnloading = unloadingFieldValue,
-                                additionalInfo = additionalInfoFieldValue
-                            )
-                        )
+        confirmButton = {},
+        dismissButton = {
+            val buttonLabelRes = if (isEditRequest) {
+                Res.string.edit_request
+            } else Res.string.create_request
+            Row {
+                if (isEditRequest) {
+                    OutlinedButton(onClick = onDismiss, enabled = !isLoading) {
+                        Text(text = stringResource(Res.string.remove))
                     }
                 }
-            ) {
-                Text(text = stringResource(Res.string.create_request))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isLoading) {
-                Text(text = stringResource(Res.string.cancel))
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onDismiss, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(12.dp))
+                Button(
+                    enabled = with(fieldsUiState) {
+                        departureCity != null
+                                && destinationCity != null
+                                && cargoType != null
+                                && companyNameFieldValue.isNotBlank()
+                                && companyEmailFieldValue.isNotBlank()
+                                && cargoWeightFieldValue.isNotBlank()
+                                && loadingFieldValue.isNotBlank()
+                                && unloadingFieldValue.isNotBlank()
+                                && !isLoading
+                    },
+                    onClick = {
+                        if (isEditRequest) {
+                            if (fieldsUiState == currentFieldsUiState) {
+                                onDismiss()
+                                return@Button
+                            }
+                        }
+
+                        with(fieldsUiState) {
+                            viewModel.reduce(
+                                CreateRequestEvent.ClickCreate(
+                                    originId = departureCity!!.id,
+                                    destinationId = destinationCity!!.id,
+                                    companyName = companyNameFieldValue,
+                                    companyEmail = companyEmailFieldValue,
+                                    companyPhone = companyPhoneFieldValue,
+                                    cargoTypeId = cargoType!!.id,
+                                    cargoWeight = cargoWeightFieldValue,
+                                    cargoVolume = cargoVolumeFieldValue,
+                                    cargoDescription = cargoDescriptionFieldValue,
+                                    cargoLoading = loadingFieldValue,
+                                    cargoUnloading = unloadingFieldValue,
+                                    additionalInfo = additionalInfoFieldValue,
+                                    requestId = requestId
+                                )
+                            )
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(buttonLabelRes))
+                }
             }
         },
         shape = RoundedCornerShape(16.dp)

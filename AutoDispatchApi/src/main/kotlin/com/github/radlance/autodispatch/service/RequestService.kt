@@ -43,13 +43,16 @@ class RequestService(
         return filters
     }
 
-    suspend fun createRequest(login: String, request: CreateRequest) {
-        val currentUser = profileRepository.userByLogin(login)
-        requestRepository.createRequest(currentUser.id, request)
+    suspend fun createRequest(request: CreateRequest) {
+        requestRepository.createRequest(request)
     }
 
     suspend fun customers(query: String): List<Customer> {
         val customers = requestRepository.customers(query)
         return customers
+    }
+
+    suspend fun editRequest(requestId: Int, request: CreateRequest) {
+        requestRepository.editRequest(requestId, request)
     }
 }

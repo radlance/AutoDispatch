@@ -1,7 +1,6 @@
 package com.github.radlance.autodispatch.request.core.presentation.core
 
 import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -16,10 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
@@ -27,16 +24,16 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
@@ -44,7 +41,6 @@ import autodispatch.composeapp.generated.resources.additional_info
 import autodispatch.composeapp.generated.resources.car
 import autodispatch.composeapp.generated.resources.cargo_info
 import autodispatch.composeapp.generated.resources.cargo_type
-import autodispatch.composeapp.generated.resources.close_panel
 import autodispatch.composeapp.generated.resources.creation_date
 import autodispatch.composeapp.generated.resources.customer
 import autodispatch.composeapp.generated.resources.customer_email
@@ -55,13 +51,16 @@ import autodispatch.composeapp.generated.resources.driver_and_vehicle
 import autodispatch.composeapp.generated.resources.loading_point
 import autodispatch.composeapp.generated.resources.loading_unloading_points
 import autodispatch.composeapp.generated.resources.request_creation_date
-import autodispatch.composeapp.generated.resources.request_details
 import autodispatch.composeapp.generated.resources.route
 import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import com.github.radlance.autodispatch.request.core.domain.CargoType
+import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.request.create.presentation.CreateRequestDialog
+import com.github.radlance.autodispatch.request.create.presentation.CreateRequestFieldsUiState
 import org.jetbrains.compose.resources.stringResource
 
 private val SECTION_GAP = 18.dp
@@ -70,15 +69,49 @@ private val ICON_TEXT_GAP = 6.dp
 
 @Composable
 fun RequestDetailsPanel(
+    cities: List<City>,
+    cargoTypes: List<CargoType>,
     onClosePanel: () -> Unit,
+    onSuccessCreateRequest: () -> Unit,
     request: Request,
     modifier: Modifier = Modifier
 ) {
+    var showEditDialog by rememberSaveable { mutableStateOf(false) }
+
     val scrollState = rememberScrollState()
+
+    if (showEditDialog) {
+        with(request) {
+            CreateRequestDialog(
+                cities = cities,
+                cargoTypes = cargoTypes,
+                onDismiss = { showEditDialog = false },
+                onSuccessCreateRequest = onSuccessCreateRequest,
+                isEditRequest = true,
+                currentFieldsUiState = CreateRequestFieldsUiState(
+                    departureCity = cities.first { it.name == request.origin },
+                    destinationCity = cities.first { it.name == request.destination },
+                    cargoType = cargoTypes.first { it.name == request.cargoTypeName },
+                    requestNumber = request.requestNumber,
+                    companyNameFieldValue = organizationName,
+                    companyEmailFieldValue = organizationEmail,
+                    companyPhoneFieldValue = organizationPhoneNumber?.removePrefix("+7") ?: "",
+                    cargoWeightFieldValue = cargoWeight.formatNumberNoTrailingZeros(),
+                    cargoVolumeFieldValue = cargoVolume?.formatNumberNoTrailingZeros() ?: "",
+                    cargoDescriptionFieldValue = cargoDescription ?: "",
+                    loadingFieldValue = loadingPoint,
+                    unloadingFieldValue = unloadingPoint,
+                    additionalInfoFieldValue = transportationDescription ?: "",
+                    requestId = request.id
+                )
+            )
+        }
+    }
 
     Column(modifier = modifier.padding(8.dp)) {
         PanelHeader(
             requestNumber = request.requestNumber,
+            onSettingsClick = { showEditDialog = true },
             onClose = onClosePanel
         )
 
@@ -212,44 +245,6 @@ fun RequestDetailsPanel(
             VerticalScrollbar(
                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().offset(x = 3.dp),
                 adapter = rememberScrollbarAdapter(scrollState)
-            )
-        }
-    }
-}
-
-@Composable
-private fun PanelHeader(
-    requestNumber: String?,
-    onClose: () -> Unit
-) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(Res.string.request_details),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.weight(1f)
-        )
-
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = requestNumber ?: "—",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Spacer(Modifier.width(8.dp))
-
-        IconButton(onClick = onClose) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(Res.string.close_panel)
             )
         }
     }

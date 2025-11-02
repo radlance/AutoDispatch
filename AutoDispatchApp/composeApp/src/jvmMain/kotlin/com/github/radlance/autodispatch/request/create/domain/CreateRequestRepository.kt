@@ -7,4 +7,6 @@ interface CreateRequestRepository {
     suspend fun customers(query: String): List<Customer>
 
     suspend fun createRequest(request: CreateRequest): FetchResult<Unit, String>
+
+    suspend fun editRequest(requestId: Int, request: CreateRequest): FetchResult<Unit, String>
 }

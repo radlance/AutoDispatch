@@ -27,7 +27,7 @@ class RequestViewModel(
         loadFilters()
     }
 
-    fun onRequestAdded() {
+    fun onRequestChanged() {
         if (requestScreenStateMutable.value.requestsResultState is FetchResultUiState.Success) {
             triggerRequestLoad()
         }

@@ -26,4 +26,15 @@ class RemoteCreateRequestRepository(
         handleRequest.handle {
             apiService.createRequest(createRequestDto = request.toCreateRequestDto())
     }
+
+    override suspend fun editRequest(
+        requestId: Int,
+        request: CreateRequest
+    ): FetchResult<Unit, String> =
+        handleRequest.handle {
+            apiService.editRequest(
+                requestId = requestId,
+                createRequestDto = request.toCreateRequestDto()
+            )
+        }
 }

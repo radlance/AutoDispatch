@@ -20,6 +20,7 @@ import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
 import com.github.radlance.autodispatch.util.loggedTransaction
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
 import org.jetbrains.exposed.sql.Concat
@@ -35,6 +36,7 @@ import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
+import org.jetbrains.exposed.sql.update
 
 class RequestRepository {
     suspend fun requests(
@@ -217,27 +219,33 @@ class RequestRepository {
         )
     }
 
-    suspend fun createRequest(
-        userId: Int,
-        createRequest: CreateRequest
-    ) = loggedTransaction {
+    private fun getOrganizationId(customerName: String, customerEmail: String, customerPhone: String?): EntityID<Int> {
         var customerId = CustomerTable
             .select(CustomerTable.id)
-            .where { CustomerTable.organizationName eq createRequest.customerName }
+            .where { CustomerTable.organizationName eq customerName }
             .limit(1)
             .map { it[CustomerTable.id] }
             .firstOrNull()
 
         if (customerId == null) {
             customerId = CustomerTable.insert {
-                it[organizationName] = createRequest.customerName
-                it[email] = createRequest.customerEmail
-                it[phoneNumber] = createRequest.customerPhone
+                it[organizationName] = customerName
+                it[email] = customerEmail
+                it[phoneNumber] = customerPhone
             } get CustomerTable.id
+        } else {
+            CustomerTable.update({ CustomerTable.id eq customerId }) {
+                it[email] = customerEmail
+                it[phoneNumber] = customerPhone
+            }
         }
 
+        return customerId
+    }
+
+    suspend fun createRequest(createRequest: CreateRequest) = loggedTransaction {
+
         RequestTable.insert { row ->
-            row[createdById] = userId
             row[statusId] = 1
             row[loadingPoint] = createRequest.loadingPoint
             row[unloadingPoint] = createRequest.unloadingPoint
@@ -245,7 +253,11 @@ class RequestRepository {
             row[cargoWeight] = createRequest.cargoWeight
             row[cargoVolume] = createRequest.cargoVolume
             row[cargoDescription] = createRequest.cargoDescription
-            row[this.customerId] = customerId
+            row[this.customerId] = getOrganizationId(
+                customerName = createRequest.customerName,
+                customerEmail = createRequest.customerEmail,
+                customerPhone = createRequest.customerPhone
+            )
             row[originId] = createRequest.originId
             row[destinationId] = createRequest.destinationId
             row[transportationDescription] = createRequest.transportationDescription
@@ -257,5 +269,24 @@ class RequestRepository {
         return@loggedTransaction CustomerEntity.find { CustomerTable.organizationName.lowerCase() like searchQuery }
             .limit(4)
             .map { it.toCustomer() }
+    }
+
+    suspend fun editRequest(requestId: Int, editRequest: CreateRequest) = loggedTransaction {
+        RequestTable.update({ RequestTable.id eq requestId }) { row ->
+            row[loadingPoint] = editRequest.loadingPoint
+            row[unloadingPoint] = editRequest.unloadingPoint
+            row[cargoTypeId] = editRequest.cargoTypeId
+            row[cargoWeight] = editRequest.cargoWeight
+            row[cargoVolume] = editRequest.cargoVolume
+            row[cargoDescription] = editRequest.cargoDescription
+            row[this.customerId] = getOrganizationId(
+                customerName = editRequest.customerName,
+                customerEmail = editRequest.customerEmail,
+                customerPhone = editRequest.customerPhone
+            )
+            row[originId] = editRequest.originId
+            row[destinationId] = editRequest.destinationId
+            row[transportationDescription] = editRequest.transportationDescription
+        }
     }
 }

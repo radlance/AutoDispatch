@@ -7,6 +7,8 @@ data class CreateRequestFieldsUiState(
     val departureCity: City? = null,
     val destinationCity: City? = null,
     val cargoType: CargoType? = null,
+    val requestId: Int? = null,
+    val requestNumber: String = "",
     val companyNameFieldValue: String = "",
     val companyEmailFieldValue: String = "",
     val companyEmailErrorMessage: String = "",

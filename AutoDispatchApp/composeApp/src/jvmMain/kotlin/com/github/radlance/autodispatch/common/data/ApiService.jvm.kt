@@ -10,6 +10,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 
 interface ApiServiceJvm : ApiService {
@@ -31,6 +32,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun customers(query: String): List<CustomerDto>
 
     suspend fun createRequest(createRequestDto: CreateRequestDto)
+
+    suspend fun editRequest(requestId: Int, createRequestDto: CreateRequestDto)
 }
 
 internal class KtorApiServiceJvm(
@@ -90,6 +93,12 @@ internal class KtorApiServiceJvm(
 
     override suspend fun createRequest(createRequestDto: CreateRequestDto) {
         httpClient.post("requests") {
+            setBody(createRequestDto)
+        }
+    }
+
+    override suspend fun editRequest(requestId: Int, createRequestDto: CreateRequestDto) {
+        httpClient.put("requests/${requestId}") {
             setBody(createRequestDto)
         }
     }

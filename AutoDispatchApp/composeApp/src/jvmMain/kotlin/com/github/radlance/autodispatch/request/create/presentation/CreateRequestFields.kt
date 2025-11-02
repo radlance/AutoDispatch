@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.additional_info
+import autodispatch.composeapp.generated.resources.cargo_additional_description
+import autodispatch.composeapp.generated.resources.cargo_additional_description_placeholder
 import autodispatch.composeapp.generated.resources.cargo_info
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.choice_city
@@ -221,10 +223,10 @@ fun CreateRequestFields(
         }
         Spacer(Modifier.height(16.dp))
         CustomTextField(
-            labelText = "Дополнительное описание груза",
+            labelText = stringResource(Res.string.cargo_additional_description),
             value = fieldsUiState.cargoDescriptionFieldValue,
             onValueChange = { onEvent(CreateRequestEvent.ChangeCargoDescription(it)) },
-            placeholder = "Особенности груза, упаковки, хрупкость...",
+            placeholder = stringResource(Res.string.cargo_additional_description_placeholder),
             modifier = Modifier.fillMaxWidth(),
             isRequired = false,
             singleLine = false,

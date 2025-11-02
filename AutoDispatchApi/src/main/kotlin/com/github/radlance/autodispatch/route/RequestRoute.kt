@@ -2,7 +2,6 @@ package com.github.radlance.autodispatch.route
 
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.service.RequestService
-import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -61,10 +60,23 @@ fun Route.requestRoute(requestService: RequestService) {
             }
 
             post {
-                val login = call.claimByNameOrUnauthorized<String>(name = "login")
                 val request = call.receive<CreateRequest>()
-                requestService.createRequest(login = login, request = request)
+                requestService.createRequest(request = request)
                 call.respond(HttpStatusCode.Created)
+            }
+
+            put("/{id}") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                val createRequest = call.receive<CreateRequest>()
+
+                requestService.editRequest(
+                    requestId = id,
+                    request = createRequest
+                )
+
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

@@ -42,6 +42,8 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.all
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.done
+import autodispatch.composeapp.generated.resources.no_results_generic
+import autodispatch.composeapp.generated.resources.search
 import autodispatch.composeapp.generated.resources.select_all
 import org.jetbrains.compose.resources.stringResource
 
@@ -120,7 +122,7 @@ private fun SelectionDialog(
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Поиск…") },
+                        placeholder = { Text(stringResource(Res.string.search)) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -180,7 +182,7 @@ private fun SelectionDialog(
 
                             if (filteredOptions.isEmpty()) {
                                 Text(
-                                    "Ничего не найдено",
+                                    stringResource(Res.string.no_results_generic),
                                     modifier = Modifier
                                         .padding(12.dp)
                                         .align(Alignment.CenterHorizontally),

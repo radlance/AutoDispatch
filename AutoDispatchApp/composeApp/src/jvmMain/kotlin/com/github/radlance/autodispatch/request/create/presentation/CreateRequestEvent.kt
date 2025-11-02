@@ -82,7 +82,8 @@ interface CreateRequestEvent : Event {
         private val cargoDescription: String,
         private val cargoLoading: String,
         private val cargoUnloading: String,
-        private val additionalInfo: String
+        private val additionalInfo: String,
+        private val requestId: Int? = null
     ) : CreateRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.createRequest(
@@ -97,13 +98,21 @@ interface CreateRequestEvent : Event {
             cargoDescription = cargoDescription.ifBlank { null },
             cargoLoading = cargoLoading,
             cargoUnloading = cargoUnloading,
-            additionalInfo = additionalInfo.ifBlank { null }
+            additionalInfo = additionalInfo.ifBlank { null },
+            requestId = requestId
         )
     }
 
     object ResetState : CreateRequestEvent {
         override fun apply(action: CreateRequestAction) {
             action.resetState()
+        }
+    }
+
+    class SetupFieldsState(private val fieldsUiState: CreateRequestFieldsUiState) :
+        CreateRequestEvent {
+        override fun apply(action: CreateRequestAction) {
+            action.setupRequestFieldsState(fieldsUiState)
         }
     }
 }
@@ -146,8 +155,11 @@ interface CreateRequestAction {
         cargoDescription: String?,
         cargoLoading: String,
         cargoUnloading: String,
-        additionalInfo: String?
+        additionalInfo: String?,
+        requestId: Int?
     )
 
     fun resetState()
+
+    fun setupRequestFieldsState(fieldsUiState: CreateRequestFieldsUiState)
 }
