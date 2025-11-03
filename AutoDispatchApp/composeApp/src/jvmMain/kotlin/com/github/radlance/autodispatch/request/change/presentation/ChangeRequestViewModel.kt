@@ -1,15 +1,15 @@
-package com.github.radlance.autodispatch.request.create.presentation
+package com.github.radlance.autodispatch.request.change.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
+import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
+import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
+import com.github.radlance.autodispatch.request.change.domain.Customer
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.request.create.domain.CreateRequest
-import com.github.radlance.autodispatch.request.create.domain.CreateRequestRepository
-import com.github.radlance.autodispatch.request.create.domain.Customer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CreateRequestViewModel(
-    private val repository: CreateRequestRepository,
+class ChangeRequestViewModel(
+    private val repository: ChangeRequestRepository,
     private val validator: RequestValidator
-) : BaseViewModel(), EventViewModel<CreateRequestEvent> {
-    private val fieldsUiStateMutable = MutableStateFlow(CreateRequestFieldsUiState())
+) : BaseViewModel(), EventViewModel<ChangeRequestEvent> {
+    private val fieldsUiStateMutable = MutableStateFlow(ChangeRequestFieldsUiState())
     val fieldsUiState get() = fieldsUiStateMutable.asStateFlow()
 
     private val customersStateMutable = MutableStateFlow<List<Customer>>(emptyList())
@@ -30,12 +30,15 @@ class CreateRequestViewModel(
     private var searchJob: Job? = null
     private val debounceTime = 300L
 
-    private val createRequestStateMutable =
+    private val changeRequestStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+    val changeRequestState = changeRequestStateMutable.asStateFlow()
 
-    val createRequestState = createRequestStateMutable.asStateFlow()
+    private val removeRequestStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+    val removeRequestState = removeRequestStateMutable.asStateFlow()
 
-    override fun reduce(event: CreateRequestEvent) {
+    override fun reduce(event: ChangeRequestEvent) {
         val action = object : CreateRequestAction {
             override fun changeDepartureCity(city: City) {
                 fieldsUiStateMutable.update { state ->
@@ -162,12 +165,12 @@ class CreateRequestViewModel(
                         && cargoWeightErrorMessage.isEmpty()
                         && cargoVolumeErrorMessage.isEmpty()
                     ) {
-                        createRequestStateMutable.value = FetchResultUiState.Loading
+                        changeRequestStateMutable.value = FetchResultUiState.Loading
 
 
                         handle(
                             background = {
-                                val request = CreateRequest(
+                                val request = ChangeRequest(
                                     loadingPoint = cargoLoading,
                                     unloadingPoint = cargoUnloading,
                                     cargoTypeId = cargoTypeId,
@@ -186,14 +189,14 @@ class CreateRequestViewModel(
                                 } ?: repository.createRequest(request)
                             }
                         ) {
-                            createRequestStateMutable.value = it.toUiState()
+                            changeRequestStateMutable.value = it.toUiState()
                         }
                     }
                 }
 
             }
 
-            override fun resetState() {
+            override fun resetChangeState() {
                 fieldsUiStateMutable.update { state ->
                     state.copy(
                         departureCity = null,
@@ -215,11 +218,25 @@ class CreateRequestViewModel(
                     )
                 }
 
-                createRequestStateMutable.value = FetchResultUiState.Idle
+                changeRequestStateMutable.value = FetchResultUiState.Idle
             }
 
-            override fun setupRequestFieldsState(fieldsUiState: CreateRequestFieldsUiState) {
+            override fun resetRemoveState() {
+                removeRequestStateMutable.value = FetchResultUiState.Idle
+            }
+
+            override fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState) {
                 fieldsUiStateMutable.value = fieldsUiState
+            }
+
+            override fun removeRequest(requestId: Int) {
+                removeRequestStateMutable.value = FetchResultUiState.Loading
+
+                handle(
+                    background = { repository.removeRequest(requestId) }
+                ) {
+                    removeRequestStateMutable.value = it.toUiState()
+                }
             }
         }
         event.apply(action = action)

@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.create.presentation
+package com.github.radlance.autodispatch.request.change.presentation
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
@@ -51,19 +51,19 @@ import com.github.radlance.autodispatch.request.common.presentation.CustomTextFi
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.presentation.core.PhoneVisualTransformation
-import com.github.radlance.autodispatch.request.create.domain.Customer
+import com.github.radlance.autodispatch.request.change.domain.Customer
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.WeightIcon
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateRequestFields(
+fun ChangeRequestFields(
     cities: List<City>,
     cargoTypes: List<CargoType>,
     customers: List<Customer>,
-    onEvent: (CreateRequestEvent) -> Unit,
-    fieldsUiState: CreateRequestFieldsUiState,
+    onEvent: (ChangeRequestEvent) -> Unit,
+    fieldsUiState: ChangeRequestFieldsUiState,
     scrollState: ScrollState,
     modifier: Modifier = Modifier
 ) {
@@ -78,7 +78,7 @@ fun CreateRequestFields(
                 filterOptions = cities.map { it.name },
                 onOptionSelected = { option ->
                     onEvent(
-                        CreateRequestEvent.ChangeDepartureCity(cities.first { option == it.name })
+                        ChangeRequestEvent.ChangeDepartureCity(cities.first { option == it.name })
                     )
                 },
                 hint = stringResource(Res.string.choice_city),
@@ -94,7 +94,7 @@ fun CreateRequestFields(
                 filterOptions = cities.map { it.name },
                 onOptionSelected = { option ->
                     onEvent(
-                        CreateRequestEvent.ChangeDestinationCity(cities.first { option == it.name })
+                        ChangeRequestEvent.ChangeDestinationCity(cities.first { option == it.name })
                     )
                 },
                 hint = stringResource(Res.string.choice_city),
@@ -112,7 +112,7 @@ fun CreateRequestFields(
             value = fieldsUiState.companyNameFieldValue,
             onValueChange = { value ->
                 if ((value != fieldsUiState.companyNameFieldValue)) {
-                    onEvent(CreateRequestEvent.ChangeCompanyName(value))
+                    onEvent(ChangeRequestEvent.ChangeCompanyName(value))
                 }
             },
             placeholder = stringResource(Res.string.company_placeholder),
@@ -120,11 +120,11 @@ fun CreateRequestFields(
             onSuggestionSelected = { selected ->
                 val company = customers.first { it.organizationName == selected }
                 onEvent(
-                    CreateRequestEvent.ChangeCompanyName(company.organizationName)
+                    ChangeRequestEvent.ChangeCompanyName(company.organizationName)
                 )
-                onEvent(CreateRequestEvent.ChangeCompanyEmail(company.email))
+                onEvent(ChangeRequestEvent.ChangeCompanyEmail(company.email))
                 company.phoneNumber?.let {
-                    onEvent(CreateRequestEvent.ChangeCompanyPhone(company.phoneNumber.drop(2)))
+                    onEvent(ChangeRequestEvent.ChangeCompanyPhone(company.phoneNumber.drop(2)))
                 }
             },
             modifier = Modifier.fillMaxWidth(),
@@ -136,7 +136,7 @@ fun CreateRequestFields(
             CustomTextField(
                 labelText = stringResource(Res.string.email),
                 value = fieldsUiState.companyEmailFieldValue,
-                onValueChange = { onEvent(CreateRequestEvent.ChangeCompanyEmail(it)) },
+                onValueChange = { onEvent(ChangeRequestEvent.ChangeCompanyEmail(it)) },
                 placeholder = "email@example.com",
                 leadingIcon = Icons.Outlined.Mail,
                 modifier = Modifier.weight(1f),
@@ -154,7 +154,7 @@ fun CreateRequestFields(
                 onValueChange = { newValue ->
                     val digits = newValue.filter { it.isDigit() }
                     if (digits.length <= 10) {
-                        onEvent(CreateRequestEvent.ChangeCompanyPhone(digits))
+                        onEvent(ChangeRequestEvent.ChangeCompanyPhone(digits))
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -180,7 +180,7 @@ fun CreateRequestFields(
             selectedOption = cargoTypes.find { fieldsUiState.cargoType == it }?.name,
             filterOptions = cargoTypes.map { it.name },
             onOptionSelected = { option ->
-                onEvent(CreateRequestEvent.ChangeCargoType(cargoTypes.first { option == it.name }))
+                onEvent(ChangeRequestEvent.ChangeCargoType(cargoTypes.first { option == it.name }))
             },
             hint = stringResource(Res.string.choice_type),
             modifier = Modifier.fillMaxWidth(),
@@ -192,7 +192,7 @@ fun CreateRequestFields(
             CustomTextField(
                 labelText = stringResource(Res.string.weight_label),
                 value = fieldsUiState.cargoWeightFieldValue,
-                onValueChange = { onEvent(CreateRequestEvent.ChangeWeight(it)) },
+                onValueChange = { onEvent(ChangeRequestEvent.ChangeWeight(it)) },
                 placeholder = "100",
                 leadingIcon = WeightIcon,
                 modifier = Modifier.weight(1f),
@@ -209,7 +209,7 @@ fun CreateRequestFields(
             CustomTextField(
                 labelText = stringResource(Res.string.volume_label),
                 value = fieldsUiState.cargoVolumeFieldValue,
-                onValueChange = { onEvent(CreateRequestEvent.ChangeVolume(it)) },
+                onValueChange = { onEvent(ChangeRequestEvent.ChangeVolume(it)) },
                 placeholder = "2.5",
                 leadingIcon = DeployedCodeIcon,
                 modifier = Modifier.weight(1f),
@@ -225,7 +225,7 @@ fun CreateRequestFields(
         CustomTextField(
             labelText = stringResource(Res.string.cargo_additional_description),
             value = fieldsUiState.cargoDescriptionFieldValue,
-            onValueChange = { onEvent(CreateRequestEvent.ChangeCargoDescription(it)) },
+            onValueChange = { onEvent(ChangeRequestEvent.ChangeCargoDescription(it)) },
             placeholder = stringResource(Res.string.cargo_additional_description_placeholder),
             modifier = Modifier.fillMaxWidth(),
             isRequired = false,
@@ -245,7 +245,7 @@ fun CreateRequestFields(
         CustomTextField(
             labelText = stringResource(Res.string.loading_point),
             value = fieldsUiState.loadingFieldValue,
-            onValueChange = { onEvent(CreateRequestEvent.ChangeLoading(it)) },
+            onValueChange = { onEvent(ChangeRequestEvent.ChangeLoading(it)) },
             placeholder = stringResource(Res.string.loading_point_placeholder),
             leadingIcon = Icons.Outlined.LocationOn,
             modifier = Modifier.fillMaxWidth(),
@@ -259,7 +259,7 @@ fun CreateRequestFields(
         CustomTextField(
             labelText = stringResource(Res.string.unloading_point),
             value = fieldsUiState.unloadingFieldValue,
-            onValueChange = { onEvent(CreateRequestEvent.ChangeUnloading(it)) },
+            onValueChange = { onEvent(ChangeRequestEvent.ChangeUnloading(it)) },
             placeholder = stringResource(Res.string.unloading_point_placeholder),
             leadingIcon = Icons.Outlined.LocationOn,
             modifier = Modifier.fillMaxWidth(),
@@ -273,7 +273,7 @@ fun CreateRequestFields(
         CustomTextField(
             labelText = stringResource(Res.string.additional_info),
             value = fieldsUiState.additionalInfoFieldValue,
-            onValueChange = { onEvent(CreateRequestEvent.ChangeAdditionalInfo(it)) },
+            onValueChange = { onEvent(ChangeRequestEvent.ChangeAdditionalInfo(it)) },
             placeholder = stringResource(Res.string.special_req),
             modifier = Modifier.fillMaxWidth(),
             isRequired = false,

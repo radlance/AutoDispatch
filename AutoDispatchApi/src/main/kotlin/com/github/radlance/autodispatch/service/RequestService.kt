@@ -57,4 +57,8 @@ class RequestService(
         val currentUser = profileRepository.userByLogin(login)
         requestRepository.editRequest(createdById = currentUser.id, requestId = requestId, editRequest = request)
     }
+
+    suspend fun removeRequest(requestId: Int) {
+        requestRepository.removeRequest(requestId)
+    }
 }

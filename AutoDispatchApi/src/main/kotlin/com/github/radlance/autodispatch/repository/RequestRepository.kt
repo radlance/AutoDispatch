@@ -28,11 +28,13 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
@@ -290,5 +292,9 @@ class RequestRepository {
             row[destinationId] = editRequest.destinationId
             row[transportationDescription] = editRequest.transportationDescription
         }
+    }
+
+    suspend fun removeRequest(requestId: Int) = loggedTransaction {
+        RequestTable.deleteWhere { RequestTable.id eq requestId }
     }
 }

@@ -59,8 +59,8 @@ import autodispatch.composeapp.generated.resources.weight
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.create.presentation.CreateRequestDialog
-import com.github.radlance.autodispatch.request.create.presentation.CreateRequestFieldsUiState
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
 import org.jetbrains.compose.resources.stringResource
 
 private val SECTION_GAP = 18.dp
@@ -82,13 +82,13 @@ fun RequestDetailsPanel(
 
     if (showEditDialog) {
         with(request) {
-            CreateRequestDialog(
+            ChangeRequestDialog(
                 cities = cities,
                 cargoTypes = cargoTypes,
                 onDismiss = { showEditDialog = false },
                 onSuccessCreateRequest = onSuccessCreateRequest,
                 isEditRequest = true,
-                currentFieldsUiState = CreateRequestFieldsUiState(
+                currentFieldsUiState = ChangeRequestFieldsUiState(
                     departureCity = cities.first { it.name == request.origin },
                     destinationCity = cities.first { it.name == request.destination },
                     cargoType = cargoTypes.first { it.name == request.cargoTypeName },

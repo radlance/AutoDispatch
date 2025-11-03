@@ -83,6 +83,14 @@ fun Route.requestRoute(requestService: RequestService) {
 
                 call.respond(HttpStatusCode.OK)
             }
+
+            delete("/{id}") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                requestService.removeRequest(requestId = id)
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

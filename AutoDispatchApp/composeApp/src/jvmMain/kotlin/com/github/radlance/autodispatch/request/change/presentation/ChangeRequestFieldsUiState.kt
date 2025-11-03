@@ -1,9 +1,9 @@
-package com.github.radlance.autodispatch.request.create.presentation
+package com.github.radlance.autodispatch.request.change.presentation
 
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 
-data class CreateRequestFieldsUiState(
+data class ChangeRequestFieldsUiState(
     val departureCity: City? = null,
     val destinationCity: City? = null,
     val cargoType: CargoType? = null,

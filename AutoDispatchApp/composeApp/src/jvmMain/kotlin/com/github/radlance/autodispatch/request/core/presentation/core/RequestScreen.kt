@@ -49,7 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.create_request
+import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.search_by_requests
@@ -59,7 +59,7 @@ import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.create.presentation.CreateRequestDialog
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
 import com.seanproctor.datatable.DataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -105,7 +105,7 @@ fun RequestsScreen(
                 },
                 onSuccess = { filters ->
                     if (showCreationDialog) {
-                        CreateRequestDialog(
+                        ChangeRequestDialog(
                             cities = filters.cities,
                             cargoTypes = filters.cargoTypes,
                             onDismiss = {
@@ -157,7 +157,7 @@ fun RequestsScreen(
                         ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(Res.string.create_request))
+                            Text(text = stringResource(Res.string.create))
                         }
                     }
 

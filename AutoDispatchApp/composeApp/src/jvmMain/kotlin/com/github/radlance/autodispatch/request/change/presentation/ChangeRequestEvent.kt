@@ -1,71 +1,71 @@
-package com.github.radlance.autodispatch.request.create.presentation
+package com.github.radlance.autodispatch.request.change.presentation
 
 import com.github.radlance.autodispatch.common.presentation.Event
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 
-interface CreateRequestEvent : Event {
+interface ChangeRequestEvent : Event {
 
     fun apply(action: CreateRequestAction)
 
-    class ChangeDepartureCity(private val city: City) : CreateRequestEvent {
+    class ChangeDepartureCity(private val city: City) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeDepartureCity(city)
     }
 
 
-    class ChangeDestinationCity(private val city: City) : CreateRequestEvent {
+    class ChangeDestinationCity(private val city: City) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeDestinationCity(city)
     }
 
-    class ChangeCargoType(private val cargoType: CargoType) : CreateRequestEvent {
+    class ChangeCargoType(private val cargoType: CargoType) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCargoType(cargoType)
     }
 
 
-    class ChangeCompanyName(private val value: String) : CreateRequestEvent {
+    class ChangeCompanyName(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCompanyName(value)
     }
 
-    class ChangeCompanyEmail(private val value: String) : CreateRequestEvent {
+    class ChangeCompanyEmail(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCompanyEmail(value)
     }
 
-    class ChangeCompanyPhone(private val value: String) : CreateRequestEvent {
+    class ChangeCompanyPhone(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCompanyPhone(value)
     }
 
-    class ChangeWeight(private val value: String) : CreateRequestEvent {
+    class ChangeWeight(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCargoWeight(value)
     }
 
-    class ChangeVolume(private val value: String) : CreateRequestEvent {
+    class ChangeVolume(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changCargoVolume(value)
     }
 
-    class ChangeCargoDescription(private val value: String) : CreateRequestEvent {
+    class ChangeCargoDescription(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeCargoDescription(value)
     }
 
-    class ChangeLoading(private val value: String) : CreateRequestEvent {
+    class ChangeLoading(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeLoading(value)
     }
 
-    class ChangeUnloading(private val value: String) : CreateRequestEvent {
+    class ChangeUnloading(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeUnloading(value)
     }
 
-    class ChangeAdditionalInfo(private val value: String) : CreateRequestEvent {
+    class ChangeAdditionalInfo(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeAdditionalInfo(value)
     }
@@ -84,7 +84,7 @@ interface CreateRequestEvent : Event {
         private val cargoUnloading: String,
         private val additionalInfo: String,
         private val requestId: Int? = null
-    ) : CreateRequestEvent {
+    ) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.createRequest(
             originId = originId,
@@ -103,14 +103,28 @@ interface CreateRequestEvent : Event {
         )
     }
 
-    object ResetState : CreateRequestEvent {
+    class ClickRemove(private val requestId: Int): ChangeRequestEvent {
+
         override fun apply(action: CreateRequestAction) {
-            action.resetState()
+            action.removeRequest(requestId)
         }
     }
 
-    class SetupFieldsState(private val fieldsUiState: CreateRequestFieldsUiState) :
-        CreateRequestEvent {
+    object ResetChangeState : ChangeRequestEvent {
+        override fun apply(action: CreateRequestAction) {
+            action.resetChangeState()
+        }
+    }
+
+    object ResetRemoveState : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) {
+            action.resetRemoveState()
+        }
+    }
+
+    class SetupFieldsState(private val fieldsUiState: ChangeRequestFieldsUiState) :
+        ChangeRequestEvent {
         override fun apply(action: CreateRequestAction) {
             action.setupRequestFieldsState(fieldsUiState)
         }
@@ -159,7 +173,11 @@ interface CreateRequestAction {
         requestId: Int?
     )
 
-    fun resetState()
+    fun removeRequest(requestId: Int)
 
-    fun setupRequestFieldsState(fieldsUiState: CreateRequestFieldsUiState)
+    fun resetChangeState()
+
+    fun resetRemoveState()
+
+    fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState)
 }

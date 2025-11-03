@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.create.domain
+package com.github.radlance.autodispatch.request.change.domain
 
 data class Customer(
     val id: Int,

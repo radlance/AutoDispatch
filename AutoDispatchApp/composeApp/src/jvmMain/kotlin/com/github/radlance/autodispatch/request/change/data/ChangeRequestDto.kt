@@ -1,9 +1,9 @@
-package com.github.radlance.autodispatch.request.create.data
+package com.github.radlance.autodispatch.request.change.data
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreateRequestDto(
+data class ChangeRequestDto(
     val loadingPoint: String,
     val unloadingPoint: String,
     val cargoTypeId: Int,

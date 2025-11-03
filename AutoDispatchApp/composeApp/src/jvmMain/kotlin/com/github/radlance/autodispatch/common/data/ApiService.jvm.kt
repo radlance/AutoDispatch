@@ -1,12 +1,13 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
+import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
-import com.github.radlance.autodispatch.request.create.data.CreateRequestDto
-import com.github.radlance.autodispatch.request.create.data.CustomerDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
@@ -31,9 +32,11 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun customers(query: String): List<CustomerDto>
 
-    suspend fun createRequest(createRequestDto: CreateRequestDto)
+    suspend fun createRequest(changeRequestDto: ChangeRequestDto)
 
-    suspend fun editRequest(requestId: Int, createRequestDto: CreateRequestDto)
+    suspend fun editRequest(requestId: Int, changeRequestDto: ChangeRequestDto)
+
+    suspend fun removeRequest(requestId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -91,15 +94,19 @@ internal class KtorApiServiceJvm(
         }.body()
     }
 
-    override suspend fun createRequest(createRequestDto: CreateRequestDto) {
+    override suspend fun createRequest(changeRequestDto: ChangeRequestDto) {
         httpClient.post("requests") {
-            setBody(createRequestDto)
+            setBody(changeRequestDto)
         }
     }
 
-    override suspend fun editRequest(requestId: Int, createRequestDto: CreateRequestDto) {
+    override suspend fun editRequest(requestId: Int, changeRequestDto: ChangeRequestDto) {
         httpClient.put("requests/${requestId}") {
-            setBody(createRequestDto)
+            setBody(changeRequestDto)
         }
+    }
+
+    override suspend fun removeRequest(requestId: Int) {
+        httpClient.delete("requests/${requestId}")
     }
 }

@@ -16,10 +16,10 @@ import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
-import com.github.radlance.autodispatch.request.create.data.CreateRequestDto
-import com.github.radlance.autodispatch.request.create.data.CustomerDto
-import com.github.radlance.autodispatch.request.create.domain.CreateRequest
-import com.github.radlance.autodispatch.request.create.domain.Customer
+import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
+import com.github.radlance.autodispatch.request.change.data.CustomerDto
+import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
+import com.github.radlance.autodispatch.request.change.domain.Customer
 import kotlinx.datetime.LocalDateTime
 
 fun PaginatedResultDto<RequestDto>.toPaginatedResultRequest(): PaginatedResult<Request> {
@@ -48,8 +48,8 @@ fun CustomerDto.toCustomer(): Customer {
     )
 }
 
-fun CreateRequest.toCreateRequestDto(): CreateRequestDto {
-    return CreateRequestDto(
+fun ChangeRequest.toCreateRequestDto(): ChangeRequestDto {
+    return ChangeRequestDto(
         loadingPoint = loadingPoint,
         unloadingPoint = unloadingPoint,
         cargoTypeId = cargoTypeId,

@@ -1,6 +1,6 @@
-package com.github.radlance.autodispatch.request.create.domain
+package com.github.radlance.autodispatch.request.change.domain
 
-data class CreateRequest(
+data class ChangeRequest(
     val loadingPoint: String,
     val unloadingPoint: String,
     val cargoTypeId: Int,

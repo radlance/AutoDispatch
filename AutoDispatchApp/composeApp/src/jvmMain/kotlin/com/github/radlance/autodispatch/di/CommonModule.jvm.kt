@@ -6,11 +6,11 @@ import com.github.radlance.autodispatch.controlpanel.presentation.ControlPanelVi
 import com.github.radlance.autodispatch.request.core.data.RemoteRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.request.core.presentation.core.RequestViewModel
-import com.github.radlance.autodispatch.request.create.data.RemoteCreateRequestRepository
-import com.github.radlance.autodispatch.request.create.domain.CreateRequestRepository
-import com.github.radlance.autodispatch.request.create.presentation.BaseRequestValidator
-import com.github.radlance.autodispatch.request.create.presentation.CreateRequestViewModel
-import com.github.radlance.autodispatch.request.create.presentation.RequestValidator
+import com.github.radlance.autodispatch.request.change.data.RemoteChangeRequestRepository
+import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
+import com.github.radlance.autodispatch.request.change.presentation.BaseRequestValidator
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
+import com.github.radlance.autodispatch.request.change.presentation.RequestValidator
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -28,9 +28,9 @@ val requestModule
         singleOf(::RequestViewModel)
     }
 
-val createRequestModule
+val changeRequestModule
     get() = module {
-        singleOf(::RemoteCreateRequestRepository).bind<CreateRequestRepository>()
+        singleOf(::RemoteChangeRequestRepository).bind<ChangeRequestRepository>()
         singleOf(::BaseRequestValidator).bind<RequestValidator>()
-        viewModelOf(::CreateRequestViewModel)
+        viewModelOf(::ChangeRequestViewModel)
     }
