@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.car
+import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.created
 import autodispatch.composeapp.generated.resources.driver
@@ -80,7 +80,7 @@ fun RequestTable(
                 Text(stringResource(Res.string.driver))
             },
             DataColumn(width = TableColumnWidth.Flex(3f)) {
-                Text(stringResource(Res.string.car))
+                Text(stringResource(Res.string.vehicle))
             },
         )
     ) {
@@ -129,7 +129,7 @@ fun RequestTable(
                     )
                 }
                 cell {
-                    StatusWithColor(status = item.statusName)
+                    StatusWithColor(status = item.status.name)
                 }
                 cell {
                     Text(text = item.driverFullName?.let { abbreviateName(it) } ?: "—",

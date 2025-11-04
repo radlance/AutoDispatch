@@ -6,8 +6,7 @@ CREATE TABLE vehicle
     year              SMALLINT CHECK (year BETWEEN 1980 AND EXTRACT(YEAR FROM CURRENT_DATE)),
     mileage           INT                NOT NULL DEFAULT 0 CHECK (mileage >= 0),
     fuel_type         VARCHAR(20)        NOT NULL CHECK (fuel_type IN ('Бензин', 'Дизель', 'Электро')),
-    status            VARCHAR(20)        NOT NULL DEFAULT 'Доступен'
-        CHECK (status IN ('Доступен', 'В пути', 'На ТО', 'Недоступен')),
+    status_id         INT REFERENCES vehicle_status (id),
     last_service_date DATE,
     is_active         BOOLEAN            NOT NULL DEFAULT TRUE
 );

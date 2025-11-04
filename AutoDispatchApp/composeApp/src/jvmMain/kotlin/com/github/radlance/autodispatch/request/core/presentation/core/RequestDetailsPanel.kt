@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.additional_info
-import autodispatch.composeapp.generated.resources.car
+import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.cargo_info
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.creation_date
@@ -56,11 +58,12 @@ import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
-import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
 import org.jetbrains.compose.resources.stringResource
 
 private val SECTION_GAP = 18.dp
@@ -77,6 +80,7 @@ fun RequestDetailsPanel(
     modifier: Modifier = Modifier
 ) {
     var showEditDialog by rememberSaveable { mutableStateOf(false) }
+    var showDriverAssignmentDialog by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
 
@@ -108,6 +112,13 @@ fun RequestDetailsPanel(
         }
     }
 
+    if (showDriverAssignmentDialog) {
+        DriverAssignmentDialog(
+            onDismiss = { showDriverAssignmentDialog = false },
+            request = request
+        )
+    }
+
     Column(modifier = modifier.padding(8.dp)) {
         PanelHeader(
             requestNumber = request.requestNumber,
@@ -121,7 +132,7 @@ fun RequestDetailsPanel(
 
                 Section(header = stringResource(Res.string.status)) {
                     StatusWithColor(
-                        status = request.statusName,
+                        status = request.status.name,
                         fontSize = 14.sp
                     )
                 }
@@ -236,10 +247,19 @@ fun RequestDetailsPanel(
                     )
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     val vehicle = request.vehicleInfo?.takeIf { it.isNotBlank() } ?: "—"
-                    LabeledValue(label = stringResource(Res.string.car), value = vehicle)
+                    LabeledValue(label = stringResource(Res.string.vehicle), value = vehicle)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
+                if (request.status.id == 1) {
+                    Button(
+                        onClick = { showDriverAssignmentDialog = true },
+                        modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
+                    ) {
+                        Text(text = "Назначить водителя")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
 
             VerticalScrollbar(

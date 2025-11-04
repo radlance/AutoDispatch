@@ -91,6 +91,11 @@ fun Route.requestRoute(requestService: RequestService) {
                 requestService.removeRequest(requestId = id)
                 call.respond(HttpStatusCode.OK)
             }
+
+            get("/request-assignment") {
+                val assignment = requestService.requestAssignment()
+                call.respond(HttpStatusCode.OK, assignment)
+            }
         }
     }
 }

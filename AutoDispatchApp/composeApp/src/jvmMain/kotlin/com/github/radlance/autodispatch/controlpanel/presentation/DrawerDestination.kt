@@ -9,7 +9,7 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.graphics.vector.ImageVector
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.requests
-import autodispatch.composeapp.generated.resources.cars
+import autodispatch.composeapp.generated.resources.vehicles
 import autodispatch.composeapp.generated.resources.destinations
 import autodispatch.composeapp.generated.resources.drivers
 import autodispatch.composeapp.generated.resources.maintenance
@@ -42,7 +42,7 @@ object Destinations : DrawerDestination {
 @Serializable
 object Cars : DrawerDestination {
     override val icon: ImageVector = DeliveryBoltIcon
-    override val titleRes: StringResource = Res.string.cars
+    override val titleRes: StringResource = Res.string.vehicles
 }
 
 @Serializable

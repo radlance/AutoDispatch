@@ -1,49 +1,70 @@
 databaseChangeLog:
-  - include:
-      file: db/changelog/db.create-role-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-role-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-city-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-city-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-users-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-users-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-customer-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-customer-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-vehicle-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-vehicle-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-request-status-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-request-status-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-cargo-type-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-cargo-type-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-request-table-1.0.sql
-  - include:
-      file: db/changelog/db.create-request-number-trigger-1.0.sql
-  - include:
-      file: db/changelog/db.insert-request-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-assignment-table-1.0.sql
-  - include:
-      file: db/changelog/db.insert-assignment-data-1.0.sql
-  - include:
-      file: db/changelog/db.create-trip-report-table-1.0.sql
-  - include:
-      file: db/changelog/db.create-fuel-record-table-1.0.sql
-  - include:
-      file: db/changelog/db.create-maintenance-table-1.0.sql
-  - include:
-      file: db/changelog/db.create-notification-table-1.0.sql
-  - include:
-      file: db/changelog/db.create-tables-indexes-1.0.sql
+
+  # 1. ROLE
+  - include: { file: db/changelog/db.create-role-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-role-data-1.0.sql }
+
+  # 2. DRIVER STATUS
+  - include: { file: db/changelog/db.create-driver-status-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-driver-status-data-1.0.sql }
+
+  # 3. CITY
+  - include: { file: db/changelog/db.create-city-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-city-data-1.0.sql }
+
+  # 4. USERS
+  - include: { file: db/changelog/db.create-users-table-1.0.sql }
+
+  # 5. DRIVER
+  - include: { file: db/changelog/db.create-driver-table-1.0.sql }
+
+  # 6. TRIGGER (Важно: перед вставкой пользователей!)
+  - include: { file: db/changelog/db.insert-driver-trigger-1.0.sql }
+
+  # 7. USERS DATA (Теперь триггер заполнит таблицу driver)
+  - include: { file: db/changelog/db.insert-users-data-1.0.sql }
+
+  # 8. CUSTOMER
+  - include: { file: db/changelog/db.create-customer-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-customer-data-1.0.sql }
+
+  # 9. VEHICLE
+  - include: { file: db/changelog/db.create-vehicle-status-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-vehicle-status-data-1.0.sql }
+  - include: { file: db/changelog/db.create-vehicle-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-vehicle-data-1.0.sql }
+
+  # 10. REQUEST STATUS
+  - include: { file: db/changelog/db.create-request-status-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-request-status-data-1.0.sql }
+
+  # 11. CARGO TYPE
+  - include: { file: db/changelog/db.create-cargo-type-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-cargo-type-data-1.0.sql }
+
+  # 12. REQUEST
+  - include: { file: db/changelog/db.create-request-table-1.0.sql }
+  - include: { file: db/changelog/db.create-request-number-trigger-1.0.sql }
+  - include: { file: db/changelog/db.insert-request-data-1.0.sql }
+
+  # 13. ASSIGNMENT
+  - include: { file: db/changelog/db.create-assignment-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-assignment-data-1.0.sql }
+
+  # 14. MANUAL DRIVER DATA (если есть ручные записи)
+  - include: { file: db/changelog/db.insert-driver-data-1.0.sql }
+
+  # 15. TRIP REPORT
+  - include: { file: db/changelog/db.create-trip-report-table-1.0.sql }
+
+  # 16. FUEL RECORD
+  - include: { file: db/changelog/db.create-fuel-record-table-1.0.sql }
+
+  # 17. MAINTENANCE
+  - include: { file: db/changelog/db.create-maintenance-table-1.0.sql }
+
+  # 18. NOTIFICATION
+  - include: { file: db/changelog/db.create-notification-table-1.0.sql }
+
+  # 19. INDEXES
+  - include: { file: db/changelog/db.create-tables-indexes-1.0.sql }

@@ -56,7 +56,8 @@ fun CustomDropDownMenu(
     onOptionSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     hint: String = "",
-    isRequired: Boolean = false
+    isRequired: Boolean = false,
+    dropDownItemContent: @Composable (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -156,10 +157,7 @@ fun CustomDropDownMenu(
                 filteredList.forEach { optionName ->
                     DropdownMenuItem(
                         text = {
-                            Text(
-                                optionName,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            dropDownItemContent(optionName)
                         },
                         onClick = {
                             onOptionSelected(optionName)

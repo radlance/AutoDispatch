@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
+import com.github.radlance.autodispatch.domain.request.RequestAssignment
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
 
@@ -60,5 +61,9 @@ class RequestService(
 
     suspend fun removeRequest(requestId: Int) {
         requestRepository.removeRequest(requestId)
+    }
+
+    suspend fun requestAssignment(): RequestAssignment {
+        return requestRepository.requestAssignment()
     }
 }

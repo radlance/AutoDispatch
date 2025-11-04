@@ -18,7 +18,7 @@
     <string name="dispatcher">Диспетчер</string>
     <string name="requests">Заявки</string>
     <string name="destinations">Назначения</string>
-    <string name="cars">Автомобили</string>
+    <string name="vehicles">Автомобили</string>
     <string name="drivers">Водители</string>
     <string name="refills">Заправки</string>
     <string name="maintenance">ТО</string>
@@ -34,7 +34,7 @@
     <string name="date">Дата</string>
     <string name="status">Статус</string>
     <string name="driver">Водитель</string>
-    <string name="car">Автомобиль</string>
+    <string name="vehicle">Автомобиль</string>
     <string name="request">Заявка</string>
     <string name="all">Все</string>
     <string name="select_all">Выбрать все</string>
@@ -83,4 +83,6 @@
     <string name="cargo_additional_description">Дополнительное описание груза</string>
     <string name="cargo_additional_description_placeholder">Особенности груза, упаковки, хрупкость…</string>
     <string name="search">Поиск…</string>
+    <string name="choice_driver">Выберите водителя</string>
+    <string name="choice_vehicle">Выберите автомобиль</string>
 </resources>

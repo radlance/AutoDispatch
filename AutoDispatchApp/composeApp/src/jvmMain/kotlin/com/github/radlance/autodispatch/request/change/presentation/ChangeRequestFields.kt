@@ -84,7 +84,12 @@ fun ChangeRequestFields(
                 hint = stringResource(Res.string.choice_city),
                 modifier = Modifier.weight(1f),
                 isRequired = true
-            )
+            ) {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
 
             Spacer(Modifier.width(16.dp))
 
@@ -100,7 +105,12 @@ fun ChangeRequestFields(
                 hint = stringResource(Res.string.choice_city),
                 modifier = Modifier.weight(1f),
                 isRequired = true
-            )
+            ) {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
         Spacer(Modifier.height(32.dp))
@@ -185,7 +195,13 @@ fun ChangeRequestFields(
             hint = stringResource(Res.string.choice_type),
             modifier = Modifier.fillMaxWidth(),
             isRequired = true
-        )
+        ) {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
         Spacer(Modifier.height(16.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {

@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.car
+import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.driver
 import autodispatch.composeapp.generated.resources.extended_search
@@ -99,7 +99,7 @@ fun RequestFilters(
                     onSelectionChanged = onDriversChanged
                 )
                 FilterDialogSelector(
-                    title = stringResource(Res.string.car),
+                    title = stringResource(Res.string.vehicle),
                     options = filterVehicles.map { it.model },
                     selected = selectedVehicles,
                     onSelectionChanged = onVehiclesChanged

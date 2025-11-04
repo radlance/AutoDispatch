@@ -1,25 +1,31 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.request.core.data.CargoTypeDto
-import com.github.radlance.autodispatch.request.core.data.CityDto
-import com.github.radlance.autodispatch.request.core.data.FiltersDto
-import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
-import com.github.radlance.autodispatch.request.core.data.RequestDto
-import com.github.radlance.autodispatch.request.core.data.RequestStatusDto
-import com.github.radlance.autodispatch.request.core.data.UserFilterDto
-import com.github.radlance.autodispatch.request.core.data.VehicleFilterDto
-import com.github.radlance.autodispatch.request.core.domain.CargoType
-import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.request.core.domain.Filters
-import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
-import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.core.domain.RequestStatus
-import com.github.radlance.autodispatch.request.core.domain.UserFilter
-import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.Customer
+import com.github.radlance.autodispatch.request.assignment.data.VehicleStatsDto
+import com.github.radlance.autodispatch.request.core.data.CargoTypeDto
+import com.github.radlance.autodispatch.request.core.data.CityDto
+import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
+import com.github.radlance.autodispatch.request.core.data.FiltersDto
+import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
+import com.github.radlance.autodispatch.request.assignment.data.RequestAssignmentDto
+import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.request.core.data.UserFilterDto
+import com.github.radlance.autodispatch.request.core.data.VehicleFilterDto
+import com.github.radlance.autodispatch.request.assignment.domain.VehicleStats
+import com.github.radlance.autodispatch.request.core.domain.CargoType
+import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
+import com.github.radlance.autodispatch.request.core.domain.Filters
+import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.request.assignment.domain.RequestAssignment
+import com.github.radlance.autodispatch.request.core.domain.RequestStatus
+import com.github.radlance.autodispatch.request.core.domain.UserFilter
+import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
 import kotlinx.datetime.LocalDateTime
 
 fun PaginatedResultDto<RequestDto>.toPaginatedResultRequest(): PaginatedResult<Request> {
@@ -65,6 +71,13 @@ fun ChangeRequest.toCreateRequestDto(): ChangeRequestDto {
     )
 }
 
+fun RequestAssignmentDto.toRequestAssignment(): RequestAssignment {
+    return RequestAssignment(
+        driversStats = driversStats.map { it.toDriverStats() },
+        vehiclesStats = vehiclesStats.map { it.toAvailableVehicle() }
+    )
+}
+
 private fun CityDto.toCity(): City {
     return City(
         id = id,
@@ -105,7 +118,7 @@ private fun RequestDto.toRequest(): Request {
     return Request(
         id = id,
         requestNumber = requestNumber,
-        statusName = statusName,
+        status = status.toRequestStatus(),
         origin = origin,
         destination = destination,
         cargoTypeName = cargoTypeName,
@@ -123,5 +136,23 @@ private fun RequestDto.toRequest(): Request {
         vehicleInfo = vehicleInfo,
         transportationDescription = transportationDescription,
         createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) }
+    )
+}
+
+private fun DriverStatsDto.toDriverStats(): DriverStats {
+    return DriverStats(
+        driverName = driverName,
+        phoneNumber = phoneNumber,
+        status = status,
+        totalAssignedRequests = totalAssignedRequests
+    )
+}
+
+private fun VehicleStatsDto.toAvailableVehicle(): VehicleStats {
+    return VehicleStats(
+        id = id,
+        model = model,
+        licencePlate = licencePlate,
+        vehicleStatus = vehicleStatus
     )
 }

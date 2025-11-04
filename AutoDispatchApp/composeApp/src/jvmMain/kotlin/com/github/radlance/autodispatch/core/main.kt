@@ -5,10 +5,11 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.radlance.autodispatch.di.authModule
+import com.github.radlance.autodispatch.di.changeRequestModule
 import com.github.radlance.autodispatch.di.commonModule
 import com.github.radlance.autodispatch.di.controlPanelModule
-import com.github.radlance.autodispatch.di.changeRequestModule
 import com.github.radlance.autodispatch.di.dataStoreModule
+import com.github.radlance.autodispatch.di.driverAssignmentModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
@@ -25,7 +26,8 @@ fun main() = application {
             profileModule,
             controlPanelModule,
             requestModule,
-            changeRequestModule
+            changeRequestModule,
+            driverAssignmentModule
         )
     }
     Window(

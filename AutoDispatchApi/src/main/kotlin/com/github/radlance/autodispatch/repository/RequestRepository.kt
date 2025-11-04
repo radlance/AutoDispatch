@@ -8,17 +8,24 @@ import com.github.radlance.autodispatch.database.table.AssignmentTable
 import com.github.radlance.autodispatch.database.table.CargoTypeTable
 import com.github.radlance.autodispatch.database.table.CityTable
 import com.github.radlance.autodispatch.database.table.CustomerTable
+import com.github.radlance.autodispatch.database.table.DriverStatusTable
+import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
+import com.github.radlance.autodispatch.database.table.VehicleStatusTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.DriverStats
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
+import com.github.radlance.autodispatch.domain.request.RequestAssignment
+import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.domain.request.VehicleStats
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.AndOp
@@ -33,9 +40,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.intLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.update
@@ -135,6 +144,7 @@ class RequestRepository {
             RequestTable.id,
             RequestTable.requestNumber,
             RequestTable.transportationDescription,
+            RequestStatusTable.id,
             RequestStatusTable.name,
             originCity[CityTable.name].alias("origin_name"),
             destCity[CityTable.name].alias("destination_name"),
@@ -165,7 +175,10 @@ class RequestRepository {
                 Request(
                     id = row[RequestTable.id].value,
                     requestNumber = row[RequestTable.requestNumber],
-                    statusName = row[RequestStatusTable.name],
+                    status = RequestStatus(
+                        id = row[RequestStatusTable.id].value,
+                        name = row[RequestStatusTable.name]
+                    ),
                     transportationDescription = row[RequestTable.transportationDescription],
                     origin = row[originCity[CityTable.name].alias("origin_name")],
                     destination = row[destCity[CityTable.name].alias("destination_name")],
@@ -295,6 +308,68 @@ class RequestRepository {
     }
 
     suspend fun removeRequest(requestId: Int) = loggedTransaction {
-        RequestTable.deleteWhere { RequestTable.id eq requestId }
+        RequestTable.deleteWhere { id eq requestId }
+    }
+
+    suspend fun requestAssignment(): RequestAssignment = loggedTransaction {
+
+        val driverName = UserTable.fullName
+        val phoneNumber = UserTable.phoneNumber
+        val status = DriverStatusTable.name
+        val requestCount = AssignmentTable.requestId.count()
+
+        val statusOrder = Case()
+            .When(DriverStatusTable.name eq "Свободен", intLiteral(1))
+            .When(DriverStatusTable.name eq "В рейсе", intLiteral(2))
+            .When(DriverStatusTable.name eq "Не на смене", intLiteral(3))
+            .Else(intLiteral(4))
+
+        val driverStats = DriverTable
+            .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
+            .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
+            .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
+            .select(driverName, phoneNumber, status, requestCount)
+            .groupBy(driverName, phoneNumber, status)
+            .orderBy(statusOrder, SortOrder.ASC)
+            .orderBy(driverName, SortOrder.ASC)
+            .map { row ->
+                DriverStats(
+                    driverName = row[driverName],
+                    phoneNumber = row[phoneNumber],
+                    status = row[status],
+                    totalAssignedRequests = row[requestCount]
+                )
+            }
+
+        val vehicleId = VehicleTable.id
+        val vehicleModel = VehicleTable.model
+        val vehiclePlate = VehicleTable.licensePlate
+        val vehicleStatusName = VehicleStatusTable.name
+
+        val vehicleStatusOrder = Case()
+            .When(VehicleStatusTable.name eq "Доступен", intLiteral(1))
+            .When(VehicleStatusTable.name eq "В рейсе", intLiteral(2))
+            .When(VehicleStatusTable.name eq "На ТО", intLiteral(3))
+            .When(VehicleStatusTable.name eq "Недоступен", intLiteral(4))
+            .Else(intLiteral(5))
+
+        val vehicleStats = VehicleTable
+            .join(VehicleStatusTable, JoinType.INNER, VehicleTable.statusId, VehicleStatusTable.id)
+            .select(vehicleId, vehicleModel, vehiclePlate, vehicleStatusName)
+            .orderBy(vehicleStatusOrder, SortOrder.ASC)
+            .orderBy(vehicleModel, SortOrder.ASC)
+            .map { row ->
+                VehicleStats(
+                    id = row[vehicleId].value,
+                    model = row[vehicleModel],
+                    licencePlate = row[vehiclePlate],
+                    vehicleStatus = row[vehicleStatusName]
+                )
+            }
+
+        return@loggedTransaction RequestAssignment(
+            driversStats = driverStats,
+            vehiclesStats = vehicleStats
+        )
     }
 }

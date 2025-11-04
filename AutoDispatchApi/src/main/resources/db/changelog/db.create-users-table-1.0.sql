@@ -6,6 +6,6 @@ CREATE TABLE users
     password_hash VARCHAR(255)       NOT NULL,
     salt          VARCHAR(255)       NOT NULL,
     phone_number  VARCHAR(20),
-    role_id          INT REFERENCES role (id),
+    role_id       INT REFERENCES role (id),
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
