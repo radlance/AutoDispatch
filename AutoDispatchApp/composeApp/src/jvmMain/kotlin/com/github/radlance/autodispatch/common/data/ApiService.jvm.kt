@@ -1,10 +1,10 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
-import com.github.radlance.autodispatch.request.assignment.data.RequestAssignmentDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -39,7 +39,7 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun removeRequest(requestId: Int)
 
-    suspend fun requestAssignment(): RequestAssignmentDto
+    suspend fun requestAssignment(): List<DriverStatsDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -113,7 +113,7 @@ internal class KtorApiServiceJvm(
         httpClient.delete("requests/${requestId}")
     }
 
-    override suspend fun requestAssignment(): RequestAssignmentDto {
+    override suspend fun requestAssignment(): List<DriverStatsDto> {
         return httpClient.get("requests/request-assignment").body()
     }
 }

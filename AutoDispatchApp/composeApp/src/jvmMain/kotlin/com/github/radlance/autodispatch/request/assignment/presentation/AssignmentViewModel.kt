@@ -6,8 +6,6 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
-import com.github.radlance.autodispatch.request.assignment.domain.RequestAssignment
-import com.github.radlance.autodispatch.request.assignment.domain.VehicleStats
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onStart
@@ -18,7 +16,7 @@ class AssignmentViewModel(
 ) : BaseViewModel(), EventViewModel<AssignmentEvent> {
 
     private val requestAssignmentStateMutable =
-        MutableStateFlow<FetchResultUiState<RequestAssignment, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<List<DriverStats>, String>>(FetchResultUiState.Idle)
     val requestAssignmentState = requestAssignmentStateMutable.onStart {
         loadRequestAssignment()
     }.stateInViewModel(initialValue = requestAssignmentStateMutable.value)
@@ -42,15 +40,9 @@ class AssignmentViewModel(
                 }
             }
 
-            override fun changeVehicleStats(stats: VehicleStats) {
-                assignmentFieldsStateMutable.update { state ->
-                    state.copy(selectedVehicleStats = stats)
-                }
-            }
-
             override fun resetFieldsState() {
                 assignmentFieldsStateMutable.update { state ->
-                    state.copy(selectedDriverStats = null, selectedVehicleStats = null)
+                    state.copy(selectedDriverStats = null)
                 }
             }
         }

@@ -41,6 +41,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
@@ -57,6 +58,7 @@ fun CustomDropDownMenu(
     modifier: Modifier = Modifier,
     hint: String = "",
     isRequired: Boolean = false,
+    itemHeight: Dp = 48.dp,
     dropDownItemContent: @Composable (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -172,7 +174,8 @@ fun CustomDropDownMenu(
                                 )
                             }
                         },
-                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.height(itemHeight)
                     )
                 }
             }

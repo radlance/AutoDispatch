@@ -75,12 +75,11 @@ fun DriverAssignmentDialog(
                             CircularProgressIndicator()
                         }
                     },
-                    onSuccess = { request ->
+                    onSuccess = { stats ->
                         DriverAssignmentFields(
-                            driversStats = request.driversStats,
-                            vehiclesStats = request.vehiclesStats,
+                            driversStats = stats,
                             fieldsState = fieldsState,
-                            onEvent = viewModel::reduce
+                            onEvent = viewModel::reduce,
                         )
                     },
                     onError = {}
@@ -95,7 +94,7 @@ fun DriverAssignmentDialog(
         confirmButton = {
             Button(
                 onClick = {},
-                enabled = fieldsState.selectedDriverStats != null && fieldsState.selectedVehicleStats != null
+                enabled = fieldsState.selectedDriverStats != null
             ) {
                 Text(text = "Назначить")
             }

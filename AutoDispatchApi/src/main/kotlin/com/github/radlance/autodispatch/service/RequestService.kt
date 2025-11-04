@@ -2,10 +2,10 @@ package com.github.radlance.autodispatch.service
 
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.DriverStats
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
-import com.github.radlance.autodispatch.domain.request.RequestAssignment
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
 
@@ -63,7 +63,7 @@ class RequestService(
         requestRepository.removeRequest(requestId)
     }
 
-    suspend fun requestAssignment(): RequestAssignment {
+    suspend fun requestAssignment(): List<DriverStats> {
         return requestRepository.requestAssignment()
     }
 }

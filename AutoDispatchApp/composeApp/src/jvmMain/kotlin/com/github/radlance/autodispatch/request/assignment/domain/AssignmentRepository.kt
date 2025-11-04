@@ -4,5 +4,5 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 
 interface AssignmentRepository {
 
-    suspend fun requestAssignment(): FetchResult<RequestAssignment, String>
+    suspend fun requestAssignment(): FetchResult<List<DriverStats>, String>
 }

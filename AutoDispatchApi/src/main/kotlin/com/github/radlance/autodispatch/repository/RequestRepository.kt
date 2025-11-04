@@ -13,7 +13,6 @@ import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
-import com.github.radlance.autodispatch.database.table.VehicleStatusTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
@@ -21,11 +20,9 @@ import com.github.radlance.autodispatch.domain.request.DriverStats
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
-import com.github.radlance.autodispatch.domain.request.RequestAssignment
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
-import com.github.radlance.autodispatch.domain.request.VehicleStats
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.AndOp
@@ -312,11 +309,13 @@ class RequestRepository {
         RequestTable.deleteWhere { id eq requestId }
     }
 
-    suspend fun requestAssignment(): RequestAssignment = loggedTransaction {
+    suspend fun requestAssignment(): List<DriverStats> = loggedTransaction {
 
         val driverName = UserTable.fullName
         val phoneNumber = UserTable.phoneNumber
         val status = DriverStatusTable.name
+        val vehicleModel = VehicleTable.model
+        val vehiclePlate = VehicleTable.licensePlate
         val requestCount = AssignmentTable.requestId.count()
 
         val statusOrder = Case()
@@ -329,8 +328,9 @@ class RequestRepository {
             .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
-            .select(driverName, phoneNumber, status, requestCount)
-            .groupBy(driverName, phoneNumber, status)
+            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
+            .select(driverName, phoneNumber, status, vehicleModel, vehiclePlate, requestCount)
+            .groupBy(driverName, phoneNumber, status, vehicleModel, vehiclePlate)
             .orderBy(statusOrder, SortOrder.ASC)
             .orderBy(driverName, SortOrder.ASC)
             .map { row ->
@@ -338,40 +338,13 @@ class RequestRepository {
                     driverName = row[driverName],
                     phoneNumber = row[phoneNumber],
                     status = row[status],
+                    vehicleModel = row[vehicleModel],
+                    vehicleLicensePlate = row[vehiclePlate],
                     totalAssignedRequests = row[requestCount]
                 )
             }
 
-        val vehicleId = VehicleTable.id
-        val vehicleModel = VehicleTable.model
-        val vehiclePlate = VehicleTable.licensePlate
-        val vehicleStatusName = VehicleStatusTable.name
-
-        val vehicleStatusOrder = Case()
-            .When(VehicleStatusTable.name eq "Доступен", intLiteral(1))
-            .When(VehicleStatusTable.name eq "В рейсе", intLiteral(2))
-            .When(VehicleStatusTable.name eq "На ТО", intLiteral(3))
-            .When(VehicleStatusTable.name eq "Недоступен", intLiteral(4))
-            .Else(intLiteral(5))
-
-        val vehicleStats = VehicleTable
-            .join(VehicleStatusTable, JoinType.INNER, VehicleTable.statusId, VehicleStatusTable.id)
-            .select(vehicleId, vehicleModel, vehiclePlate, vehicleStatusName)
-            .orderBy(vehicleStatusOrder, SortOrder.ASC)
-            .orderBy(vehicleModel, SortOrder.ASC)
-            .map { row ->
-                VehicleStats(
-                    id = row[vehicleId].value,
-                    model = row[vehicleModel],
-                    licencePlate = row[vehiclePlate],
-                    vehicleStatus = row[vehicleStatusName]
-                )
-            }
-
-        return@loggedTransaction RequestAssignment(
-            driversStats = driverStats,
-            vehiclesStats = vehicleStats
-        )
+        return@loggedTransaction driverStats
     }
 
     suspend fun assignRequest(requestId: Int, driverId: Int, vehicleId: Int) = loggedTransaction {
