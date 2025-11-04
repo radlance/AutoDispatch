@@ -12,8 +12,6 @@ CREATE TABLE request
     cargo_volume               FLOAT,
     cargo_description          TEXT,
     customer_id                INT REFERENCES customer (id),
-    started_trip_at            TIMESTAMP,
-    ended_trip_at              TIMESTAMP,
     created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     request_number             VARCHAR(6) UNIQUE NOT NULL,
     transportation_description TEXT

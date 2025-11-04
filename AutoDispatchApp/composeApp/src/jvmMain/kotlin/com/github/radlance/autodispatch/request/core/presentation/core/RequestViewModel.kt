@@ -51,23 +51,49 @@ class RequestViewModel(
     private fun triggerRequestLoad() {
         val state = requestScreenStateMutable.value
         val filters = (state.filters as? FetchResultUiState.Success)?.data ?: return
-
-        val departureIds =
-            filters.cities.filter { it.name in state.selectedDepartureCities }
-                .map { it.id }
-        val destinationIds =
-            filters.cities.filter { it.name in state.selectedDestinationCities }
-                .map { it.id }
-        val cargoTypeIds =
-            filters.cargoTypes.filter { it.name in state.selectedCargoTypes }
-                .map { it.id }
-        val statusIds =
-            filters.statuses.filter { it.name in state.selectedStatuses }.map { it.id }
-        val driverIds =
-            filters.drivers.filter { it.fullName in state.selectedDrivers }.map { it.id }
-        val vehicleIds =
-            filters.vehicles.filter { it.model in state.selectedVehicles }.map { it.id }
         val searchQuery = state.query.takeIf { it.isNotBlank() }
+
+        val departureIds = applyFilterSelection(
+            selectedNames = state.selectedDepartureCities,
+            allItems = filters.cities,
+            nameSelector = { it.name },
+            idSelector = { it.id }
+        )
+
+        val destinationIds = applyFilterSelection(
+            selectedNames = state.selectedDestinationCities,
+            allItems = filters.cities,
+            nameSelector = { it.name },
+            idSelector = { it.id }
+        )
+
+        val cargoTypeIds = applyFilterSelection(
+            selectedNames = state.selectedCargoTypes,
+            allItems = filters.cargoTypes,
+            nameSelector = { it.name },
+            idSelector = { it.id }
+        )
+
+        val statusIds = applyFilterSelection(
+            selectedNames = state.selectedStatuses,
+            allItems = filters.statuses,
+            nameSelector = { it.name },
+            idSelector = { it.id }
+        )
+
+        val driverIds = applyFilterSelection(
+            selectedNames = state.selectedDrivers,
+            allItems = filters.drivers,
+            nameSelector = { it.fullName },
+            idSelector = { it.id }
+        )
+
+        val vehicleIds = applyFilterSelection(
+            selectedNames = state.selectedVehicles,
+            allItems = filters.vehicles,
+            nameSelector = { it.model },
+            idSelector = { it.id }
+        )
 
         val params = LastRequestParams(
             page = state.pageIndex,
@@ -94,6 +120,7 @@ class RequestViewModel(
             vehicleIds = vehicleIds
         )
     }
+
 
     private fun loadRequests(
         page: Int,
@@ -212,4 +239,16 @@ class RequestViewModel(
             triggerRequestLoad()
         }
     }
+}
+
+private inline fun <T> applyFilterSelection(
+    selectedNames: List<String>,
+    allItems: List<T>,
+    crossinline nameSelector: (T) -> String,
+    crossinline idSelector: (T) -> Int
+): List<Int> {
+    if (selectedNames.isEmpty()) return emptyList()
+
+    val selectedIds = allItems.filter { nameSelector(it) in selectedNames }.map(idSelector)
+    return if (selectedIds.size == allItems.size) emptyList() else selectedIds
 }

@@ -56,10 +56,10 @@ import autodispatch.composeapp.generated.resources.search_by_requests
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
 import com.seanproctor.datatable.DataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -78,7 +78,6 @@ fun RequestsScreen(
     var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
     var selectedRequest by rememberSaveable { mutableStateOf<Request?>(null) }
-    var openFirstRequestAfterReload by rememberSaveable { mutableStateOf(false) }
 
     val requestsUiState by viewModel.requestScreenState.collectAsState()
     val pageIndex = requestsUiState.pageIndex
@@ -113,7 +112,6 @@ fun RequestsScreen(
                             },
                             onSuccessCreateRequest = {
                                 showCreationDialog = false
-                                openFirstRequestAfterReload = true
                                 viewModel.onRequestChanged()
                             }
                         )
@@ -198,14 +196,6 @@ fun RequestsScreen(
                     requestsUiState.requestsResultState.Reduce(
                         onSuccess = { request ->
                             val requestsToShow = request.items
-                            if (openFirstRequestAfterReload) {
-                                val first = requestsToShow.firstOrNull()
-                                if (first != null) {
-                                    selectedRequest = first
-                                    showRequestDetailsPanel = true
-                                }
-                                openFirstRequestAfterReload = false
-                            }
                             selectedRequest?.let { selected ->
                                 val foundRequest = requestsToShow.find { r -> r.requestNumber == selected.requestNumber }
 

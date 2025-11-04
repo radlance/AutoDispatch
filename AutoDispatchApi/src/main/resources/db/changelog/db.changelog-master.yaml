@@ -15,24 +15,25 @@ databaseChangeLog:
   # 4. USERS
   - include: { file: db/changelog/db.create-users-table-1.0.sql }
 
-  # 5. DRIVER
-  - include: { file: db/changelog/db.create-driver-table-1.0.sql }
-
-  # 6. TRIGGER (Важно: перед вставкой пользователей!)
-  - include: { file: db/changelog/db.insert-driver-trigger-1.0.sql }
-
-  # 7. USERS DATA (Теперь триггер заполнит таблицу driver)
-  - include: { file: db/changelog/db.insert-users-data-1.0.sql }
-
-  # 8. CUSTOMER
-  - include: { file: db/changelog/db.create-customer-table-1.0.sql }
-  - include: { file: db/changelog/db.insert-customer-data-1.0.sql }
-
-  # 9. VEHICLE
+  # 5. VEHICLE
   - include: { file: db/changelog/db.create-vehicle-status-table-1.0.sql }
   - include: { file: db/changelog/db.insert-vehicle-status-data-1.0.sql }
   - include: { file: db/changelog/db.create-vehicle-table-1.0.sql }
   - include: { file: db/changelog/db.insert-vehicle-data-1.0.sql }
+
+  # 6. DRIVER
+  - include: { file: db/changelog/db.create-driver-table-1.0.sql }
+
+  # 7. TRIGGER
+  - include: { file: db/changelog/db.insert-driver-trigger-1.0.sql }
+
+  # 8. USERS DATA
+  - include: { file: db/changelog/db.insert-users-data-1.0.sql }
+  - include: { file: db/changelog/db.insert-driver-data-1.0.sql }
+
+  # 9. CUSTOMER
+  - include: { file: db/changelog/db.create-customer-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-customer-data-1.0.sql }
 
   # 10. REQUEST STATUS
   - include: { file: db/changelog/db.create-request-status-table-1.0.sql }
@@ -50,9 +51,6 @@ databaseChangeLog:
   # 13. ASSIGNMENT
   - include: { file: db/changelog/db.create-assignment-table-1.0.sql }
   - include: { file: db/changelog/db.insert-assignment-data-1.0.sql }
-
-  # 14. MANUAL DRIVER DATA (если есть ручные записи)
-  - include: { file: db/changelog/db.insert-driver-data-1.0.sql }
 
   # 15. TRIP REPORT
   - include: { file: db/changelog/db.create-trip-report-table-1.0.sql }

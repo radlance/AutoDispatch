@@ -85,7 +85,8 @@ class RequestRepository {
             .join(CustomerTable, JoinType.LEFT, RequestTable.customerId, CustomerTable.id)
             .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
             .join(UserTable, JoinType.LEFT, AssignmentTable.driverId, UserTable.id)
-            .join(VehicleTable, JoinType.LEFT, AssignmentTable.vehicleId, VehicleTable.id)
+            .join(DriverTable, JoinType.LEFT, UserTable.id, DriverTable.userId)
+            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
 
         val conditions = mutableListOf<Op<Boolean>>()
 
@@ -105,7 +106,7 @@ class RequestRepository {
             conditions.add(AssignmentTable.driverId inList driverIds)
         }
         if (vehicleIds.isNotEmpty()) {
-            conditions.add(AssignmentTable.vehicleId inList vehicleIds)
+            conditions.add(DriverTable.vehicleId inList vehicleIds)
         }
 
         if (!searchQuery.isNullOrBlank()) {
@@ -155,8 +156,8 @@ class RequestRepository {
             RequestTable.cargoDescription,
             RequestTable.loadingPoint,
             RequestTable.unloadingPoint,
-            RequestTable.startedTripAt,
-            RequestTable.endedTripAt,
+            AssignmentTable.startedAt.alias("started_trip_at"),
+            AssignmentTable.completedAt.alias("completed_trip_at"),
             UserTable.fullName.alias("driver_full_name"),
             CustomerTable.organizationName,
             CustomerTable.phoneNumber.alias("organization_phone_number"),
@@ -189,8 +190,8 @@ class RequestRepository {
                     cargoDescription = row[RequestTable.cargoDescription],
                     loadingPoint = row[RequestTable.loadingPoint],
                     unloadingPoint = row[RequestTable.unloadingPoint],
-                    startedTripAt = row[RequestTable.startedTripAt]?.toString(),
-                    endedTripAt = row[RequestTable.endedTripAt]?.toString(),
+                    startedTripAt = row[AssignmentTable.startedAt.alias("started_trip_at")]?.toString(),
+                    endedTripAt = row[AssignmentTable.completedAt.alias("completed_trip_at")]?.toString(),
                     driverFullName = row[UserTable.fullName.alias("driver_full_name")],
                     organizationName = row[CustomerTable.organizationName],
                     organizationPhoneNumber = row[CustomerTable.phoneNumber.alias("organization_phone_number")],
@@ -371,5 +372,9 @@ class RequestRepository {
             driversStats = driverStats,
             vehiclesStats = vehicleStats
         )
+    }
+
+    suspend fun assignRequest(requestId: Int, driverId: Int, vehicleId: Int) = loggedTransaction {
+
     }
 }

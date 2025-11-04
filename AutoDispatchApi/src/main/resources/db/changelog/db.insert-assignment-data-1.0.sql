@@ -1,4 +1,4 @@
-INSERT INTO assignment (request_id, driver_id, vehicle_id)
-VALUES (2, 1, 1),
-       (3, 2, 2),
-       (4, 3, 3);
+INSERT INTO assignment (request_id, driver_id, started_at, completed_at)
+VALUES (2, 1, '2025-10-22 08:30:00', NULL),
+       (3, 2, NULL, NULL),
+       (4, 3, '2025-10-21 07:00:00', NULL);
