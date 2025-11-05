@@ -37,13 +37,14 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
-import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
+import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
+import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.update
 
 class RequestRepository {
@@ -316,7 +317,10 @@ class RequestRepository {
         val status = DriverStatusTable.name
         val vehicleModel = VehicleTable.model
         val vehiclePlate = VehicleTable.licensePlate
-        val requestCount = AssignmentTable.requestId.count()
+        val requestCount = Case()
+            .When(RequestTable.statusId inList listOf(1, 2, 3), longLiteral(1L))
+            .Else(longLiteral(0L))
+            .sum()
 
         val statusOrder = Case()
             .When(DriverStatusTable.name eq "Свободен", intLiteral(1))
@@ -329,6 +333,7 @@ class RequestRepository {
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
+            .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
             .select(driverName, phoneNumber, status, vehicleModel, vehiclePlate, requestCount)
             .groupBy(driverName, phoneNumber, status, vehicleModel, vehiclePlate)
             .orderBy(statusOrder, SortOrder.ASC)
@@ -340,14 +345,10 @@ class RequestRepository {
                     status = row[status],
                     vehicleModel = row[vehicleModel],
                     vehicleLicensePlate = row[vehiclePlate],
-                    totalAssignedRequests = row[requestCount]
+                    totalAssignedRequests = row[requestCount] ?: 0L
                 )
             }
 
         return@loggedTransaction driverStats
-    }
-
-    suspend fun assignRequest(requestId: Int, driverId: Int, vehicleId: Int) = loggedTransaction {
-
     }
 }
