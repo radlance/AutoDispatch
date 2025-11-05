@@ -28,6 +28,7 @@ import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
+import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.Concat
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
@@ -168,7 +169,10 @@ class RequestRepository {
 
         val results = query.select(columns)
             .where(whereClause)
-            .orderBy(RequestTable.createdAt, SortOrder.DESC_NULLS_LAST)
+            .orderBy(
+                Coalesce(RequestTable.updatedAt, RequestTable.createdAt),
+                SortOrder.DESC_NULLS_LAST
+            )
             .limit(pageSize)
             .offset(offset)
             .map { row ->

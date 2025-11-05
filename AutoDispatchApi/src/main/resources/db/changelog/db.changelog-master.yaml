@@ -44,6 +44,7 @@ databaseChangeLog:
 
   # 12. REQUEST
   - include: { file: db/changelog/db.create-request-table-1.0.sql }
+  - include: { file: db/changelog/db.create-request-update-trigger-1.0.sql }
   - include: { file: db/changelog/db.create-request-number-trigger-1.0.sql }
   - include: { file: db/changelog/db.insert-request-data-1.0.sql }
 

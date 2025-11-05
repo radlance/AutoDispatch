@@ -14,6 +14,7 @@ object RequestTable : IntIdTable(name = "request") {
     val cargoDescription = text("cargo_description").nullable()
     val customerId = reference("customer_id", CustomerTable).nullable()
     val createdAt = timestamp("created_at").nullable()
+    val updatedAt = timestamp("updated_at").nullable()
     val originId = reference("origin_id", CityTable).nullable()
     val destinationId = reference("destination_id", CityTable).nullable()
     val requestNumber = varchar("request_number", 6).nullable()

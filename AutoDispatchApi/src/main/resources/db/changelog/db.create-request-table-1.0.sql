@@ -13,6 +13,7 @@ CREATE TABLE request
     cargo_description          TEXT,
     customer_id                INT REFERENCES customer (id),
     created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                 TIMESTAMP,
     request_number             VARCHAR(6) UNIQUE NOT NULL,
     transportation_description TEXT
 );
