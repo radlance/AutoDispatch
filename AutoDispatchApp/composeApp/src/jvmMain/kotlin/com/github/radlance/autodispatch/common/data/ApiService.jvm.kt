@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CustomerDto
@@ -40,6 +41,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun removeRequest(requestId: Int)
 
     suspend fun requestAssignment(): List<DriverStatsDto>
+
+    suspend fun assignRequestToDriver(requestId: Int, driverId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -115,5 +118,11 @@ internal class KtorApiServiceJvm(
 
     override suspend fun requestAssignment(): List<DriverStatsDto> {
         return httpClient.get("requests/request-assignment").body()
+    }
+
+    override suspend fun assignRequestToDriver(requestId: Int, driverId: Int) {
+        httpClient.post("requests/${requestId}/assign") {
+            setBody(AssignRequestDto(driverId))
+        }
     }
 }

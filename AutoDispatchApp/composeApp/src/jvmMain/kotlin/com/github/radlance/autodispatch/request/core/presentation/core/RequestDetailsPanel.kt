@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.additional_info
-import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.cargo_info
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.creation_date
@@ -56,6 +56,7 @@ import autodispatch.composeapp.generated.resources.request_creation_date
 import autodispatch.composeapp.generated.resources.route
 import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.unloading_point
+import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
@@ -64,6 +65,7 @@ import com.github.radlance.autodispatch.request.change.presentation.ChangeReques
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 private val SECTION_GAP = 18.dp
@@ -82,6 +84,7 @@ fun RequestDetailsPanel(
     var showEditDialog by rememberSaveable { mutableStateOf(false) }
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
 
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
     if (showEditDialog) {
@@ -115,6 +118,12 @@ fun RequestDetailsPanel(
     if (showDriverAssignmentDialog) {
         DriverAssignmentDialog(
             onDismiss = { showDriverAssignmentDialog = false },
+            onSuccessAssignRequest = {
+                onSuccessCreateRequest()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+            },
             request = request
         )
     }
@@ -122,6 +131,7 @@ fun RequestDetailsPanel(
     Column(modifier = modifier.padding(8.dp)) {
         PanelHeader(
             requestNumber = request.requestNumber,
+            requestStatusId = request.status.id,
             onSettingsClick = { showEditDialog = true },
             onClose = onClosePanel
         )

@@ -66,4 +66,11 @@ class RequestService(
     suspend fun requestAssignment(): List<DriverStats> {
         return requestRepository.requestAssignment()
     }
+
+    suspend fun assignRequestToDriver(requestId: Int, driverId: Int) {
+        requestRepository.assignRequestToDriver(
+            requestId = requestId,
+            driverId = driverId
+        )
+    }
 }

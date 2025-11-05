@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.request.assignment.domain
 
 data class DriverStats(
+    val driverId: Int,
     val driverName: String,
     val phoneNumber: String?,
     val status: String,

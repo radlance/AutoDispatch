@@ -23,6 +23,7 @@ import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.AndOp
@@ -312,6 +313,7 @@ class RequestRepository {
 
     suspend fun requestAssignment(): List<DriverStats> = loggedTransaction {
 
+        val driverId = UserTable.id
         val driverName = UserTable.fullName
         val phoneNumber = UserTable.phoneNumber
         val status = DriverStatusTable.name
@@ -334,12 +336,13 @@ class RequestRepository {
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
             .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
-            .select(driverName, phoneNumber, status, vehicleModel, vehiclePlate, requestCount)
-            .groupBy(driverName, phoneNumber, status, vehicleModel, vehiclePlate)
+            .select(driverId, driverName, phoneNumber, status, vehicleModel, vehiclePlate, requestCount)
+            .groupBy(driverId, driverName, phoneNumber, status, vehicleModel, vehiclePlate)
             .orderBy(statusOrder, SortOrder.ASC)
             .orderBy(driverName, SortOrder.ASC)
             .map { row ->
                 DriverStats(
+                    driverId = row[driverId].value,
                     driverName = row[driverName],
                     phoneNumber = row[phoneNumber],
                     status = row[status],
@@ -350,5 +353,27 @@ class RequestRepository {
             }
 
         return@loggedTransaction driverStats
+    }
+
+
+    suspend fun assignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {
+        val existingAssignment = AssignmentTable
+            .select(AssignmentTable.id)
+            .where { AssignmentTable.requestId eq requestId }
+            .limit(1)
+            .firstOrNull()
+
+        if (existingAssignment != null) {
+            throw MissingCredentialException(message = "Заявка уже назначена водителю")
+        }
+
+        AssignmentTable.insert {
+            it[this.requestId] = EntityID(requestId, RequestTable)
+            it[this.driverId] = EntityID(driverId, UserTable)
+        }
+
+        RequestTable.update({ RequestTable.id eq requestId }) {
+            it[statusId] = 2
+        }
     }
 }

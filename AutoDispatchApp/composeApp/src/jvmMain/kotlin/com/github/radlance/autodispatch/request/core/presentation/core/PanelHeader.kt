@@ -30,6 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun PanelHeader(
     requestNumber: String?,
+    requestStatusId: Int,
     onSettingsClick: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -57,8 +58,10 @@ fun PanelHeader(
 
         Spacer(Modifier.width(8.dp))
 
-        IconButton(onClick = onSettingsClick) {
-            Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
+        if (requestStatusId == 1) {
+            IconButton(onClick = onSettingsClick) {
+                Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
+            }
         }
 
         IconButton(onClick = onClose) {

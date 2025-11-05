@@ -69,6 +69,7 @@ fun ChangeRequest.toCreateRequestDto(): ChangeRequestDto {
 
 fun DriverStatsDto.toDriverStats(): DriverStats {
     return DriverStats(
+        driverId = driverId,
         driverName = driverName,
         phoneNumber = phoneNumber,
         status = status,

@@ -21,6 +21,10 @@ class AssignmentViewModel(
         loadRequestAssignment()
     }.stateInViewModel(initialValue = requestAssignmentStateMutable.value)
 
+    private val assignRequestStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+    val assignRequestState = assignRequestStateMutable.asStateFlow()
+
     private val assignmentFieldsStateMutable = MutableStateFlow(AssignmentFieldsState())
     val assignmentFieldsState = assignmentFieldsStateMutable.asStateFlow()
 
@@ -40,10 +44,18 @@ class AssignmentViewModel(
                 }
             }
 
-            override fun resetFieldsState() {
+            override fun assignRequest(requestId: Int, driverId: Int) {
+                assignRequestStateMutable.value = FetchResultUiState.Loading
+                handle(background = { repository.assignRequestToDriver(requestId, driverId) }) {
+                    assignRequestStateMutable.value = it.toUiState()
+                }
+            }
+
+            override fun resetStates() {
                 assignmentFieldsStateMutable.update { state ->
                     state.copy(selectedDriverStats = null)
                 }
+                assignRequestStateMutable.value = FetchResultUiState.Idle
             }
         }
 

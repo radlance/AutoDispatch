@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.route
 
+import com.github.radlance.autodispatch.domain.request.AssignRequest
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.service.RequestService
 import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
@@ -95,6 +96,20 @@ fun Route.requestRoute(requestService: RequestService) {
             get("/request-assignment") {
                 val assignment = requestService.requestAssignment()
                 call.respond(HttpStatusCode.OK, assignment)
+            }
+
+            post("/{id}/assign") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                val body = call.receive<AssignRequest>()
+
+                requestService.assignRequestToDriver(
+                    requestId = id,
+                    driverId = body.driverId
+                )
+
+                call.respond(HttpStatusCode.Created)
             }
         }
     }

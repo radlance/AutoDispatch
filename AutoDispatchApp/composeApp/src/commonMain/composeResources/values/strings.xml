@@ -85,4 +85,7 @@
     <string name="search">Поиск…</string>
     <string name="choice_driver">Выберите водителя</string>
     <string name="choice_vehicle">Выберите автомобиль</string>
+    <string name="driver_assignment">Назначение водителя</string>
+    <string name="loading_error">Ошибка загрузки</string>
+    <string name="assign">Назначить</string>
 </resources>

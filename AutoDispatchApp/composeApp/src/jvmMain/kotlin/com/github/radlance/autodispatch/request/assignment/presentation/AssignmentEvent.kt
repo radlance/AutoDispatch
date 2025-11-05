@@ -14,10 +14,18 @@ interface AssignmentEvent : Event {
         }
     }
 
-    object ResetFieldsState : AssignmentEvent {
+    class AssignRequestButtonClick(private val requestId: Int, private val driverId: Int) :
+        AssignmentEvent {
 
         override fun apply(action: AssignmentAction) {
-            action.resetFieldsState()
+            action.assignRequest(requestId, driverId)
+        }
+    }
+
+    object ResetStates : AssignmentEvent {
+
+        override fun apply(action: AssignmentAction) {
+            action.resetStates()
         }
     }
 }
@@ -26,5 +34,7 @@ interface AssignmentAction {
 
     fun changeDriversStats(stats: DriverStats)
 
-    fun resetFieldsState()
+    fun assignRequest(requestId: Int, driverId: Int)
+
+    fun resetStates()
 }
