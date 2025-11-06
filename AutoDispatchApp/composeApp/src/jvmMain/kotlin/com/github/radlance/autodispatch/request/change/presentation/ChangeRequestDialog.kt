@@ -48,6 +48,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
+import autodispatch.composeapp.generated.resources.cancel_variant
 import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.creating_new_request
 import autodispatch.composeapp.generated.resources.edit
@@ -74,8 +75,6 @@ fun ChangeRequestDialog(
     val customers by viewModel.customersState.collectAsState()
     val changeRequestState by viewModel.changeRequestState.collectAsState()
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
-    val isLoadingCancel = cancelRequestState is FetchResultUiState.Loading
-    val errorCancel = (cancelRequestState as? FetchResultUiState.Error<String>)?.error
 
     val scrollState = rememberScrollState()
     val screenHeight = LocalWindowInfo.current.containerSize.height
@@ -90,86 +89,19 @@ fun ChangeRequestDialog(
         LaunchedEffect(cancelRequestState) {
             if (cancelRequestState is FetchResultUiState.Success) {
                 onSuccessCreateRequest()
-                viewModel.reduce(ChangeRequestEvent.ResetCancelState)
                 viewModel.reduce(ChangeRequestEvent.ResetChangeState)
                 onDismissCancelDialog()
                 onDismiss()
             }
         }
 
-        AlertDialog(
-            onDismissRequest = {
-                if (!isLoadingCancel) {
-                    onDismissCancelDialog()
-                }
+        CancelDialog(
+            onDismissDialog = onDismissCancelDialog,
+            onConfirm = {
+                viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(fieldsUiState.requestId!!))
             },
-            title = {
-                Text(text = "Отмена заявки")
-            },
-            text = {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    AnimatedVisibility(visible = errorCancel != null) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Warning,
-                                contentDescription = "Error",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                text = errorCancel ?: "",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            buildAnnotatedString {
-                                append("Вы уверены что хотите отменить заявку ")
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append(fieldsUiState.requestNumber)
-                                }
-                                append("?")
-                            }
-                        )
-                        if (isLoadingCancel) {
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(
-                                        AlertDialogDefaults.containerColor
-                                    ).clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {},
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismissCancelDialog, enabled = !isLoadingCancel) {
-                    Text(text = stringResource(Res.string.cancel))
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.reduce(ChangeRequestEvent.ClickCancel(fieldsUiState.requestId!!))
-                    },
-                    enabled = !isLoadingCancel
-                ) {
-                    Text(text = "Отменить")
-                }
-            }
+            cancelState = cancelRequestState,
+            requestNumber = fieldsUiState.requestNumber
         )
     }
 
@@ -281,7 +213,7 @@ fun ChangeRequestDialog(
                         onClick = { showCancelDialog = true },
                         enabled = !isLoadingChange
                     ) {
-                        Text(text = "Отменить")
+                        Text(text = stringResource(Res.string.cancel_variant))
                     }
                 }
                 Spacer(Modifier.weight(1f))

@@ -85,11 +85,18 @@ fun Route.requestRoute(requestService: RequestService) {
                 call.respond(HttpStatusCode.OK)
             }
 
-            patch("/{id}") {
+            patch("/{id}/cancel") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
 
                 requestService.cancelRequest(requestId = id)
+                call.respond(HttpStatusCode.OK)
+            }
+
+            patch("/{id}/assignment/cancel") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+                requestService.cancelAssignment(requestId = id)
                 call.respond(HttpStatusCode.OK)
             }
 

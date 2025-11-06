@@ -28,6 +28,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,14 +61,19 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
+import com.github.radlance.autodispatch.request.change.presentation.CancelDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestEvent
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
+import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 private val SECTION_GAP = 18.dp
 private val ITEM_GAP = 12.dp
@@ -79,11 +86,14 @@ fun RequestDetailsPanel(
     onClosePanel: () -> Unit,
     onSuccessCreateRequest: () -> Unit,
     request: Request,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
+    val cancelRequestState by viewModel.cancelRequestState.collectAsState()
     var showEditDialog by rememberSaveable { mutableStateOf(false) }
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
     var isReassign by remember { mutableStateOf(false) }
+    var showCancelAssignmentDialog by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -131,12 +141,37 @@ fun RequestDetailsPanel(
         )
     }
 
+    if (showCancelAssignmentDialog) {
+        val onDismissCancelDialog = {
+            showCancelAssignmentDialog = false
+            viewModel.reduce(ChangeRequestEvent.ResetCancelState)
+        }
+
+        LaunchedEffect(cancelRequestState) {
+            if (cancelRequestState is FetchResultUiState.Success) {
+                onSuccessCreateRequest()
+                viewModel.reduce(ChangeRequestEvent.ResetChangeState)
+                onDismissCancelDialog()
+            }
+        }
+
+        CancelDialog(
+            onDismissDialog = onDismissCancelDialog,
+            onConfirm = {
+                viewModel.reduce(ChangeRequestEvent.ClickCancelAssignment(request.id))
+            },
+            cancelState = cancelRequestState,
+            requestNumber = request.requestNumber
+        )
+    }
+
     Column(modifier = modifier.padding(8.dp)) {
         PanelHeader(
             requestNumber = request.requestNumber,
             requestStatusId = request.status.id,
             onSettingsClick = { showEditDialog = true },
-            onClose = onClosePanel
+            onClose = onClosePanel,
+            cancelAssignment = { showCancelAssignmentDialog = true }
         )
 
         Box {

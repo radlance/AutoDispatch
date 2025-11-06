@@ -42,6 +42,7 @@ import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
+import org.jetbrains.exposed.sql.javatime.CurrentTimestamp
 import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
@@ -316,6 +317,15 @@ class RequestRepository {
     suspend fun cancelRequest(requestId: Int) = loggedTransaction {
         RequestTable.update({ RequestTable.id eq requestId }) { row ->
             row[statusId] = 5
+        }
+    }
+
+    suspend fun cancelAssignment(requestId: Int) = loggedTransaction {
+        RequestTable.update({ RequestTable.id eq requestId }) { row ->
+            row[statusId] = 5
+        }
+        AssignmentTable.update({ AssignmentTable.requestId eq requestId }) { row ->
+            row[completedAt] = CurrentTimestamp
         }
     }
 

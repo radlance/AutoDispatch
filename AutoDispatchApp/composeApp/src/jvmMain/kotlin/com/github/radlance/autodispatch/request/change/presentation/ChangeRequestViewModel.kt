@@ -239,6 +239,16 @@ class ChangeRequestViewModel(
                     cancelRequestStateMutable.value = it.toUiState()
                 }
             }
+
+            override fun cancelAssignment(requestId: Int) {
+                cancelRequestStateMutable.value = FetchResultUiState.Loading
+
+                handle(
+                    background = { repository.cancelAssignment(requestId) }
+                ) {
+                    cancelRequestStateMutable.value = it.toUiState()
+                }
+            }
         }
         event.apply(action = action)
     }

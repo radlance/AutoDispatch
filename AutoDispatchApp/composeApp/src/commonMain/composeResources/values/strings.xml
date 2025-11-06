@@ -89,4 +89,7 @@
     <string name="loading_error">Ошибка загрузки</string>
     <string name="assign">Назначить</string>
     <string name="reassign">Переназначить</string>
+    <string name="request_cancellation">Отмена заявки</string>
+    <string name="you_want_to_cancel_request">Вы уверены что хотите отменить заявку</string>
+    <string name="cancel_variant">Отменить</string>
 </resources>

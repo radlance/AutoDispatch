@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ fun PanelHeader(
     requestNumber: String?,
     requestStatusId: Int,
     onSettingsClick: () -> Unit,
+    cancelAssignment: () -> Unit,
     onClose: () -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -61,6 +63,10 @@ fun PanelHeader(
         if (requestStatusId == 1) {
             IconButton(onClick = onSettingsClick) {
                 Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
+            }
+        } else if (requestStatusId == 2 || requestStatusId == 3) {
+            IconButton(onClick = cancelAssignment) {
+                Icon(imageVector = Icons.Outlined.Block, contentDescription = null)
             }
         }
 

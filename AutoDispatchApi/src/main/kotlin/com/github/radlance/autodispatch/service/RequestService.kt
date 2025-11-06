@@ -63,6 +63,10 @@ class RequestService(
         requestRepository.cancelRequest(requestId)
     }
 
+    suspend fun cancelAssignment(requestId: Int) {
+        requestRepository.cancelAssignment(requestId)
+    }
+
     suspend fun requestAssignment(): List<DriverStats> {
         return requestRepository.requestAssignment()
     }
