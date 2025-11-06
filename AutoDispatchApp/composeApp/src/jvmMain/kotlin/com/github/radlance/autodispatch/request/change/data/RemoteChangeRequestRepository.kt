@@ -38,8 +38,8 @@ class RemoteChangeRequestRepository(
             )
         }
 
-    override suspend fun removeRequest(requestId: Int): FetchResult<Unit, String> =
+    override suspend fun cancelRequest(requestId: Int): FetchResult<Unit, String> =
         handleRequest.handle {
-            apiService.removeRequest(requestId = requestId)
+            apiService.cancelRequest(requestId = requestId)
         }
 }

@@ -59,8 +59,8 @@ class RequestService(
         requestRepository.editRequest(createdById = currentUser.id, requestId = requestId, editRequest = request)
     }
 
-    suspend fun removeRequest(requestId: Int) {
-        requestRepository.removeRequest(requestId)
+    suspend fun cancelRequest(requestId: Int) {
+        requestRepository.cancelRequest(requestId)
     }
 
     suspend fun requestAssignment(): List<DriverStats> {

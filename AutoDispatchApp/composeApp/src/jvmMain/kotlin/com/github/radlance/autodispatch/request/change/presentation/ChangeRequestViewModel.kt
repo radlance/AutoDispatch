@@ -34,9 +34,9 @@ class ChangeRequestViewModel(
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
     val changeRequestState = changeRequestStateMutable.asStateFlow()
 
-    private val removeRequestStateMutable =
+    private val cancelRequestStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
-    val removeRequestState = removeRequestStateMutable.asStateFlow()
+    val cancelRequestState = cancelRequestStateMutable.asStateFlow()
 
     override fun reduce(event: ChangeRequestEvent) {
         val action = object : CreateRequestAction {
@@ -199,6 +199,7 @@ class ChangeRequestViewModel(
             override fun resetChangeState() {
                 fieldsUiStateMutable.update { state ->
                     state.copy(
+                        requestId = null,
                         departureCity = null,
                         destinationCity = null,
                         cargoType = null,
@@ -222,20 +223,20 @@ class ChangeRequestViewModel(
             }
 
             override fun resetRemoveState() {
-                removeRequestStateMutable.value = FetchResultUiState.Idle
+                cancelRequestStateMutable.value = FetchResultUiState.Idle
             }
 
             override fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState) {
                 fieldsUiStateMutable.value = fieldsUiState
             }
 
-            override fun removeRequest(requestId: Int) {
-                removeRequestStateMutable.value = FetchResultUiState.Loading
+            override fun cancelRequest(requestId: Int) {
+                cancelRequestStateMutable.value = FetchResultUiState.Loading
 
                 handle(
-                    background = { repository.removeRequest(requestId) }
+                    background = { repository.cancelRequest(requestId) }
                 ) {
-                    removeRequestStateMutable.value = it.toUiState()
+                    cancelRequestStateMutable.value = it.toUiState()
                 }
             }
         }

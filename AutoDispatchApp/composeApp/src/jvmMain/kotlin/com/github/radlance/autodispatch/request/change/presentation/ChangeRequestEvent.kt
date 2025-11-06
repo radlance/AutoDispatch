@@ -103,10 +103,10 @@ interface ChangeRequestEvent : Event {
         )
     }
 
-    class ClickRemove(private val requestId: Int): ChangeRequestEvent {
+    class ClickCancel(private val requestId: Int): ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) {
-            action.removeRequest(requestId)
+            action.cancelRequest(requestId)
         }
     }
 
@@ -116,7 +116,7 @@ interface ChangeRequestEvent : Event {
         }
     }
 
-    object ResetRemoveState : ChangeRequestEvent {
+    object ResetCancelState : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) {
             action.resetRemoveState()
@@ -173,7 +173,7 @@ interface CreateRequestAction {
         requestId: Int?
     )
 
-    fun removeRequest(requestId: Int)
+    fun cancelRequest(requestId: Int)
 
     fun resetChangeState()
 

@@ -40,7 +40,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
 import org.jetbrains.exposed.sql.longLiteral
@@ -314,8 +313,10 @@ class RequestRepository {
         }
     }
 
-    suspend fun removeRequest(requestId: Int) = loggedTransaction {
-        RequestTable.deleteWhere { id eq requestId }
+    suspend fun cancelRequest(requestId: Int) = loggedTransaction {
+        RequestTable.update({ RequestTable.id eq requestId }) { row ->
+            row[statusId] = 5
+        }
     }
 
     suspend fun requestAssignment(): List<DriverStats> = loggedTransaction {
