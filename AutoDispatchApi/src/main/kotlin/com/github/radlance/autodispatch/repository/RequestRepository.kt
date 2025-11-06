@@ -48,6 +48,7 @@ import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.upsert
 
 class RequestRepository {
     suspend fun requests(
@@ -158,6 +159,7 @@ class RequestRepository {
             RequestTable.unloadingPoint,
             AssignmentTable.startedAt.alias("started_trip_at"),
             AssignmentTable.completedAt.alias("completed_trip_at"),
+            UserTable.id.alias("driver_id"),
             UserTable.fullName.alias("driver_full_name"),
             CustomerTable.organizationName,
             CustomerTable.phoneNumber.alias("organization_phone_number"),
@@ -195,6 +197,7 @@ class RequestRepository {
                     unloadingPoint = row[RequestTable.unloadingPoint],
                     startedTripAt = row[AssignmentTable.startedAt.alias("started_trip_at")]?.toString(),
                     endedTripAt = row[AssignmentTable.completedAt.alias("completed_trip_at")]?.toString(),
+                    driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
                     driverFullName = row[UserTable.fullName.alias("driver_full_name")],
                     organizationName = row[CustomerTable.organizationName],
                     organizationPhoneNumber = row[CustomerTable.phoneNumber.alias("organization_phone_number")],
@@ -372,6 +375,17 @@ class RequestRepository {
         }
 
         AssignmentTable.insert {
+            it[this.requestId] = EntityID(requestId, RequestTable)
+            it[this.driverId] = EntityID(driverId, UserTable)
+        }
+
+        RequestTable.update({ RequestTable.id eq requestId }) {
+            it[statusId] = 2
+        }
+    }
+
+    suspend fun reassignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {
+        AssignmentTable.upsert(AssignmentTable.requestId) {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)
         }

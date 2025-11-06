@@ -130,6 +130,7 @@ private fun RequestDto.toRequest(): Request {
         unloadingPoint = unloadingPoint,
         startedTripAt = startedTripAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
         endedTripAt = endedTripAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
+        driverId = driverId,
         driverFullName = driverFullName,
         organizationName = organizationName,
         organizationPhoneNumber = organizationPhoneNumber,

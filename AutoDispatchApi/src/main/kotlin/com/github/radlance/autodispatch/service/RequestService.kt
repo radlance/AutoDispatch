@@ -73,4 +73,11 @@ class RequestService(
             driverId = driverId
         )
     }
+
+    suspend fun reAssignRequestToDriver(requestId: Int, driverId: Int) {
+        requestRepository.reassignRequestToDriver(
+            requestId = requestId,
+            driverId = driverId
+        )
+    }
 }

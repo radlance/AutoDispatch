@@ -43,6 +43,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun requestAssignment(): List<DriverStatsDto>
 
     suspend fun assignRequestToDriver(requestId: Int, driverId: Int)
+
+    suspend fun reassignRequestToDriver(requestId: Int, driverId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -122,6 +124,12 @@ internal class KtorApiServiceJvm(
 
     override suspend fun assignRequestToDriver(requestId: Int, driverId: Int) {
         httpClient.post("requests/${requestId}/assign") {
+            setBody(AssignRequestDto(driverId))
+        }
+    }
+
+    override suspend fun reassignRequestToDriver(requestId: Int, driverId: Int) {
+        httpClient.put("requests/${requestId}/assign") {
             setBody(AssignRequestDto(driverId))
         }
     }

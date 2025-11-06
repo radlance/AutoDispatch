@@ -26,4 +26,14 @@ class RemoteAssignmentRepository(
                 driverId = driverId
             )
         }
+
+    override suspend fun reassignRequestToDriver(
+        requestId: Int,
+        driverId: Int
+    ): FetchResult<Unit, String> = handleRequest.handle {
+        apiService.reassignRequestToDriver(
+            requestId = requestId,
+            driverId = driverId
+        )
+    }
 }

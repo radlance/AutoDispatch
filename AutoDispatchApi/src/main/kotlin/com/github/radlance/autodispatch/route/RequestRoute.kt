@@ -111,6 +111,20 @@ fun Route.requestRoute(requestService: RequestService) {
 
                 call.respond(HttpStatusCode.Created)
             }
+
+            put("/{id}/assign") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                val body = call.receive<AssignRequest>()
+
+                requestService.reAssignRequestToDriver(
+                    requestId = id,
+                    driverId = body.driverId
+                )
+
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

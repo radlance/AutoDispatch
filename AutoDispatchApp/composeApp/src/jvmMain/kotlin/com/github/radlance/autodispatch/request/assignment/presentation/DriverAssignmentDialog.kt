@@ -45,6 +45,7 @@ import autodispatch.composeapp.generated.resources.assign
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.driver_assignment
 import autodispatch.composeapp.generated.resources.loading_error
+import autodispatch.composeapp.generated.resources.reassign
 import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.core.domain.Request
@@ -57,6 +58,8 @@ fun DriverAssignmentDialog(
     request: Request,
     onSuccessAssignRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isReassign: Boolean,
+    assignedDriverId: Int?,
     viewModel: AssignmentViewModel = koinViewModel()
 ) {
     val requestAssignmentState by viewModel.requestAssignmentState.collectAsState()
@@ -69,6 +72,10 @@ fun DriverAssignmentDialog(
     val onDismissAction = {
         onDismiss()
         viewModel.reduce(AssignmentEvent.ResetStates)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadRequestAssignment()
     }
 
     LaunchedEffect(assignRequestState) {
@@ -126,17 +133,28 @@ fun DriverAssignmentDialog(
                     requestAssignmentState.Reduce(
                         onLoading = {
                             Box(
-                                modifier = Modifier.fillMaxWidth().height(100.dp),
+                                modifier = Modifier.fillMaxWidth().height(86.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator()
                             }
                         },
                         onSuccess = { stats ->
+                            LaunchedEffect(assignedDriverId) {
+                                if (isReassign) {
+                                    viewModel.reduce(
+                                        AssignmentEvent.ChangeDriverStats(
+                                            stats.first {
+                                                it.driverId == assignedDriverId!!
+                                            }
+                                        )
+                                    )
+                                }
+                            }
                             DriverAssignmentFields(
                                 driversStats = stats,
                                 fieldsState = fieldsState,
-                                onEvent = viewModel::reduce,
+                                onEvent = viewModel::reduce
                             )
                         },
                         onError = { error ->
@@ -199,18 +217,27 @@ fun DriverAssignmentDialog(
             }
         },
         confirmButton = {
+            val isDriverSelected = fieldsState.selectedDriverStats != null
+            val hasDriverChanged = fieldsState.selectedDriverStats?.driverId != assignedDriverId
+            val isButtonEnabled =
+                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged)
+
             Button(
                 onClick = {
                     viewModel.reduce(
-                        AssignmentEvent.AssignRequestButtonClick(
+                        AssignmentEvent.AssignRequestClick(
                             requestId = request.id,
-                            driverId = fieldsState.selectedDriverStats!!.driverId
+                            driverId = fieldsState.selectedDriverStats!!.driverId,
+                            isReassign = isReassign
                         )
                     )
                 },
-                enabled = fieldsState.selectedDriverStats != null && !isLoading
+                enabled = isButtonEnabled
             ) {
-                Text(stringResource(Res.string.assign))
+                val text = if (isReassign) {
+                    Res.string.reassign
+                } else Res.string.assign
+                Text(text = stringResource(text))
             }
         },
         modifier = modifier

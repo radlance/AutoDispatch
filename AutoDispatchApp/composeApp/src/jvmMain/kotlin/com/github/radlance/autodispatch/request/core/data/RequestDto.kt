@@ -17,6 +17,7 @@ data class RequestDto(
     val unloadingPoint: String,
     val startedTripAt: String?,
     val endedTripAt: String?,
+    val driverId: Int?,
     val driverFullName: String?,
     val organizationName: String,
     val organizationPhoneNumber: String?,

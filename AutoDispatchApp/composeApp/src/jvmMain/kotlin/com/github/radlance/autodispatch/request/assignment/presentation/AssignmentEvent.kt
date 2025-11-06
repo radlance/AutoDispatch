@@ -14,11 +14,11 @@ interface AssignmentEvent : Event {
         }
     }
 
-    class AssignRequestButtonClick(private val requestId: Int, private val driverId: Int) :
+    class AssignRequestClick(private val requestId: Int, private val driverId: Int, private  val isReassign: Boolean) :
         AssignmentEvent {
 
         override fun apply(action: AssignmentAction) {
-            action.assignRequest(requestId, driverId)
+            action.assignRequest(requestId, driverId, isReassign)
         }
     }
 
@@ -34,7 +34,7 @@ interface AssignmentAction {
 
     fun changeDriversStats(stats: DriverStats)
 
-    fun assignRequest(requestId: Int, driverId: Int)
+    fun assignRequest(requestId: Int, driverId: Int, isReassign: Boolean)
 
     fun resetStates()
 }

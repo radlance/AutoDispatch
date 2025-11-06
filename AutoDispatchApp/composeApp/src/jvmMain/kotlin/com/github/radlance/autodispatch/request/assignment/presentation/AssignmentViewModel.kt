@@ -8,7 +8,6 @@ import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepo
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 
 class AssignmentViewModel(
@@ -17,9 +16,7 @@ class AssignmentViewModel(
 
     private val requestAssignmentStateMutable =
         MutableStateFlow<FetchResultUiState<List<DriverStats>, String>>(FetchResultUiState.Idle)
-    val requestAssignmentState = requestAssignmentStateMutable.onStart {
-        loadRequestAssignment()
-    }.stateInViewModel(initialValue = requestAssignmentStateMutable.value)
+    val requestAssignmentState = requestAssignmentStateMutable.asStateFlow()
 
     private val assignRequestStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
@@ -44,9 +41,17 @@ class AssignmentViewModel(
                 }
             }
 
-            override fun assignRequest(requestId: Int, driverId: Int) {
+            override fun assignRequest(requestId: Int, driverId: Int, isReassign: Boolean) {
                 assignRequestStateMutable.value = FetchResultUiState.Loading
-                handle(background = { repository.assignRequestToDriver(requestId, driverId) }) {
+                handle(
+                    background = {
+                        if (isReassign) {
+                            repository.reassignRequestToDriver(requestId, driverId)
+                        } else {
+                            repository.assignRequestToDriver(requestId, driverId)
+                        }
+                    }
+                ) {
                     assignRequestStateMutable.value = it.toUiState()
                 }
             }

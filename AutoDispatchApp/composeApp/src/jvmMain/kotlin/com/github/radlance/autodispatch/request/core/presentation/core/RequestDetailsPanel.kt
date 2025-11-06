@@ -83,6 +83,7 @@ fun RequestDetailsPanel(
 ) {
     var showEditDialog by rememberSaveable { mutableStateOf(false) }
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
+    var isReassign by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -124,7 +125,9 @@ fun RequestDetailsPanel(
                     scrollState.animateScrollTo(0)
                 }
             },
-            request = request
+            request = request,
+            isReassign = isReassign,
+            assignedDriverId = request.driverId
         )
     }
 
@@ -261,12 +264,16 @@ fun RequestDetailsPanel(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                if (request.status.id == 1) {
+                if (request.status.id == 1 || request.status.id == 2) {
+                    isReassign = request.status.id == 2
                     Button(
                         onClick = { showDriverAssignmentDialog = true },
                         modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
                     ) {
-                        Text(text = "Назначить водителя")
+                        val text = if (isReassign) {
+                            "Переназначить водителя"
+                        } else "Назначить водителя"
+                        Text(text = text)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }

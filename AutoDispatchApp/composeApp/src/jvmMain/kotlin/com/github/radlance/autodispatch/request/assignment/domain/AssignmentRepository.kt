@@ -7,4 +7,6 @@ interface AssignmentRepository {
     suspend fun requestAssignment(): FetchResult<List<DriverStats>, String>
 
     suspend fun assignRequestToDriver(requestId: Int, driverId: Int): FetchResult<Unit, String>
+
+    suspend fun reassignRequestToDriver(requestId: Int, driverId: Int): FetchResult<Unit, String>
 }

@@ -18,6 +18,7 @@ data class Request(
     val unloadingPoint: String,
     val startedTripAt: LocalDateTime?,
     val endedTripAt: LocalDateTime?,
+    val driverId: Int?,
     val driverFullName: String?,
     val organizationName: String,
     val organizationPhoneNumber: String?,
