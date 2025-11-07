@@ -84,11 +84,11 @@ fun CancelDialog(
                 Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {
                     Text(
                         buildAnnotatedString {
-                            append(stringResource(Res.string.you_want_to_cancel_request))
+                            append("${stringResource(Res.string.you_want_to_cancel_request)} ")
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                                 append(requestNumber)
                             }
-                            append(" ?")
+                            append("?")
                         }
                     )
                     if (isLoading) {
