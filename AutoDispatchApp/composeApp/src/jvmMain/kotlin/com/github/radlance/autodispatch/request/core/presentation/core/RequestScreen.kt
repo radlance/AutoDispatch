@@ -271,7 +271,8 @@ fun RequestsScreen(
                                         onFirst = { viewModel.onPageIndexChanged(0) },
                                         onPrev = { viewModel.onPageIndexChanged(pageIndex - 1) },
                                         onNext = { viewModel.onPageIndexChanged(pageIndex + 1) },
-                                        onLast = { viewModel.onPageIndexChanged(pageCount - 1) }
+                                        onLast = { viewModel.onPageIndexChanged(pageCount - 1) },
+                                        onRefresh = { viewModel.triggerRequestLoad() }
                                     )
                                 }
                             }
@@ -336,7 +337,8 @@ fun RequestsScreen(
                                     onFirst = {},
                                     onPrev = {},
                                     onNext = {},
-                                    onLast = {}
+                                    onLast = {},
+                                    onRefresh = {}
                                 )
                             }
                         },

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.FirstPage
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +31,8 @@ fun BottomPagingBar(
     onFirst: () -> Unit,
     onPrev: () -> Unit,
     onNext: () -> Unit,
-    onLast: () -> Unit
+    onLast: () -> Unit,
+    onRefresh: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -38,30 +40,42 @@ fun BottomPagingBar(
             .height(52.dp)
             .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("$start-$end из $totalCount")
 
-        IconButton(onClick = onFirst, enabled = pageIndex > 0) {
-            Icon(
-                Icons.Outlined.FirstPage,
-                null
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onRefresh) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = null
+                )
+            }
+
+            IconButton(onClick = onFirst, enabled = pageIndex > 0) {
+                Icon(
+                    Icons.Outlined.FirstPage,
+                    null
+                )
+            }
+            IconButton(onClick = onPrev, enabled = pageIndex > 0) {
+                Icon(
+                    Icons.Default.ChevronLeft,
+                    null
+                )
+            }
+            IconButton(
+                onClick = onNext,
+                enabled = pageIndex < pageCount - 1
+            ) { Icon(Icons.Default.ChevronRight, null) }
+            IconButton(
+                onClick = onLast,
+                enabled = pageIndex < pageCount - 1
+            ) { Icon(Icons.AutoMirrored.Default.LastPage, null) }
         }
-        IconButton(onClick = onPrev, enabled = pageIndex > 0) {
-            Icon(
-                Icons.Default.ChevronLeft,
-                null
-            )
-        }
-        IconButton(
-            onClick = onNext,
-            enabled = pageIndex < pageCount - 1
-        ) { Icon(Icons.Default.ChevronRight, null) }
-        IconButton(
-            onClick = onLast,
-            enabled = pageIndex < pageCount - 1
-        ) { Icon(Icons.AutoMirrored.Default.LastPage, null) }
     }
 }

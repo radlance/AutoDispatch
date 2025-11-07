@@ -48,7 +48,7 @@ class RequestViewModel(
         }
     }
 
-    private fun triggerRequestLoad() {
+    fun triggerRequestLoad() {
         val state = requestScreenStateMutable.value
         val filters = (state.filters as? FetchResultUiState.Success)?.data ?: return
         val searchQuery = state.query.takeIf { it.isNotBlank() }
