@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.controlpanel.presentation
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -60,6 +59,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ControlPanelScreen(
+    navigateToSignInScreen: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ControlPanelViewModel = koinViewModel()
 ) {
@@ -91,10 +91,8 @@ fun ControlPanelScreen(
                 Text(text = stringResource(Res.string.exit))
             },
             text = {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {
-                        Text(stringResource(Res.string.you_want_to_logout))
-                    }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(Res.string.you_want_to_logout))
                 }
             },
             dismissButton = {
@@ -103,7 +101,13 @@ fun ControlPanelScreen(
                 }
             },
             confirmButton = {
-                Button(onClick = {}) {
+                Button(
+                    onClick = {
+                        viewModel.logout()
+                        showLogoutDialog = false
+                        navigateToSignInScreen()
+                    }
+                ) {
                     Text(text = stringResource(Res.string.exit))
                 }
             }
@@ -200,7 +204,7 @@ fun ControlPanelScreen(
                                     ) {
                                         Text(
                                             text = abbreviateName(user.fullName),
-                                            fontSize = 16.sp,
+                                            fontSize = 14.sp,
                                             modifier = Modifier.weight(1f)
                                         )
                                         IconButton(

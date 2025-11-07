@@ -102,7 +102,13 @@ actual fun NavGraph(navController: NavHostController) {
         }
 
         composable<ControlPanel> {
-            ControlPanelScreen()
+            ControlPanelScreen(
+                navigateToSignInScreen = {
+                    navController.navigate(SignIn) {
+                        popUpTo<ControlPanel> { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
