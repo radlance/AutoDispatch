@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.controlpanel.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,8 +18,11 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,10 +31,12 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,8 +48,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.auto_request
+import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.dispatcher
+import autodispatch.composeapp.generated.resources.exit
 import autodispatch.composeapp.generated.resources.retry
+import autodispatch.composeapp.generated.resources.you_want_to_logout
 import com.github.radlance.autodispatch.common.presentation.AppIconBox
 import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 import org.jetbrains.compose.resources.stringResource
@@ -69,6 +79,36 @@ fun ControlPanelScreen(
         )
     val navHostController = rememberNavController()
     val navigationState = rememberNavigationState(navHostController)
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            modifier = modifier,
+            onDismissRequest = {
+                showLogoutDialog = false
+            },
+            title = {
+                Text(text = stringResource(Res.string.exit))
+            },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {
+                        Text(stringResource(Res.string.you_want_to_logout))
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+            },
+            confirmButton = {
+                Button(onClick = {}) {
+                    Text(text = stringResource(Res.string.exit))
+                }
+            }
+        )
+    }
 
     PermanentNavigationDrawer(
         modifier = modifier,
@@ -163,7 +203,15 @@ fun ControlPanelScreen(
                                             fontSize = 16.sp,
                                             modifier = Modifier.weight(1f)
                                         )
-                                        Spacer(Modifier.width(40.dp))
+                                        IconButton(
+                                            onClick = { showLogoutDialog = true },
+                                            modifier = Modifier.size(40.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.Logout,
+                                                contentDescription = null
+                                            )
+                                        }
                                     }
                                 },
                                 onError = { message ->
