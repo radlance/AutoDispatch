@@ -92,4 +92,5 @@
     <string name="request_cancellation">Отмена заявки</string>
     <string name="you_want_to_cancel_request">Вы уверены что хотите отменить заявку</string>
     <string name="cancel_variant">Отменить</string>
+    <string name="by_page">На странице: </string>
 </resources>

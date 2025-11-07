@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class RequestViewModel(
     private val requestRepository: RequestRepository
@@ -217,7 +218,27 @@ class RequestViewModel(
     }
 
     fun onPageIndexChanged(pageIndex: Int) {
-        requestScreenStateMutable.update { it.copy(pageIndex = pageIndex) }
+        val safeIndex = max(0, pageIndex)
+        requestScreenStateMutable.update {
+            it.copy(pageIndex = safeIndex)
+        }
+        triggerRequestLoad()
+    }
+
+    fun onPageSizeChanged(newPageSize: Int) {
+        val state = requestScreenStateMutable.value
+        val oldPageSize = state.pageSize
+        val oldPageIndex = state.pageIndex
+        val absoluteOffset = oldPageIndex * oldPageSize
+        val newPageIndex = absoluteOffset / newPageSize
+
+        requestScreenStateMutable.update {
+            it.copy(
+                pageSize = newPageSize,
+                pageIndex = newPageIndex
+            )
+        }
+
         triggerRequestLoad()
     }
 

@@ -272,7 +272,10 @@ fun RequestsScreen(
                                         onPrev = { viewModel.onPageIndexChanged(pageIndex - 1) },
                                         onNext = { viewModel.onPageIndexChanged(pageIndex + 1) },
                                         onLast = { viewModel.onPageIndexChanged(pageCount - 1) },
-                                        onRefresh = { viewModel.triggerRequestLoad() }
+                                        onRefresh = { viewModel.triggerRequestLoad() },
+                                        pageSize = pageSize,
+                                        pageSizeOptions = listOf(5, 10, 15, 20, 25),
+                                        onPageSizeChange = { viewModel.onPageSizeChanged(it) }
                                     )
                                 }
                             }
@@ -338,7 +341,10 @@ fun RequestsScreen(
                                     onPrev = {},
                                     onNext = {},
                                     onLast = {},
-                                    onRefresh = {}
+                                    onRefresh = {},
+                                    pageSize = pageSize,
+                                    pageSizeOptions = listOf(5, 10, 15, 20),
+                                    onPageSizeChange = {}
                                 )
                             }
                         },
