@@ -72,7 +72,10 @@ private fun SignInScreen(
                 )
             }
         },
-        onSuccess = { navigateToHomeScreen() },
+        onSuccess = {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            navigateToHomeScreen()
+        },
         onError = {
             LaunchedEffect(signInResultUiState) {
                 scope.launch {

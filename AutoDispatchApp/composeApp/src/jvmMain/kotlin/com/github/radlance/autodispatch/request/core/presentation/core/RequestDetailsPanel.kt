@@ -62,6 +62,10 @@ import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.StatusWithColor
+import com.github.radlance.autodispatch.common.utils.formatKg
+import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.formatNumberNoTrailingZeros
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
 import com.github.radlance.autodispatch.request.change.presentation.CancelDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
@@ -384,21 +388,3 @@ private fun routeText(request: Request): String =
         .takeIf { it.isNotEmpty() }
         ?.joinToString(" → ")
         ?: "—"
-
-private fun Double.formatNumberNoTrailingZeros(): String {
-    return if (this % 1.0 == 0.0) {
-        this.toInt().toString()
-    } else {
-        var s = this.toString()
-        if (s.contains('.')) {
-            s = s.trimEnd('0').trimEnd('.')
-        }
-        s
-    }
-}
-
-private fun Double?.formatKg(): String =
-    this?.let { "${it.formatNumberNoTrailingZeros()} кг" } ?: "—"
-
-private fun Double?.formatM3(): String =
-    this?.let { "${it.formatNumberNoTrailingZeros()} м\u00B3" } ?: "—"
