@@ -1,7 +1,5 @@
 package com.github.radlance.autodispatch.navigation.core
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
@@ -14,8 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,6 +21,7 @@ import autodispatch.composeapp.generated.resources.ok
 import autodispatch.composeapp.generated.resources.session_expired
 import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.auth.presentation.SignInScreen
+import com.github.radlance.autodispatch.home.presentation.HomeScreen
 import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -111,9 +108,7 @@ actual fun NavGraph(navController: NavHostController) {
         }
 
         composable<Home> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "home")
-            }
+            HomeScreen()
         }
     }
 }
