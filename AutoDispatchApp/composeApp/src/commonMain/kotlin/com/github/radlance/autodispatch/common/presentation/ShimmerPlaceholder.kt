@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.controlpanel.presentation
+package com.github.radlance.autodispatch.common.presentation
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode

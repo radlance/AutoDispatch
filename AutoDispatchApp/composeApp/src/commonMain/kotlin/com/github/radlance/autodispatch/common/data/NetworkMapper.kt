@@ -39,7 +39,8 @@ fun RequestDto.toRequest(): Request {
         organizationEmail = organizationEmail,
         vehicleInfo = vehicleInfo,
         transportationDescription = transportationDescription,
-        createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) }
+        createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) },
+        updatedAt = updatedAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
     )
 }
 

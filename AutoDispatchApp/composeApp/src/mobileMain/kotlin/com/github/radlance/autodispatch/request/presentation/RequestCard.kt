@@ -186,10 +186,10 @@ private fun RequestFooter(request: Request, backgroundColor: Color) {
             CardSection("Груз", request.cargoTypeName)
             CardSection("Вес", request.cargoWeight.formatKg())
             CardSection(
-                "Создана",
-                "${request.createdAt.day.toString().padStart(2, '0')}." +
-                        "${request.createdAt.month.ordinal.inc().toString().padStart(2, '0')}, " +
-                        "${request.createdAt.hour}:${request.createdAt.minute}"
+                "Обновлена",
+                "${(request.updatedAt ?: request.createdAt).day.toString().padStart(2, '0')}." +
+                        "${(request.updatedAt ?: request.createdAt).month.ordinal.inc().toString().padStart(2, '0')}, " +
+                        "${(request.updatedAt ?: request.createdAt).hour}:${(request.updatedAt ?: request.createdAt).minute}"
             )
         }
     }

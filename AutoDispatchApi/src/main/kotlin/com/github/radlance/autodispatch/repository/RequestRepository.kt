@@ -95,6 +95,7 @@ class RequestRepository {
         originCity[CityTable.name].alias("origin_name"),
         destCity[CityTable.name].alias("destination_name"),
         RequestTable.createdAt,
+        RequestTable.updatedAt,
         CargoTypeTable.name.alias("cargo_type_name"),
         RequestTable.cargoWeight,
         RequestTable.cargoVolume,
@@ -127,6 +128,7 @@ class RequestRepository {
         origin = row[originCity[CityTable.name].alias("origin_name")],
         destination = row[destCity[CityTable.name].alias("destination_name")],
         createdAt = row[RequestTable.createdAt]?.toString(),
+        updatedAt = row[RequestTable.updatedAt]?.toString(),
         cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
         cargoWeight = row[RequestTable.cargoWeight],
         cargoVolume = row[RequestTable.cargoVolume],
@@ -400,7 +402,7 @@ class RequestRepository {
                 (AssignmentTable.driverId eq driverId) and
                         (RequestTable.statusId inList listOf(2, 3))
             }
-            .orderBy(RequestTable.id, SortOrder.DESC)
+            .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .map { mapRequestRow(it, originCity, destCity, vehicleInfo) }
     }
 }

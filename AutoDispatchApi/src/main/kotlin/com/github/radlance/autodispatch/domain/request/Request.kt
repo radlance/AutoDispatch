@@ -24,6 +24,7 @@ data class Request(
     val organizationEmail: String?,
     val vehicleInfo: String?,
     val createdAt: String?,
+    val updatedAt: String?,
     val requestNumber: String?,
 )
 
