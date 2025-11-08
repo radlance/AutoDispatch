@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.common.presentation
+package com.github.radlance.autodispatch.auth.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

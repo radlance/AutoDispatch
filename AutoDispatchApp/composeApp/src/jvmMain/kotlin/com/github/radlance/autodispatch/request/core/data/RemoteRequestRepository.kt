@@ -10,6 +10,8 @@ import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 
+// TODO обновить страницу входа (преимущества и тд)
+
 class RemoteRequestRepository(
     private val apiService: ApiServiceJvm,
     private val handleRequest: HandleRequest

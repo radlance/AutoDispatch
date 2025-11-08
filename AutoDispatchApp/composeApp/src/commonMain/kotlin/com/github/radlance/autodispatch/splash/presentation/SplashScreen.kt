@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.navigation.core
+package com.github.radlance.autodispatch.splash.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.auto_request
-import com.github.radlance.autodispatch.common.presentation.AppIconBox
+import com.github.radlance.autodispatch.auth.presentation.AppIconBox
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 

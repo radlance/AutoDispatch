@@ -52,7 +52,7 @@ import autodispatch.composeapp.generated.resources.dispatcher
 import autodispatch.composeapp.generated.resources.exit
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.you_want_to_logout
-import com.github.radlance.autodispatch.common.presentation.AppIconBox
+import com.github.radlance.autodispatch.auth.presentation.AppIconBox
 import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -69,13 +69,8 @@ fun ControlPanelScreen(
     val items =
         listOf(
             Requests,
-            Destinations,
-            Cars,
             Drivers,
-            Refills,
-            Maintenance,
-            Reports,
-            Notifications
+            Vehicles
         )
     val navHostController = rememberNavController()
     val navigationState = rememberNavigationState(navHostController)

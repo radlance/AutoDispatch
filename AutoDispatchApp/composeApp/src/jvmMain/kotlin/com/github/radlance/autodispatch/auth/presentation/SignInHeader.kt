@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.auto_request
 import autodispatch.composeapp.generated.resources.control_panel
-import com.github.radlance.autodispatch.common.presentation.AppIconBox
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

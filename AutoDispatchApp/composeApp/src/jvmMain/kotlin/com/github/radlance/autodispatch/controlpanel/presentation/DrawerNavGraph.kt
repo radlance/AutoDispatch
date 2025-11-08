@@ -51,7 +51,7 @@ fun DrawerNavGraph(
                 Text(text = "Destinations")
             }
         }
-        composable<Cars> {
+        composable<Vehicles> {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "Cars")
             }
@@ -59,16 +59,6 @@ fun DrawerNavGraph(
         composable<Drivers> {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "Drivers")
-            }
-        }
-        composable<Refills> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Refills")
-            }
-        }
-        composable<Maintenance> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Maintenance")
             }
         }
         composable<Reports> {
