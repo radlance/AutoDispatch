@@ -8,7 +8,7 @@ data class DriverStatsDto(
     val driverName: String,
     val phoneNumber: String?,
     val status: String,
-    val vehicleModel: String,
-    val vehicleLicensePlate: String,
+    val vehicleModel: String?,
+    val vehicleLicensePlate: String?,
     val totalAssignedRequests: Long
 )

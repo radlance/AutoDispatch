@@ -70,7 +70,7 @@ import com.github.radlance.autodispatch.request.change.presentation.ChangeReques
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

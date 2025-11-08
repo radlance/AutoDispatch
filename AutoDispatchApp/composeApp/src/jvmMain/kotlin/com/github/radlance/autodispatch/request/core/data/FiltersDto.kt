@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.request.core.data
 
+import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
 import kotlinx.serialization.Serializable
 
 @Serializable

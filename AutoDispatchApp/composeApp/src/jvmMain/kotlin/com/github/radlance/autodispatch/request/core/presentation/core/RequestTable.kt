@@ -11,15 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.created
 import autodispatch.composeapp.generated.resources.driver
 import autodispatch.composeapp.generated.resources.request
 import autodispatch.composeapp.generated.resources.route
 import autodispatch.composeapp.generated.resources.status
+import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
-import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth

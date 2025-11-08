@@ -26,19 +26,24 @@ import com.github.radlance.autodispatch.domain.request.VehicleFilter
 import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.Alias
 import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
 import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.Concat
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.Join
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
@@ -51,22 +56,9 @@ import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
 
 class RequestRepository {
-    suspend fun requests(
-        page: Int = 1,
-        pageSize: Int = 20,
-        searchQuery: String? = null,
-        originCityIds: List<Int> = emptyList(),
-        destinationCityIds: List<Int> = emptyList(),
-        cargoTypeIds: List<Int> = emptyList(),
-        statusIds: List<Int> = emptyList(),
-        driverIds: List<Int> = emptyList(),
-        vehicleIds: List<Int> = emptyList()
-    ): PaginatedResult<Request> = loggedTransaction {
 
-        val originCity = CityTable.alias("origin_city")
-        val destCity = CityTable.alias("dest_city")
-
-        val vehicleInfo = Case()
+    private fun vehicleInfoExpr(): Expression<String> =
+        Case()
             .When(VehicleTable.id.isNull(), stringLiteral(""))
             .Else(
                 Concat(
@@ -78,7 +70,8 @@ class RequestRepository {
                 )
             )
 
-        val query = RequestTable
+    private fun joinBaseQuery(originCity: Alias<CityTable>, destCity: Alias<CityTable>): Join =
+        RequestTable
             .join(originCity, JoinType.LEFT, RequestTable.originId, originCity[CityTable.id])
             .join(destCity, JoinType.LEFT, RequestTable.destinationId, destCity[CityTable.id])
             .join(RequestStatusTable, JoinType.LEFT, RequestTable.statusId, RequestStatusTable.id)
@@ -89,257 +82,239 @@ class RequestRepository {
             .join(DriverTable, JoinType.LEFT, UserTable.id, DriverTable.userId)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
 
+    private fun selectColumns(
+        originCity: Alias<CityTable>,
+        destCity: Alias<CityTable>,
+        vehicleInfo: Expression<String>
+    ): List<Expression<*>> = listOf(
+        RequestTable.id,
+        RequestTable.requestNumber,
+        RequestTable.transportationDescription,
+        RequestStatusTable.id,
+        RequestStatusTable.name,
+        originCity[CityTable.name].alias("origin_name"),
+        destCity[CityTable.name].alias("destination_name"),
+        RequestTable.createdAt,
+        CargoTypeTable.name.alias("cargo_type_name"),
+        RequestTable.cargoWeight,
+        RequestTable.cargoVolume,
+        RequestTable.cargoDescription,
+        RequestTable.loadingPoint,
+        RequestTable.unloadingPoint,
+        AssignmentTable.startedAt.alias("started_trip_at"),
+        AssignmentTable.completedAt.alias("completed_trip_at"),
+        UserTable.id.alias("driver_id"),
+        UserTable.fullName.alias("driver_full_name"),
+        CustomerTable.organizationName,
+        CustomerTable.phoneNumber.alias("organization_phone_number"),
+        CustomerTable.email.alias("organization_email"),
+        vehicleInfo.alias("vehicle_info")
+    )
+
+    private fun mapRequestRow(
+        row: ResultRow,
+        originCity: Alias<CityTable>,
+        destCity: Alias<CityTable>,
+        vehicleInfo: Expression<String>
+    ): Request = Request(
+        id = row[RequestTable.id].value,
+        requestNumber = row[RequestTable.requestNumber],
+        status = RequestStatus(
+            id = row[RequestStatusTable.id].value,
+            name = row[RequestStatusTable.name]
+        ),
+        transportationDescription = row[RequestTable.transportationDescription],
+        origin = row[originCity[CityTable.name].alias("origin_name")],
+        destination = row[destCity[CityTable.name].alias("destination_name")],
+        createdAt = row[RequestTable.createdAt]?.toString(),
+        cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
+        cargoWeight = row[RequestTable.cargoWeight],
+        cargoVolume = row[RequestTable.cargoVolume],
+        cargoDescription = row[RequestTable.cargoDescription],
+        loadingPoint = row[RequestTable.loadingPoint],
+        unloadingPoint = row[RequestTable.unloadingPoint],
+        startedTripAt = row[AssignmentTable.startedAt.alias("started_trip_at")]?.toString(),
+        endedTripAt = row[AssignmentTable.completedAt.alias("completed_trip_at")]?.toString(),
+        driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
+        driverFullName = row[UserTable.fullName.alias("driver_full_name")],
+        organizationName = row[CustomerTable.organizationName],
+        organizationPhoneNumber = row[CustomerTable.phoneNumber.alias("organization_phone_number")],
+        organizationEmail = row[CustomerTable.email.alias("organization_email")],
+        vehicleInfo = row[vehicleInfo.alias("vehicle_info")]
+    )
+
+    private fun buildSearchConditions(q: String): Op<Boolean> {
+        val pattern = "%${q.trim().lowercase()}%"
+        return OrOp(
+            listOf(
+                RequestTable.requestNumber.lowerCase() like pattern,
+                RequestTable.transportationDescription.lowerCase() like pattern,
+                RequestStatusTable.name.lowerCase() like pattern,
+                CityTable.name.lowerCase() like pattern,
+                CargoTypeTable.name.lowerCase() like pattern,
+                RequestTable.cargoDescription.lowerCase() like pattern,
+                RequestTable.loadingPoint.lowerCase() like pattern,
+                RequestTable.unloadingPoint.lowerCase() like pattern,
+                UserTable.fullName.lowerCase() like pattern,
+                CustomerTable.organizationName.lowerCase() like pattern,
+                CustomerTable.phoneNumber.lowerCase() like pattern,
+                CustomerTable.email.lowerCase() like pattern,
+                VehicleTable.model.lowerCase() like pattern,
+                VehicleTable.licensePlate.lowerCase() like pattern
+            )
+        )
+    }
+
+    suspend fun requests(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?,
+        originCityIds: List<Int>,
+        destinationCityIds: List<Int>,
+        cargoTypeIds: List<Int>,
+        statusIds: List<Int>,
+        driverIds: List<Int>,
+        vehicleIds: List<Int>
+    ): PaginatedResult<Request> = loggedTransaction {
+
+        val originCity = CityTable.alias("origin_city")
+        val destCity = CityTable.alias("dest_city")
+        val vehicleInfo = vehicleInfoExpr()
+
+        val query = joinBaseQuery(originCity, destCity)
+
         val conditions = mutableListOf<Op<Boolean>>()
 
-        if (originCityIds.isNotEmpty()) {
-            conditions.add(RequestTable.originId inList originCityIds)
-        }
-        if (destinationCityIds.isNotEmpty()) {
-            conditions.add(RequestTable.destinationId inList destinationCityIds)
-        }
-        if (cargoTypeIds.isNotEmpty()) {
-            conditions.add(RequestTable.cargoTypeId inList cargoTypeIds)
-        }
-        if (statusIds.isNotEmpty()) {
-            conditions.add(RequestTable.statusId inList statusIds)
-        }
-        if (driverIds.isNotEmpty()) {
-            conditions.add(AssignmentTable.driverId inList driverIds)
-        }
-        if (vehicleIds.isNotEmpty()) {
-            conditions.add(DriverTable.vehicleId inList vehicleIds)
-        }
+        if (originCityIds.isNotEmpty()) conditions += RequestTable.originId inList originCityIds
+        if (destinationCityIds.isNotEmpty()) conditions += RequestTable.destinationId inList destinationCityIds
+        if (cargoTypeIds.isNotEmpty()) conditions += RequestTable.cargoTypeId inList cargoTypeIds
+        if (statusIds.isNotEmpty()) conditions += RequestTable.statusId inList statusIds
+        if (driverIds.isNotEmpty()) conditions += AssignmentTable.driverId inList driverIds
+        if (vehicleIds.isNotEmpty()) conditions += DriverTable.vehicleId inList vehicleIds
+        if (!searchQuery.isNullOrBlank()) conditions += buildSearchConditions(searchQuery)
 
-        if (!searchQuery.isNullOrBlank()) {
-            val pattern = "%${searchQuery.trim().lowercase()}%"
+        val where = AndOp(conditions.ifEmpty { listOf(Op.TRUE) })
 
-            val searchConditions = OrOp(
-                listOfNotNull(
-                    RequestTable.requestNumber.lowerCase() like pattern,
-                    RequestTable.transportationDescription.lowerCase() like pattern,
-                    RequestStatusTable.name.lowerCase() like pattern,
-                    originCity[CityTable.name].lowerCase() like pattern,
-                    destCity[CityTable.name].lowerCase() like pattern,
-                    CargoTypeTable.name.lowerCase() like pattern,
-                    RequestTable.cargoDescription.lowerCase() like pattern,
-                    RequestTable.loadingPoint.lowerCase() like pattern,
-                    RequestTable.unloadingPoint.lowerCase() like pattern,
-                    UserTable.fullName.lowerCase() like pattern,
-                    CustomerTable.organizationName.lowerCase() like pattern,
-                    CustomerTable.phoneNumber.lowerCase() like pattern,
-                    CustomerTable.email.lowerCase() like pattern,
-                    VehicleTable.model.lowerCase() like pattern,
-                    VehicleTable.licensePlate.lowerCase() like pattern
-                )
-            )
-            conditions.add(searchConditions)
-        }
-
-        val whereClause = AndOp(conditions.ifEmpty { listOf(Op.TRUE) })
-
-        val totalCount = query
-            .select(RequestTable.id.countDistinct())
-            .where(whereClause)
+        val total = query.select(RequestTable.id.countDistinct()).where(where)
             .single()[RequestTable.id.countDistinct()]
-
-        val columns = listOf(
-            RequestTable.id,
-            RequestTable.requestNumber,
-            RequestTable.transportationDescription,
-            RequestStatusTable.id,
-            RequestStatusTable.name,
-            originCity[CityTable.name].alias("origin_name"),
-            destCity[CityTable.name].alias("destination_name"),
-            RequestTable.createdAt,
-            CargoTypeTable.name.alias("cargo_type_name"),
-            RequestTable.cargoWeight,
-            RequestTable.cargoVolume,
-            RequestTable.cargoDescription,
-            RequestTable.loadingPoint,
-            RequestTable.unloadingPoint,
-            AssignmentTable.startedAt.alias("started_trip_at"),
-            AssignmentTable.completedAt.alias("completed_trip_at"),
-            UserTable.id.alias("driver_id"),
-            UserTable.fullName.alias("driver_full_name"),
-            CustomerTable.organizationName,
-            CustomerTable.phoneNumber.alias("organization_phone_number"),
-            CustomerTable.email.alias("organization_email"),
-            vehicleInfo.alias("vehicle_info")
-        )
 
         val offset = (page - 1L) * pageSize
 
-        val results = query.select(columns)
-            .where(whereClause)
-            .orderBy(
-                Coalesce(RequestTable.updatedAt, RequestTable.createdAt),
-                SortOrder.DESC_NULLS_LAST
-            )
+        val items = query
+            .select(selectColumns(originCity, destCity, vehicleInfo))
+            .where(where)
+            .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .limit(pageSize)
             .offset(offset)
-            .map { row ->
-                Request(
-                    id = row[RequestTable.id].value,
-                    requestNumber = row[RequestTable.requestNumber],
-                    status = RequestStatus(
-                        id = row[RequestStatusTable.id].value,
-                        name = row[RequestStatusTable.name]
-                    ),
-                    transportationDescription = row[RequestTable.transportationDescription],
-                    origin = row[originCity[CityTable.name].alias("origin_name")],
-                    destination = row[destCity[CityTable.name].alias("destination_name")],
-                    createdAt = row[RequestTable.createdAt]?.toString(),
-                    cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
-                    cargoWeight = row[RequestTable.cargoWeight],
-                    cargoVolume = row[RequestTable.cargoVolume],
-                    cargoDescription = row[RequestTable.cargoDescription],
-                    loadingPoint = row[RequestTable.loadingPoint],
-                    unloadingPoint = row[RequestTable.unloadingPoint],
-                    startedTripAt = row[AssignmentTable.startedAt.alias("started_trip_at")]?.toString(),
-                    endedTripAt = row[AssignmentTable.completedAt.alias("completed_trip_at")]?.toString(),
-                    driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
-                    driverFullName = row[UserTable.fullName.alias("driver_full_name")],
-                    organizationName = row[CustomerTable.organizationName],
-                    organizationPhoneNumber = row[CustomerTable.phoneNumber.alias("organization_phone_number")],
-                    organizationEmail = row[CustomerTable.email.alias("organization_email")],
-                    vehicleInfo = row[vehicleInfo.alias("vehicle_info")]
-                )
-            }
+            .map { row -> mapRequestRow(row, originCity, destCity, vehicleInfo) }
 
-        return@loggedTransaction PaginatedResult(items = results, totalCount = totalCount)
+        PaginatedResult(items = items, totalCount = total)
     }
 
     suspend fun filters(): Filters = loggedTransaction {
-        val cities = CityEntity.all().map { it.toCity() }.toList()
-        val cargoTypes = CargoTypeEntity.all().map { it.toCargoType() }.toList()
-        val statuses = RequestStatusEntity.all().map { it.toRequestStatus() }.toList()
-        val users = UserTable
+        val cities = CityEntity.all().map { it.toCity() }
+        val cargoTypes = CargoTypeEntity.all().map { it.toCargoType() }
+        val statuses = RequestStatusEntity.all().map { it.toRequestStatus() }
+
+        val drivers = UserTable
             .select(UserTable.id, UserTable.fullName)
-            .map { row ->
-                UserFilter(
-                    id = row[UserTable.id].value,
-                    fullName = row[UserTable.fullName]
-                )
-            }
+            .map { UserFilter(it[UserTable.id].value, it[UserTable.fullName]) }
 
         val vehicles = VehicleTable
             .select(VehicleTable.id, VehicleTable.model, VehicleTable.licensePlate)
-            .map { row ->
+            .map {
                 VehicleFilter(
-                    id = row[VehicleTable.id].value,
-                    model = row[VehicleTable.model],
-                    licencePlate = row[VehicleTable.licensePlate]
+                    it[VehicleTable.id].value,
+                    it[VehicleTable.model],
+                    it[VehicleTable.licensePlate]
                 )
             }
 
-        return@loggedTransaction Filters(
-            cities = cities,
-            cargoTypes = cargoTypes,
-            statuses = statuses,
-            drivers = users,
-            vehicles = vehicles
-        )
+        Filters(cities, cargoTypes, statuses, drivers, vehicles)
     }
 
-    private fun getOrganizationId(customerName: String, customerEmail: String, customerPhone: String?): EntityID<Int> {
-        var customerId = CustomerTable
+    private fun getOrganizationId(customerName: String, email: String, phone: String?): EntityID<Int> {
+        val existing = CustomerTable
             .select(CustomerTable.id)
             .where { CustomerTable.organizationName eq customerName }
-            .limit(1)
-            .map { it[CustomerTable.id] }
-            .firstOrNull()
+            .firstOrNull()?.get(CustomerTable.id)
 
-        if (customerId == null) {
-            customerId = CustomerTable.insert {
+        return if (existing == null) {
+            CustomerTable.insert {
                 it[organizationName] = customerName
-                it[email] = customerEmail
-                it[phoneNumber] = customerPhone
+                it[CustomerTable.email] = email
+                it[phoneNumber] = phone
             } get CustomerTable.id
         } else {
-            CustomerTable.update({ CustomerTable.id eq customerId }) {
-                it[email] = customerEmail
-                it[phoneNumber] = customerPhone
+            CustomerTable.update({ CustomerTable.id eq existing }) {
+                it[CustomerTable.email] = email
+                it[phoneNumber] = phone
             }
+            existing
         }
-
-        return customerId
     }
 
-    suspend fun createRequest(createdById: Int, createRequest: CreateRequest) = loggedTransaction {
+    suspend fun createRequest(createdByLogin: String, req: CreateRequest) = loggedTransaction {
+        val userId = UserTable.select(UserTable.id).where {
+            UserTable.login eq createdByLogin
+        }.first()[UserTable.id].value
 
         RequestTable.insert { row ->
             row[statusId] = 1
-            row[this.createdById] = createdById
-            row[loadingPoint] = createRequest.loadingPoint
-            row[unloadingPoint] = createRequest.unloadingPoint
-            row[cargoTypeId] = createRequest.cargoTypeId
-            row[cargoWeight] = createRequest.cargoWeight
-            row[cargoVolume] = createRequest.cargoVolume
-            row[cargoDescription] = createRequest.cargoDescription
-            row[this.customerId] = getOrganizationId(
-                customerName = createRequest.customerName,
-                customerEmail = createRequest.customerEmail,
-                customerPhone = createRequest.customerPhone
-            )
-            row[originId] = createRequest.originId
-            row[destinationId] = createRequest.destinationId
-            row[transportationDescription] = createRequest.transportationDescription
+            row[this.createdById] = userId
+            row[loadingPoint] = req.loadingPoint
+            row[unloadingPoint] = req.unloadingPoint
+            row[cargoTypeId] = req.cargoTypeId
+            row[cargoWeight] = req.cargoWeight
+            row[cargoVolume] = req.cargoVolume
+            row[cargoDescription] = req.cargoDescription
+            row[this.customerId] = getOrganizationId(req.customerName, req.customerEmail, req.customerPhone)
+            row[originId] = req.originId
+            row[destinationId] = req.destinationId
+            row[transportationDescription] = req.transportationDescription
         }
     }
 
     suspend fun customers(query: String): List<Customer> = loggedTransaction {
-        val searchQuery = "%${query}%".lowercase()
-        return@loggedTransaction CustomerEntity.find { CustomerTable.organizationName.lowerCase() like searchQuery }
+        CustomerEntity
+            .find { CustomerTable.organizationName.lowerCase() like "%${query.lowercase()}%" }
             .limit(4)
             .map { it.toCustomer() }
     }
 
-    suspend fun editRequest(createdById: Int, requestId: Int, editRequest: CreateRequest) = loggedTransaction {
+    suspend fun editRequest(createdByLogin: String, requestId: Int, req: CreateRequest) = loggedTransaction {
+        val userId = UserTable.select(UserTable.id).where {
+            UserTable.login eq createdByLogin
+        }.first()[UserTable.id].value
+
         RequestTable.update({ RequestTable.id eq requestId }) { row ->
-            row[this.createdById] = createdById
-            row[loadingPoint] = editRequest.loadingPoint
-            row[unloadingPoint] = editRequest.unloadingPoint
-            row[cargoTypeId] = editRequest.cargoTypeId
-            row[cargoWeight] = editRequest.cargoWeight
-            row[cargoVolume] = editRequest.cargoVolume
-            row[cargoDescription] = editRequest.cargoDescription
-            row[this.customerId] = getOrganizationId(
-                customerName = editRequest.customerName,
-                customerEmail = editRequest.customerEmail,
-                customerPhone = editRequest.customerPhone
-            )
-            row[originId] = editRequest.originId
-            row[destinationId] = editRequest.destinationId
-            row[transportationDescription] = editRequest.transportationDescription
+            row[this.createdById] = userId
+            row[loadingPoint] = req.loadingPoint
+            row[unloadingPoint] = req.unloadingPoint
+            row[cargoTypeId] = req.cargoTypeId
+            row[cargoWeight] = req.cargoWeight
+            row[cargoVolume] = req.cargoVolume
+            row[cargoDescription] = req.cargoDescription
+            row[this.customerId] = getOrganizationId(req.customerName, req.customerEmail, req.customerPhone)
+            row[originId] = req.originId
+            row[destinationId] = req.destinationId
+            row[transportationDescription] = req.transportationDescription
         }
     }
 
     suspend fun cancelRequest(requestId: Int) = loggedTransaction {
-        RequestTable.update({ RequestTable.id eq requestId }) { row ->
-            row[statusId] = 5
-        }
+        RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 5 }
     }
 
     suspend fun cancelAssignment(requestId: Int) = loggedTransaction {
-        RequestTable.update({ RequestTable.id eq requestId }) { row ->
-            row[statusId] = 5
-        }
-        AssignmentTable.update({ AssignmentTable.requestId eq requestId }) { row ->
-            row[completedAt] = CurrentTimestamp
-        }
+        RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 5 }
+        AssignmentTable.update({ AssignmentTable.requestId eq requestId }) { it[completedAt] = CurrentTimestamp }
     }
 
     suspend fun requestAssignment(): List<DriverStats> = loggedTransaction {
-
-        val driverId = UserTable.id
-        val driverName = UserTable.fullName
-        val phoneNumber = UserTable.phoneNumber
-        val status = DriverStatusTable.name
-        val vehicleModel = VehicleTable.model
-        val vehiclePlate = VehicleTable.licensePlate
         val requestCount = Case()
-            .When(RequestTable.statusId inList listOf(1, 2, 3), longLiteral(1L))
-            .Else(longLiteral(0L))
+            .When(RequestTable.statusId inList listOf(1, 2, 3), longLiteral(1))
+            .Else(longLiteral(0))
             .sum()
 
         val statusOrder = Case()
@@ -348,51 +323,58 @@ class RequestRepository {
             .When(DriverStatusTable.name eq "Не на смене", intLiteral(3))
             .Else(intLiteral(4))
 
-        val driverStats = DriverTable
+        DriverTable
             .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
             .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
-            .select(driverId, driverName, phoneNumber, status, vehicleModel, vehiclePlate, requestCount)
-            .groupBy(driverId, driverName, phoneNumber, status, vehicleModel, vehiclePlate)
+            .select(
+                UserTable.id,
+                UserTable.fullName,
+                UserTable.phoneNumber,
+                DriverStatusTable.name,
+                VehicleTable.model,
+                VehicleTable.licensePlate,
+                requestCount
+            )
+            .groupBy(
+                UserTable.id,
+                UserTable.fullName,
+                UserTable.phoneNumber,
+                DriverStatusTable.name,
+                VehicleTable.model,
+                VehicleTable.licensePlate
+            )
             .orderBy(statusOrder, SortOrder.ASC)
-            .orderBy(driverName, SortOrder.ASC)
+            .orderBy(UserTable.fullName, SortOrder.ASC)
             .map { row ->
                 DriverStats(
-                    driverId = row[driverId].value,
-                    driverName = row[driverName],
-                    phoneNumber = row[phoneNumber],
-                    status = row[status],
-                    vehicleModel = row[vehicleModel],
-                    vehicleLicensePlate = row[vehiclePlate],
+                    driverId = row[UserTable.id].value,
+                    driverName = row[UserTable.fullName],
+                    phoneNumber = row[UserTable.phoneNumber],
+                    status = row[DriverStatusTable.name],
+                    vehicleModel = row[VehicleTable.model],
+                    vehicleLicensePlate = row[VehicleTable.licensePlate],
                     totalAssignedRequests = row[requestCount] ?: 0L
                 )
             }
-
-        return@loggedTransaction driverStats
     }
 
-
     suspend fun assignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {
-        val existingAssignment = AssignmentTable
+        val exists = AssignmentTable
             .select(AssignmentTable.id)
             .where { AssignmentTable.requestId eq requestId }
-            .limit(1)
             .firstOrNull()
 
-        if (existingAssignment != null) {
-            throw MissingCredentialException(message = "Заявка уже назначена водителю")
-        }
+        if (exists != null) throw MissingCredentialException("Заявка уже назначена водителю")
 
         AssignmentTable.insert {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)
         }
 
-        RequestTable.update({ RequestTable.id eq requestId }) {
-            it[statusId] = 2
-        }
+        RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
     }
 
     suspend fun reassignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {
@@ -400,9 +382,25 @@ class RequestRepository {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)
         }
+        RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
+    }
 
-        RequestTable.update({ RequestTable.id eq requestId }) {
-            it[statusId] = 2
-        }
+    suspend fun myRequests(driverLogin: String): List<Request> = loggedTransaction {
+        val driverId = UserTable.select(UserTable.id).where {
+            UserTable.login eq driverLogin
+        }.first()[UserTable.id].value
+
+        val originCity = CityTable.alias("origin_city")
+        val destCity = CityTable.alias("dest_city")
+        val vehicleInfo = vehicleInfoExpr()
+
+        joinBaseQuery(originCity, destCity)
+            .select(selectColumns(originCity, destCity, vehicleInfo))
+            .where {
+                (AssignmentTable.driverId eq driverId) and
+                        (RequestTable.statusId inList listOf(2, 3))
+            }
+            .orderBy(RequestTable.id, SortOrder.DESC)
+            .map { mapRequestRow(it, originCity, destCity, vehicleInfo) }
     }
 }

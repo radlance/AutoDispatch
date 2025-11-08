@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.core.domain
+package com.github.radlance.autodispatch.reuqest.core.domain
 
 import kotlinx.serialization.Serializable
 

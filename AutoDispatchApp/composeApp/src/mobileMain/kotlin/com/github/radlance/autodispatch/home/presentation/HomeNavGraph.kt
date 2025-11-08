@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.github.radlance.autodispatch.request.presentation.RequestScreen
 
 @Composable
 fun HomeNavGraph(
@@ -36,9 +37,7 @@ fun HomeNavGraph(
         modifier = modifier
     ) {
         composable<Requests> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Requests")
-            }
+            RequestScreen()
         }
 
         composable<History> {

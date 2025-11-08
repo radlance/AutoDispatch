@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.request.core.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
 interface RequestRepository {
 

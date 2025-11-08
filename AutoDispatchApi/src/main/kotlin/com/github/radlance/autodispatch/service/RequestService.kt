@@ -45,8 +45,7 @@ class RequestService(
     }
 
     suspend fun createRequest(login: String, request: CreateRequest) {
-        val currentUser = profileRepository.userByLogin(login)
-        requestRepository.createRequest(createdById = currentUser.id, createRequest = request)
+        requestRepository.createRequest(createdByLogin = login, req = request)
     }
 
     suspend fun customers(query: String): List<Customer> {
@@ -55,8 +54,7 @@ class RequestService(
     }
 
     suspend fun editRequest(login: String, requestId: Int, request: CreateRequest) {
-        val currentUser = profileRepository.userByLogin(login)
-        requestRepository.editRequest(createdById = currentUser.id, requestId = requestId, editRequest = request)
+        requestRepository.editRequest(createdByLogin = login, requestId = requestId, req = request)
     }
 
     suspend fun cancelRequest(requestId: Int) {
@@ -83,5 +81,9 @@ class RequestService(
             requestId = requestId,
             driverId = driverId
         )
+    }
+
+    suspend fun myRequests(driverLogin: String): List<Request> {
+        return requestRepository.myRequests(driverLogin = driverLogin)
     }
 }

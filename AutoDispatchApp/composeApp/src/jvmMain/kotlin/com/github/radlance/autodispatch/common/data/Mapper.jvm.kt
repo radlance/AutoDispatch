@@ -1,28 +1,25 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
+import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.Customer
 import com.github.radlance.autodispatch.request.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.request.core.data.CityDto
-import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
-import com.github.radlance.autodispatch.request.core.data.RequestDto
-import com.github.radlance.autodispatch.request.core.data.RequestStatusDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
 import com.github.radlance.autodispatch.request.core.data.VehicleFilterDto
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
-import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.core.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
-import kotlinx.datetime.LocalDateTime
+import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
+import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
 fun PaginatedResultDto<RequestDto>.toPaginatedResultRequest(): PaginatedResult<Request> {
     return PaginatedResult(
@@ -93,13 +90,6 @@ private fun CargoTypeDto.toCargoType(): CargoType {
     )
 }
 
-private fun RequestStatusDto.toRequestStatus(): RequestStatus {
-    return RequestStatus(
-        id = id,
-        name = name
-    )
-}
-
 private fun UserFilterDto.toUserFilter(): UserFilter {
     return UserFilter(
         id = id,
@@ -112,31 +102,5 @@ private fun VehicleFilterDto.toVehicleFilter(): VehicleFilter {
         id = id,
         model = model,
         licencePlate = licencePlate,
-    )
-}
-
-private fun RequestDto.toRequest(): Request {
-    return Request(
-        id = id,
-        requestNumber = requestNumber,
-        status = status.toRequestStatus(),
-        origin = origin,
-        destination = destination,
-        cargoTypeName = cargoTypeName,
-        cargoWeight = cargoWeight,
-        cargoVolume = cargoVolume,
-        cargoDescription = cargoDescription,
-        loadingPoint = loadingPoint,
-        unloadingPoint = unloadingPoint,
-        startedTripAt = startedTripAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
-        endedTripAt = endedTripAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
-        driverId = driverId,
-        driverFullName = driverFullName,
-        organizationName = organizationName,
-        organizationPhoneNumber = organizationPhoneNumber,
-        organizationEmail = organizationEmail,
-        vehicleInfo = vehicleInfo,
-        transportationDescription = transportationDescription,
-        createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) }
     )
 }

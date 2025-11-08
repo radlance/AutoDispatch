@@ -69,7 +69,7 @@ fun DriverAssignmentFields(
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "${currentOption.phoneNumber} • ${currentOption.vehicleModel} (${currentOption.vehicleLicensePlate})",
+                        text = "${currentOption.phoneNumber} • ${currentOption.vehicleModel?.let { "${currentOption.vehicleModel} (${currentOption.vehicleLicensePlate})" } ?: "Нет автомобиля"}",
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,
                         modifier = Modifier.alpha(0.7f)
@@ -78,7 +78,21 @@ fun DriverAssignmentFields(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(2f)) {
                     RequestCountContainer(currentOption.totalAssignedRequests.toInt())
                     Spacer(Modifier.width(12.dp))
-                    DriverStatusWithColor(status = currentOption.status)
+                    currentOption.vehicleModel?.let {
+                        DriverStatusWithColor(status = currentOption.status)
+                    } ?: Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Text(
+                            text = "Без авто",
+                            maxLines = 1,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
         }

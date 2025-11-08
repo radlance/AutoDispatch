@@ -48,7 +48,7 @@ import autodispatch.composeapp.generated.resources.loading_error
 import autodispatch.composeapp.generated.resources.reassign
 import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -220,7 +220,7 @@ fun DriverAssignmentDialog(
             val isDriverSelected = fieldsState.selectedDriverStats != null
             val hasDriverChanged = fieldsState.selectedDriverStats?.driverId != assignedDriverId
             val isButtonEnabled =
-                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged)
+                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && fieldsState.selectedDriverStats?.vehicleModel != null
 
             Button(
                 onClick = {

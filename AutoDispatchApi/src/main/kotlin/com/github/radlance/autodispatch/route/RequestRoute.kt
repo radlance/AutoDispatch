@@ -132,6 +132,12 @@ fun Route.requestRoute(requestService: RequestService) {
 
                 call.respond(HttpStatusCode.OK)
             }
+
+            get("/my") {
+                val login = call.claimByNameOrUnauthorized<String>(name = "login")
+                val requests = requestService.myRequests(login)
+                call.respond(HttpStatusCode.OK, requests)
+            }
         }
     }
 }

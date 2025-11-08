@@ -25,7 +25,10 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             HomeBottomBar(navigationState)
         }
     ) { padding ->
-        HomeNavGraph(navController = navController, modifier = Modifier.padding(padding))
+        HomeNavGraph(
+            navController = navController,
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
+        )
     }
 }
 

@@ -6,7 +6,7 @@ import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
-import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

@@ -13,18 +13,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.driver
 import autodispatch.composeapp.generated.resources.extended_search
 import autodispatch.composeapp.generated.resources.from
 import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.to
+import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.request.core.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
