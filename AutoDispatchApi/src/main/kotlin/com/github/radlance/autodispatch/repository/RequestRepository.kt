@@ -145,14 +145,19 @@ class RequestRepository {
         vehicleInfo = row[vehicleInfo.alias("vehicle_info")]
     )
 
-    private fun buildSearchConditions(q: String): Op<Boolean> {
+    private fun buildSearchConditions(
+        q: String,
+        originCity: Alias<CityTable>,
+        destCity: Alias<CityTable>
+    ): Op<Boolean> {
         val pattern = "%${q.trim().lowercase()}%"
         return OrOp(
             listOf(
                 RequestTable.requestNumber.lowerCase() like pattern,
                 RequestTable.transportationDescription.lowerCase() like pattern,
                 RequestStatusTable.name.lowerCase() like pattern,
-                CityTable.name.lowerCase() like pattern,
+                originCity[CityTable.name].lowerCase() like pattern,
+                destCity[CityTable.name].lowerCase() like pattern,
                 CargoTypeTable.name.lowerCase() like pattern,
                 RequestTable.cargoDescription.lowerCase() like pattern,
                 RequestTable.loadingPoint.lowerCase() like pattern,
@@ -193,7 +198,7 @@ class RequestRepository {
         if (statusIds.isNotEmpty()) conditions += RequestTable.statusId inList statusIds
         if (driverIds.isNotEmpty()) conditions += AssignmentTable.driverId inList driverIds
         if (vehicleIds.isNotEmpty()) conditions += DriverTable.vehicleId inList vehicleIds
-        if (!searchQuery.isNullOrBlank()) conditions += buildSearchConditions(searchQuery)
+        if (!searchQuery.isNullOrBlank()) conditions += buildSearchConditions(searchQuery, originCity, destCity)
 
         val where = AndOp(conditions.ifEmpty { listOf(Op.TRUE) })
 
