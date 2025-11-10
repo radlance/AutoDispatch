@@ -12,7 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.github.radlance.autodispatch.navigation.core.History
+import com.github.radlance.autodispatch.navigation.core.HomeNavGraph
 import com.github.radlance.autodispatch.navigation.core.NavigationState
+import com.github.radlance.autodispatch.navigation.core.Profile
+import com.github.radlance.autodispatch.navigation.core.Deliveries
 import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 
 @Composable
@@ -36,7 +40,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 fun HomeBottomBar(navigationState: NavigationState) {
     NavigationBar {
         val navBackStackEntry by navigationState.navController.currentBackStackEntryAsState()
-        val items = listOf(Requests, History, Profile)
+        val items = listOf(Deliveries, History, Profile)
         items.forEach { navigationItem ->
             val isSelected = navBackStackEntry?.destination?.hierarchy?.any {
                 it.route == navigationItem::class.qualifiedName

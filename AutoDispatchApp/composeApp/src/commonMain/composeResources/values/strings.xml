@@ -97,4 +97,8 @@
     <string name="you_want_to_logout">Вы уверены что хотите выйти из учетной записи?</string>
     <string name="logout">Выйти</string>
     <string name="log_in_to_app">Войдите в приложение</string>
+    <string name="deliveries">Доставки</string>
+    <string name="no_deliveries_yet">Доставок пока нет</string>
+    <string name="when_deliveries_appear">Когда появятся новые доставки, они будут отображаться здесь</string>
+    <string name="delivery">Доставка</string>
 </resources>

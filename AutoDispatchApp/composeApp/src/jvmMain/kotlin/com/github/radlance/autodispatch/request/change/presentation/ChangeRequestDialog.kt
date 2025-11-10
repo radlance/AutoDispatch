@@ -228,6 +228,7 @@ fun ChangeRequestDialog(
                                 && cargoType != null
                                 && companyNameFieldValue.isNotBlank()
                                 && companyEmailFieldValue.isNotBlank()
+                                && companyPhoneFieldValue.isNotBlank()
                                 && cargoWeightFieldValue.isNotBlank()
                                 && loadingFieldValue.isNotBlank()
                                 && unloadingFieldValue.isNotBlank()

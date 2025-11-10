@@ -54,6 +54,10 @@ import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.you_want_to_logout
 import com.github.radlance.autodispatch.auth.presentation.AppIconBox
 import com.github.radlance.autodispatch.common.presentation.shimmerBackground
+import com.github.radlance.autodispatch.navigation.core.DrawerNavGraph
+import com.github.radlance.autodispatch.navigation.core.Drivers
+import com.github.radlance.autodispatch.navigation.core.Requests
+import com.github.radlance.autodispatch.navigation.core.Vehicles
 import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

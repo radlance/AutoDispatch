@@ -9,17 +9,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 abstract class BaseViewModel : ViewModel() {
 
     protected fun <T : Any> handle(background: suspend () -> T, ui: (T) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = background.invoke()
-
-            withContext(Dispatchers.Main) {
-                ui.invoke(result)
-            }
+            ui.invoke(result)
         }
     }
 

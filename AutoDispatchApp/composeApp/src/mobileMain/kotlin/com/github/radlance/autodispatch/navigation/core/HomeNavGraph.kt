@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.home.presentation
+package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -12,16 +12,23 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.github.radlance.autodispatch.request.presentation.RequestScreen
+import androidx.navigation.navigation
+import androidx.navigation.toRoute
+import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
+import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryViewModel
+import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val deliveryViewModel = koinViewModel<DeliveryViewModel>()
+
     NavHost(
         navController = navController,
-        startDestination = Requests,
+        startDestination = Deliveries,
         enterTransition = {
             fadeIn(animationSpec = tween(300))
         },
@@ -36,8 +43,23 @@ fun HomeNavGraph(
         },
         modifier = modifier
     ) {
-        composable<Requests> {
-            RequestScreen()
+        navigation<Deliveries>(startDestination = DeliveryList) {
+            composable<DeliveryList> {
+                DeliveryScreen(
+                    navigateToDeliveryDetails = { navController.navigate(DeliveryDetails(it)) },
+                    viewModel = deliveryViewModel
+                )
+            }
+
+            composable<DeliveryDetails> {
+                val args = it.toRoute<DeliveryDetails>()
+
+                DeliveryDetailsScreen(
+                    navigateUp = navController::navigateUp,
+                    requestNumber = args.requestNumber,
+                    viewModel = deliveryViewModel
+                )
+            }
         }
 
         composable<History> {

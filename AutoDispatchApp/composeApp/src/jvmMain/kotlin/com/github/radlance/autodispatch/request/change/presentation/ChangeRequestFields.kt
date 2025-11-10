@@ -172,7 +172,7 @@ fun ChangeRequestFields(
                 placeholder = "+ 7 (999) 123-45-67",
                 leadingIcon = Icons.Outlined.Phone,
                 modifier = Modifier.weight(1f),
-                isRequired = false,
+                isRequired = true,
                 placeholderFontSize = 14.sp,
                 searchBarColors = SearchBarDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant

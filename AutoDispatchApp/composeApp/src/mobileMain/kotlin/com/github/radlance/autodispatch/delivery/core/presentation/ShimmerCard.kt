@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.delivery.core.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -24,8 +25,8 @@ import com.github.radlance.autodispatch.common.presentation.shimmerBackground
 
 
 @Composable
-fun RequestCardShimmer(modifier: Modifier = Modifier) {
-    androidx.compose.material3.Card(
+fun DeliveryCardShimmer(modifier: Modifier = Modifier) {
+    Card(
         modifier = modifier
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(

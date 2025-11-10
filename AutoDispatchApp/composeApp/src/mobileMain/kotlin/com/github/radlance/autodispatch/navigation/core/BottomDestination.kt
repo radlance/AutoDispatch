@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.home.presentation
+package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
@@ -10,14 +10,16 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 
-interface HomeDestination {
+interface HomeDestination
+
+interface BottomDestination : HomeDestination {
     val selectedIcon: ImageVector
     val unselectedIcon: ImageVector
     val label: String
 }
 
 @Serializable
-object Requests : HomeDestination {
+object Deliveries : BottomDestination {
 
     override val selectedIcon: ImageVector = Icons.Filled.Home
 
@@ -27,7 +29,7 @@ object Requests : HomeDestination {
 }
 
 @Serializable
-object History : HomeDestination {
+object History : BottomDestination {
 
     override val selectedIcon: ImageVector = Icons.Filled.History
 
@@ -37,10 +39,17 @@ object History : HomeDestination {
 }
 
 @Serializable
-object Profile : HomeDestination {
+object Profile : BottomDestination {
+
     override val selectedIcon: ImageVector = Icons.Filled.Person
 
     override val unselectedIcon: ImageVector = Icons.Outlined.Person
 
     override val label: String = "Профиль"
 }
+
+@Serializable
+object DeliveryList : HomeDestination
+
+@Serializable
+data class DeliveryDetails(val requestNumber: String) : HomeDestination

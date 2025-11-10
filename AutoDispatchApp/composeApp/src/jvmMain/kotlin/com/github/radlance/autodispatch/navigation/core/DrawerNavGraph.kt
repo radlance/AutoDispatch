@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.controlpanel.presentation
+package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.navigation.core.NavigationState
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.core.presentation.core.RequestsScreen
 

@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.controlpanel.presentation
+package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday

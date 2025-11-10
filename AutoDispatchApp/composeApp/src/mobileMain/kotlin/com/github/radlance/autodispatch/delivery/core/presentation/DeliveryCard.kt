@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.presentation
+package com.github.radlance.autodispatch.delivery.core.presentation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -41,27 +41,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
-import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
+import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
 @Composable
-fun RequestCard(
+fun DeliveryCard(
+    navigateToRequestDetails: (String) -> Unit,
     request: Request,
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, contentColor) = requestStatusColors(request.status.name)
 
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        onClick = { navigateToRequestDetails(request.requestNumber) }) {
         Column {
-            RequestHeader(request, backgroundColor, contentColor)
-            RequestRoute(request, contentColor)
-            RequestDivider(contentColor)
-            RequestFooter(request, backgroundColor)
+            DeliveryHeader(navigateToRequestDetails, request, backgroundColor, contentColor)
+            DeliveryRoute(request, contentColor)
+            DeliveryDivider(contentColor)
+            DeliveryFooter(request, backgroundColor)
         }
     }
 }
 
 @Composable
-private fun RequestHeader(request: Request, backgroundColor: Color, contentColor: Color) {
+private fun DeliveryHeader(
+    navigateToRequestDetails: (String) -> Unit,
+    request: Request,
+    backgroundColor: Color,
+    contentColor: Color
+) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(18.dp)) {
         Box(
             contentAlignment = Alignment.Center,
@@ -76,7 +84,7 @@ private fun RequestHeader(request: Request, backgroundColor: Color, contentColor
                 )
         ) {
             Icon(
-                imageVector = DeployedCodeIcon,
+                imageVector = Package2Icon,
                 contentDescription = null,
                 modifier = Modifier.size(35.dp),
                 tint = contentColor
@@ -109,7 +117,10 @@ private fun RequestHeader(request: Request, backgroundColor: Color, contentColor
                 )
             }
         }
-        IconButton(onClick = {}, modifier = Modifier.offset(x = 10.dp)) {
+        IconButton(
+            onClick = { navigateToRequestDetails(request.requestNumber) },
+            modifier = Modifier.offset(x = 10.dp)
+        ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
                 contentDescription = null,
@@ -120,7 +131,7 @@ private fun RequestHeader(request: Request, backgroundColor: Color, contentColor
 }
 
 @Composable
-private fun RequestRoute(request: Request, color: Color) {
+private fun DeliveryRoute(request: Request, color: Color) {
     Row(modifier = Modifier.padding(horizontal = 18.dp)) {
         Column(
             modifier = Modifier.height(130.dp).width(24.dp),
@@ -164,7 +175,7 @@ private fun RouteText(title: String, location: String) {
 }
 
 @Composable
-private fun RequestDivider(color: Color) {
+private fun DeliveryDivider(color: Color) {
     Spacer(Modifier.height(12.dp))
     HorizontalDivider(
         modifier = Modifier.fillMaxWidth().offset(y = 2.dp),
@@ -174,7 +185,7 @@ private fun RequestDivider(color: Color) {
 }
 
 @Composable
-private fun RequestFooter(request: Request, backgroundColor: Color) {
+private fun DeliveryFooter(request: Request, backgroundColor: Color) {
     Box(
         modifier = Modifier.fillMaxWidth().background(backgroundColor.copy(alpha = 0.3f)),
         contentAlignment = Alignment.Center
