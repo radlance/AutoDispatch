@@ -6,7 +6,6 @@ import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -22,7 +21,7 @@ class DeliveryDetailsViewModel(
     fun fetchDeliveryDetails(deliveryId: Int) {
         deliveryJob?.cancel()
         deliveryStateMutable.value = FetchResultUiState.Loading
-        deliveryJob = handle(background = { delay(3000); repository.deliveryDetails(deliveryId) }) {
+        deliveryJob = handle(background = { repository.deliveryDetails(deliveryId) }) {
             deliveryStateMutable.value = it.toUiState()
         }
     }
