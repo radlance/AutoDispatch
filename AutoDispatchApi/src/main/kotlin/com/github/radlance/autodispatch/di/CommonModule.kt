@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.di
 
 import com.github.radlance.autodispatch.repository.AuthRepository
+import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
 import com.github.radlance.autodispatch.security.hashing.HashingService
@@ -8,6 +9,7 @@ import com.github.radlance.autodispatch.security.hashing.SHA256HashingService
 import com.github.radlance.autodispatch.security.token.TokenConfig
 import com.github.radlance.autodispatch.security.token.TokenService
 import com.github.radlance.autodispatch.service.AuthService
+import com.github.radlance.autodispatch.service.DeliveryService
 import com.github.radlance.autodispatch.service.ProfileService
 import com.github.radlance.autodispatch.service.RequestService
 import io.ktor.server.application.*
@@ -43,4 +45,10 @@ val requestModule
     get() = module {
         singleOf(::RequestRepository)
         singleOf(::RequestService)
+    }
+
+val deliveryModule
+    get() = module {
+        singleOf(::DeliveryRepository)
+        singleOf(::DeliveryService)
     }

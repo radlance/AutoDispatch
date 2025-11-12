@@ -3,16 +3,12 @@ package com.github.radlance.autodispatch.common.data
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
-import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
-import com.github.radlance.autodispatch.request.change.domain.Customer
-import com.github.radlance.autodispatch.request.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.request.core.data.CityDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
 import com.github.radlance.autodispatch.request.core.data.VehicleFilterDto
-import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
@@ -35,15 +31,6 @@ fun FiltersDto.toFilters(): Filters {
         statuses = statuses.map { it.toRequestStatus() },
         drivers = drivers.map { it.toUserFilter() },
         vehicles = vehicles.map { it.toVehicleFilter() }
-    )
-}
-
-fun CustomerDto.toCustomer(): Customer {
-    return Customer(
-        id = id,
-        organizationName = organizationName,
-        email = email,
-        phoneNumber = phoneNumber
     )
 }
 
@@ -78,13 +65,6 @@ fun DriverStatsDto.toDriverStats(): DriverStats {
 
 private fun CityDto.toCity(): City {
     return City(
-        id = id,
-        name = name
-    )
-}
-
-private fun CargoTypeDto.toCargoType(): CargoType {
-    return CargoType(
         id = id,
         name = name
     )

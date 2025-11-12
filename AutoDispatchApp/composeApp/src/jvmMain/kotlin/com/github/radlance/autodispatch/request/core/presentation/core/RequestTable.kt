@@ -117,7 +117,7 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = item.cargoTypeName,
+                        text = item.cargo.type.name,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

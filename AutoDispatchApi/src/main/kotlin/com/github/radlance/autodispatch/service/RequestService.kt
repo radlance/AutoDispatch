@@ -6,13 +6,9 @@ import com.github.radlance.autodispatch.domain.request.DriverStats
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Request
-import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
 
-class RequestService(
-    private val requestRepository: RequestRepository,
-    private val profileRepository: ProfileRepository
-) {
+class RequestService(private val requestRepository: RequestRepository) {
     suspend fun requests(
         page: Int,
         pageSize: Int,
@@ -81,9 +77,5 @@ class RequestService(
             requestId = requestId,
             driverId = driverId
         )
-    }
-
-    suspend fun myRequests(driverLogin: String): List<Request> {
-        return requestRepository.myRequests(driverLogin = driverLogin)
     }
 }

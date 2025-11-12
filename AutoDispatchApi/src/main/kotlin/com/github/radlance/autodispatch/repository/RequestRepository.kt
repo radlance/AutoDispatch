@@ -14,6 +14,8 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.request.Cargo
+import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.DriverStats
@@ -43,7 +45,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
@@ -96,16 +97,16 @@ class RequestRepository {
         destCity[CityTable.name].alias("destination_name"),
         RequestTable.createdAt,
         RequestTable.updatedAt,
+        CargoTypeTable.id,
         CargoTypeTable.name.alias("cargo_type_name"),
         RequestTable.cargoWeight,
         RequestTable.cargoVolume,
         RequestTable.cargoDescription,
         RequestTable.loadingPoint,
         RequestTable.unloadingPoint,
-        AssignmentTable.startedAt.alias("started_trip_at"),
-        AssignmentTable.completedAt.alias("completed_trip_at"),
         UserTable.id.alias("driver_id"),
         UserTable.fullName.alias("driver_full_name"),
+        CustomerTable.id,
         CustomerTable.organizationName,
         CustomerTable.phoneNumber.alias("organization_phone_number"),
         CustomerTable.email.alias("organization_email"),
@@ -129,19 +130,25 @@ class RequestRepository {
         destination = row[destCity[CityTable.name].alias("destination_name")],
         createdAt = row[RequestTable.createdAt]?.toString(),
         updatedAt = row[RequestTable.updatedAt]?.toString(),
-        cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
-        cargoWeight = row[RequestTable.cargoWeight],
-        cargoVolume = row[RequestTable.cargoVolume],
-        cargoDescription = row[RequestTable.cargoDescription],
+        cargo = Cargo(
+            type = CargoType(
+                id = row[CargoTypeTable.id].value,
+                name = row[CargoTypeTable.name.alias("cargo_type_name")]
+            ),
+            weight = row[RequestTable.cargoWeight],
+            volume = row[RequestTable.cargoVolume],
+            description = row[RequestTable.cargoDescription]
+        ),
         loadingPoint = row[RequestTable.loadingPoint],
         unloadingPoint = row[RequestTable.unloadingPoint],
-        startedTripAt = row[AssignmentTable.startedAt.alias("started_trip_at")]?.toString(),
-        endedTripAt = row[AssignmentTable.completedAt.alias("completed_trip_at")]?.toString(),
         driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
         driverFullName = row[UserTable.fullName.alias("driver_full_name")],
-        organizationName = row[CustomerTable.organizationName],
-        organizationPhoneNumber = row[CustomerTable.phoneNumber.alias("organization_phone_number")],
-        organizationEmail = row[CustomerTable.email.alias("organization_email")],
+        customer = Customer(
+            id = row[CustomerTable.id].value,
+            organizationName = row[CustomerTable.organizationName],
+            email = row[CustomerTable.email],
+            phoneNumber = row[CustomerTable.phoneNumber]
+        ),
         vehicleInfo = row[vehicleInfo.alias("vehicle_info")]
     )
 
@@ -390,24 +397,5 @@ class RequestRepository {
             it[this.driverId] = EntityID(driverId, UserTable)
         }
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
-    }
-
-    suspend fun myRequests(driverLogin: String): List<Request> = loggedTransaction {
-        val driverId = UserTable.select(UserTable.id).where {
-            UserTable.login eq driverLogin
-        }.first()[UserTable.id].value
-
-        val originCity = CityTable.alias("origin_city")
-        val destCity = CityTable.alias("dest_city")
-        val vehicleInfo = vehicleInfoExpr()
-
-        joinBaseQuery(originCity, destCity)
-            .select(selectColumns(originCity, destCity, vehicleInfo))
-            .where {
-                (AssignmentTable.driverId eq driverId) and
-                        (RequestTable.statusId inList listOf(2, 3))
-            }
-            .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
-            .map { mapRequestRow(it, originCity, destCity, vehicleInfo) }
     }
 }

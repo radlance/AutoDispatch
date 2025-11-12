@@ -125,7 +125,7 @@ fun DriverAssignmentDialog(
                             Spacer(Modifier.height(12.dp))
                             Text("${request.origin} → ${request.destination}", fontSize = 16.sp)
                             Spacer(Modifier.height(12.dp))
-                            Text("${request.cargoTypeName} • ${request.createdAt.date}", modifier = Modifier.alpha(0.7f))
+                            Text("${request.cargo.type.name} • ${request.createdAt.date}", modifier = Modifier.alpha(0.7f))
                         }
                     }
                     Spacer(Modifier.height(24.dp))

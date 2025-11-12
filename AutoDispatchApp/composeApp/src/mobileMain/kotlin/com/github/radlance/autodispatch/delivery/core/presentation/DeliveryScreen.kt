@@ -89,8 +89,11 @@ fun DeliveryScreen(
                         ) {
                             items(items = requests, key = { it.id }) { request ->
                                 DeliveryCard(
-                                    navigateToRequestDetails = navigateToDeliveryDetails,
-                                    request = request
+                                    navigateToDeliveryDetails = {
+                                        navigateToDeliveryDetails(request.requestNumber)
+                                        viewModel.choiceRequest(request)
+                                    },
+                                    delivery = request
                                 )
                             }
                         }

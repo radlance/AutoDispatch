@@ -7,9 +7,9 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
-import com.github.radlance.autodispatch.request.change.domain.Customer
-import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
+import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

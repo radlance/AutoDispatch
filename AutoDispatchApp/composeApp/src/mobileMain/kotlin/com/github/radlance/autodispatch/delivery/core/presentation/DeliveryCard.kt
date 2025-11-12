@@ -40,33 +40,34 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
+import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
 @Composable
 fun DeliveryCard(
-    navigateToRequestDetails: (String) -> Unit,
-    request: Request,
+    navigateToDeliveryDetails: () -> Unit,
+    delivery: Delivery,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, contentColor) = requestStatusColors(request.status.name)
+    val (backgroundColor, contentColor) = requestStatusColors(delivery.status.name)
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = { navigateToRequestDetails(request.requestNumber) }) {
+        onClick = navigateToDeliveryDetails
+    ) {
         Column {
-            DeliveryHeader(navigateToRequestDetails, request, backgroundColor, contentColor)
-            DeliveryRoute(request, contentColor)
+            DeliveryHeader(navigateToDeliveryDetails, delivery, backgroundColor, contentColor)
+            DeliveryRoute(delivery, contentColor, Modifier.padding(horizontal = 18.dp))
             DeliveryDivider(contentColor)
-            DeliveryFooter(request, backgroundColor)
+            DeliveryFooter(delivery, backgroundColor)
         }
     }
 }
 
 @Composable
 private fun DeliveryHeader(
-    navigateToRequestDetails: (String) -> Unit,
-    request: Request,
+    navigateToRequestDetails: () -> Unit,
+    delivery: Delivery,
     backgroundColor: Color,
     contentColor: Color
 ) {
@@ -93,8 +94,8 @@ private fun DeliveryHeader(
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f).padding(horizontal = 18.dp)) {
             Text(buildAnnotatedString {
-                append("Заявка ")
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(request.requestNumber) }
+                append("Доставка ")
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(delivery.requestNumber) }
             })
             Spacer(Modifier.height(4.dp))
             Box(
@@ -108,7 +109,7 @@ private fun DeliveryHeader(
                     )
             ) {
                 Text(
-                    text = request.status.name,
+                    text = delivery.status.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 13.sp,
@@ -118,7 +119,7 @@ private fun DeliveryHeader(
             }
         }
         IconButton(
-            onClick = { navigateToRequestDetails(request.requestNumber) },
+            onClick = navigateToRequestDetails,
             modifier = Modifier.offset(x = 10.dp)
         ) {
             Icon(
@@ -131,8 +132,8 @@ private fun DeliveryHeader(
 }
 
 @Composable
-private fun DeliveryRoute(request: Request, color: Color) {
-    Row(modifier = Modifier.padding(horizontal = 18.dp)) {
+fun DeliveryRoute(request: Delivery, color: Color, modifier: Modifier = Modifier) {
+    Row(modifier = modifier) {
         Column(
             modifier = Modifier.height(130.dp).width(24.dp),
             verticalArrangement = Arrangement.SpaceBetween,
@@ -185,7 +186,7 @@ private fun DeliveryDivider(color: Color) {
 }
 
 @Composable
-private fun DeliveryFooter(request: Request, backgroundColor: Color) {
+private fun DeliveryFooter(delivery: Delivery, backgroundColor: Color) {
     Box(
         modifier = Modifier.fillMaxWidth().background(backgroundColor.copy(alpha = 0.3f)),
         contentAlignment = Alignment.Center
@@ -194,13 +195,22 @@ private fun DeliveryFooter(request: Request, backgroundColor: Color) {
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth().padding(18.dp)
         ) {
-            CardSection("Груз", request.cargoTypeName)
-            CardSection("Вес", request.cargoWeight.formatKg())
+            CardSection("Груз", delivery.cargoTypeName)
+            CardSection("Вес", delivery.cargoWeight.formatKg())
             CardSection(
                 "Обновлена",
-                "${(request.updatedAt ?: request.createdAt).day.toString().padStart(2, '0')}." +
-                        "${(request.updatedAt ?: request.createdAt).month.ordinal.inc().toString().padStart(2, '0')}, " +
-                        "${(request.updatedAt ?: request.createdAt).hour}:${(request.updatedAt ?: request.createdAt).minute}"
+                "${(delivery.updatedAt ?: delivery.createdAt).day.toString().padStart(2, '0')}." +
+                        "${
+                            (delivery.updatedAt ?: delivery.createdAt).month.ordinal.inc()
+                                .toString().padStart(2, '0')
+                        }, " +
+                        "${
+                            (delivery.updatedAt ?: delivery.createdAt).hour.toString()
+                                .padStart(2, '0')
+                        }:${
+                            (delivery.updatedAt ?: delivery.createdAt).minute.toString()
+                                .padStart(2, '0')
+                        }"
             )
         }
     }
@@ -215,7 +225,7 @@ private fun CardSection(title: String, subtitle: String, modifier: Modifier = Mo
 }
 
 @Composable
-private fun requestStatusColors(status: String) =
+fun requestStatusColors(status: String) =
     if (status == "Назначена") {
         MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
     } else MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer

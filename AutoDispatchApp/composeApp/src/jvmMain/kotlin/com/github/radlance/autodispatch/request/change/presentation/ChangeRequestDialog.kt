@@ -54,8 +54,8 @@ import autodispatch.composeapp.generated.resources.creating_new_request
 import autodispatch.composeapp.generated.resources.edit
 import autodispatch.composeapp.generated.resources.request_editing
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 

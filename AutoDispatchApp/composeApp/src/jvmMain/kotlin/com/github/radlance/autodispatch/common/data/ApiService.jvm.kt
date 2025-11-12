@@ -3,9 +3,9 @@ package com.github.radlance.autodispatch.common.data
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
-import com.github.radlance.autodispatch.request.change.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
+import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

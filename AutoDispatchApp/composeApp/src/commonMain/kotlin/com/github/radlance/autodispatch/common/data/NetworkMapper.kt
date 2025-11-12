@@ -2,8 +2,14 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.profile.data.UserDto
 import com.github.radlance.autodispatch.profile.domain.User
+import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
+import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
+import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
+import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
+import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
 import kotlinx.datetime.LocalDateTime
@@ -24,19 +30,12 @@ fun RequestDto.toRequest(): Request {
         status = status.toRequestStatus(),
         origin = origin,
         destination = destination,
-        cargoTypeName = cargoTypeName,
-        cargoWeight = cargoWeight,
-        cargoVolume = cargoVolume,
-        cargoDescription = cargoDescription,
+        cargo = cargo.toCargo(),
         loadingPoint = loadingPoint,
         unloadingPoint = unloadingPoint,
-        startedTripAt = startedTripAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
-        endedTripAt = endedTripAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
         driverId = driverId,
         driverFullName = driverFullName,
-        organizationName = organizationName,
-        organizationPhoneNumber = organizationPhoneNumber,
-        organizationEmail = organizationEmail,
+        customer = customer.toCustomer(),
         vehicleInfo = vehicleInfo,
         transportationDescription = transportationDescription,
         createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) },
@@ -46,6 +45,31 @@ fun RequestDto.toRequest(): Request {
 
 fun RequestStatusDto.toRequestStatus(): RequestStatus {
     return RequestStatus(
+        id = id,
+        name = name
+    )
+}
+
+fun CustomerDto.toCustomer(): Customer {
+    return Customer(
+        id = id,
+        organizationName = organizationName,
+        email = email,
+        phoneNumber = phoneNumber
+    )
+}
+
+fun CargoDto.toCargo(): Cargo {
+    return Cargo(
+        type = type.toCargoType(),
+        weight = weight,
+        volume = volume,
+        description = description
+    )
+}
+
+fun CargoTypeDto.toCargoType(): CargoType {
+    return CargoType(
         id = id,
         name = name
     )

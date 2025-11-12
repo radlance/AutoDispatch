@@ -37,7 +37,7 @@ fun DeliveryDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: DeliveryViewModel = koinViewModel()
 ) {
-    val requestsState by viewModel.requestsState.collectAsStateWithLifecycle()
+    val requestState by viewModel.requestState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -48,7 +48,10 @@ fun DeliveryDetailsScreen(
                         text = buildAnnotatedString {
                             append("${stringResource(Res.string.delivery)} ")
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append(requestNumber)
+                                val currentState = requestState
+                                if (currentState is FetchResultUiState.Success) {
+                                    append(currentState.data.requestNumber)
+                                } else append(requestNumber)
                             }
                         }
                     )
@@ -68,15 +71,15 @@ fun DeliveryDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
-            isRefreshing = requestsState is FetchResultUiState.Loading,
+            isRefreshing = requestState is FetchResultUiState.Loading,
             onRefresh = viewModel::fetchRequests
         ) {
-            requestsState.Reduce(
+            requestState.Reduce(
                 onLoading = {
                     // TODO
                 },
-                onSuccess = { requests ->
-                    // TODO
+                onSuccess = { request ->
+//                    DeliveryDetails(request = request)
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

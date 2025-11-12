@@ -1,8 +1,8 @@
 package com.github.radlance.autodispatch.request.change.presentation
 
 import com.github.radlance.autodispatch.common.presentation.Event
-import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 
 interface ChangeRequestEvent : Event {
 

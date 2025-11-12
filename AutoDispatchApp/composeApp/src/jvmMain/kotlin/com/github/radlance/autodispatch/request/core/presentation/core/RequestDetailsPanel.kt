@@ -72,8 +72,8 @@ import com.github.radlance.autodispatch.request.change.presentation.ChangeReques
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestEvent
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
-import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -113,14 +113,14 @@ fun RequestDetailsPanel(
                 currentFieldsUiState = ChangeRequestFieldsUiState(
                     departureCity = cities.first { it.name == request.origin },
                     destinationCity = cities.first { it.name == request.destination },
-                    cargoType = cargoTypes.first { it.name == request.cargoTypeName },
+                    cargoType = cargoTypes.first { it.name == request.cargo.type.name },
                     requestNumber = request.requestNumber,
-                    companyNameFieldValue = organizationName,
-                    companyEmailFieldValue = organizationEmail,
-                    companyPhoneFieldValue = organizationPhoneNumber?.removePrefix("+7") ?: "",
-                    cargoWeightFieldValue = cargoWeight.formatNumberNoTrailingZeros(),
-                    cargoVolumeFieldValue = cargoVolume?.formatNumberNoTrailingZeros() ?: "",
-                    cargoDescriptionFieldValue = cargoDescription ?: "",
+                    companyNameFieldValue = customer.organizationName,
+                    companyEmailFieldValue = customer.email,
+                    companyPhoneFieldValue = customer.phoneNumber?.removePrefix("+7") ?: "",
+                    cargoWeightFieldValue = cargo.weight.formatNumberNoTrailingZeros(),
+                    cargoVolumeFieldValue = cargo.volume?.formatNumberNoTrailingZeros() ?: "",
+                    cargoDescriptionFieldValue = cargo.description ?: "",
                     loadingFieldValue = loadingPoint,
                     unloadingFieldValue = unloadingPoint,
                     additionalInfoFieldValue = transportationDescription ?: "",
@@ -209,7 +209,11 @@ fun RequestDetailsPanel(
                     InfoRow(
                         icon = Icons.Outlined.CalendarToday,
                         iconDesc = stringResource(Res.string.creation_date),
-                        text = "${request.createdAt.date}, ${request.createdAt.hour}:${request.createdAt.minute}:${request.createdAt.second}"
+                        text = "${request.createdAt.date}, ${
+                            request.createdAt.hour.toString().padStart(2, '0')
+                        }:${
+                            request.createdAt.minute.toString().padStart(2, '0')
+                        }:${request.createdAt.second.toString().padStart(2, '0')}"
                     )
                 }
 
@@ -218,22 +222,22 @@ fun RequestDetailsPanel(
                 Section(header = stringResource(Res.string.cargo_info)) {
                     LabeledValue(
                         label = stringResource(Res.string.cargo_type),
-                        value = request.cargoTypeName
+                        value = request.cargo.type.name
                     )
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = stringResource(Res.string.weight),
-                        value = request.cargoWeight.formatKg()
+                        value = request.cargo.weight.formatKg()
                     )
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = stringResource(Res.string.volume),
-                        value = request.cargoVolume?.formatM3()
+                        value = request.cargo.volume?.formatM3()
                     )
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = stringResource(Res.string.description),
-                        value = request.cargoDescription
+                        value = request.cargo.description
                     )
                 }
 
@@ -268,10 +272,10 @@ fun RequestDetailsPanel(
                     InfoRow(
                         icon = Icons.Outlined.Person,
                         iconDesc = stringResource(Res.string.customer),
-                        text = request.organizationName
+                        text = request.customer.organizationName
                     )
 
-                    request.organizationPhoneNumber?.let {
+                    request.customer.phoneNumber?.let {
                         Spacer(modifier = Modifier.height(ITEM_GAP))
                         InfoRow(
                             icon = Icons.Outlined.Phone,
@@ -284,7 +288,7 @@ fun RequestDetailsPanel(
                     InfoRow(
                         icon = Icons.Outlined.Mail,
                         iconDesc = stringResource(Res.string.customer_email),
-                        text = request.organizationEmail
+                        text = request.customer.email
                     )
                 }
 
