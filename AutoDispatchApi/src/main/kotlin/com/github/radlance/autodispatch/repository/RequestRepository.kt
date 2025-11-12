@@ -247,7 +247,7 @@ class RequestRepository {
         Filters(cities, cargoTypes, statuses, drivers, vehicles)
     }
 
-    private fun getOrganizationId(customerName: String, email: String, phone: String?): EntityID<Int> {
+    private fun getOrganizationId(customerName: String, email: String, phone: String): EntityID<Int> {
         val existing = CustomerTable
             .select(CustomerTable.id)
             .where { CustomerTable.organizationName eq customerName }

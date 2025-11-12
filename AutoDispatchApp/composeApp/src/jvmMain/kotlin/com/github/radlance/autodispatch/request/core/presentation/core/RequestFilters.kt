@@ -22,9 +22,9 @@ import autodispatch.composeapp.generated.resources.to
 import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
-import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
+import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

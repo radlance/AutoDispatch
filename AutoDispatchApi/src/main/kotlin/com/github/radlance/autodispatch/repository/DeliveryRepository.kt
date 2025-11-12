@@ -2,11 +2,20 @@ package com.github.radlance.autodispatch.repository
 
 import com.github.radlance.autodispatch.database.table.AssignmentTable
 import com.github.radlance.autodispatch.database.table.CargoTypeTable // Добавлен импорт
+import com.github.radlance.autodispatch.database.table.CityTable
+import com.github.radlance.autodispatch.database.table.CustomerTable
+import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
+import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.delivery.Delivery // Ваш новый DTO
+import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
+import com.github.radlance.autodispatch.domain.request.Cargo
+import com.github.radlance.autodispatch.domain.request.CargoType
+import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.RequestStatus
+import com.github.radlance.autodispatch.domain.request.VehicleFilter
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
@@ -67,7 +76,97 @@ class DeliveryRepository {
             .map { mapDeliveryRow(it) }
     }
 
-    suspend fun delivery(deliveryId: Int) = loggedTransaction {
+    suspend fun delivery(deliveryId: Int): DeliveryDetailed? = loggedTransaction {
+        val originCity = CityTable.alias("origin_city")
+        val destCity = CityTable.alias("dest_city")
+        val dispatcherUser = UserTable.alias("dispatcher_user")
 
+        val query = RequestTable
+            .join(originCity, JoinType.LEFT, RequestTable.originId, originCity[CityTable.id])
+            .join(destCity, JoinType.LEFT, RequestTable.destinationId, destCity[CityTable.id])
+            .join(RequestStatusTable, JoinType.LEFT, RequestTable.statusId, RequestStatusTable.id)
+            .join(CargoTypeTable, JoinType.LEFT, RequestTable.cargoTypeId, CargoTypeTable.id)
+            .join(CustomerTable, JoinType.LEFT, RequestTable.customerId, CustomerTable.id)
+            .join(dispatcherUser, JoinType.LEFT, RequestTable.createdById, dispatcherUser[UserTable.id])
+            .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
+            .join(UserTable, JoinType.LEFT, AssignmentTable.driverId, UserTable.id)
+            .join(DriverTable, JoinType.LEFT, UserTable.id, DriverTable.userId)
+            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
+
+        val row = query
+            .select(
+                RequestTable.id,
+                RequestTable.requestNumber,
+                RequestTable.transportationDescription,
+                RequestStatusTable.id,
+                RequestStatusTable.name,
+                originCity[CityTable.name].alias("origin_name"),
+                destCity[CityTable.name].alias("destination_name"),
+                RequestTable.loadingPoint,
+                RequestTable.unloadingPoint,
+                CargoTypeTable.id,
+                CargoTypeTable.name.alias("cargo_type_name"),
+                RequestTable.cargoWeight,
+                RequestTable.cargoVolume,
+                RequestTable.cargoDescription,
+                RequestTable.createdAt,
+                RequestTable.updatedAt,
+                CustomerTable.id,
+                CustomerTable.organizationName,
+                CustomerTable.email,
+                CustomerTable.phoneNumber,
+                VehicleTable.id,
+                VehicleTable.model,
+                VehicleTable.licensePlate,
+                dispatcherUser[UserTable.fullName].alias("dispatcher_full_name"),
+                dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number")
+            )
+            .where { RequestTable.id eq deliveryId }
+            .limit(1)
+            .firstOrNull()
+
+        val delivery = row?.let {
+            DeliveryDetailed(
+                id = row[RequestTable.id].value,
+                status = RequestStatus(
+                    id = row[RequestStatusTable.id].value,
+                    name = row[RequestStatusTable.name]
+                ),
+                origin = row[originCity[CityTable.name].alias("origin_name")],
+                destination = row[destCity[CityTable.name].alias("destination_name")],
+                transportationDescription = row[RequestTable.transportationDescription],
+                cargo = Cargo(
+                    type = CargoType(
+                        id = row[CargoTypeTable.id].value,
+                        name = row[CargoTypeTable.name.alias("cargo_type_name")]
+                    ),
+                    weight = row[RequestTable.cargoWeight],
+                    volume = row[RequestTable.cargoVolume],
+                    description = row[RequestTable.cargoDescription]
+                ),
+                loadingPoint = row[RequestTable.loadingPoint],
+                unloadingPoint = row[RequestTable.unloadingPoint],
+                dispatcherFullName = row[dispatcherUser[UserTable.fullName].alias("dispatcher_full_name")],
+                dispatcherPhoneNumber = row[dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number")],
+                customer = Customer(
+                    id = row[CustomerTable.id].value,
+                    organizationName = row[CustomerTable.organizationName],
+                    email = row[CustomerTable.email],
+                    phoneNumber = row[CustomerTable.phoneNumber]
+                ),
+                vehicle = row.getOrNull(VehicleTable.id)?.let {
+                    VehicleFilter(
+                        id = it.value,
+                        model = row[VehicleTable.model],
+                        licensePlate = row[VehicleTable.licensePlate]
+                    )
+                },
+                createdAt = row[RequestTable.createdAt]?.toString(),
+                updatedAt = row[RequestTable.updatedAt]?.toString(),
+                requestNumber = row[RequestTable.requestNumber]
+            )
+        }
+
+        return@loggedTransaction delivery
     }
 }

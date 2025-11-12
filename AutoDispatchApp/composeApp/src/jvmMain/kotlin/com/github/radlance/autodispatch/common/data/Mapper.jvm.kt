@@ -8,12 +8,10 @@ import com.github.radlance.autodispatch.request.core.data.CityDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
-import com.github.radlance.autodispatch.request.core.data.VehicleFilterDto
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
-import com.github.radlance.autodispatch.request.core.domain.VehicleFilter
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
@@ -74,13 +72,5 @@ private fun UserFilterDto.toUserFilter(): UserFilter {
     return UserFilter(
         id = id,
         fullName = fullName
-    )
-}
-
-private fun VehicleFilterDto.toVehicleFilter(): VehicleFilter {
-    return VehicleFilter(
-        id = id,
-        model = model,
-        licencePlate = licencePlate,
     )
 }

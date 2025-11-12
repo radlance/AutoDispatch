@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,8 +13,8 @@ import kotlinx.coroutines.launch
 
 abstract class BaseViewModel : ViewModel() {
 
-    protected fun <T : Any> handle(background: suspend () -> T, ui: (T) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+    protected fun <T : Any> handle(background: suspend () -> T, ui: (T) -> Unit): Job {
+        return viewModelScope.launch(Dispatchers.IO) {
             val result = background.invoke()
             ui.invoke(result)
         }
@@ -26,5 +27,4 @@ abstract class BaseViewModel : ViewModel() {
             initialValue
         )
     }
-
 }

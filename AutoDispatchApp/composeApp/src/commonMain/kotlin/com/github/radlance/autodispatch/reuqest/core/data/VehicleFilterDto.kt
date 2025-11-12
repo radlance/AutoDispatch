@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.core.data
+package com.github.radlance.autodispatch.reuqest.core.data
 
 import kotlinx.serialization.Serializable
 
@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class VehicleFilterDto(
     val id: Int,
     val model: String,
-    val licencePlate: String
+    val licensePlate: String
 )

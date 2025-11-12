@@ -12,14 +12,23 @@ fun Route.deliveries(deliveryService: DeliveryService) {
         route("/deliveries") {
             get {
                 val login = call.claimByNameOrUnauthorized<String>(name = "login")
-                val requests = deliveryService.deliveries(login)
-                call.respond(HttpStatusCode.OK, requests)
+                val deliveries = deliveryService.deliveries(login)
+                call.respond(HttpStatusCode.OK, deliveries)
             }
 
             get("/{id}/details") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val delivery = deliveryService.delivery(id)
+
+                if (delivery == null) {
+                    call.respond(HttpStatusCode.NotFound, "Delivery with ID $id not found")
+                } else {
+                    call.respond(HttpStatusCode.OK, delivery)
+                }
             }
+
         }
     }
 }

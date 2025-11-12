@@ -57,7 +57,12 @@ fun DeliveryCard(
     ) {
         Column {
             DeliveryHeader(navigateToDeliveryDetails, delivery, backgroundColor, contentColor)
-            DeliveryRoute(delivery, contentColor, Modifier.padding(horizontal = 18.dp))
+            DeliveryRoute(
+                fromPoint = delivery.loadingPoint,
+                toPoint = delivery.unloadingPoint,
+                color = contentColor,
+                Modifier.padding(horizontal = 18.dp)
+            )
             DeliveryDivider(contentColor)
             DeliveryFooter(delivery, backgroundColor)
         }
@@ -132,7 +137,7 @@ private fun DeliveryHeader(
 }
 
 @Composable
-fun DeliveryRoute(request: Delivery, color: Color, modifier: Modifier = Modifier) {
+fun DeliveryRoute(fromPoint: String, toPoint: String, color: Color, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
         Column(
             modifier = Modifier.height(130.dp).width(24.dp),
@@ -162,9 +167,9 @@ fun DeliveryRoute(request: Delivery, color: Color, modifier: Modifier = Modifier
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.height(130.dp)) {
-            RouteText("Откуда", request.loadingPoint)
+            RouteText("Откуда", fromPoint)
             Spacer(Modifier.weight(1f))
-            RouteText("Куда", request.unloadingPoint)
+            RouteText("Куда", toPoint)
         }
     }
 }

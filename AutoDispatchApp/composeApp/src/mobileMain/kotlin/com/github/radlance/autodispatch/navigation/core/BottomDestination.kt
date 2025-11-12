@@ -52,4 +52,7 @@ object Profile : BottomDestination {
 object DeliveryList : HomeDestination
 
 @Serializable
-data class DeliveryDetails(val requestNumber: String) : HomeDestination
+data class DeliveryDetails(
+    val deliveryId: Int,
+    val requestNumber: String
+) : HomeDestination

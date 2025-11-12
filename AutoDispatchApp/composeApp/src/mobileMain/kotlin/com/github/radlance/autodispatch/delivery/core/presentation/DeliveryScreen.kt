@@ -37,17 +37,19 @@ import autodispatch.composeapp.generated.resources.no_deliveries_yet
 import autodispatch.composeapp.generated.resources.when_deliveries_appear
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryScreen(
-    navigateToDeliveryDetails: (String) -> Unit,
+    navigateToDeliveryDetails: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DeliveryViewModel = koinViewModel()
+    deliveryViewModel: DeliveryViewModel = koinViewModel(),
+    deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
-    val requestsState by viewModel.requestsState.collectAsStateWithLifecycle()
+    val requestsState by deliveryViewModel.deliveriesState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -64,7 +66,7 @@ fun DeliveryScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
             isRefreshing = requestsState is FetchResultUiState.Loading,
-            onRefresh = viewModel::fetchRequests
+            onRefresh = deliveryViewModel::fetchRequests
         ) {
             requestsState.Reduce(
                 onLoading = {
@@ -87,13 +89,16 @@ fun DeliveryScreen(
                                 .fillMaxSize()
                                 .padding(horizontal = 18.dp)
                         ) {
-                            items(items = requests, key = { it.id }) { request ->
+                            items(items = requests, key = { it.id }) { delivery ->
                                 DeliveryCard(
                                     navigateToDeliveryDetails = {
-                                        navigateToDeliveryDetails(request.requestNumber)
-                                        viewModel.choiceRequest(request)
+                                        navigateToDeliveryDetails(
+                                            delivery.id,
+                                            delivery.requestNumber
+                                        )
+                                        deliveryDetailsViewModel.fetchDeliveryDetails(delivery.id)
                                     },
-                                    delivery = request
+                                    delivery = delivery
                                 )
                             }
                         }
@@ -133,7 +138,7 @@ fun DeliveryScreen(
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(message = it, onRetry = viewModel::fetchRequests)
+                        ErrorMessage(message = it, onRetry = deliveryViewModel::fetchRequests)
                     }
                 }
             )

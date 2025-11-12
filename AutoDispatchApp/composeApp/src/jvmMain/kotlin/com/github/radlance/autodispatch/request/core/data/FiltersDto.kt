@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.request.core.data
 
 import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
 import kotlinx.serialization.Serializable
 
 @Serializable

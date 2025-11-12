@@ -15,8 +15,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
-import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryViewModel
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
+import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -24,7 +24,7 @@ fun HomeNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val deliveryViewModel = koinViewModel<DeliveryViewModel>()
+    val deliveryDetailsViewModel = koinViewModel<DeliveryDetailsViewModel>()
 
     NavHost(
         navController = navController,
@@ -46,8 +46,12 @@ fun HomeNavGraph(
         navigation<Deliveries>(startDestination = DeliveryList) {
             composable<DeliveryList> {
                 DeliveryScreen(
-                    navigateToDeliveryDetails = { navController.navigate(DeliveryDetails(it)) },
-                    viewModel = deliveryViewModel
+                    navigateToDeliveryDetails = { id, number ->
+                        navController.navigate(
+                            DeliveryDetails(id, number)
+                        )
+                    },
+                    deliveryDetailsViewModel = deliveryDetailsViewModel
                 )
             }
 
@@ -56,8 +60,9 @@ fun HomeNavGraph(
 
                 DeliveryDetailsScreen(
                     navigateUp = navController::navigateUp,
-                    requestNumber = args.requestNumber,
-                    viewModel = deliveryViewModel
+                    deliveryId = args.deliveryId,
+                    deliveryNumber = args.requestNumber,
+                    viewModel = deliveryDetailsViewModel
                 )
             }
         }

@@ -25,19 +25,19 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryDetailsScreen(
-    requestNumber: String,
+    deliveryId: Int,
+    deliveryNumber: String,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DeliveryViewModel = koinViewModel()
+    viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
-    val requestState by viewModel.requestState.collectAsStateWithLifecycle()
+    val requestState by viewModel.deliveryState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -51,7 +51,7 @@ fun DeliveryDetailsScreen(
                                 val currentState = requestState
                                 if (currentState is FetchResultUiState.Success) {
                                     append(currentState.data.requestNumber)
-                                } else append(requestNumber)
+                                } else append(deliveryNumber)
                             }
                         }
                     )
@@ -72,18 +72,21 @@ fun DeliveryDetailsScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
             isRefreshing = requestState is FetchResultUiState.Loading,
-            onRefresh = viewModel::fetchRequests
+            onRefresh = { viewModel.fetchDeliveryDetails(deliveryId) }
         ) {
             requestState.Reduce(
                 onLoading = {
-                    // TODO
+                    DeliveryDetailsShimmer()
                 },
-                onSuccess = { request ->
-//                    DeliveryDetails(request = request)
+                onSuccess = { delivery ->
+                    DeliveryDetails(delivery)
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(message = it, onRetry = viewModel::fetchRequests)
+                        ErrorMessage(
+                            message = it,
+                            onRetry = { viewModel.fetchDeliveryDetails(deliveryId) }
+                        )
                     }
                 }
             )

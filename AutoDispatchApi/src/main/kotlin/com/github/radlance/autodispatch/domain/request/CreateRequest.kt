@@ -12,7 +12,7 @@ data class CreateRequest(
     val cargoDescription: String?,
     val customerName: String,
     val customerEmail: String,
-    val customerPhone: String?,
+    val customerPhone: String,
     val originId: Int?,
     val destinationId: Int?,
     val transportationDescription: String?

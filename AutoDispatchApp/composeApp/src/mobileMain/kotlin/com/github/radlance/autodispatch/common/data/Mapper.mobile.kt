@@ -2,6 +2,8 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
+import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
+import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import kotlinx.datetime.LocalDateTime
 
 fun DeliveryDto.toDelivery(): Delivery {
@@ -13,6 +15,26 @@ fun DeliveryDto.toDelivery(): Delivery {
         cargoWeight = cargoWeight,
         cargoVolume = cargoVolume,
         cargoTypeName = cargoTypeName,
+        createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) },
+        updatedAt = updatedAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
+        requestNumber = requestNumber
+    )
+}
+
+fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
+    return DeliveryDetailed(
+        id = id,
+        status = status.toRequestStatus(),
+        origin = origin,
+        destination = destination,
+        transportationDescription = transportationDescription,
+        cargo = cargo.toCargo(),
+        loadingPoint = loadingPoint,
+        unloadingPoint = unloadingPoint,
+        dispatcherFullName = dispatcherFullName,
+        dispatcherPhoneNumber = dispatcherPhoneNumber,
+        customer = customer.toCustomer(),
+        vehicle = vehicle.toVehicleFilter(),
         createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) },
         updatedAt = updatedAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
         requestNumber = requestNumber

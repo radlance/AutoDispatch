@@ -7,11 +7,13 @@ import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
+import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
 import kotlinx.datetime.LocalDateTime
 
 internal fun UserDto.toUser(): User {
@@ -72,5 +74,13 @@ fun CargoTypeDto.toCargoType(): CargoType {
     return CargoType(
         id = id,
         name = name
+    )
+}
+
+fun VehicleFilterDto.toVehicleFilter(): VehicleFilter {
+    return VehicleFilter(
+        id = id,
+        model = model,
+        licensePlate = licensePlate,
     )
 }
