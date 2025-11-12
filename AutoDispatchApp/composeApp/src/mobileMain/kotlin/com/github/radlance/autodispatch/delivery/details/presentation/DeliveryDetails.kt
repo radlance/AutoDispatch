@@ -45,6 +45,8 @@ import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.requestStatusColors
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
+import com.github.radlance.autodispatch.platform.getPlatformContext
+import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
@@ -58,6 +60,7 @@ fun DeliveryDetails(
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, contentColor) = requestStatusColors(delivery.status.name)
+    val context = getPlatformContext()
 
     Column(
         modifier = modifier
@@ -117,7 +120,9 @@ fun DeliveryDetails(
 
         ActionButtons(
             onAcceptClick = { /* TODO */ },
-            onContactClick = { /* TODO */ },
+            onContactClick = {
+                openDialer(delivery.dispatcherPhoneNumber, context)
+            },
             backgroundColor = backgroundColor,
             contentColor = contentColor,
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
