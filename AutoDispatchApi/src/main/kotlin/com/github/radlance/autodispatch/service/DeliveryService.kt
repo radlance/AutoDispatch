@@ -9,7 +9,11 @@ class DeliveryService(private val deliveryRepository: DeliveryRepository) {
         return deliveryRepository.deliveries(driverLogin = driverLogin)
     }
 
-    suspend fun delivery(deliveryId: Int): DeliveryDetailed? {
-        return deliveryRepository.delivery(deliveryId)
+    suspend fun delivery(driverLogin: String, deliveryId: Int): DeliveryDetailed {
+        return deliveryRepository.delivery(driverLogin, deliveryId)
+    }
+
+    suspend fun startDelivery(deliveryId: Int, driverLogin: String) {
+        deliveryRepository.startDelivery(deliveryId, driverLogin)
     }
 }

@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.delivery.details.presentation
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -12,25 +13,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
-import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -40,31 +49,145 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.requestStatusColors
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
+import com.github.radlance.autodispatch.delivery.details.domain.DeliveryError
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
+import com.github.radlance.autodispatch.uikit.vector.ConversionPathIcon
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
 @Composable
 fun DeliveryDetails(
+    scrollState: ScrollState,
     delivery: DeliveryDetailed,
+    onAcceptClick: () -> Unit,
+    onCloseError: () -> Unit,
+    navigateUp: () -> Unit,
+    fetchDeliveryDetails: () -> Unit,
+    acceptDeliveryState: FetchResultUiState<Unit, DeliveryError>,
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, contentColor) = requestStatusColors(delivery.status.name)
     val context = getPlatformContext()
+    var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
 
+    val isLoading = acceptDeliveryState is FetchResultUiState.Loading
+    val error = (acceptDeliveryState as? FetchResultUiState.Error)?.error
+
+    LaunchedEffect(acceptDeliveryState) {
+        if (acceptDeliveryState is FetchResultUiState.Success) {
+            fetchDeliveryDetails()
+        }
+    }
+
+    if (isLoading) {
+        Dialog(onDismissRequest = {}) {
+            Box(
+                modifier = Modifier.clip(
+                    RoundedCornerShape(18.dp)
+                ).background(AlertDialogDefaults.containerColor)
+            ) {
+                CircularProgressIndicator(modifier = Modifier.padding(24.dp), color = contentColor)
+            }
+        }
+    }
+
+    error?.let {
+        val onDismiss: () -> Unit = {
+            when (it) {
+                is DeliveryError.BaseError -> {
+                    onCloseError()
+                }
+
+                is DeliveryError.StateError -> {
+                    onCloseError()
+                    fetchDeliveryDetails()
+                }
+
+                is DeliveryError.InternalError -> {
+                    onCloseError()
+                    navigateUp()
+                }
+            }
+        }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            icon = {
+                Icon(imageVector = Icons.Outlined.WarningAmber, contentDescription = null)
+            },
+            title = {
+                Text(text = "Ошибка")
+            },
+            text = {
+                Text(text = it.message)
+            },
+            dismissButton = {},
+            confirmButton = {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = contentColor,
+                        containerColor = backgroundColor
+                    )
+                ) {
+                    Text(text = "ОК")
+                }
+            }
+        )
+    }
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showConfirmDialog = false
+            },
+            title = {
+                Text(
+                    text = "Подтвердить действие"
+                )
+            },
+            text = {
+                Text(text = "Проверьте информацию о доставке перед подтверждением")
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = contentColor)
+                ) {
+                    Text(text = "Отмена")
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        onAcceptClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = contentColor,
+                        containerColor = backgroundColor
+                    )
+                ) {
+                    Text(text = "Подтвердить")
+                }
+            }
+        )
+    }
     Column(
         modifier = modifier
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(horizontal = 14.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -119,7 +242,8 @@ fun DeliveryDetails(
         )
 
         ActionButtons(
-            onAcceptClick = { /* TODO */ },
+            deliveryStatusId = delivery.status.id,
+            onAcceptClick = { showConfirmDialog = true },
             onContactClick = {
                 openDialer(delivery.dispatcherPhoneNumber, context)
             },
@@ -452,6 +576,7 @@ private fun AdditionalInfoCard(
 
 @Composable
 private fun ActionButtons(
+    deliveryStatusId: Int,
     onAcceptClick: () -> Unit,
     onContactClick: () -> Unit,
     backgroundColor: Color,
@@ -459,19 +584,21 @@ private fun ActionButtons(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        Button(
-            onClick = onAcceptClick,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = backgroundColor,
-                contentColor = contentColor
-            )
-        ) {
-            Icon(imageVector = Icons.Default.TaskAlt, contentDescription = null)
-            Spacer(Modifier.width(12.dp))
-            Text(text = "Принять рейс")
+        if (deliveryStatusId == 2) {
+            Button(
+                onClick = onAcceptClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = backgroundColor,
+                    contentColor = contentColor
+                )
+            ) {
+                Icon(imageVector = ConversionPathIcon, contentDescription = null)
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Начать рейс")
+            }
+            Spacer(Modifier.height(8.dp))
         }
-        Spacer(Modifier.height(8.dp))
         OutlinedButton(
             onClick = onContactClick,
             modifier = Modifier.fillMaxWidth()

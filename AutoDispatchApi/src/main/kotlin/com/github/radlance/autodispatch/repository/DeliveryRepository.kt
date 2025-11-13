@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.repository
 
 import com.github.radlance.autodispatch.database.table.AssignmentTable
-import com.github.radlance.autodispatch.database.table.CargoTypeTable // Добавлен импорт
+import com.github.radlance.autodispatch.database.table.CargoTypeTable
 import com.github.radlance.autodispatch.database.table.CityTable
 import com.github.radlance.autodispatch.database.table.CustomerTable
 import com.github.radlance.autodispatch.database.table.DriverTable
@@ -9,13 +9,16 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
-import com.github.radlance.autodispatch.domain.delivery.Delivery // Ваш новый DTO
+import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
+import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
+import com.github.radlance.autodispatch.exception.DeliveryStateException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
@@ -23,6 +26,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.update
 
 class DeliveryRepository {
 
@@ -76,10 +80,14 @@ class DeliveryRepository {
             .map { mapDeliveryRow(it) }
     }
 
-    suspend fun delivery(deliveryId: Int): DeliveryDetailed? = loggedTransaction {
+    suspend fun delivery(driverLogin: String, deliveryId: Int): DeliveryDetailed = loggedTransaction {
         val originCity = CityTable.alias("origin_city")
         val destCity = CityTable.alias("dest_city")
         val dispatcherUser = UserTable.alias("dispatcher_user")
+
+        val driverId = UserTable.select(UserTable.id).where {
+            UserTable.login eq driverLogin
+        }.first()[UserTable.id].value
 
         val query = RequestTable
             .join(originCity, JoinType.LEFT, RequestTable.originId, originCity[CityTable.id])
@@ -119,54 +127,93 @@ class DeliveryRepository {
                 VehicleTable.model,
                 VehicleTable.licensePlate,
                 dispatcherUser[UserTable.fullName].alias("dispatcher_full_name"),
-                dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number")
+                dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number"),
+                AssignmentTable.driverId
             )
             .where { RequestTable.id eq deliveryId }
             .limit(1)
             .firstOrNull()
 
-        val delivery = row?.let {
-            DeliveryDetailed(
-                id = row[RequestTable.id].value,
-                status = RequestStatus(
-                    id = row[RequestStatusTable.id].value,
-                    name = row[RequestStatusTable.name]
-                ),
-                origin = row[originCity[CityTable.name].alias("origin_name")],
-                destination = row[destCity[CityTable.name].alias("destination_name")],
-                transportationDescription = row[RequestTable.transportationDescription],
-                cargo = Cargo(
-                    type = CargoType(
-                        id = row[CargoTypeTable.id].value,
-                        name = row[CargoTypeTable.name.alias("cargo_type_name")]
-                    ),
-                    weight = row[RequestTable.cargoWeight],
-                    volume = row[RequestTable.cargoVolume],
-                    description = row[RequestTable.cargoDescription]
-                ),
-                loadingPoint = row[RequestTable.loadingPoint],
-                unloadingPoint = row[RequestTable.unloadingPoint],
-                dispatcherFullName = row[dispatcherUser[UserTable.fullName].alias("dispatcher_full_name")],
-                dispatcherPhoneNumber = row[dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number")],
-                customer = Customer(
-                    id = row[CustomerTable.id].value,
-                    organizationName = row[CustomerTable.organizationName],
-                    email = row[CustomerTable.email],
-                    phoneNumber = row[CustomerTable.phoneNumber]
-                ),
-                vehicle = row.getOrNull(VehicleTable.id)?.let {
-                    VehicleFilter(
-                        id = it.value,
-                        model = row[VehicleTable.model],
-                        licensePlate = row[VehicleTable.licensePlate]
-                    )
-                },
-                createdAt = row[RequestTable.createdAt]?.toString(),
-                updatedAt = row[RequestTable.updatedAt]?.toString(),
-                requestNumber = row[RequestTable.requestNumber]
-            )
+        if (row == null) {
+            throw DeliveryNotFoundException("Доставка не найдена")
         }
 
+        val assignedDriverId = row.getOrNull(AssignmentTable.driverId)?.value
+
+        if (assignedDriverId != driverId) {
+            throw DeliveryForbiddenException("Доставка ${row[RequestTable.requestNumber]} недоступна")
+        }
+
+        val delivery = DeliveryDetailed(
+            id = row[RequestTable.id].value,
+            status = RequestStatus(
+                id = row[RequestStatusTable.id].value,
+                name = row[RequestStatusTable.name]
+            ),
+            origin = row[originCity[CityTable.name].alias("origin_name")],
+            destination = row[destCity[CityTable.name].alias("destination_name")],
+            transportationDescription = row[RequestTable.transportationDescription],
+            cargo = Cargo(
+                type = CargoType(
+                    id = row[CargoTypeTable.id].value,
+                    name = row[CargoTypeTable.name.alias("cargo_type_name")]
+                ),
+                weight = row[RequestTable.cargoWeight],
+                volume = row[RequestTable.cargoVolume],
+                description = row[RequestTable.cargoDescription]
+            ),
+            loadingPoint = row[RequestTable.loadingPoint],
+            unloadingPoint = row[RequestTable.unloadingPoint],
+            dispatcherFullName = row[dispatcherUser[UserTable.fullName].alias("dispatcher_full_name")],
+            dispatcherPhoneNumber = row[dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number")],
+            customer = Customer(
+                id = row[CustomerTable.id].value,
+                organizationName = row[CustomerTable.organizationName],
+                email = row[CustomerTable.email],
+                phoneNumber = row[CustomerTable.phoneNumber]
+            ),
+            vehicle = row.getOrNull(VehicleTable.id)?.let {
+                VehicleFilter(
+                    id = it.value,
+                    model = row[VehicleTable.model],
+                    licensePlate = row[VehicleTable.licensePlate]
+                )
+            },
+            createdAt = row[RequestTable.createdAt]?.toString(),
+            updatedAt = row[RequestTable.updatedAt]?.toString(),
+            requestNumber = row[RequestTable.requestNumber]
+        )
+
         return@loggedTransaction delivery
+    }
+
+    suspend fun startDelivery(deliveryId: Int, driverLogin: String) = loggedTransaction {
+        val driverId = UserTable.select(UserTable.id).where {
+            UserTable.login eq driverLogin
+        }.first()[UserTable.id].value
+
+        val requestData = RequestTable
+            .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
+            .select(RequestTable.statusId, RequestTable.requestNumber, AssignmentTable.driverId)
+            .where { RequestTable.id eq deliveryId }
+            .firstOrNull()
+
+        if (requestData == null) {
+            throw DeliveryNotFoundException("Доставка не найдена")
+        }
+
+        val assignedDriverId = requestData.getOrNull(AssignmentTable.driverId)?.value
+        if (assignedDriverId != driverId) {
+            throw DeliveryForbiddenException("Доставка ${requestData[RequestTable.requestNumber]} недоступна")
+        }
+
+        val currentStatusId = requestData[RequestTable.statusId].value
+        if (currentStatusId == 5) {
+            throw DeliveryStateException("Доставка ${requestData[RequestTable.requestNumber]} отменена")
+        }
+
+        RequestTable.update({ RequestTable.id eq deliveryId }) {
+            it[statusId] = 3
+        }
     }
 }

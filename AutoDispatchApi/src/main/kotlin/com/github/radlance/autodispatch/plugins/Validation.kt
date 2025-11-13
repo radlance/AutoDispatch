@@ -3,9 +3,12 @@ package com.github.radlance.autodispatch.plugins
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.github.radlance.autodispatch.domain.auth.LoginUser
 import com.github.radlance.autodispatch.domain.auth.RegisterUser
+import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
+import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
+import com.github.radlance.autodispatch.exception.DeliveryStateException
+import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.exception.NoAccessException
 import com.github.radlance.autodispatch.exception.UnauthorizedException
-import com.github.radlance.autodispatch.exception.MissingCredentialException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -49,6 +52,18 @@ fun Application.configureValidation() {
     }
 
     install(StatusPages) {
+        exception<DeliveryStateException> { call, cause ->
+            call.respondText(status = HttpStatusCode.Conflict, text = cause.message)
+        }
+
+        exception<DeliveryNotFoundException> { call, cause ->
+            call.respondText(status = HttpStatusCode.NotFound, text = cause.message)
+        }
+
+        exception<DeliveryForbiddenException> { call, cause ->
+            call.respondText(status = HttpStatusCode.Forbidden, text = cause.message)
+        }
+
         exception<RequestValidationException> { call, cause ->
             call.respondText(status = HttpStatusCode.BadRequest, text = cause.message ?: "Bad Credentials")
         }

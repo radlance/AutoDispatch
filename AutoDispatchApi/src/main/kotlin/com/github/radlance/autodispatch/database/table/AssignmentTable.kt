@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.database.table
 
-import com.github.radlance.autodispatch.database.table.DriverTable.nullable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 

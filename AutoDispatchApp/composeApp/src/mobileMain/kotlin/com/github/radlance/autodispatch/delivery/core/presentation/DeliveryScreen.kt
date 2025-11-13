@@ -66,7 +66,7 @@ fun DeliveryScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
             isRefreshing = requestsState is FetchResultUiState.Loading,
-            onRefresh = deliveryViewModel::fetchRequests
+            onRefresh = deliveryViewModel::fetchDeliveries
         ) {
             requestsState.Reduce(
                 onLoading = {
@@ -138,7 +138,7 @@ fun DeliveryScreen(
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(message = it, onRetry = deliveryViewModel::fetchRequests)
+                        ErrorMessage(message = it, onRetry = deliveryViewModel::fetchDeliveries)
                     }
                 }
             )

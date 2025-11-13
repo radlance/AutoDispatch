@@ -231,6 +231,12 @@ private fun CardSection(title: String, subtitle: String, modifier: Modifier = Mo
 
 @Composable
 fun requestStatusColors(status: String) =
-    if (status == "Назначена") {
-        MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-    } else MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+    when (status) {
+        "Назначена" -> {
+            MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+        }
+        "Отменена" -> {
+            MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        }
+        else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+    }

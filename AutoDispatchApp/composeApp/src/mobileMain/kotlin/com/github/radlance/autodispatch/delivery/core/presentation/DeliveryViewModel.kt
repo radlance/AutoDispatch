@@ -15,10 +15,10 @@ class DeliveryViewModel(
     private val deliveriesStateMutable =
         MutableStateFlow<FetchResultUiState<List<Delivery>, String>>(FetchResultUiState.Idle)
     val deliveriesState = deliveriesStateMutable.onStart {
-        fetchRequests()
+        fetchDeliveries()
     }.stateInViewModel(initialValue = deliveriesStateMutable.value)
 
-    fun fetchRequests() {
+    fun fetchDeliveries() {
         deliveriesStateMutable.value = FetchResultUiState.Loading
         handle(background = deliveryRepository::request) {
             deliveriesStateMutable.value = it.toUiState()

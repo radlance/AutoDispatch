@@ -22,7 +22,7 @@ internal class BaseHandleRequest : HandleRequest {
             FetchResult.Error("Таймаут соединения")
         } catch (e: IOException) {
             FetchResult.Error("Ошибка подключения")
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             FetchResult.Error(e.message ?: "Неизвестная ошибка")
         }
     }

@@ -3,8 +3,12 @@ package com.github.radlance.autodispatch.delivery.details.presentation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +29,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.details.domain.DeliveryError
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -38,7 +43,8 @@ fun DeliveryDetailsScreen(
     viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
     val requestState by viewModel.deliveryState.collectAsStateWithLifecycle()
-
+    val acceptDeliveryState by viewModel.acceptDeliveryState.collectAsStateWithLifecycle()
+    val scrollState = rememberScrollState()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -79,13 +85,54 @@ fun DeliveryDetailsScreen(
                     DeliveryDetailsShimmer()
                 },
                 onSuccess = { delivery ->
-                    DeliveryDetails(delivery)
+                    DeliveryDetails(
+                        scrollState = scrollState,
+                        delivery = delivery,
+                        onAcceptClick = { viewModel.acceptDelivery(delivery.id) },
+                        onCloseError = viewModel::resetAcceptState,
+                        navigateUp = navigateUp,
+                        fetchDeliveryDetails = {
+                            viewModel.fetchDeliveryDetails(deliveryId)
+                            viewModel.resetAcceptState()
+                        },
+                        acceptDeliveryState = acceptDeliveryState
+                    )
                 },
                 onError = {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(
-                            message = it,
-                            onRetry = { viewModel.fetchDeliveryDetails(deliveryId) }
+                    if (it is DeliveryError.BaseError) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            ErrorMessage(
+                                message = it.message,
+                                onRetry = { viewModel.fetchDeliveryDetails(deliveryId) }
+                            )
+                        }
+                    } else {
+                        val onDismiss: () -> Unit = {
+                            viewModel.resetAcceptState()
+                            navigateUp()
+                        }
+                        AlertDialog(
+                            onDismissRequest = onDismiss,
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.WarningAmber,
+                                    contentDescription = null
+                                )
+                            },
+                            title = {
+                                Text(text = "Ошибка")
+                            },
+                            text = {
+                                Text(text = it.message)
+                            },
+                            dismissButton = {},
+                            confirmButton = {
+                                Button(
+                                    onClick = onDismiss
+                                ) {
+                                    Text(text = "ОК")
+                                }
+                            }
                         )
                     }
                 }
