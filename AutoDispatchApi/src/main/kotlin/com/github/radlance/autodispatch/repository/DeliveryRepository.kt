@@ -26,6 +26,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.update
 
 class DeliveryRepository {
@@ -214,6 +215,10 @@ class DeliveryRepository {
 
         RequestTable.update({ RequestTable.id eq deliveryId }) {
             it[statusId] = 3
+        }
+
+        AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
+            it[startedAt] = CurrentTimestampWithTimeZone
         }
     }
 }

@@ -49,7 +49,7 @@ import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.intLiteral
-import org.jetbrains.exposed.sql.javatime.CurrentTimestamp
+import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.stringLiteral
@@ -323,7 +323,9 @@ class RequestRepository {
 
     suspend fun cancelAssignment(requestId: Int) = loggedTransaction {
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 5 }
-        AssignmentTable.update({ AssignmentTable.requestId eq requestId }) { it[completedAt] = CurrentTimestamp }
+        AssignmentTable.update({ AssignmentTable.requestId eq requestId }) {
+            it[completedAt] = CurrentTimestampWithTimeZone
+        }
     }
 
     suspend fun requestAssignment(): List<DriverStats> = loggedTransaction {
@@ -333,9 +335,9 @@ class RequestRepository {
             .sum()
 
         val statusOrder = Case()
-            .When(DriverStatusTable.name eq "Свободен", intLiteral(1))
-            .When(DriverStatusTable.name eq "В рейсе", intLiteral(2))
-            .When(DriverStatusTable.name eq "Не на смене", intLiteral(3))
+            .When(DriverStatusTable.id eq 1, intLiteral(1))
+            .When(DriverStatusTable.id eq 2, intLiteral(2))
+            .When(DriverStatusTable.id eq 3, intLiteral(3))
             .Else(intLiteral(4))
 
         DriverTable
@@ -348,6 +350,7 @@ class RequestRepository {
                 UserTable.id,
                 UserTable.fullName,
                 UserTable.phoneNumber,
+                DriverStatusTable.id,
                 DriverStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
@@ -357,6 +360,7 @@ class RequestRepository {
                 UserTable.id,
                 UserTable.fullName,
                 UserTable.phoneNumber,
+                DriverStatusTable.id,
                 DriverStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate

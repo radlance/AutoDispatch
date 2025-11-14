@@ -50,20 +50,12 @@ databaseChangeLog:
 
   # 13. ASSIGNMENT
   - include: { file: db/changelog/db.create-assignment-table-1.0.sql }
+  - include: { file: db/changelog/db.create-update-driver-status-trigger.sql }
   - include: { file: db/changelog/db.insert-assignment-data-1.0.sql }
   - include: { file: db/changelog/db.insert-driver-data-1.0.sql }
 
-  # 15. TRIP REPORT
+  # 14. TRIP REPORT
   - include: { file: db/changelog/db.create-trip-report-table-1.0.sql }
 
-  # 16. FUEL RECORD
-  - include: { file: db/changelog/db.create-fuel-record-table-1.0.sql }
-
-  # 17. MAINTENANCE
-  - include: { file: db/changelog/db.create-maintenance-table-1.0.sql }
-
-  # 18. NOTIFICATION
-  - include: { file: db/changelog/db.create-notification-table-1.0.sql }
-
-  # 19. INDEXES
+  # 15. INDEXES
   - include: { file: db/changelog/db.create-tables-indexes-1.0.sql }

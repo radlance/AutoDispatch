@@ -12,8 +12,8 @@ CREATE TABLE request
     cargo_volume               FLOAT,
     cargo_description          TEXT,
     customer_id                INT REFERENCES customer (id),
-    created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                 TIMESTAMP,
+    created_at                 TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at                 TIMESTAMP WITH TIME ZONE,
     request_number             VARCHAR(6) UNIQUE NOT NULL,
     transportation_description TEXT
 );

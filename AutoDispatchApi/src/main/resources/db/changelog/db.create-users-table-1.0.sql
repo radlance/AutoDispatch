@@ -7,5 +7,5 @@ CREATE TABLE users
     salt          VARCHAR(255)       NOT NULL,
     phone_number  VARCHAR(20),
     role_id       INT REFERENCES role (id),
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
