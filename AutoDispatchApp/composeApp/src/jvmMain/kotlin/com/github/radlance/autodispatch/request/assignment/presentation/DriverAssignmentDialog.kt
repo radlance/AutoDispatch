@@ -48,6 +48,7 @@ import autodispatch.composeapp.generated.resources.loading_error
 import autodispatch.composeapp.generated.resources.reassign
 import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -57,6 +58,7 @@ fun DriverAssignmentDialog(
     onDismiss: () -> Unit,
     request: Request,
     onSuccessAssignRequest: () -> Unit,
+    onStateReassignError: (String) -> Unit,
     modifier: Modifier = Modifier,
     isReassign: Boolean,
     assignedDriverId: Int?,
@@ -65,9 +67,8 @@ fun DriverAssignmentDialog(
     val requestAssignmentState by viewModel.requestAssignmentState.collectAsState()
     val assignRequestState by viewModel.assignRequestState.collectAsState()
     val fieldsState by viewModel.assignmentFieldsState.collectAsState()
-
     val isLoading = assignRequestState is FetchResultUiState.Loading
-    val error = (assignRequestState as? FetchResultUiState.Error<String>)?.error
+    val error = (assignRequestState as? FetchResultUiState.Error<DeliveryError>)?.error
 
     val onDismissAction = {
         onDismiss()
@@ -111,12 +112,17 @@ fun DriverAssignmentDialog(
                                 contentDescription = "Error",
                                 tint = MaterialTheme.colorScheme.error
                             )
-                            Text(
-                                text = error ?: "",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center
-                            )
+                            if (error!! is DeliveryError.BaseError) {
+                                Text(
+                                    text = error.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            } else {
+                                viewModel.reduce(AssignmentEvent.ResetStates)
+                                onStateReassignError(error.message)
+                            }
                         }
                     }
                     Card {

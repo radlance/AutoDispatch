@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.delivery.details.domain
+package com.github.radlance.autodispatch.delivery.domain
 
 sealed interface DeliveryError {
 

@@ -25,6 +25,7 @@ import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.exception.DeliveryStateException
 import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
@@ -392,6 +393,16 @@ class RequestRepository {
     }
 
     suspend fun reassignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {
+        val row = RequestTable
+            .select(RequestTable.statusId, RequestTable.requestNumber)
+            .where { RequestTable.id eq requestId }
+            .first()
+        if (row[RequestTable.statusId].value != 2) {
+            throw DeliveryStateException(
+                "Невозможно назначить заявку ${row[RequestTable.requestNumber]}. " +
+                        "Она уже находится в пути, завершена или отменена."
+            )
+        }
         AssignmentTable.upsert(AssignmentTable.requestId) {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)

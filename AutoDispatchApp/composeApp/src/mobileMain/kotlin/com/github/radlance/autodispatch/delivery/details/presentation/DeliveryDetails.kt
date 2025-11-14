@@ -56,7 +56,7 @@ import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.requestStatusColors
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
-import com.github.radlance.autodispatch.delivery.details.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo

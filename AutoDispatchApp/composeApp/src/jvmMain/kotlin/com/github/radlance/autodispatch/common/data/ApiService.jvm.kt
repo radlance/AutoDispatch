@@ -11,7 +11,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -117,11 +116,11 @@ internal class KtorApiServiceJvm(
     }
 
     override suspend fun cancelRequest(requestId: Int) {
-        httpClient.patch("requests/${requestId}/cancel")
+        httpClient.put("requests/${requestId}/cancel")
     }
 
     override suspend fun cancelAssignment(requestId: Int) {
-        httpClient.patch("requests/${requestId}/assignment/cancel")
+        httpClient.put("requests/${requestId}/assignment/cancel")
     }
 
     override suspend fun requestAssignment(): List<DriverStatsDto> {

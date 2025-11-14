@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.data.toDeliveryDetailed
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
-import com.github.radlance.autodispatch.delivery.details.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText

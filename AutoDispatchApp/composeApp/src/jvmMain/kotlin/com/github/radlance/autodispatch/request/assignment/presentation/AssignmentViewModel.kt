@@ -4,6 +4,7 @@ import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,7 @@ class AssignmentViewModel(
     val requestAssignmentState = requestAssignmentStateMutable.asStateFlow()
 
     private val assignRequestStateMutable =
-        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<Unit, DeliveryError>>(FetchResultUiState.Idle)
     val assignRequestState = assignRequestStateMutable.asStateFlow()
 
     private val assignmentFieldsStateMutable = MutableStateFlow(AssignmentFieldsState())

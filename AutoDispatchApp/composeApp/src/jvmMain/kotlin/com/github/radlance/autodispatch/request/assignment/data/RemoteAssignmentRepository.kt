@@ -4,8 +4,14 @@ import com.github.radlance.autodispatch.common.data.ApiServiceJvm
 import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.toDriverStats
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
+import kotlinx.io.IOException
 
 class RemoteAssignmentRepository(
     private val apiService: ApiServiceJvm,
@@ -20,20 +26,43 @@ class RemoteAssignmentRepository(
     override suspend fun assignRequestToDriver(
         requestId: Int,
         driverId: Int
-    ): FetchResult<Unit, String> = handleRequest.handle {
-            apiService.assignRequestToDriver(
-                requestId = requestId,
-                driverId = driverId
-            )
+    ): FetchResult<Unit, DeliveryError> {
+        return try {
+            apiService.assignRequestToDriver(requestId, driverId)
+            FetchResult.Success(Unit)
+        } catch (e: ClientRequestException) {
+
+            FetchResult.Error(DeliveryError.BaseError(e.response.bodyAsText()))
+
+        } catch (e: SocketTimeoutException) {
+            FetchResult.Error(DeliveryError.BaseError("Таймаут соединения"))
+        } catch (e: IOException) {
+            FetchResult.Error(DeliveryError.BaseError("Ошибка подключения"))
+        } catch (e: Exception) {
+            FetchResult.Error(DeliveryError.BaseError(e.message ?: "Неизвестная ошибка"))
         }
+    }
 
     override suspend fun reassignRequestToDriver(
         requestId: Int,
         driverId: Int
-    ): FetchResult<Unit, String> = handleRequest.handle {
-        apiService.reassignRequestToDriver(
-            requestId = requestId,
-            driverId = driverId
-        )
+    ): FetchResult<Unit, DeliveryError> {
+        return try {
+            apiService.reassignRequestToDriver(requestId, driverId)
+            FetchResult.Success(Unit)
+        } catch (e: ClientRequestException) {
+            val message = e.response.bodyAsText()
+            if (e.response.status == HttpStatusCode.Conflict) {
+                FetchResult.Error(DeliveryError.StateError(message))
+            } else {
+                FetchResult.Error(DeliveryError.BaseError(message))
+            }
+        } catch (e: SocketTimeoutException) {
+            FetchResult.Error(DeliveryError.BaseError("Таймаут соединения"))
+        } catch (e: IOException) {
+            FetchResult.Error(DeliveryError.BaseError("Ошибка подключения"))
+        } catch (e: Exception) {
+            FetchResult.Error(DeliveryError.BaseError(e.message ?: "Неизвестная ошибка"))
+        }
     }
 }

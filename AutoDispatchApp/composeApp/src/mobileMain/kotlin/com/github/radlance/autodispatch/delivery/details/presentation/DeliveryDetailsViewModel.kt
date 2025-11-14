@@ -3,7 +3,7 @@ package com.github.radlance.autodispatch.delivery.details.presentation
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
-import com.github.radlance.autodispatch.delivery.details.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
 import kotlinx.coroutines.Job

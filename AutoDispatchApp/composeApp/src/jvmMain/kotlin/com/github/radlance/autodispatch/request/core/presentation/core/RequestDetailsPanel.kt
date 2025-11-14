@@ -22,6 +22,8 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,7 +36,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -94,13 +95,48 @@ fun RequestDetailsPanel(
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
-    var showEditDialog by rememberSaveable { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
     var isReassign by remember { mutableStateOf(false) }
     var showCancelAssignmentDialog by remember { mutableStateOf(false) }
+    var showReassignErrorDialog by remember { mutableStateOf(false) }
+    var reassignErrorMessage by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+
+    if (showReassignErrorDialog) {
+        val onDismiss: () -> Unit = {
+            showReassignErrorDialog = false
+            onSuccessCreateRequest()
+            scope.launch {
+                scrollState.animateScrollTo(0)
+            }
+        }
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.WarningAmber,
+                    contentDescription = null
+                )
+            },
+            title = {
+                Text(text = "Ошибка")
+            },
+            text = {
+                Text(text = reassignErrorMessage)
+            },
+            dismissButton = {},
+            confirmButton = {
+                Button(
+                    onClick = onDismiss
+                ) {
+                    Text(text = "ОК")
+                }
+            }
+        )
+    }
 
     if (showEditDialog) {
         with(request) {
@@ -117,7 +153,7 @@ fun RequestDetailsPanel(
                     requestNumber = request.requestNumber,
                     companyNameFieldValue = customer.organizationName,
                     companyEmailFieldValue = customer.email,
-                    companyPhoneFieldValue = customer.phoneNumber?.removePrefix("+7") ?: "",
+                    companyPhoneFieldValue = customer.phoneNumber.removePrefix("+7"),
                     cargoWeightFieldValue = cargo.weight.formatNumberNoTrailingZeros(),
                     cargoVolumeFieldValue = cargo.volume?.formatNumberNoTrailingZeros() ?: "",
                     cargoDescriptionFieldValue = cargo.description ?: "",
@@ -141,7 +177,12 @@ fun RequestDetailsPanel(
             },
             request = request,
             isReassign = isReassign,
-            assignedDriverId = request.driverId
+            assignedDriverId = request.driverId,
+            onStateReassignError = {
+                showDriverAssignmentDialog = false
+                showReassignErrorDialog = true
+                reassignErrorMessage = it
+            }
         )
     }
 
@@ -275,7 +316,7 @@ fun RequestDetailsPanel(
                         text = request.customer.organizationName
                     )
 
-                    request.customer.phoneNumber?.let {
+                    request.customer.phoneNumber.let {
                         Spacer(modifier = Modifier.height(ITEM_GAP))
                         InfoRow(
                             icon = Icons.Outlined.Phone,
