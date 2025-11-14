@@ -15,6 +15,10 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
 import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 internal fun UserDto.toUser(): User {
     return User(
@@ -40,8 +44,8 @@ fun RequestDto.toRequest(): Request {
         customer = customer.toCustomer(),
         vehicleInfo = vehicleInfo,
         transportationDescription = transportationDescription,
-        createdAt = createdAt.removeSuffix("Z").let { LocalDateTime.parse(it) },
-        updatedAt = updatedAt?.removeSuffix("Z")?.let { LocalDateTime.parse(it) },
+        createdAt = createdAt.toLocalDateTimeFromUtc(),
+        updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
     )
 }
 
@@ -83,4 +87,10 @@ fun VehicleFilterDto.toVehicleFilter(): VehicleFilter {
         model = model,
         licensePlate = licensePlate,
     )
+}
+
+@OptIn(ExperimentalTime::class)
+fun String.toLocalDateTimeFromUtc(): LocalDateTime {
+    val instant = Instant.parse(this)
+    return instant.toLocalDateTime(TimeZone.currentSystemDefault())
 }
