@@ -53,7 +53,7 @@ class RemoteAssignmentRepository(
         } catch (e: ClientRequestException) {
             val message = e.response.bodyAsText()
             if (e.response.status == HttpStatusCode.Conflict) {
-                FetchResult.Error(DeliveryError.StateError(message))
+                FetchResult.Error(DeliveryError.GenericStateError(message))
             } else {
                 FetchResult.Error(DeliveryError.BaseError(message))
             }

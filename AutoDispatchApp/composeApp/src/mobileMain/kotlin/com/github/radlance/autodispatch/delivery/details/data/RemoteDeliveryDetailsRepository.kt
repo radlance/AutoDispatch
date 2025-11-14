@@ -1,11 +1,13 @@
 package com.github.radlance.autodispatch.delivery.details.data
 
 import com.github.radlance.autodispatch.common.data.ApiServiceMobile
+import com.github.radlance.autodispatch.common.data.ErrorResponse
 import com.github.radlance.autodispatch.common.data.toDeliveryDetailed
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import io.ktor.client.call.body
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
@@ -48,7 +50,23 @@ class RemoteDeliveryDetailsRepository(
                 }
 
                 HttpStatusCode.Conflict -> {
-                    FetchResult.Error(DeliveryError.StateError(message))
+                    try {
+                        val errorResponse = e.response.body<ErrorResponse>()
+
+                        when (errorResponse.errorCode) {
+                            "DRIVER_BUSY" -> FetchResult.Error(
+                                DeliveryError.DriverBusyError(errorResponse.message)
+                            )
+                            "DELIVERY_CANCELED" -> FetchResult.Error(
+                                DeliveryError.DeliveryCanceledError(errorResponse.message)
+                            )
+                            else -> FetchResult.Error(
+                                DeliveryError.GenericStateError(errorResponse.message)
+                            )
+                        }
+                    } catch (parseException: Exception) {
+                        FetchResult.Error(DeliveryError.BaseError(message))
+                    }
                 }
 
                 else -> {

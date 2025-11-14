@@ -3,9 +3,11 @@ package com.github.radlance.autodispatch.plugins
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.github.radlance.autodispatch.domain.auth.LoginUser
 import com.github.radlance.autodispatch.domain.auth.RegisterUser
+import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
 import com.github.radlance.autodispatch.exception.DeliveryStateException
+import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.exception.NoAccessException
 import com.github.radlance.autodispatch.exception.UnauthorizedException
@@ -15,6 +17,14 @@ import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+private data class ErrorResponse(
+    val message: String,
+    val errorCode: String
+)
 
 fun Application.configureValidation() {
     install(RequestValidation) {
@@ -52,6 +62,22 @@ fun Application.configureValidation() {
     }
 
     install(StatusPages) {
+        exception<DriverBusyException> { call, cause ->
+            val error = ErrorResponse(
+                message = cause.message ?: "Водитель занят",
+                errorCode = "DRIVER_BUSY"
+            )
+            call.respond(HttpStatusCode.Conflict, error)
+        }
+
+        exception<DeliveryCanceledException> { call, cause ->
+            val error = ErrorResponse(
+                message = cause.message ?: "Доставка отменена",
+                errorCode = "DELIVERY_CANCELED"
+            )
+            call.respond(HttpStatusCode.Conflict, error)
+        }
+
         exception<DeliveryStateException> { call, cause ->
             call.respondText(status = HttpStatusCode.Conflict, text = cause.message)
         }

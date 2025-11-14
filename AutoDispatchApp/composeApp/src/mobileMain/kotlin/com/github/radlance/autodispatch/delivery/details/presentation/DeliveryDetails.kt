@@ -110,7 +110,16 @@ fun DeliveryDetails(
                     onCloseError()
                 }
 
-                is DeliveryError.StateError -> {
+                is DeliveryError.DeliveryCanceledError -> {
+                    onCloseError()
+                    fetchDeliveryDetails()
+                }
+
+                is DeliveryError.DriverBusyError -> {
+                    onCloseError()
+                }
+
+                is DeliveryError.GenericStateError -> {
                     onCloseError()
                     fetchDeliveryDetails()
                 }

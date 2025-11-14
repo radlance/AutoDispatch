@@ -6,7 +6,11 @@ sealed interface DeliveryError {
 
     data class InternalError(override val message: String) : DeliveryError
 
-    data class StateError(override val message: String) : DeliveryError
+    data class DriverBusyError(override val message: String) : DeliveryError
+
+    data class DeliveryCanceledError(override val message: String) : DeliveryError
+
+    data class GenericStateError(override val message: String) : DeliveryError
 
     data class BaseError(override val message: String) : DeliveryError
 }

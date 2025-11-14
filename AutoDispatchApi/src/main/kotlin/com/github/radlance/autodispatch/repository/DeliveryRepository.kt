@@ -16,9 +16,11 @@ import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
 import com.github.radlance.autodispatch.exception.DeliveryStateException
+import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
@@ -193,6 +195,19 @@ class DeliveryRepository {
             UserTable.login eq driverLogin
         }.first()[UserTable.id].value
 
+        val activeAssignmentsCount = AssignmentTable
+            .select(AssignmentTable.id)
+            .where {
+                (AssignmentTable.driverId eq driverId) and
+                        (AssignmentTable.startedAt.isNotNull()) and
+                        (AssignmentTable.completedAt.isNull())
+            }
+            .count()
+
+        if (activeAssignmentsCount > 0) {
+            throw DriverBusyException()
+        }
+
         val requestData = RequestTable
             .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
             .select(RequestTable.statusId, RequestTable.requestNumber, AssignmentTable.driverId)
@@ -209,8 +224,9 @@ class DeliveryRepository {
         }
 
         val currentStatusId = requestData[RequestTable.statusId].value
+        val requestNumber = requestData[RequestTable.requestNumber]!!
         if (currentStatusId == 5) {
-            throw DeliveryStateException("Доставка ${requestData[RequestTable.requestNumber]} отменена")
+            throw DeliveryCanceledException(requestNumber)
         }
 
         RequestTable.update({ RequestTable.id eq deliveryId }) {
