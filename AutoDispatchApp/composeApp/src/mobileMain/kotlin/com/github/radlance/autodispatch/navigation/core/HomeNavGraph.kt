@@ -51,6 +51,7 @@ fun HomeNavGraph(
                             DeliveryDetails(id, number)
                         )
                     },
+                    navigateToDeliveryRoute = {},
                     deliveryDetailsViewModel = deliveryDetailsViewModel
                 )
             }
@@ -59,6 +60,7 @@ fun HomeNavGraph(
                 val args = it.toRoute<DeliveryDetails>()
 
                 DeliveryDetailsScreen(
+                    navigateToDeliveryRoute = {},
                     navigateUp = navController::navigateUp,
                     deliveryId = args.deliveryId,
                     deliveryNumber = args.requestNumber,

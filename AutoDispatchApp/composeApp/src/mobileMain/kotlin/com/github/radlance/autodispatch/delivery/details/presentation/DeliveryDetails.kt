@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -71,6 +72,7 @@ import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 fun DeliveryDetails(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
+    onContinueDeliveryClick: () -> Unit,
     onAcceptClick: () -> Unit,
     onCloseError: () -> Unit,
     navigateUp: () -> Unit,
@@ -252,6 +254,7 @@ fun DeliveryDetails(
 
         ActionButtons(
             deliveryStatusId = delivery.status.id,
+            onContinueDeliveryClick = onContinueDeliveryClick,
             onAcceptClick = { showConfirmDialog = true },
             onContactClick = {
                 openDialer(delivery.dispatcherPhoneNumber, context)
@@ -586,6 +589,7 @@ private fun AdditionalInfoCard(
 @Composable
 private fun ActionButtons(
     deliveryStatusId: Int,
+    onContinueDeliveryClick: () -> Unit,
     onAcceptClick: () -> Unit,
     onContactClick: () -> Unit,
     backgroundColor: Color,
@@ -605,6 +609,20 @@ private fun ActionButtons(
                 Icon(imageVector = ConversionPathIcon, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
                 Text(text = "Начать рейс")
+            }
+            Spacer(Modifier.height(8.dp))
+        } else if (deliveryStatusId == 3) {
+            Button(
+                onClick = onContinueDeliveryClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = backgroundColor,
+                    contentColor = contentColor
+                )
+            ) {
+                Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Продолжить доставку")
             }
             Spacer(Modifier.height(8.dp))
         }

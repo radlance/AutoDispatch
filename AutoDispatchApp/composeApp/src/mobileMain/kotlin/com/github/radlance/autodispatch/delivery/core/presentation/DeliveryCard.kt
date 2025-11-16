@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.delivery.core.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,11 +20,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.outlined.NearMe
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,6 +50,7 @@ import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 @Composable
 fun DeliveryCard(
     navigateToDeliveryDetails: () -> Unit,
+    onContinueDeliveryClick: () -> Unit,
     delivery: Delivery,
     modifier: Modifier = Modifier
 ) {
@@ -63,8 +68,31 @@ fun DeliveryCard(
                 color = contentColor,
                 Modifier.padding(horizontal = 18.dp)
             )
-            DeliveryDivider(contentColor)
-            DeliveryFooter(delivery, backgroundColor)
+            Spacer(Modifier.height(12.dp))
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.background(backgroundColor.copy(alpha = 0.3f))) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 2.dp,
+                        color = contentColor.copy(0.3f)
+                    )
+                    DeliveryFooter(delivery)
+                    if (delivery.status.id == 3) {
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(),
+                            thickness = 2.dp,
+                            color = contentColor.copy(0.3f)
+                        )
+                    }
+                }
+            }
+            if (delivery.status.id == 3) {
+                DeliveryRouteAction(
+                    onContinueDeliveryClick = onContinueDeliveryClick,
+                    backgroundColor = backgroundColor,
+                    contentColor = contentColor
+                )
+            }
         }
     }
 }
@@ -181,22 +209,8 @@ private fun RouteText(title: String, location: String) {
 }
 
 @Composable
-private fun DeliveryDivider(color: Color) {
-    Spacer(Modifier.height(12.dp))
-    HorizontalDivider(
-        modifier = Modifier.fillMaxWidth().offset(y = 2.dp),
-        thickness = 2.dp,
-        color = color.copy(alpha = 0.2f)
-    )
-}
-
-@Composable
-private fun DeliveryFooter(delivery: Delivery, backgroundColor: Color) {
-    Box(
-        modifier = Modifier.fillMaxWidth().background(backgroundColor.copy(alpha = 0.3f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
+private fun DeliveryFooter(delivery: Delivery) {
+    Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth().padding(18.dp)
         ) {
@@ -218,6 +232,28 @@ private fun DeliveryFooter(delivery: Delivery, backgroundColor: Color) {
                         }"
             )
         }
+
+}
+
+@Composable
+private fun DeliveryRouteAction(
+    onContinueDeliveryClick: () -> Unit,
+    backgroundColor: Color,
+    contentColor: Color
+) {
+
+    OutlinedButton(
+        onClick = onContinueDeliveryClick,
+        modifier = Modifier.fillMaxWidth().padding(18.dp),
+        border = BorderStroke(width = 1.dp, color = contentColor.copy(alpha = 0.2f)),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = backgroundColor,
+            contentColor = contentColor
+        )
+    ) {
+        Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+        Spacer(Modifier.width(12.dp))
+        Text(text = "Продолжить доставку")
     }
 }
 

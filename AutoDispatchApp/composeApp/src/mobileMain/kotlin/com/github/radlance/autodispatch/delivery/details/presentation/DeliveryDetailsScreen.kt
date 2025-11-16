@@ -38,6 +38,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun DeliveryDetailsScreen(
     deliveryId: Int,
     deliveryNumber: String,
+    navigateToDeliveryRoute: () -> Unit,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
@@ -88,6 +89,7 @@ fun DeliveryDetailsScreen(
                     DeliveryDetails(
                         scrollState = scrollState,
                         delivery = delivery,
+                        onContinueDeliveryClick = navigateToDeliveryRoute,
                         onAcceptClick = { viewModel.acceptDelivery(delivery.id) },
                         onCloseError = viewModel::resetAcceptState,
                         navigateUp = navigateUp,
