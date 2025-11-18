@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.di.controlPanelModule
 import com.github.radlance.autodispatch.di.dataStoreModule
 import com.github.radlance.autodispatch.di.driverAssignmentModule
 import com.github.radlance.autodispatch.di.navigationModule
+import com.github.radlance.autodispatch.di.pointSelectionModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
 import org.koin.core.context.startKoin
@@ -27,7 +28,8 @@ fun main() = application {
             controlPanelModule,
             requestModule,
             changeRequestModule,
-            driverAssignmentModule
+            driverAssignmentModule,
+            pointSelectionModule
         )
     }
     Window(

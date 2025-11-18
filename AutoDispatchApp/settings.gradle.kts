@@ -25,6 +25,9 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven {
+            url = uri("https://josm.openstreetmap.de/repository/releases/")
+        }
     }
 }
 

@@ -11,17 +11,28 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.material.icons.outlined.NearMe
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
@@ -38,13 +49,11 @@ import autodispatch.composeapp.generated.resources.email
 import autodispatch.composeapp.generated.resources.from
 import autodispatch.composeapp.generated.resources.loading_and_unloading_addresses
 import autodispatch.composeapp.generated.resources.loading_point
-import autodispatch.composeapp.generated.resources.loading_point_placeholder
 import autodispatch.composeapp.generated.resources.phone
 import autodispatch.composeapp.generated.resources.route
 import autodispatch.composeapp.generated.resources.special_req
 import autodispatch.composeapp.generated.resources.to
 import autodispatch.composeapp.generated.resources.unloading_point
-import autodispatch.composeapp.generated.resources.unloading_point_placeholder
 import autodispatch.composeapp.generated.resources.volume_label
 import autodispatch.composeapp.generated.resources.weight_label
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
@@ -67,6 +76,11 @@ fun ChangeRequestFields(
     scrollState: ScrollState,
     modifier: Modifier = Modifier
 ) {
+    var showPointSelectionDialog by rememberSaveable { mutableStateOf(false) }
+
+    if (showPointSelectionDialog) {
+        PointSelectionDialog(onDismissRequest = { showPointSelectionDialog = false })
+    }
 
     Column(modifier = modifier.verticalScroll(scrollState)) {
         Text(text = stringResource(Res.string.route), fontSize = 18.sp)
@@ -133,12 +147,11 @@ fun ChangeRequestFields(
                     ChangeRequestEvent.ChangeCompanyName(company.organizationName)
                 )
                 onEvent(ChangeRequestEvent.ChangeCompanyEmail(company.email))
-                company.phoneNumber?.let {
-                    onEvent(ChangeRequestEvent.ChangeCompanyPhone(company.phoneNumber.drop(2)))
-                }
+                onEvent(ChangeRequestEvent.ChangeCompanyPhone(company.phoneNumber.drop(2)))
             },
             modifier = Modifier.fillMaxWidth(),
-            isRequired = true
+            isRequired = true,
+            leadingIcon = Icons.Outlined.Person
         )
 
         Spacer(Modifier.height(16.dp))
@@ -258,33 +271,51 @@ fun ChangeRequestFields(
             fontSize = 18.sp
         )
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
-        CustomTextField(
-            labelText = stringResource(Res.string.loading_point),
-            value = fieldsUiState.loadingFieldValue,
-            onValueChange = { onEvent(ChangeRequestEvent.ChangeLoading(it)) },
-            placeholder = stringResource(Res.string.loading_point_placeholder),
-            leadingIcon = Icons.Outlined.LocationOn,
-            modifier = Modifier.fillMaxWidth(),
-            isRequired = true,
-            placeholderFontSize = 14.sp,
-            searchBarColors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+        Column {
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(Res.string.loading_point))
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                        append(" *")
+                    }
+                },
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-        )
+            OutlinedButton(
+                onClick = { showPointSelectionDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Выбрать на карте")
+            }
+        }
         Spacer(Modifier.height(16.dp))
-        CustomTextField(
-            labelText = stringResource(Res.string.unloading_point),
-            value = fieldsUiState.unloadingFieldValue,
-            onValueChange = { onEvent(ChangeRequestEvent.ChangeUnloading(it)) },
-            placeholder = stringResource(Res.string.unloading_point_placeholder),
-            leadingIcon = Icons.Outlined.LocationOn,
-            modifier = Modifier.fillMaxWidth(),
-            isRequired = true,
-            placeholderFontSize = 14.sp,
-            searchBarColors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+        Column {
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(Res.string.unloading_point))
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                        append(" *")
+                    }
+                },
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-        )
+            OutlinedButton(
+                onClick = { showPointSelectionDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Выбрать на карте")
+            }
+        }
         Spacer(Modifier.height(16.dp))
         CustomTextField(
             labelText = stringResource(Res.string.additional_info),

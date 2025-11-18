@@ -70,10 +70,27 @@ kotlin {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
+            val javafxVersion = libs.versions.javafx.get()
+            val os = org.gradle.internal.os.OperatingSystem.current()
+
+            val platform = when {
+                os.isWindows -> "win"
+                os.isMacOsX -> "mac"
+                os.isLinux -> "linux"
+                else -> error("Unsupported OS")
+            }
+
+            implementation("org.openjfx:javafx-base:$javafxVersion:$platform")
+            implementation("org.openjfx:javafx-controls:$javafxVersion:$platform")
+            implementation("org.openjfx:javafx-graphics:$javafxVersion:$platform")
+            implementation("org.openjfx:javafx-fxml:$javafxVersion:$platform")
+            implementation("org.openjfx:javafx-web:$javafxVersion:$platform")
+            implementation("org.openjfx:javafx-swing:$javafxVersion:$platform")
             implementation(libs.datatable.material3)
             implementation(libs.ktor.client.okhttp)
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.jmapviewer)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

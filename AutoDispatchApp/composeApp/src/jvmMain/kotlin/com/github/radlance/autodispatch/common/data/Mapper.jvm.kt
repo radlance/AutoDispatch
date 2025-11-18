@@ -3,7 +3,11 @@ package com.github.radlance.autodispatch.common.data
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
+import com.github.radlance.autodispatch.request.change.data.CoordsDto
+import com.github.radlance.autodispatch.request.change.data.PointDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
+import com.github.radlance.autodispatch.request.change.domain.Coords
+import com.github.radlance.autodispatch.request.change.domain.Point
 import com.github.radlance.autodispatch.request.core.data.CityDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
@@ -58,6 +62,25 @@ fun DriverStatsDto.toDriverStats(): DriverStats {
         vehicleModel = vehicleModel,
         vehicleLicensePlate = vehicleLicensePlate,
         totalAssignedRequests = totalAssignedRequests
+    )
+}
+
+fun CoordsDto.toCoords(): Coords {
+    return Coords(
+        lat = lat,
+        lon = lon
+    )
+}
+
+fun PointDto.toPoint(): Point {
+    return Point(
+        placeId = placeId,
+        lat = lat,
+        lon = lon,
+        importance = importance,
+        name = name,
+        displayName = displayName,
+        boundingBox = boundingBox
     )
 }
 

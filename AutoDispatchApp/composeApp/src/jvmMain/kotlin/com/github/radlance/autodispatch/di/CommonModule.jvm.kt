@@ -7,9 +7,12 @@ import com.github.radlance.autodispatch.request.assignment.data.RemoteAssignment
 import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.presentation.AssignmentViewModel
 import com.github.radlance.autodispatch.request.change.data.RemoteChangeRequestRepository
+import com.github.radlance.autodispatch.request.change.data.RemotePointSelectionRepository
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
+import com.github.radlance.autodispatch.request.change.domain.PointSelectionRepository
 import com.github.radlance.autodispatch.request.change.presentation.BaseRequestValidator
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
+import com.github.radlance.autodispatch.request.change.presentation.PointSelectionViewModel
 import com.github.radlance.autodispatch.request.change.presentation.RequestValidator
 import com.github.radlance.autodispatch.request.core.data.RemoteRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
@@ -42,4 +45,10 @@ val driverAssignmentModule
     get() = module {
         singleOf(::RemoteAssignmentRepository).bind<AssignmentRepository>()
         viewModelOf(::AssignmentViewModel)
+    }
+
+val pointSelectionModule
+    get() = module {
+        singleOf(::RemotePointSelectionRepository).bind<PointSelectionRepository>()
+        viewModelOf(::PointSelectionViewModel)
     }

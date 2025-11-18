@@ -70,6 +70,7 @@ fun SignInFields(
 
                         Text(text = label)
                     },
+                    singleLine = true,
                     isError = fieldsUiState.loginErrorMessage.isNotEmpty(),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -101,6 +102,7 @@ fun SignInFields(
                             Icon(imageVector = icon, contentDescription = null)
                         }
                     },
+                    singleLine = true,
                     isError = fieldsUiState.passwordErrorMessage.isNotEmpty(),
                     modifier = Modifier.fillMaxWidth()
                 )

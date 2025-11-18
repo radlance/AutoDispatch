@@ -3,6 +3,8 @@ package com.github.radlance.autodispatch.common.data
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
+import com.github.radlance.autodispatch.request.change.data.CoordsDto
+import com.github.radlance.autodispatch.request.change.data.PointDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
@@ -10,10 +12,12 @@ import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.request.url
 
 interface ApiServiceJvm : ApiService {
 
@@ -46,6 +50,10 @@ interface ApiServiceJvm : ApiService {
     suspend fun assignRequestToDriver(requestId: Int, driverId: Int)
 
     suspend fun reassignRequestToDriver(requestId: Int, driverId: Int)
+
+    suspend fun coords(): CoordsDto
+
+    suspend fun points(query: String): List<PointDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -137,5 +145,23 @@ internal class KtorApiServiceJvm(
         httpClient.put("requests/${requestId}/assign") {
             setBody(AssignRequestDto(driverId))
         }
+    }
+
+    override suspend fun coords(): CoordsDto {
+        return httpClient.get {
+            url("http://ip-api.com/json/")
+            headers.remove("Authorization")
+        }.body()
+    }
+
+    override suspend fun points(query: String): List<PointDto> {
+        return httpClient.get {
+            url("https://nominatim.openstreetmap.org/search")
+            header("User-Agent", "AutoDispatch")
+            parameter("q", query)
+            parameter("format", "jsonv2")
+            parameter("limit", 3)
+            parameter("countrycodes", "ru")
+        }.body()
     }
 }

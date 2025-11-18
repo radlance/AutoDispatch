@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,10 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -48,6 +49,9 @@ fun CustomTextFieldWithDropdown(
     onSuggestionSelected: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     isRequired: Boolean = false,
+    dropdownFontSize: TextUnit = TextUnit.Unspecified,
+    dropdownMaxLines: Int = 1,
+    leadingIcon: ImageVector
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
@@ -79,7 +83,7 @@ fun CustomTextFieldWithDropdown(
                     selectedIndex = -1
                 },
                 placeholder = { Text(placeholder) },
-                leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null) },
+                leadingIcon = { Icon(leadingIcon, contentDescription = null) },
                 trailingIcon = {
                     if (value.isNotEmpty()) {
                         IconButton(onClick = {
@@ -132,10 +136,11 @@ fun CustomTextFieldWithDropdown(
                             text = {
                                 Text(
                                     text = suggestion,
+                                    fontSize = dropdownFontSize,
                                     color = if (index == selectedIndex)
                                         MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
+                                    maxLines = dropdownMaxLines,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             },
