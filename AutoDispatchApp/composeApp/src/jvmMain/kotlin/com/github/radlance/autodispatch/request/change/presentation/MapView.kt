@@ -12,6 +12,7 @@ import androidx.compose.ui.awt.SwingPanel
 import org.openstreetmap.gui.jmapviewer.Coordinate
 import org.openstreetmap.gui.jmapviewer.JMapViewer
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot
+import org.openstreetmap.gui.jmapviewer.MapPolygonImpl
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -22,12 +23,35 @@ import java.awt.event.MouseMotionAdapter
 fun MapView(
     initialCenter: Coordinate,
     initialZoom: Int,
+    boundingBox: List<String>? = null,
     onLocationSelected: (Coordinate) -> Unit
 ) {
 
     val mapViewer = remember { JMapViewer() }
     var currentMarker by remember { mutableStateOf<MapMarkerDot?>(null) }
     var dragged by remember { mutableStateOf<Point?>(null) }
+    var currentBounding by remember { mutableStateOf<MapPolygonImpl?>(null) }
+
+    LaunchedEffect(boundingBox) {
+        if (boundingBox != null) {
+            val south = boundingBox[0].toDouble()
+            val north = boundingBox[1].toDouble()
+            val west = boundingBox[2].toDouble()
+            val east = boundingBox[3].toDouble()
+
+            // remove old
+            currentBounding?.let { mapViewer.removeMapPolygon(it) }
+
+            val polygon = createBoundingBoxPolygon(north, south, east, west)
+
+            mapViewer.addMapPolygon(polygon)
+            currentBounding = polygon
+
+            val centerLat = (north + south) / 2.0
+            val centerLon = (east + west) / 2.0
+            mapViewer.setDisplayPosition(Coordinate(centerLat, centerLon), 15)
+        }
+    }
 
     LaunchedEffect(mapViewer) {
         mapViewer.apply {
@@ -76,3 +100,18 @@ fun MapView(
     )
 }
 
+fun createBoundingBoxPolygon(
+    north: Double,
+    south: Double,
+    east: Double,
+    west: Double
+): MapPolygonImpl {
+    val points = listOf(
+        Coordinate(north, west),
+        Coordinate(north, east),
+        Coordinate(south, east),
+        Coordinate(south, west),
+        Coordinate(north, west)
+    )
+    return MapPolygonImpl(points)
+}

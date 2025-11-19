@@ -37,10 +37,15 @@ fun PointSelectionDialog(
     modifier: Modifier = Modifier,
     viewModel: PointSelectionViewModel = koinViewModel()
 ) {
+    // TODO добавить полигон на карту
     val fetchPointState by viewModel.fetchPointState.collectAsState()
     val points by viewModel.points.collectAsState()
 
     var placeSuggestionFieldValue by rememberSaveable { mutableStateOf("") }
+    var selectedBounding by remember { mutableStateOf<List<String>?>(null) }
+    var initialCenter by remember { mutableStateOf(Coordinate(55.75, 37.61)) }
+    var initialZoom by remember { mutableStateOf(10) }
+
     var latitude by remember { mutableStateOf("") }
     var longitude by remember { mutableStateOf("") }
 
@@ -66,7 +71,11 @@ fun PointSelectionDialog(
                             placeholder = "Введите адрес",
                             suggestions = points.map { it.displayName },
                             onSuggestionSelected = { selected ->
+                                val p = points.first { it.displayName == selected }
 
+                                initialCenter = Coordinate(p.lat.toDouble(), p.lon.toDouble())
+                                selectedBounding = p.boundingBox
+                                initialZoom = 15
                             },
                             modifier = Modifier.fillMaxWidth(),
                             isRequired = false,
@@ -77,7 +86,8 @@ fun PointSelectionDialog(
                         Spacer(modifier = Modifier.height(32.dp))
                         MapView(
                             initialCenter = Coordinate(coords.lat, coords.lon),
-                            initialZoom = 10
+                            initialZoom = 10,
+                            boundingBox = selectedBounding
                         ) { coord ->
                             latitude = coord.lat.toString()
                             longitude = coord.lon.toString()
