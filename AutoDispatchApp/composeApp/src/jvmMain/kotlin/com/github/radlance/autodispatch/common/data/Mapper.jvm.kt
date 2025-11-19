@@ -80,7 +80,8 @@ fun PointDto.toPoint(): Point {
         importance = importance,
         name = name,
         displayName = displayName,
-        boundingBox = boundingBox
+        boundingBox = boundingBox,
+        geoJson = geoJson
     )
 }
 

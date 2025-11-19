@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.request.change.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class PointDto(
@@ -11,5 +12,6 @@ data class PointDto(
     val importance: Double,
     val name: String,
     @SerialName("display_name") val displayName: String,
-    @SerialName("boundingbox") val boundingBox: List<String>
+    @SerialName("boundingbox") val boundingBox: List<String>,
+    @SerialName("geojson") val geoJson: JsonObject?
 )

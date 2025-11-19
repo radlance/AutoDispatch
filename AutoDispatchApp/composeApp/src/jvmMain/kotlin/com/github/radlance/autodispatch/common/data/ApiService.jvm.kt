@@ -162,6 +162,7 @@ internal class KtorApiServiceJvm(
             parameter("format", "jsonv2")
             parameter("limit", 3)
             parameter("countrycodes", "ru")
+            parameter("polygon_geojson", 1)
         }.body()
     }
 }

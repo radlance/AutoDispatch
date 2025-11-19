@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.request.change.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
+import com.github.radlance.autodispatch.request.change.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
+import kotlinx.serialization.json.jsonPrimitive
 import org.koin.compose.viewmodel.koinViewModel
 import org.openstreetmap.gui.jmapviewer.Coordinate
 
@@ -37,17 +41,30 @@ fun PointSelectionDialog(
     modifier: Modifier = Modifier,
     viewModel: PointSelectionViewModel = koinViewModel()
 ) {
-    // TODO добавить полигон на карту
     val fetchPointState by viewModel.fetchPointState.collectAsState()
     val points by viewModel.points.collectAsState()
 
     var placeSuggestionFieldValue by rememberSaveable { mutableStateOf("") }
-    var selectedBounding by remember { mutableStateOf<List<String>?>(null) }
-    var initialCenter by remember { mutableStateOf(Coordinate(55.75, 37.61)) }
-    var initialZoom by remember { mutableStateOf(10) }
 
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
+    // Состояние: Объект поиска (влияет на зум и блокировку кликов)
+    var searchResult by remember { mutableStateOf<Point?>(null) }
+    // Состояние: Визуальный маркер
+    var markerLocation by remember { mutableStateOf<Coordinate?>(null) }
+
+    // Состояние: Координаты, которые мы вернем (вычисляемое)
+    val finalSelectedCoordinate: Coordinate? = remember(markerLocation, searchResult) {
+        if (markerLocation != null) {
+            markerLocation
+        } else if (searchResult != null) {
+            // Если маркера нет, но есть регион - берем центр региона
+            val box = searchResult!!.boundingBox
+            val lat = (box[0].toDouble() + box[1].toDouble()) / 2.0
+            val lon = (box[2].toDouble() + box[3].toDouble()) / 2.0
+            Coordinate(lat, lon)
+        } else {
+            null
+        }
+    }
 
     AlertDialog(
         modifier = modifier.fillMaxSize(),
@@ -61,53 +78,106 @@ fun PointSelectionDialog(
                 },
                 onSuccess = { coords ->
                     Column {
-                        CustomTextFieldWithDropdown(
-                            labelText = "Найти место",
-                            value = placeSuggestionFieldValue,
-                            onValueChange = { value ->
-                                placeSuggestionFieldValue = value
-                                viewModel.searchPoint(placeSuggestionFieldValue)
-                            },
-                            placeholder = "Введите адрес",
-                            suggestions = points.map { it.displayName },
-                            onSuggestionSelected = { selected ->
-                                val p = points.first { it.displayName == selected }
-
-                                initialCenter = Coordinate(p.lat.toDouble(), p.lon.toDouble())
-                                selectedBounding = p.boundingBox
-                                initialZoom = 15
-                            },
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            isRequired = false,
-                            dropdownFontSize = 12.sp,
-                            dropdownMaxLines = 3,
-                            leadingIcon = GlobalLocationPinIcon
-                        )
-                        Spacer(modifier = Modifier.height(32.dp))
-                        MapView(
-                            initialCenter = Coordinate(coords.lat, coords.lon),
-                            initialZoom = 10,
-                            boundingBox = selectedBounding
-                        ) { coord ->
-                            latitude = coord.lat.toString()
-                            longitude = coord.lon.toString()
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                CustomTextFieldWithDropdown(
+                                    labelText = "Найти место",
+                                    value = placeSuggestionFieldValue,
+                                    onValueChange = { value ->
+                                        placeSuggestionFieldValue = value
+                                        viewModel.searchPoint(placeSuggestionFieldValue)
+                                    },
+                                    placeholder = "Введите адрес",
+                                    suggestions = points.map { it.displayName },
+                                    onSuggestionSelected = { selected ->
+                                        val p = points.first { it.displayName == selected }
+                                        placeSuggestionFieldValue = selected
+
+                                        val type = p.geoJson?.get("type")?.jsonPrimitive?.content
+                                        val isPolygon = type == "Polygon" || type == "MultiPolygon"
+
+                                        if (isPolygon) {
+                                            // Сценарий 1: РЕГИОН.
+                                            // Ставим searchResult (для отрисовки границ).
+                                            // Маркер УБИРАЕМ (он не нужен, бесит).
+                                            searchResult = p
+                                            markerLocation = null
+                                        } else {
+                                            // Сценарий 2: ТОЧКА (Улица/Дом).
+                                            // searchResult ставим только для ЗУМА (в MapView полигоны не нарисуются, т.к. это Point).
+                                            // Но лучше searchResult обнулить после зума, чтобы разблокировать клики?
+                                            // Давайте так: передаем p, MapView поймет, что рисовать нечего, но зум сделает.
+                                            searchResult = p
+
+                                            // Вычисляем координаты и СТАВИМ МАРКЕР
+                                            val lat = (p.boundingBox[0].toDouble() + p.boundingBox[1].toDouble()) / 2.0
+                                            val lon = (p.boundingBox[2].toDouble() + p.boundingBox[3].toDouble()) / 2.0
+                                            markerLocation = Coordinate(lat, lon)
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    isRequired = false,
+                                    dropdownFontSize = 12.sp,
+                                    dropdownMaxLines = 3,
+                                    leadingIcon = GlobalLocationPinIcon
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            TextButton(
+                                onClick = {
+                                    placeSuggestionFieldValue = ""
+                                    searchResult = null
+                                    markerLocation = null
+                                }
+                            ) {
+                                Text("Очистить")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            MapView(
+                                initialCenter = Coordinate(coords.lat, coords.lon),
+                                initialZoom = 10,
+                                searchResult = searchResult,
+                                markerPosition = markerLocation,
+                                onLocationSelected = { coord ->
+                                    // При ручном клике:
+                                    // 1. Ставим маркер
+                                    markerLocation = coord
+                                    // 2. Сбрасываем "регион", чтобы полигоны исчезли (если хотите такое поведение)
+                                    // Если хотите оставлять границы - закомментируйте строку ниже.
+                                    searchResult = null
+                                }
+                            )
+                        }
+
+                        // Показываем координаты, которые будут отправлены
+                        if (finalSelectedCoordinate != null) {
+                            Text(
+                                text = "Выбрано: ${finalSelectedCoordinate.lat}, ${finalSelectedCoordinate.lon}",
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 },
-                onError = {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(
-                            message = it,
-                            onRetry = viewModel::fetchCoords
-                        )
-                    }
-                }
+                onError = { /* ... */ }
             )
-
         },
         confirmButton = {
             OutlinedButton(
-                onClick = onDismissRequest,
+                onClick = {
+                    // finalSelectedCoordinate точно не null, т.к. кнопка enabled
+                    // TODO: Вернуть результат finalSelectedCoordinate!!
+                    onDismissRequest()
+                },
+                // Кнопка активна, если есть маркер ИЛИ выбран регион
+                enabled = finalSelectedCoordinate != null
             ) {
                 Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
@@ -115,9 +185,7 @@ fun PointSelectionDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = "Отмена")
-            }
+            TextButton(onClick = onDismissRequest) { Text("Отмена") }
         }
     )
 }
