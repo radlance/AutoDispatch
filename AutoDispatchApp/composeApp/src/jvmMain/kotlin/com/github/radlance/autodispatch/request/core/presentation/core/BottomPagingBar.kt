@@ -103,6 +103,7 @@ fun BottomPagingBar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
+                            .width(100.dp)
                             .padding(horizontal = 12.dp)
                     ) {
                         Text(
