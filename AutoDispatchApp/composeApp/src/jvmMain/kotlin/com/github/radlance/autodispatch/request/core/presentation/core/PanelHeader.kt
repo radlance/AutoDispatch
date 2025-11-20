@@ -60,11 +60,11 @@ fun PanelHeader(
 
         Spacer(Modifier.width(8.dp))
 
-        if (requestStatusId == 1) {
+        if (requestStatusId == 1 || requestStatusId == 2) {
             IconButton(onClick = onSettingsClick) {
                 Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
             }
-        } else if (requestStatusId == 2 || requestStatusId == 3) {
+        } else if (requestStatusId == 3) {
             IconButton(onClick = cancelAssignment) {
                 Icon(imageVector = Icons.Outlined.Block, contentDescription = null)
             }
