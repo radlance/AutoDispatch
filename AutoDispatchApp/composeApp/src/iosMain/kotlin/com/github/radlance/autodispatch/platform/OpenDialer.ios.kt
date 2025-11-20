@@ -4,8 +4,14 @@ import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 
 actual fun openDialer(phoneNumber: String, context: Any?) {
-    val url = NSURL(string = "tel:$phoneNumber")
-    if (UIApplication.sharedApplication.canOpenURL(url)) {
-        UIApplication.sharedApplication.openURL(url)
+    val url = NSURL(string = "tel://$phoneNumber")
+    val app = UIApplication.sharedApplication
+
+    if (app.canOpenURL(url)) {
+        app.openURL(
+            url = url,
+            options = emptyMap<Any?, Any>(),
+            completionHandler = {}
+        )
     }
 }

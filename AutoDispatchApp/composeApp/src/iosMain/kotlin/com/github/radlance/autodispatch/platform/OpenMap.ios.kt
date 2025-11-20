@@ -16,7 +16,8 @@ import platform.UIKit.UIApplication
 
 @OptIn(BetaInteropApi::class)
 actual fun openMap(address: String, context: Any?) {
-    val controller = UIApplication.sharedApplication.keyWindow?.rootViewController
+    val app = UIApplication.sharedApplication
+    val controller = app.keyWindow?.rootViewController
         ?: return
 
     val nsString = NSString.create(string = address)
@@ -36,45 +37,61 @@ actual fun openMap(address: String, context: Any?) {
             style = UIAlertActionStyleDefault
         ) {
             val url = NSURL(string = "http://maps.apple.com/?q=$encoded")
-            UIApplication.sharedApplication.openURL(url)
+            app.openURL(
+                url = url,
+                options = emptyMap<Any?, Any>(),
+                completionHandler = {}
+            )
         }
     )
 
     val googleUrl = NSURL(string = "comgooglemaps://")
-    if (UIApplication.sharedApplication.canOpenURL(googleUrl)) {
+    if (app.canOpenURL(googleUrl)) {
         sheet.addAction(
             UIAlertAction.actionWithTitle(
                 "Google Maps",
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "comgooglemaps://?q=$encoded")
-                UIApplication.sharedApplication.openURL(url)
+                app.openURL(
+                    url = url,
+                    options = emptyMap<Any?, Any>(),
+                    completionHandler = {}
+                )
             }
         )
     }
 
     val yandexUrl = NSURL(string = "yandexmaps://")
-    if (UIApplication.sharedApplication.canOpenURL(yandexUrl)) {
+    if (app.canOpenURL(yandexUrl)) {
         sheet.addAction(
             UIAlertAction.actionWithTitle(
-                "Яндекс.Карты",
+                "Яндекс Карты",
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "yandexmaps://maps.yandex.ru/?text=$encoded")
-                UIApplication.sharedApplication.openURL(url)
+                app.openURL(
+                    url = url,
+                    options = emptyMap<Any?, Any>(),
+                    completionHandler = {}
+                )
             }
         )
     }
 
     val twoGisUrl = NSURL(string = "dgis://")
-    if (UIApplication.sharedApplication.canOpenURL(twoGisUrl)) {
+    if (app.canOpenURL(twoGisUrl)) {
         sheet.addAction(
             UIAlertAction.actionWithTitle(
                 "2ГИС",
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "dgis://2gis.ru/search/$encoded")
-                UIApplication.sharedApplication.openURL(url)
+                app.openURL(
+                    url = url,
+                    options = emptyMap<Any?, Any>(),
+                    completionHandler = {}
+                )
             }
         )
     }
