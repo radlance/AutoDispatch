@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +64,8 @@ import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.WeightIcon
 import org.jetbrains.compose.resources.stringResource
 
+private enum class PointTarget { LOADING, UNLOADING }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangeRequestFields(
@@ -77,10 +78,25 @@ fun ChangeRequestFields(
     modifier: Modifier = Modifier
 ) {
     var showPointSelectionDialog by rememberSaveable { mutableStateOf(false) }
+    var pointSelectionTarget by rememberSaveable { mutableStateOf<PointTarget?>(null) }
+
+//    var loadingPoint by rememberSaveable { mutableStateOf<String?>(null) }
+//    var unloadingPoint by rememberSaveable { mutableStateOf<String?>(null) }
 
     if (showPointSelectionDialog) {
-        PointSelectionDialog(onDismissRequest = { showPointSelectionDialog = false })
+        PointSelectionDialog(
+            onDismissRequest = { showPointSelectionDialog = false },
+            onConfirm = { selectedPoint ->
+                when (pointSelectionTarget) {
+                    PointTarget.LOADING -> onEvent(ChangeRequestEvent.ChangeLoading(selectedPoint))
+                    PointTarget.UNLOADING -> onEvent(ChangeRequestEvent.ChangeUnloading(selectedPoint))
+                    null -> Unit
+                }
+                showPointSelectionDialog = false
+            }
+        )
     }
+
 
     Column(modifier = modifier.verticalScroll(scrollState)) {
         Text(text = stringResource(Res.string.route), fontSize = 18.sp)
@@ -275,45 +291,86 @@ fun ChangeRequestFields(
             Text(
                 text = buildAnnotatedString {
                     append(stringResource(Res.string.loading_point))
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
-                        append(" *")
-                    }
+                    withStyle(SpanStyle(MaterialTheme.colorScheme.error)) { append(" *") }
                 },
-                fontSize = 14.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            OutlinedButton(
-                onClick = { showPointSelectionDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
-                Spacer(Modifier.width(12.dp))
-                Text(text = "Выбрать на карте")
+
+            if (fieldsUiState.loadingFieldValue.isEmpty()) {
+                OutlinedButton(
+                    onClick = {
+                        pointSelectionTarget = PointTarget.LOADING
+                        showPointSelectionDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Outlined.NearMe, null)
+                    Spacer(Modifier.width(12.dp))
+                    Text("Выбрать на карте")
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        "Погрузка: ${fieldsUiState.loadingFieldValue}",
+                        fontSize = 14.sp
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = { onEvent(ChangeRequestEvent.ChangeLoading("")) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Удалить точку")
+                    }
+                }
             }
+
         }
         Spacer(Modifier.height(16.dp))
-        Column {
-            Text(
-                text = buildAnnotatedString {
-                    append(stringResource(Res.string.unloading_point))
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
-                        append(" *")
-                    }
-                },
-                fontSize = 14.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+        Text(
+            text = buildAnnotatedString {
+                append(stringResource(Res.string.unloading_point))
+                withStyle(SpanStyle(MaterialTheme.colorScheme.error)) { append(" *") }
+            },
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        if (fieldsUiState.unloadingFieldValue.isEmpty()) {
             OutlinedButton(
-                onClick = { showPointSelectionDialog = true },
-                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    pointSelectionTarget = PointTarget.UNLOADING
+                    showPointSelectionDialog = true
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                Icon(Icons.Outlined.NearMe, null)
                 Spacer(Modifier.width(12.dp))
-                Text(text = "Выбрать на карте")
+                Text("Выбрать на карте")
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Text(
+                    "Выгрузка: ${fieldsUiState.unloadingFieldValue}",
+                    fontSize = 14.sp
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = { onEvent(ChangeRequestEvent.ChangeUnloading(""))  },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Удалить точку")
+                }
             }
         }
         Spacer(Modifier.height(16.dp))

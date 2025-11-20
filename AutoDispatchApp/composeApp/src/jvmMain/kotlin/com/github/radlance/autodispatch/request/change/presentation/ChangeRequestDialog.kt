@@ -70,6 +70,10 @@ fun ChangeRequestDialog(
     currentFieldsUiState: ChangeRequestFieldsUiState = ChangeRequestFieldsUiState(),
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
+    val onDismiss = {
+        onDismiss()
+        viewModel.reduce(event = ChangeRequestEvent.ResetChangeState)
+    }
     var showCancelDialog by remember { mutableStateOf(false) }
     val fieldsUiState by viewModel.fieldsUiState.collectAsState()
     val customers by viewModel.customersState.collectAsState()

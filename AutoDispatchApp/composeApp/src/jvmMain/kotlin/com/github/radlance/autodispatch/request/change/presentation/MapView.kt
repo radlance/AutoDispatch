@@ -43,27 +43,22 @@ fun MapView(
     val mapViewer = remember { JMapViewer() }
 
     var currentMarker by remember { mutableStateOf<MapMarkerDot?>(null) }
-    // Храним все визуальные объекты (и линии, и полигоны) в одном списке
     var currentMapObjects by remember { mutableStateOf<List<MapPolygonImpl>>(emptyList()) }
 
-    var dragged by remember { mutableStateOf<java.awt.Point?>(null) }
+    var dragged by remember { mutableStateOf<Point?>(null) }
     val currentSearchResult by rememberUpdatedState(searchResult)
 
-    // --- 1. Отрисовка Геометрии (Линии и Полигоны) ---
     LaunchedEffect(searchResult) {
-        // Очистка
         currentMapObjects.forEach { mapViewer.removeMapPolygon(it) }
         currentMapObjects = emptyList()
 
         if (searchResult != null) {
-            // Парсим геометрию
             if (searchResult.geoJson != null) {
                 val newObjects = parseGeoJsonToMapObjects(searchResult.geoJson)
                 newObjects.forEach { mapViewer.addMapPolygon(it) }
                 currentMapObjects = newObjects
             }
 
-            // Зум к объекту
             val box = searchResult.boundingBox
             val south = box[0].toDouble()
             val north = box[1].toDouble()
@@ -74,14 +69,14 @@ fun MapView(
             val centerLon = (east + west) / 2.0
 
             val latDiff = north - south
-            // Если объект очень маленький (точка), зумим близко, иначе вычисляем
             val newZoom = if (latDiff < 0.0001) 17 else calculateZoomLevel(latDiff)
 
             mapViewer.setDisplayPosition(Coordinate(centerLat, centerLon), newZoom)
+            mapViewer.revalidate()
+            mapViewer.repaint()
         }
     }
 
-    // --- 2. Отрисовка Маркера ---
     LaunchedEffect(markerPosition) {
         currentMarker?.let { mapViewer.removeMapMarker(it) }
         currentMarker = null
@@ -91,6 +86,8 @@ fun MapView(
             mapViewer.addMapMarker(marker)
             currentMarker = marker
         }
+        mapViewer.revalidate()
+        mapViewer.repaint()
     }
 
     LaunchedEffect(mapViewer) {
@@ -101,8 +98,6 @@ fun MapView(
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
-                    // Блокируем клик, ТОЛЬКО если выбран ПОЛИГОН (Регион).
-                    // Если выбрана ЛИНИЯ (Улица) - разрешаем клик, чтобы уточнить номер дома.
                     if (currentSearchResult?.geoJson != null) {
                         val type = currentSearchResult!!.geoJson!!.get("type")?.jsonPrimitive?.content
                         if (type == "Polygon" || type == "MultiPolygon") {
@@ -155,7 +150,6 @@ fun parseGeoJsonToMapObjects(geoJson: JsonObject): List<MapPolygonImpl> {
                 }
             }
             "LineString" -> {
-                // Создаем нашу кастомную линию
                 objects.add(MapPolyLine(parseRing(coordinates)))
             }
             "MultiLineString" -> {
@@ -170,26 +164,23 @@ fun parseGeoJsonToMapObjects(geoJson: JsonObject): List<MapPolygonImpl> {
     return objects
 }
 
-// Кастомный класс для рисования линий (не замкнутых)
 class MapPolyLine(points: List<Coordinate>) : MapPolygonImpl(points) {
     init {
-        color = java.awt.Color.BLUE
-        stroke = java.awt.BasicStroke(3f)
-        backColor = null // Без заливки
+        color = Color.BLUE
+        stroke = BasicStroke(3f)
+        backColor = null
     }
 
-    override fun paint(g: java.awt.Graphics, points: List<java.awt.Point>) {
-        val g2d = g as java.awt.Graphics2D
+    override fun paint(g: Graphics, points: List<Point>) {
+        val g2d = g as Graphics2D
         g2d.color = color
         g2d.stroke = stroke
         val xPoints = points.map { it.x }.toIntArray()
         val yPoints = points.map { it.y }.toIntArray()
-        // Рисуем линию, не замыкая концы
         g2d.drawPolyline(xPoints, yPoints, points.size)
     }
 }
 
-// Вспомогательная (без изменений)
 private fun parseRing(ring: JsonArray): List<Coordinate> {
     val coords = mutableListOf<Coordinate>()
     for (pointJson in ring) {

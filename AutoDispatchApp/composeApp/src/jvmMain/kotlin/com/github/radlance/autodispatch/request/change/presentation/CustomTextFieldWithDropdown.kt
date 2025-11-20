@@ -51,7 +51,8 @@ fun CustomTextFieldWithDropdown(
     isRequired: Boolean = false,
     dropdownFontSize: TextUnit = TextUnit.Unspecified,
     dropdownMaxLines: Int = 1,
-    leadingIcon: ImageVector
+    leadingIcon: ImageVector,
+    showClearButton: Boolean = true
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
@@ -85,13 +86,15 @@ fun CustomTextFieldWithDropdown(
                 placeholder = { Text(placeholder) },
                 leadingIcon = { Icon(leadingIcon, contentDescription = null) },
                 trailingIcon = {
-                    if (value.isNotEmpty()) {
-                        IconButton(onClick = {
-                            onValueChange("")
-                            expanded = false
-                            selectedIndex = -1
-                        }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    if (showClearButton) {
+                        if (value.isNotEmpty()) {
+                            IconButton(onClick = {
+                                onValueChange("")
+                                expanded = false
+                                selectedIndex = -1
+                            }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Clear")
+                            }
                         }
                     }
                 },
