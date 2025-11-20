@@ -1,12 +1,12 @@
 package com.github.radlance.autodispatch.delivery.core.presentation
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -69,7 +68,10 @@ fun DeliveryCard(
                 Modifier.padding(horizontal = 18.dp)
             )
             Spacer(Modifier.height(12.dp))
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.background(backgroundColor.copy(alpha = 0.3f))) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.background(backgroundColor.copy(alpha = 0.3f))
+            ) {
                 Column {
                     HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(),
@@ -165,73 +167,113 @@ private fun DeliveryHeader(
 }
 
 @Composable
-fun DeliveryRoute(fromPoint: String, toPoint: String, color: Color, modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
+fun DeliveryRoute(
+    fromPoint: String,
+    toPoint: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    // ВАЖНО: высота Row берётся как IntrinsicSize.Min — это синхронизирует высоты колонок
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min), // <- ключ: левая колонка подстроится под правую
+        verticalAlignment = Alignment.Top
+    ) {
+        // Левая колонка с точками и растягивающейся линией
         Column(
-            modifier = Modifier.height(130.dp).width(24.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .width(24.dp), // фиксированная ширина для колонки точек
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                Icons.Default.Circle,
+                imageVector = Icons.Default.Circle,
                 contentDescription = null,
                 tint = color,
                 modifier = Modifier.size(16.dp)
             )
-            Canvas(modifier = Modifier.height(90.dp).width(2.dp)) {
-                drawLine(
-                    color = color,
-                    start = Offset(size.width / 2, 0f),
-                    end = Offset(size.width / 2, size.height),
-                    strokeWidth = size.width
-                )
-            }
+
+            // Здесь мы используем weight(1f) — он работает потому что мы в ColumnScope
+            Spacer(
+                modifier = Modifier
+                    .weight(1f) // занять всё свободное пространство между иконками
+                    .width(2.dp)
+                    .background(color)
+            )
+
             Icon(
-                Icons.Default.Place,
+                imageVector = Icons.Default.Place,
                 contentDescription = null,
                 tint = color,
                 modifier = Modifier.size(20.dp)
             )
         }
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.height(130.dp)) {
-            RouteText("Откуда", fromPoint)
-            Spacer(Modifier.weight(1f))
-            RouteText("Куда", toPoint)
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // Правая колонка с текстом — она может быть любой высоты
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "Откуда",
+                    fontSize = 12.sp,
+                    modifier = Modifier.alpha(0.7f)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = fromPoint,
+                    fontSize = 14.sp,
+                    maxLines = 5,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Column {
+                Text(
+                    text = "Куда",
+                    fontSize = 12.sp,
+                    modifier = Modifier.alpha(0.7f)
+                )
+                Text(
+                    text = toPoint,
+                    fontSize = 14.sp,
+                    maxLines = 5,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun RouteText(title: String, location: String) {
-    Text(text = title, fontSize = 12.sp, modifier = Modifier.offset(y = (-4).dp).alpha(0.7f))
-    Text(text = location, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-}
-
-@Composable
 private fun DeliveryFooter(delivery: Delivery) {
     Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().padding(18.dp)
-        ) {
-            CardSection("Груз", delivery.cargoTypeName)
-            CardSection("Вес", delivery.cargoWeight.formatKg())
-            CardSection(
-                "Обновлена",
-                "${(delivery.updatedAt ?: delivery.createdAt).day.toString().padStart(2, '0')}." +
-                        "${
-                            (delivery.updatedAt ?: delivery.createdAt).month.ordinal.inc()
-                                .toString().padStart(2, '0')
-                        }, " +
-                        "${
-                            (delivery.updatedAt ?: delivery.createdAt).hour.toString()
-                                .padStart(2, '0')
-                        }:${
-                            (delivery.updatedAt ?: delivery.createdAt).minute.toString()
-                                .padStart(2, '0')
-                        }"
-            )
-        }
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().padding(18.dp)
+    ) {
+        CardSection("Груз", delivery.cargoTypeName)
+        CardSection("Вес", delivery.cargoWeight.formatKg())
+        CardSection(
+            "Обновлена",
+            "${(delivery.updatedAt ?: delivery.createdAt).day.toString().padStart(2, '0')}." +
+                    "${
+                        (delivery.updatedAt ?: delivery.createdAt).month.ordinal.inc()
+                            .toString().padStart(2, '0')
+                    }, " +
+                    "${
+                        (delivery.updatedAt ?: delivery.createdAt).hour.toString()
+                            .padStart(2, '0')
+                    }:${
+                        (delivery.updatedAt ?: delivery.createdAt).minute.toString()
+                            .padStart(2, '0')
+                    }"
+        )
+    }
 
 }
 
@@ -271,8 +313,10 @@ fun requestStatusColors(status: String) =
         "Назначена" -> {
             MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
         }
+
         "Отменена" -> {
             MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
         }
+
         else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
     }
