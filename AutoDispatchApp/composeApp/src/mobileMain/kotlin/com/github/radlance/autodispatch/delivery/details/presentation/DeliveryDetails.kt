@@ -404,6 +404,7 @@ private fun RouteCard(
                 fromPoint = fromPoint,
                 toPoint = toPoint,
                 color = contentColor,
+                showOpenMapButton = true,
                 modifier = Modifier.padding(18.dp)
             )
         }

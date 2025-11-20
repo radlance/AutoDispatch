@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.delivery.core.presentation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
+import com.github.radlance.autodispatch.platform.getPlatformContext
+import com.github.radlance.autodispatch.platform.openMap
+import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
 @Composable
@@ -171,19 +175,19 @@ fun DeliveryRoute(
     fromPoint: String,
     toPoint: String,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showOpenMapButton: Boolean = false
 ) {
-    // ВАЖНО: высота Row берётся как IntrinsicSize.Min — это синхронизирует высоты колонок
+    val context = getPlatformContext()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min), // <- ключ: левая колонка подстроится под правую
+            .height(IntrinsicSize.Min),
         verticalAlignment = Alignment.Top
     ) {
-        // Левая колонка с точками и растягивающейся линией
         Column(
             modifier = Modifier
-                .width(24.dp), // фиксированная ширина для колонки точек
+                .width(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
@@ -193,10 +197,9 @@ fun DeliveryRoute(
                 modifier = Modifier.size(16.dp)
             )
 
-            // Здесь мы используем weight(1f) — он работает потому что мы в ColumnScope
             Spacer(
                 modifier = Modifier
-                    .weight(1f) // занять всё свободное пространство между иконками
+                    .weight(1f)
                     .width(2.dp)
                     .background(color)
             )
@@ -211,7 +214,6 @@ fun DeliveryRoute(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Правая колонка с текстом — она может быть любой высоты
         Column(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -230,6 +232,10 @@ fun DeliveryRoute(
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis
                 )
+                if (showOpenMapButton) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OpenMapButton(color = color, onClick = { openMap(fromPoint, context) })
+                }
             }
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -239,14 +245,48 @@ fun DeliveryRoute(
                     fontSize = 12.sp,
                     modifier = Modifier.alpha(0.7f)
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = toPoint,
                     fontSize = 14.sp,
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis
                 )
+                if (showOpenMapButton) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OpenMapButton(color = color, onClick = { openMap(toPoint, context) })
+                }
             }
         }
+    }
+}
+
+@Composable
+fun OpenMapButton(
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = GlobalLocationPinIcon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(Modifier.width(6.dp))
+        Text(
+            text = "Открыть на карте",
+            fontSize = 13.sp,
+            color = color,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 

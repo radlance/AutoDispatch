@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.platform
 
-import androidx.compose.runtime.Composable
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 
@@ -10,6 +9,3 @@ actual fun openDialer(phoneNumber: String, context: Any?) {
         UIApplication.sharedApplication.openURL(url)
     }
 }
-
-@Composable
-actual fun getPlatformContext(): Any? = null
