@@ -1,7 +1,5 @@
 package com.github.radlance.autodispatch.auth.presentation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,22 +96,35 @@ private fun SignInScreen(
                 .fillMaxSize()
                 .safeDrawingPadding()
                 .padding(horizontal = 18.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.weight(1f))
 
             AppIconBox()
             Spacer(Modifier.height(16.dp))
-            Text(text = "АвтоЗаявка", fontSize = 28.sp)
+
+            Text(
+                text = "АвтоЗаявка",
+                fontSize = 28.sp,
+                style = MaterialTheme.typography.headlineMedium
+            )
+
             Spacer(Modifier.height(8.dp))
-            Text(text = "Приложение водителя", modifier = Modifier.alpha(0.5f))
-            Spacer(Modifier.height(24.dp))
+
+            Text(
+                text = "Приложение водителя",
+                modifier = Modifier.alpha(0.5f),
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(Modifier.height(32.dp))
+
             SignInFields(
                 fieldsUiState = fieldsUiState,
                 buttonEnabled = signInResultUiState !is FetchResultUiState.Loading,
                 onEvent = onEvent
             )
-            Box(modifier = Modifier.height(56.dp))
+            Spacer(Modifier.weight(1.5f))
         }
     }
 }

@@ -57,6 +57,7 @@ fun SignInFields(
                 Text(text = label)
             },
             isError = fieldsUiState.loginErrorMessage.isNotEmpty(),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(12.dp))
@@ -88,6 +89,7 @@ fun SignInFields(
                 }
             },
             isError = fieldsUiState.passwordErrorMessage.isNotEmpty(),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
