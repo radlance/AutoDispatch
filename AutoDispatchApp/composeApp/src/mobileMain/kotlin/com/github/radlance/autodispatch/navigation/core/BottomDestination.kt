@@ -54,5 +54,11 @@ object DeliveryList : HomeDestination
 @Serializable
 data class DeliveryDetails(
     val deliveryId: Int,
-    val requestNumber: String
+    val deliveryNumber: String
+) : HomeDestination
+
+@Serializable
+data class DeliveryRoute(
+    val deliveryId: Int,
+    val deliveryNumber: String
 ) : HomeDestination

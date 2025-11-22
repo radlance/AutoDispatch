@@ -55,7 +55,7 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
-import com.github.radlance.autodispatch.delivery.core.presentation.requestStatusColors
+import com.github.radlance.autodispatch.delivery.core.presentation.deliveryStatusColors
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.platform.getPlatformContext
@@ -80,7 +80,7 @@ fun DeliveryDetails(
     acceptDeliveryState: FetchResultUiState<Unit, DeliveryError>,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, contentColor) = requestStatusColors(delivery.status.name)
+    val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
     val context = getPlatformContext()
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -199,7 +199,7 @@ fun DeliveryDetails(
     Column(
         modifier = modifier
             .verticalScroll(scrollState)
-            .padding(horizontal = 14.dp),
+            .padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         StatusCard(

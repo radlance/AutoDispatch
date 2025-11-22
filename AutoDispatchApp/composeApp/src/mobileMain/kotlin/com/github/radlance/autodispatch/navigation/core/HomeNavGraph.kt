@@ -17,6 +17,7 @@ import androidx.navigation.toRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
+import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRouteScreen
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -51,7 +52,9 @@ fun HomeNavGraph(
                             DeliveryDetails(id, number)
                         )
                     },
-                    navigateToDeliveryRoute = {},
+                    navigateToDeliveryRoute = { id, number ->
+                        navController.navigate(DeliveryRoute(id, number))
+                    },
                     deliveryDetailsViewModel = deliveryDetailsViewModel
                 )
             }
@@ -59,11 +62,28 @@ fun HomeNavGraph(
             composable<DeliveryDetails> {
                 val args = it.toRoute<DeliveryDetails>()
 
+                val deliveryId = args.deliveryId
+                val deliveryNumber = args.deliveryNumber
+
                 DeliveryDetailsScreen(
-                    navigateToDeliveryRoute = {},
+                    navigateToDeliveryRoute = {
+                        navController.navigate(
+                            DeliveryRoute(deliveryId, deliveryNumber)
+                        )
+                    },
                     navigateUp = navController::navigateUp,
+                    deliveryId = deliveryId,
+                    deliveryNumber = deliveryNumber,
+                    viewModel = deliveryDetailsViewModel
+                )
+            }
+
+            composable<DeliveryRoute> {
+                val args = it.toRoute<DeliveryRoute>()
+                DeliveryRouteScreen(
                     deliveryId = args.deliveryId,
-                    deliveryNumber = args.requestNumber,
+                    deliveryNumber = args.deliveryNumber,
+                    navigateUp = navController::navigateUp,
                     viewModel = deliveryDetailsViewModel
                 )
             }

@@ -57,7 +57,7 @@ fun DeliveryCard(
     delivery: Delivery,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, contentColor) = requestStatusColors(delivery.status.name)
+    val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -229,7 +229,6 @@ fun DeliveryRoute(
                 Text(
                     text = fromPoint,
                     fontSize = 14.sp,
-                    maxLines = 5,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (showOpenMapButton) {
@@ -249,7 +248,6 @@ fun DeliveryRoute(
                 Text(
                     text = toPoint,
                     fontSize = 14.sp,
-                    maxLines = 5,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (showOpenMapButton) {
@@ -348,7 +346,7 @@ private fun CardSection(title: String, subtitle: String, modifier: Modifier = Mo
 }
 
 @Composable
-fun requestStatusColors(status: String) =
+fun deliveryStatusColors(status: String) =
     when (status) {
         "Назначена" -> {
             MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer

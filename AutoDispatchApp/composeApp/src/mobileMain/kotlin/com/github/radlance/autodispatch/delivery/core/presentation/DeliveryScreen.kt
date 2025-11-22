@@ -45,7 +45,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DeliveryScreen(
     navigateToDeliveryDetails: (Int, String) -> Unit,
-    navigateToDeliveryRoute: () -> Unit,
+    navigateToDeliveryRoute: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
     deliveryViewModel: DeliveryViewModel = koinViewModel(),
     deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
@@ -84,8 +84,8 @@ fun DeliveryScreen(
                 onSuccess = { requests ->
                     if (requests.isNotEmpty()) {
                         LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(bottom = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(24.dp),
+                            contentPadding = PaddingValues(bottom = 24.dp),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 18.dp)
@@ -99,7 +99,13 @@ fun DeliveryScreen(
                                         )
                                         deliveryDetailsViewModel.fetchDeliveryDetails(delivery.id)
                                     },
-                                    onContinueDeliveryClick = navigateToDeliveryRoute,
+                                    onContinueDeliveryClick = {
+                                        navigateToDeliveryRoute(
+                                            delivery.id,
+                                            delivery.requestNumber
+                                        )
+                                        deliveryDetailsViewModel.fetchDeliveryDetails(delivery.id)
+                                    },
                                     delivery = delivery
                                 )
                             }

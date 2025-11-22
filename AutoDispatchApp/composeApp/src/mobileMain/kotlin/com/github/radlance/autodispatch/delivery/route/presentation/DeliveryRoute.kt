@@ -1,0 +1,342 @@
+package com.github.radlance.autodispatch.delivery.route.presentation
+
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.NearMe
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.utils.formatKg
+import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
+import com.github.radlance.autodispatch.platform.getPlatformContext
+import com.github.radlance.autodispatch.platform.openDialer
+import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
+import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
+import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+
+@Composable
+fun DeliveryRoute(
+    scrollState: ScrollState,
+    delivery: DeliveryDetailed,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .verticalScroll(scrollState)
+            .padding(horizontal = 18.dp)
+            .padding(bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        RoutePoints(
+            openRoute = {},
+            loadingPoint = delivery.loadingPoint,
+            unloadingPoint = delivery.unloadingPoint
+        )
+        CargoCard(cargo = delivery.cargo)
+        CustomerCard(customer = delivery.customer)
+        ActionButtons(
+            onRefreshLocationClick = {},
+            onArrivedPlaceClick = {},
+            arrivedButtonEnabled = true
+        )
+    }
+}
+
+@Composable
+private fun RoutePoints(
+    openRoute: (address: String) -> Unit,
+    loadingPoint: String,
+    unloadingPoint: String
+) {
+    var isExpandedLoadingPoint by rememberSaveable { mutableStateOf(false) }
+    var isOverflowLoadingPoint by rememberSaveable { mutableStateOf(false) }
+
+    var isExpandedUnloadingPoint by rememberSaveable { mutableStateOf(false) }
+    var isOverflowUnloadingPoint by rememberSaveable { mutableStateOf(false) }
+
+    Card(onClick = { openRoute(loadingPoint) }) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.then(
+                    if (isOverflowLoadingPoint) {
+                        Modifier.clickable {
+                            isExpandedLoadingPoint = !isExpandedLoadingPoint
+                        }
+                    } else Modifier
+                ).padding(18.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(24.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Circle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(4.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = "Точка погрузки"
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (isOverflowLoadingPoint) {
+                        IconButton(
+                            onClick = { isExpandedLoadingPoint = !isExpandedLoadingPoint },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            val icon = if (isExpandedLoadingPoint) {
+                                Icons.Default.ExpandLess
+                            } else Icons.Default.ExpandMore
+                            Icon(imageVector = icon, contentDescription = null)
+                        }
+                    }
+                }
+            }
+            Column(modifier = Modifier.padding(horizontal = 18.dp)) {
+                Text(
+                    text = loadingPoint,
+                    fontSize = 14.sp,
+                    maxLines = if (isExpandedLoadingPoint) Int.MAX_VALUE else 2,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { result ->
+                        if (result.didOverflowHeight) {
+                            isOverflowLoadingPoint = true
+                        }
+                    },
+                    modifier = Modifier.animateContentSize()
+                )
+
+                Button(
+                    onClick = {},
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
+                ) {
+                    Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                    Spacer(Modifier.width(12.dp))
+                    Text(text = "Проложить маршрут")
+                }
+            }
+        }
+    }
+    Card(onClick = { openRoute(loadingPoint) }) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.then(
+                    if (isOverflowUnloadingPoint) {
+                        Modifier.clickable {
+                            isExpandedUnloadingPoint = !isExpandedUnloadingPoint
+                        }
+                    } else Modifier
+                ).padding(18.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(24.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = "Точка разгрузки"
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (isOverflowUnloadingPoint) {
+                        IconButton(
+                            onClick = { isExpandedUnloadingPoint = !isExpandedUnloadingPoint },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            val icon = if (isExpandedUnloadingPoint) {
+                                Icons.Default.ExpandLess
+                            } else Icons.Default.ExpandMore
+                            Icon(imageVector = icon, contentDescription = null)
+                        }
+                    }
+                }
+            }
+            Column(modifier = Modifier.padding(horizontal = 18.dp)) {
+                Text(
+                    text = unloadingPoint,
+                    fontSize = 14.sp,
+                    maxLines = if (isExpandedUnloadingPoint) Int.MAX_VALUE else 2,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { result ->
+                        if (result.didOverflowHeight) {
+                            isOverflowUnloadingPoint = true
+                        }
+                    },
+                    modifier = Modifier.animateContentSize()
+                )
+
+                Button(
+                    onClick = {},
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
+                ) {
+                    Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                    Spacer(Modifier.width(12.dp))
+                    Text(text = "Проложить маршрут")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CargoCard(
+    cargo: Cargo,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(18.dp)
+            ) {
+                Icon(
+                    imageVector = Package2Icon,
+                    contentDescription = null
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Информация о грузе")
+            }
+            Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp, bottom = 18.dp)) {
+                Text(
+                    text = "Тип груза",
+                    fontSize = 12.sp,
+                    modifier = Modifier.alpha(0.7f)
+                )
+                Spacer(Modifier.height(8.dp))
+                Row {
+                    Icon(imageVector = DeployedCodeIcon, contentDescription = null)
+                    Spacer(Modifier.width(12.dp))
+                    Text(text = cargo.type.name)
+                }
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = "Вес", fontSize = 12.sp, modifier = Modifier.alpha(0.7f))
+                            Text(text = cargo.weight.formatKg(), fontSize = 20.sp)
+                        }
+                    }
+                    cargo.volume?.let { volume ->
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Объём",
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.alpha(0.7f)
+                                )
+                                Text(text = volume.formatM3(), fontSize = 20.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomerCard(customer: Customer, modifier: Modifier = Modifier) {
+    val context = getPlatformContext()
+    Card {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(18.dp)) {
+            Column {
+                Text(
+                    text = "Заказчик",
+                    fontSize = 12.sp,
+                    modifier = Modifier.alpha(0.7f)
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(text = customer.organizationName)
+            }
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = { openDialer(customer.phoneNumber, context) }) {
+                Icon(imageVector = Icons.Outlined.Call, contentDescription = null)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionButtons(
+    onRefreshLocationClick: () -> Unit,
+    onArrivedPlaceClick: () -> Unit,
+    arrivedButtonEnabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        OutlinedButton(onClick = onRefreshLocationClick, modifier = Modifier.fillMaxWidth()) {
+            Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+            Spacer(Modifier.width(12.dp))
+            Text(text = "Обновить геологацию")
+        }
+        Spacer(Modifier.height(12.dp))
+        Button(
+            onClick = onArrivedPlaceClick,
+            enabled = arrivedButtonEnabled,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(imageVector = Icons.Default.Check, contentDescription = null)
+            Spacer(Modifier.width(12.dp))
+            Text(text = "Прибыл на место")
+        }
+    }
+}
