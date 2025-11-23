@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,10 +49,12 @@ import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
+import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
@@ -61,6 +64,14 @@ fun DeliveryRoute(
     delivery: DeliveryDetailed,
     modifier: Modifier = Modifier
 ) {
+    var selectedPoint by remember { mutableStateOf<Point?>(null) }
+    selectedPoint?.let {
+        MapRouteDialog(
+            lat = it.lat,
+            lon = it.lon,
+            onDismiss = { selectedPoint = null }
+        )
+    }
     Column(
         modifier = modifier
             .verticalScroll(scrollState)
@@ -69,9 +80,9 @@ fun DeliveryRoute(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         RoutePoints(
-            openRoute = {},
-            loadingPoint = delivery.loadingPoint.toStringAddress(),
-            unloadingPoint = delivery.unloadingPoint.toStringAddress()
+            openRoute = { selectedPoint = it },
+            loadingPoint = delivery.loadingPoint,
+            unloadingPoint = delivery.unloadingPoint
         )
         CargoCard(cargo = delivery.cargo)
         CustomerCard(customer = delivery.customer)
@@ -85,9 +96,9 @@ fun DeliveryRoute(
 
 @Composable
 private fun RoutePoints(
-    openRoute: (address: String) -> Unit,
-    loadingPoint: String,
-    unloadingPoint: String
+    openRoute: (address: Point) -> Unit,
+    loadingPoint: Point,
+    unloadingPoint: Point
 ) {
     var isExpandedLoadingPoint by rememberSaveable { mutableStateOf(false) }
     var isOverflowLoadingPoint by rememberSaveable { mutableStateOf(false) }
@@ -95,7 +106,7 @@ private fun RoutePoints(
     var isExpandedUnloadingPoint by rememberSaveable { mutableStateOf(false) }
     var isOverflowUnloadingPoint by rememberSaveable { mutableStateOf(false) }
 
-    Card(onClick = { openRoute(loadingPoint) }) {
+    Card {
         Column(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.then(
@@ -134,7 +145,7 @@ private fun RoutePoints(
             }
             Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                 Text(
-                    text = loadingPoint,
+                    text = loadingPoint.toStringAddress(),
                     fontSize = 14.sp,
                     maxLines = if (isExpandedLoadingPoint) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
@@ -147,7 +158,7 @@ private fun RoutePoints(
                 )
 
                 Button(
-                    onClick = {},
+                    onClick = { openRoute(loadingPoint) },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
                 ) {
                     Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
@@ -157,7 +168,7 @@ private fun RoutePoints(
             }
         }
     }
-    Card(onClick = { openRoute(loadingPoint) }) {
+    Card {
         Column(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.then(
@@ -195,7 +206,7 @@ private fun RoutePoints(
             }
             Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                 Text(
-                    text = unloadingPoint,
+                    text = unloadingPoint.toStringAddress(),
                     fontSize = 14.sp,
                     maxLines = if (isExpandedUnloadingPoint) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
@@ -208,7 +219,7 @@ private fun RoutePoints(
                 )
 
                 Button(
-                    onClick = {},
+                    onClick = { openRoute(unloadingPoint) },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
                 ) {
                     Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)

@@ -186,8 +186,8 @@ class ChangeRequestViewModel(
                             background = {
                                 val request = ChangeRequest(
                                     loadingAddress = cargoLoadingAddress,
-                                    loadingLon = cargoUnloadingLon,
-                                    loadingLat = cargoUnloadingLat,
+                                    loadingLon = cargoLoadingLon,
+                                    loadingLat = cargoLoadingLat,
                                     unloadingAddress = cargoUnloadingAddress,
                                     unloadingLon = cargoUnloadingLon,
                                     unloadingLat = cargoUnloadingLat,

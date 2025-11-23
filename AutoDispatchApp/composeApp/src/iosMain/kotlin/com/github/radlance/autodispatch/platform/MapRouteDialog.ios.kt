@@ -1,12 +1,7 @@
 package com.github.radlance.autodispatch.platform
 
-import kotlinx.cinterop.BetaInteropApi
-import platform.Foundation.NSCharacterSet
-import platform.Foundation.NSString
+import androidx.compose.runtime.Composable
 import platform.Foundation.NSURL
-import platform.Foundation.URLQueryAllowedCharacterSet
-import platform.Foundation.create
-import platform.Foundation.stringByAddingPercentEncodingWithAllowedCharacters
 import platform.UIKit.UIAlertAction
 import platform.UIKit.UIAlertActionStyleCancel
 import platform.UIKit.UIAlertActionStyleDefault
@@ -14,19 +9,14 @@ import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyleActionSheet
 import platform.UIKit.UIApplication
 
-@OptIn(BetaInteropApi::class)
-actual fun openMap(address: String, context: Any?) {
+@Composable
+actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
     val app = UIApplication.sharedApplication
     val controller = app.keyWindow?.rootViewController
         ?: return
 
-    val nsString = NSString.create(string = address)
-    val encoded = nsString.stringByAddingPercentEncodingWithAllowedCharacters(
-        NSCharacterSet.URLQueryAllowedCharacterSet
-    ) ?: address
-
     val sheet = UIAlertController.alertControllerWithTitle(
-        "Открыть в картах",
+        "Построить маршрут через",
         message = null,
         preferredStyle = UIAlertControllerStyleActionSheet
     )
@@ -36,7 +26,7 @@ actual fun openMap(address: String, context: Any?) {
             "Apple Maps",
             style = UIAlertActionStyleDefault
         ) {
-            val url = NSURL(string = "http://maps.apple.com/?q=$encoded")
+            val url = NSURL(string = "http://maps.apple.com/?daddr=$lat,$lon&dirflg=d")
             app.openURL(
                 url = url,
                 options = emptyMap<Any?, Any>(),
@@ -52,7 +42,7 @@ actual fun openMap(address: String, context: Any?) {
                 "Google Maps",
                 style = UIAlertActionStyleDefault
             ) {
-                val url = NSURL(string = "comgooglemaps://?q=$encoded")
+                val url = NSURL(string = "comgooglemaps://?daddr=$lat,$lon&directionsmode=driving")
                 app.openURL(
                     url = url,
                     options = emptyMap<Any?, Any>(),
@@ -69,7 +59,8 @@ actual fun openMap(address: String, context: Any?) {
                 "Яндекс Карты",
                 style = UIAlertActionStyleDefault
             ) {
-                val url = NSURL(string = "yandexmaps://maps.yandex.ru/?text=$encoded")
+                val url =
+                    NSURL(string = "yandexmaps://build_route_on_map?lat_to=$lat&lon_to=$lon&what=auto")
                 app.openURL(
                     url = url,
                     options = emptyMap<Any?, Any>(),
@@ -86,7 +77,8 @@ actual fun openMap(address: String, context: Any?) {
                 "2ГИС",
                 style = UIAlertActionStyleDefault
             ) {
-                val url = NSURL(string = "dgis://2gis.ru/search/$encoded")
+                val url =
+                    NSURL(string = "yandexmaps://build_route_on_map?lat_to=$lat&lon_to=$lon&what=auto")
                 app.openURL(
                     url = url,
                     options = emptyMap<Any?, Any>(),

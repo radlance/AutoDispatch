@@ -31,6 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -46,8 +50,7 @@ import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
-import com.github.radlance.autodispatch.platform.getPlatformContext
-import com.github.radlance.autodispatch.platform.openMap
+import com.github.radlance.autodispatch.platform.MapPoint
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
@@ -179,7 +182,11 @@ fun DeliveryRoute(
     modifier: Modifier = Modifier,
     showOpenMapButton: Boolean = false
 ) {
-    val context = getPlatformContext()
+    var selectedAddress by remember { mutableStateOf<String?>(null) }
+    selectedAddress?.let {
+        MapPoint(address = it, onDismiss = { selectedAddress = null })
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -234,7 +241,7 @@ fun DeliveryRoute(
                 )
                 if (showOpenMapButton) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    OpenMapButton(color = color, onClick = { openMap(fromPoint, context) })
+                    OpenMapButton(color = color, onClick = { selectedAddress = fromPoint })
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -253,7 +260,7 @@ fun DeliveryRoute(
                 )
                 if (showOpenMapButton) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    OpenMapButton(color = color, onClick = { openMap(toPoint, context) })
+                    OpenMapButton(color = color, onClick = { selectedAddress = toPoint })
                 }
             }
         }
