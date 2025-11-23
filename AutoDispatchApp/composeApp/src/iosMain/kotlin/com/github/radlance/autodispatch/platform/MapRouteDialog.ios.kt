@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.platform
 
 import androidx.compose.runtime.Composable
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSURL
 import platform.UIKit.UIAlertAction
 import platform.UIKit.UIAlertActionStyleCancel
@@ -8,7 +9,9 @@ import platform.UIKit.UIAlertActionStyleDefault
 import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyleActionSheet
 import platform.UIKit.UIApplication
+import platform.UIKit.popoverPresentationController
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
     val app = UIApplication.sharedApplication
@@ -32,6 +35,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
                 options = emptyMap<Any?, Any>(),
                 completionHandler = {}
             )
+            onDismiss()
         }
     )
 
@@ -48,6 +52,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
                     options = emptyMap<Any?, Any>(),
                     completionHandler = {}
                 )
+                onDismiss()
             }
         )
     }
@@ -66,6 +71,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
                     options = emptyMap<Any?, Any>(),
                     completionHandler = {}
                 )
+                onDismiss()
             }
         )
     }
@@ -84,6 +90,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
                     options = emptyMap<Any?, Any>(),
                     completionHandler = {}
                 )
+                onDismiss()
             }
         )
     }
@@ -92,8 +99,10 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
         UIAlertAction.actionWithTitle(
             "Отмена",
             style = UIAlertActionStyleCancel
-        ) {}
+        ) { onDismiss() }
     )
 
     controller.presentViewController(sheet, animated = true, completion = null)
+    sheet.popoverPresentationController?.sourceView = controller.view
+    sheet.popoverPresentationController?.sourceRect = controller.view.bounds
 }
