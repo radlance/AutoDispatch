@@ -103,6 +103,4 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
     )
 
     controller.presentViewController(sheet, animated = true, completion = null)
-    sheet.popoverPresentationController?.sourceView = controller.view
-    sheet.popoverPresentationController?.sourceRect = controller.view.bounds
 }

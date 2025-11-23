@@ -66,6 +66,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
         }
+        mobileMain.dependencies {
+            implementation("dev.icerock.moko:permissions-compose:0.20.1")
+            implementation("dev.icerock.moko:permissions-location:0.20.1")
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }

@@ -112,6 +112,4 @@ actual fun MapPoint(address: String, onDismiss: () -> Unit) {
     )
 
     controller.presentViewController(sheet, animated = true, completion = null)
-    sheet.popoverPresentationController?.sourceView = controller.view
-    sheet.popoverPresentationController?.sourceRect = controller.view.bounds
 }
