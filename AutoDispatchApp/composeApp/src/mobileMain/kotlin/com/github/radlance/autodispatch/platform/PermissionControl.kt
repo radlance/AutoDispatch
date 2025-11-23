@@ -11,5 +11,5 @@ interface LocationPermissionController {
 
     fun askPermission()
 
-    fun checkStatus()
+    fun hasPermission(): Boolean
 }

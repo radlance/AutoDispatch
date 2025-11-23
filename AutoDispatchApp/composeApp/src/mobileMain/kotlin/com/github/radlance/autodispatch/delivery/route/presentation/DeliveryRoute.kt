@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.NearMe
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
@@ -32,11 +33,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapRouteDialog
+import com.github.radlance.autodispatch.platform.createLocationPermissionController
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
@@ -58,17 +60,6 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
-import dev.icerock.moko.permissions.DeniedAlwaysException
-import dev.icerock.moko.permissions.DeniedException
-import dev.icerock.moko.permissions.Permission
-import dev.icerock.moko.permissions.PermissionsController
-import dev.icerock.moko.permissions.RequestCanceledException
-import dev.icerock.moko.permissions.compose.BindEffect
-import dev.icerock.moko.permissions.compose.PermissionsControllerFactory
-import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
-import dev.icerock.moko.permissions.location.LOCATION
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun DeliveryRoute(
@@ -77,11 +68,33 @@ fun DeliveryRoute(
     modifier: Modifier = Modifier
 ) {
     var selectedPoint by remember { mutableStateOf<Point?>(null) }
-    val factory: PermissionsControllerFactory = rememberPermissionsControllerFactory()
-    val controller: PermissionsController =
-        remember(factory) { factory.createPermissionsController() }
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
-    BindEffect(controller)
+    var hasPermission by remember { mutableStateOf<Boolean?>(null) }
+    val controller = createLocationPermissionController {
+        hasPermission = it
+    }
+
+    if (hasPermission == false) {
+        AlertDialog(
+            onDismissRequest = { hasPermission = null },
+            icon = {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { Text("Доступ к локации") },
+            text = { Text("Разрешите доступ к геолокации для корректной работы приложения.") },
+            confirmButton = {
+                TextButton(onClick = {
+
+                }) { Text("Настройки") }
+            },
+            dismissButton = {
+                TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
+            }
+        )
+    }
     selectedPoint?.let {
         MapRouteDialog(
             lat = it.lat,
@@ -105,16 +118,9 @@ fun DeliveryRoute(
         CustomerCard(customer = delivery.customer)
         ActionButtons(
             onRefreshLocationClick = {
-                coroutineScope.launch {
-                    try {
-                        controller.providePermission(Permission.LOCATION)
-                    }catch (e: RequestCanceledException) {
-                        return@launch
-                    } catch (e: DeniedAlwaysException) {
-                        controller.openAppSettings()
-                    } catch (e: Exception) {
-                    }
-                }
+                if (controller.hasPermission()) {
+
+                } else controller.askPermission()
             },
             onArrivedPlaceClick = {},
             arrivedButtonEnabled = true
