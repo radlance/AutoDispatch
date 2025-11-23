@@ -1,8 +1,12 @@
 package com.github.radlance.autodispatch.navigation.core
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -10,8 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -20,8 +27,10 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.ok
 import autodispatch.composeapp.generated.resources.session_expired
 import autodispatch.composeapp.generated.resources.session_expired_description
-import com.github.radlance.autodispatch.auth.presentation.SignInScreen
 import com.github.radlance.autodispatch.home.presentation.HomeScreen
+import com.github.radlance.autodispatch.platform.MapPoint
+import com.github.radlance.autodispatch.platform.MapRouteDialog
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -98,13 +107,41 @@ actual fun NavGraph(navController: NavHostController) {
         }
 
         composable<SignIn> {
-            SignInScreen(
-                navigateToHomeScreen = {
-                    navController.navigate(Home) {
-                        popUpTo<SignIn> { inclusive = true }
-                    }
+            var selectedAddress by remember { mutableStateOf<String?>(null) }
+            var selectedPoint by remember { mutableStateOf<Point?>(null) }
+
+            selectedAddress?.let {
+                MapPoint(
+                    address = it,
+                    onDismiss = { selectedAddress = null }
+                )
+            }
+
+            selectedPoint?.let {
+                MapRouteDialog(
+                    lat = it.lat,
+                    lon = it.lon,
+                    onDismiss = { selectedPoint = null }
+                )
+            }
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(onClick = { selectedAddress = "59.91166445623312, 30.318145751953125" }) {
+                    Text(text = "Открыть точку")
                 }
-            )
+                Button(onClick = {
+                    selectedPoint = Point(
+                        address = "59.91166445623312, 30.318145751953125",
+                        lat = 59.91166445623312,
+                        lon = 30.318145751953125
+                    )
+                }) {
+                    Text(text = "Построить маршрут")
+                }
+            }
         }
 
         composable<Home> {
