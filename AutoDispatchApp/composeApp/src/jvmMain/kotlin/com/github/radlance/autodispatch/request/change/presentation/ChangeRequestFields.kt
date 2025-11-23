@@ -80,16 +80,18 @@ fun ChangeRequestFields(
     var showPointSelectionDialog by rememberSaveable { mutableStateOf(false) }
     var pointSelectionTarget by rememberSaveable { mutableStateOf<PointTarget?>(null) }
 
-//    var loadingPoint by rememberSaveable { mutableStateOf<String?>(null) }
-//    var unloadingPoint by rememberSaveable { mutableStateOf<String?>(null) }
-
     if (showPointSelectionDialog) {
         PointSelectionDialog(
             onDismissRequest = { showPointSelectionDialog = false },
             onConfirm = { selectedPoint ->
                 when (pointSelectionTarget) {
                     PointTarget.LOADING -> onEvent(ChangeRequestEvent.ChangeLoading(selectedPoint))
-                    PointTarget.UNLOADING -> onEvent(ChangeRequestEvent.ChangeUnloading(selectedPoint))
+                    PointTarget.UNLOADING -> onEvent(
+                        ChangeRequestEvent.ChangeUnloading(
+                            selectedPoint
+                        )
+                    )
+
                     null -> Unit
                 }
                 showPointSelectionDialog = false
@@ -296,7 +298,7 @@ fun ChangeRequestFields(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            if (fieldsUiState.loadingFieldValue.isEmpty()) {
+            if (fieldsUiState.loadingFieldLatValue == null || fieldsUiState.loadingFieldLonValue == null) {
                 OutlinedButton(
                     onClick = {
                         pointSelectionTarget = PointTarget.LOADING
@@ -315,14 +317,18 @@ fun ChangeRequestFields(
                         .padding(8.dp)
                 ) {
                     Text(
-                        "Погрузка: ${fieldsUiState.loadingFieldValue}",
+                        "Погрузка: ${fieldsUiState.loadingFieldAddressValue}",
                         fontSize = 14.sp
                     )
 
                     Spacer(Modifier.height(8.dp))
 
                     OutlinedButton(
-                        onClick = { onEvent(ChangeRequestEvent.ChangeLoading("")) },
+                        onClick = {
+                            onEvent(
+                                ChangeRequestEvent.ChangeLoading(null)
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Удалить точку")
@@ -340,7 +346,7 @@ fun ChangeRequestFields(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        if (fieldsUiState.unloadingFieldValue.isEmpty()) {
+        if (fieldsUiState.unloadingFieldLatValue == null || fieldsUiState.unloadingFieldLonValue == null) {
             OutlinedButton(
                 onClick = {
                     pointSelectionTarget = PointTarget.UNLOADING
@@ -359,14 +365,18 @@ fun ChangeRequestFields(
                     .padding(8.dp)
             ) {
                 Text(
-                    "Выгрузка: ${fieldsUiState.unloadingFieldValue}",
+                    "Выгрузка: ${fieldsUiState.unloadingFieldAddressValue}",
                     fontSize = 14.sp
                 )
 
                 Spacer(Modifier.height(8.dp))
 
                 OutlinedButton(
-                    onClick = { onEvent(ChangeRequestEvent.ChangeUnloading(""))  },
+                    onClick = {
+                        onEvent(
+                            ChangeRequestEvent.ChangeUnloading(null)
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Удалить точку")

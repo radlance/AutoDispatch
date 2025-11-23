@@ -35,7 +35,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         state = rememberWindowState(width = 1100.dp, height = 750.dp),
-        title = "АвтоЗаявка",
+        title = "АвтоЗаявка"
     ) {
         window.minimumSize = Dimension(1100, 750)
         App()

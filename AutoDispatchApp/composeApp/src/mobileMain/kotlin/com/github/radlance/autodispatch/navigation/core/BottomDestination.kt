@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.github.radlance.autodispatch.platform.Destination
 import kotlinx.serialization.Serializable
 
 interface HomeDestination
@@ -18,6 +19,7 @@ interface BottomDestination : HomeDestination {
     val label: String
 }
 
+@Destination
 @Serializable
 object Deliveries : BottomDestination {
 
@@ -28,6 +30,7 @@ object Deliveries : BottomDestination {
     override val label: String = "Доставки"
 }
 
+@Destination
 @Serializable
 object History : BottomDestination {
 
@@ -38,6 +41,7 @@ object History : BottomDestination {
     override val label: String = "История"
 }
 
+@Destination
 @Serializable
 object Profile : BottomDestination {
 
@@ -48,15 +52,18 @@ object Profile : BottomDestination {
     override val label: String = "Профиль"
 }
 
+@Destination
 @Serializable
 object DeliveryList : HomeDestination
 
+@Destination
 @Serializable
 data class DeliveryDetails(
     val deliveryId: Int,
     val deliveryNumber: String
 ) : HomeDestination
 
+@Destination
 @Serializable
 data class DeliveryRoute(
     val deliveryId: Int,

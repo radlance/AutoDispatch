@@ -44,6 +44,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
+import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openMap
@@ -66,8 +67,8 @@ fun DeliveryCard(
         Column {
             DeliveryHeader(navigateToDeliveryDetails, delivery, backgroundColor, contentColor)
             DeliveryRoute(
-                fromPoint = delivery.loadingPoint,
-                toPoint = delivery.unloadingPoint,
+                fromPoint = delivery.loadingPoint.toStringAddress(),
+                toPoint = delivery.unloadingPoint.toStringAddress(),
                 color = contentColor,
                 Modifier.padding(horizontal = 18.dp)
             )

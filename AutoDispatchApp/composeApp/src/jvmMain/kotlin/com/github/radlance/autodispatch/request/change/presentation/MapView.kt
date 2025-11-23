@@ -36,7 +36,7 @@ import java.awt.event.MouseMotionAdapter
 fun MapView(
     initialCenter: Coordinate,
     initialZoom: Int,
-    searchResult: com.github.radlance.autodispatch.request.change.domain.Point? = null,
+    searchResult: com.github.radlance.autodispatch.request.change.domain.PointDetailed? = null,
     markerPosition: Coordinate? = null,
     onLocationSelected: (Coordinate) -> Unit
 ) {

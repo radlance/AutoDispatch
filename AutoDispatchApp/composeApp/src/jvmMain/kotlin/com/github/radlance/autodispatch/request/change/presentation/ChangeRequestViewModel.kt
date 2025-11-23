@@ -5,11 +5,13 @@ import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
+import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -108,15 +110,23 @@ class ChangeRequestViewModel(
                 }
             }
 
-            override fun changeLoading(value: String) {
+            override fun changeLoading(value: Point?) {
                 fieldsUiStateMutable.update { state ->
-                    state.copy(loadingFieldValue = value)
+                    state.copy(
+                        loadingFieldAddressValue = value?.toStringAddress() ?: "",
+                        loadingFieldLatValue = value?.lat,
+                        loadingFieldLonValue = value?.lon
+                    )
                 }
             }
 
-            override fun changeUnloading(value: String) {
+            override fun changeUnloading(value: Point?) {
                 fieldsUiStateMutable.update { state ->
-                    state.copy(unloadingFieldValue = value)
+                    state.copy(
+                        unloadingFieldAddressValue = value?.toStringAddress() ?: "",
+                        unloadingFieldLatValue = value?.lat,
+                        unloadingFieldLonValue = value?.lon
+                    )
                 }
             }
 
@@ -136,8 +146,12 @@ class ChangeRequestViewModel(
                 cargoWeight: String,
                 cargoVolume: String?,
                 cargoDescription: String?,
-                cargoLoading: String,
-                cargoUnloading: String,
+                cargoLoadingAddress: String?,
+                cargoLoadingLon: Double,
+                cargoLoadingLat: Double,
+                cargoUnloadingAddress: String?,
+                cargoUnloadingLon: Double,
+                cargoUnloadingLat: Double,
                 additionalInfo: String?,
                 requestId: Int?
             ) {
@@ -171,8 +185,12 @@ class ChangeRequestViewModel(
                         handle(
                             background = {
                                 val request = ChangeRequest(
-                                    loadingPoint = cargoLoading,
-                                    unloadingPoint = cargoUnloading,
+                                    loadingAddress = cargoLoadingAddress,
+                                    loadingLon = cargoUnloadingLon,
+                                    loadingLat = cargoUnloadingLat,
+                                    unloadingAddress = cargoUnloadingAddress,
+                                    unloadingLon = cargoUnloadingLon,
+                                    unloadingLat = cargoUnloadingLat,
                                     cargoTypeId = cargoTypeId,
                                     cargoWeight = cargoWeight.toDouble(),
                                     cargoVolume = cargoVolume?.toDouble(),
@@ -213,8 +231,8 @@ class ChangeRequestViewModel(
                         cargoVolumeFieldValue = "",
                         cargoVolumeErrorMessage = "",
                         cargoDescriptionFieldValue = "",
-                        loadingFieldValue = "",
-                        unloadingFieldValue = "",
+                        loadingFieldAddressValue = "",
+                        unloadingFieldAddressValue = "",
                         additionalInfoFieldValue = ""
                     )
                 }

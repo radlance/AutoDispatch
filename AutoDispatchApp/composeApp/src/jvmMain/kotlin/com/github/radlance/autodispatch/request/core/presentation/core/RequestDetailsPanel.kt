@@ -67,6 +67,7 @@ import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.formatNumberNoTrailingZeros
+import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
 import com.github.radlance.autodispatch.request.change.presentation.CancelDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
@@ -157,8 +158,12 @@ fun RequestDetailsPanel(
                     cargoWeightFieldValue = cargo.weight.formatNumberNoTrailingZeros(),
                     cargoVolumeFieldValue = cargo.volume?.formatNumberNoTrailingZeros() ?: "",
                     cargoDescriptionFieldValue = cargo.description ?: "",
-                    loadingFieldValue = loadingPoint,
-                    unloadingFieldValue = unloadingPoint,
+                    loadingFieldAddressValue = loadingPoint.address ?: "",
+                    loadingFieldLonValue = loadingPoint.lon,
+                    loadingFieldLatValue = loadingPoint.lat,
+                    unloadingFieldAddressValue = unloadingPoint.address ?: "",
+                    unloadingFieldLonValue = unloadingPoint.lon,
+                    unloadingFieldLatValue = unloadingPoint.lat,
                     additionalInfoFieldValue = transportationDescription ?: "",
                     requestId = request.id
                 )
@@ -289,12 +294,12 @@ fun RequestDetailsPanel(
                 Section(header = stringResource(Res.string.loading_unloading_points)) {
                     LabeledValue(
                         label = stringResource(Res.string.loading_point),
-                        value = request.loadingPoint
+                        value = request.loadingPoint.toStringAddress()
                     )
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = stringResource(Res.string.unloading_point),
-                        value = request.unloadingPoint
+                        value = request.unloadingPoint.toStringAddress()
                     )
                     request.transportationDescription?.let {
                         Spacer(modifier = Modifier.height(ITEM_GAP))

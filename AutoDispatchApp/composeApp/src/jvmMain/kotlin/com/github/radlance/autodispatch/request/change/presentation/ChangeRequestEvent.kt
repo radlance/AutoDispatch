@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.request.change.presentation
 import com.github.radlance.autodispatch.common.presentation.Event
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
 
 interface ChangeRequestEvent : Event {
 
@@ -55,12 +56,12 @@ interface ChangeRequestEvent : Event {
         override fun apply(action: CreateRequestAction) = action.changeCargoDescription(value)
     }
 
-    class ChangeLoading(private val value: String) : ChangeRequestEvent {
+    class ChangeLoading(private val value: Point?) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeLoading(value)
     }
 
-    class ChangeUnloading(private val value: String) : ChangeRequestEvent {
+    class ChangeUnloading(private val value: Point?) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeUnloading(value)
     }
@@ -80,8 +81,12 @@ interface ChangeRequestEvent : Event {
         private val cargoWeight: String,
         private val cargoVolume: String,
         private val cargoDescription: String,
-        private val cargoLoading: String,
-        private val cargoUnloading: String,
+        private val cargoLoadingAddress: String,
+        private val cargoLoadingLat: Double,
+        private val cargoLoadingLon: Double,
+        private val cargoUnloadingAddress: String,
+        private val cargoUnloadingLat: Double,
+        private val cargoUnloadingLon: Double,
         private val additionalInfo: String,
         private val requestId: Int? = null
     ) : ChangeRequestEvent {
@@ -96,8 +101,12 @@ interface ChangeRequestEvent : Event {
             cargoWeight = cargoWeight,
             cargoVolume = cargoVolume.ifBlank { null },
             cargoDescription = cargoDescription.ifBlank { null },
-            cargoLoading = cargoLoading,
-            cargoUnloading = cargoUnloading,
+            cargoLoadingAddress = cargoLoadingAddress.ifBlank { null },
+            cargoLoadingLat = cargoLoadingLat,
+            cargoLoadingLon = cargoLoadingLon,
+            cargoUnloadingAddress = cargoUnloadingAddress.ifBlank { null },
+            cargoUnloadingLat = cargoUnloadingLat,
+            cargoUnloadingLon = cargoUnloadingLon,
             additionalInfo = additionalInfo.ifBlank { null },
             requestId = requestId
         )
@@ -158,9 +167,9 @@ interface CreateRequestAction {
 
     fun changeCargoDescription(value: String)
 
-    fun changeLoading(value: String)
+    fun changeLoading(value: Point?)
 
-    fun changeUnloading(value: String)
+    fun changeUnloading(value: Point?)
 
     fun changeAdditionalInfo(value: String)
 
@@ -174,8 +183,12 @@ interface CreateRequestAction {
         cargoWeight: String,
         cargoVolume: String?,
         cargoDescription: String?,
-        cargoLoading: String,
-        cargoUnloading: String,
+        cargoLoadingAddress: String?,
+        cargoLoadingLon: Double,
+        cargoLoadingLat: Double,
+        cargoUnloadingAddress: String?,
+        cargoUnloadingLon: Double,
+        cargoUnloadingLat: Double,
         additionalInfo: String?,
         requestId: Int?
     )

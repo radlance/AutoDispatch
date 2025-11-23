@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.domain.delivery
 
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.VehicleFilter
 import kotlinx.serialization.Serializable
@@ -14,8 +15,8 @@ data class DeliveryDetailed(
     val destination: String?,
     val transportationDescription: String?,
     val cargo: Cargo,
-    val loadingPoint: String?,
-    val unloadingPoint: String?,
+    val loadingPoint: Point,
+    val unloadingPoint: Point,
     val dispatcherFullName: String,
     val dispatcherPhoneNumber: String,
     val customer: Customer,

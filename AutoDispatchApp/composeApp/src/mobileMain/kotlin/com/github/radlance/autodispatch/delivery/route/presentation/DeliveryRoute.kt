@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
@@ -69,8 +70,8 @@ fun DeliveryRoute(
     ) {
         RoutePoints(
             openRoute = {},
-            loadingPoint = delivery.loadingPoint,
-            unloadingPoint = delivery.unloadingPoint
+            loadingPoint = delivery.loadingPoint.toStringAddress(),
+            unloadingPoint = delivery.unloadingPoint.toStringAddress()
         )
         CargoCard(cargo = delivery.cargo)
         CustomerCard(customer = delivery.customer)

@@ -21,6 +21,7 @@ import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.DriverStats
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
+import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.UserFilter
@@ -103,8 +104,12 @@ class RequestRepository {
         RequestTable.cargoWeight,
         RequestTable.cargoVolume,
         RequestTable.cargoDescription,
-        RequestTable.loadingPoint,
-        RequestTable.unloadingPoint,
+        RequestTable.loadingAddress,
+        RequestTable.loadingLat,
+        RequestTable.loadingLon,
+        RequestTable.unloadingAddress,
+        RequestTable.unloadingLat,
+        RequestTable.unloadingLon,
         UserTable.id.alias("driver_id"),
         UserTable.fullName.alias("driver_full_name"),
         CustomerTable.id,
@@ -140,8 +145,16 @@ class RequestRepository {
             volume = row[RequestTable.cargoVolume],
             description = row[RequestTable.cargoDescription]
         ),
-        loadingPoint = row[RequestTable.loadingPoint],
-        unloadingPoint = row[RequestTable.unloadingPoint],
+        loadingPoint = Point(
+            address = row[RequestTable.loadingAddress],
+            lat = row[RequestTable.loadingLat],
+            lon = row[RequestTable.loadingLon]
+        ),
+        unloadingPoint = Point(
+            address = row[RequestTable.unloadingAddress],
+            lat = row[RequestTable.unloadingLat],
+            lon = row[RequestTable.unloadingLon]
+        ),
         driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
         driverFullName = row[UserTable.fullName.alias("driver_full_name")],
         customer = Customer(
@@ -168,8 +181,8 @@ class RequestRepository {
                 destCity[CityTable.name].lowerCase() like pattern,
                 CargoTypeTable.name.lowerCase() like pattern,
                 RequestTable.cargoDescription.lowerCase() like pattern,
-                RequestTable.loadingPoint.lowerCase() like pattern,
-                RequestTable.unloadingPoint.lowerCase() like pattern,
+                RequestTable.loadingAddress.lowerCase() like pattern,
+                RequestTable.unloadingAddress.lowerCase() like pattern,
                 UserTable.fullName.lowerCase() like pattern,
                 CustomerTable.organizationName.lowerCase() like pattern,
                 CustomerTable.phoneNumber.lowerCase() like pattern,
@@ -277,8 +290,12 @@ class RequestRepository {
         RequestTable.insert { row ->
             row[statusId] = 1
             row[this.createdById] = userId
-            row[loadingPoint] = req.loadingPoint
-            row[unloadingPoint] = req.unloadingPoint
+            row[loadingAddress] = req.loadingAddress
+            row[loadingLat] = req.loadingLat
+            row[loadingLon] = req.loadingLon
+            row[unloadingAddress] = req.unloadingAddress
+            row[unloadingLat] = req.unloadingLat
+            row[unloadingLon] = req.unloadingLon
             row[cargoTypeId] = req.cargoTypeId
             row[cargoWeight] = req.cargoWeight
             row[cargoVolume] = req.cargoVolume
@@ -304,8 +321,12 @@ class RequestRepository {
 
         RequestTable.update({ RequestTable.id eq requestId }) { row ->
             row[this.createdById] = userId
-            row[loadingPoint] = req.loadingPoint
-            row[unloadingPoint] = req.unloadingPoint
+            row[loadingAddress] = req.loadingAddress
+            row[loadingLat] = req.loadingLat
+            row[loadingLon] = req.loadingLon
+            row[unloadingAddress] = req.unloadingAddress
+            row[unloadingLat] = req.unloadingLat
+            row[unloadingLon] = req.unloadingLon
             row[cargoTypeId] = req.cargoTypeId
             row[cargoWeight] = req.cargoWeight
             row[cargoVolume] = req.cargoVolume

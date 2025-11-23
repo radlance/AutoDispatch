@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Dialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.deliveryStatusColors
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
@@ -215,8 +216,8 @@ fun DeliveryDetails(
         )
 
         RouteCard(
-            fromPoint = delivery.loadingPoint,
-            toPoint = delivery.unloadingPoint,
+            fromPoint = delivery.loadingPoint.toStringAddress(),
+            toPoint = delivery.unloadingPoint.toStringAddress(),
             backgroundColor = backgroundColor,
             contentColor = contentColor,
             modifier = Modifier.fillMaxWidth()

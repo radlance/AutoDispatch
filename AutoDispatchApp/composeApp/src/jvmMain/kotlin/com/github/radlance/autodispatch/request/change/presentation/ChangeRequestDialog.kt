@@ -234,8 +234,8 @@ fun ChangeRequestDialog(
                                 && companyEmailFieldValue.isNotBlank()
                                 && companyPhoneFieldValue.isNotBlank()
                                 && cargoWeightFieldValue.isNotBlank()
-                                && loadingFieldValue.isNotBlank()
-                                && unloadingFieldValue.isNotBlank()
+                                && (loadingFieldLatValue != null && loadingFieldLonValue != null)
+                                && (unloadingFieldLatValue != null && unloadingFieldLonValue != null)
                                 && !isLoadingChange
                     },
                     onClick = {
@@ -264,8 +264,12 @@ fun ChangeRequestDialog(
                                     cargoWeight = cargoWeightFieldValue,
                                     cargoVolume = cargoVolumeFieldValue,
                                     cargoDescription = cargoDescriptionFieldValue,
-                                    cargoLoading = loadingFieldValue,
-                                    cargoUnloading = unloadingFieldValue,
+                                    cargoLoadingAddress = loadingFieldAddressValue,
+                                    cargoLoadingLat = loadingFieldLatValue!!,
+                                    cargoLoadingLon = loadingFieldLonValue!!,
+                                    cargoUnloadingAddress = unloadingFieldAddressValue,
+                                    cargoUnloadingLat = unloadingFieldLatValue!!,
+                                    cargoUnloadingLon = unloadingFieldLonValue!!,
                                     additionalInfo = additionalInfoFieldValue,
                                     requestId = requestId
                                 )

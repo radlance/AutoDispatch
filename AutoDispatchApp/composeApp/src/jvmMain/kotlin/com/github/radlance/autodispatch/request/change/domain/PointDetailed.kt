@@ -2,10 +2,10 @@ package com.github.radlance.autodispatch.request.change.domain
 
 import kotlinx.serialization.json.JsonObject
 
-data class  Point(
+data class PointDetailed(
     val placeId: Long,
-    val lat: String,
-    val lon: String,
+    val lat: Double,
+    val lon: Double,
     val importance: Double,
     val name: String,
     val displayName: String,

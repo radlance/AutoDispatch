@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.change.domain.Coords
-import com.github.radlance.autodispatch.request.change.domain.Point
+import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.change.domain.PointSelectionRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,7 +24,7 @@ class PointSelectionViewModel(
         fetchCoords()
     }.stateInViewModel(initialValue = fetchPointStateMutable.value)
 
-    private val pointsMutable = MutableStateFlow<List<Point>>(emptyList())
+    private val pointsMutable = MutableStateFlow<List<PointDetailed>>(emptyList())
     val points = pointsMutable.asStateFlow()
     private var searchJob: Job? = null
     private val debounceTime = 600L

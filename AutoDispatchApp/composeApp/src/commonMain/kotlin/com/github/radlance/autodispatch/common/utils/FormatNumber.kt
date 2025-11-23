@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.common.utils
 
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
+
 fun Double.formatNumberNoTrailingZeros(): String {
     return if (this % 1.0 == 0.0) {
         this.toInt().toString()
@@ -17,3 +19,7 @@ fun Double?.formatKg(): String =
 
 fun Double?.formatM3(): String =
     this?.let { "${it.formatNumberNoTrailingZeros()} м\u00B3" } ?: "—"
+
+fun Point.toStringAddress(): String {
+    return address ?: "$lat, $lon"
+}

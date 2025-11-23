@@ -1,35 +1,16 @@
 package com.github.radlance.autodispatch.repository
 
-import com.github.radlance.autodispatch.database.table.AssignmentTable
-import com.github.radlance.autodispatch.database.table.CargoTypeTable
-import com.github.radlance.autodispatch.database.table.CityTable
-import com.github.radlance.autodispatch.database.table.CustomerTable
-import com.github.radlance.autodispatch.database.table.DriverTable
-import com.github.radlance.autodispatch.database.table.RequestStatusTable
-import com.github.radlance.autodispatch.database.table.RequestTable
-import com.github.radlance.autodispatch.database.table.UserTable
-import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.database.table.*
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
-import com.github.radlance.autodispatch.domain.request.Cargo
-import com.github.radlance.autodispatch.domain.request.CargoType
-import com.github.radlance.autodispatch.domain.request.Customer
-import com.github.radlance.autodispatch.domain.request.RequestStatus
-import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.domain.request.*
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
-import com.github.radlance.autodispatch.exception.DeliveryStateException
 import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.util.loggedTransaction
-import org.jetbrains.exposed.sql.Coalesce
-import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.alias
-import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
-import org.jetbrains.exposed.sql.update
 
 class DeliveryRepository {
 
@@ -40,8 +21,16 @@ class DeliveryRepository {
             id = row[RequestStatusTable.id].value,
             name = row[RequestStatusTable.name]
         ),
-        loadingPoint = row[RequestTable.loadingPoint],
-        unloadingPoint = row[RequestTable.unloadingPoint],
+        loadingPoint = Point(
+            address = row[RequestTable.loadingAddress],
+            lat = row[RequestTable.loadingLat],
+            lon = row[RequestTable.loadingLon]
+        ),
+        unloadingPoint = Point(
+            address = row[RequestTable.unloadingAddress],
+            lat = row[RequestTable.unloadingLat],
+            lon = row[RequestTable.unloadingLon]
+        ),
         cargoWeight = row[RequestTable.cargoWeight],
         cargoVolume = row[RequestTable.cargoVolume],
         cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
@@ -64,8 +53,12 @@ class DeliveryRepository {
             RequestTable.requestNumber,
             RequestStatusTable.id,
             RequestStatusTable.name,
-            RequestTable.loadingPoint,
-            RequestTable.unloadingPoint,
+            RequestTable.loadingAddress,
+            RequestTable.loadingLat,
+            RequestTable.loadingLon,
+            RequestTable.unloadingAddress,
+            RequestTable.unloadingLat,
+            RequestTable.unloadingLon,
             RequestTable.cargoWeight,
             RequestTable.cargoVolume,
             CargoTypeTable.name.alias("cargo_type_name"),
@@ -113,8 +106,12 @@ class DeliveryRepository {
                 RequestStatusTable.name,
                 originCity[CityTable.name].alias("origin_name"),
                 destCity[CityTable.name].alias("destination_name"),
-                RequestTable.loadingPoint,
-                RequestTable.unloadingPoint,
+                RequestTable.loadingAddress,
+                RequestTable.loadingLat,
+                RequestTable.loadingLon,
+                RequestTable.unloadingAddress,
+                RequestTable.unloadingLat,
+                RequestTable.unloadingLon,
                 CargoTypeTable.id,
                 CargoTypeTable.name.alias("cargo_type_name"),
                 RequestTable.cargoWeight,
@@ -165,8 +162,16 @@ class DeliveryRepository {
                 volume = row[RequestTable.cargoVolume],
                 description = row[RequestTable.cargoDescription]
             ),
-            loadingPoint = row[RequestTable.loadingPoint],
-            unloadingPoint = row[RequestTable.unloadingPoint],
+            loadingPoint = Point(
+                address = row[RequestTable.loadingAddress],
+                lat = row[RequestTable.loadingLat],
+                lon = row[RequestTable.loadingLon]
+            ),
+            unloadingPoint = Point(
+                address = row[RequestTable.unloadingAddress],
+                lat = row[RequestTable.unloadingLat],
+                lon = row[RequestTable.unloadingLon]
+            ),
             dispatcherFullName = row[dispatcherUser[UserTable.fullName].alias("dispatcher_full_name")],
             dispatcherPhoneNumber = row[dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number")],
             customer = Customer(

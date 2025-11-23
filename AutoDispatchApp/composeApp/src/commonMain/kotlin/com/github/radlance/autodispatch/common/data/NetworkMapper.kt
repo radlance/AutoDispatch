@@ -5,12 +5,14 @@ import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
 import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
+import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
 import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
 import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
@@ -37,8 +39,8 @@ fun RequestDto.toRequest(): Request {
         origin = origin,
         destination = destination,
         cargo = cargo.toCargo(),
-        loadingPoint = loadingPoint,
-        unloadingPoint = unloadingPoint,
+        loadingPoint = loadingPoint.toPoint(),
+        unloadingPoint = unloadingPoint.toPoint(),
         driverId = driverId,
         driverFullName = driverFullName,
         customer = customer.toCustomer(),
@@ -93,4 +95,12 @@ fun VehicleFilterDto.toVehicleFilter(): VehicleFilter {
 fun String.toLocalDateTimeFromUtc(): LocalDateTime {
     val instant = Instant.parse(this)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault())
+}
+
+fun PointDto.toPoint(): Point {
+    return Point(
+        address = address,
+        lat = lat,
+        lon = lon
+    )
 }

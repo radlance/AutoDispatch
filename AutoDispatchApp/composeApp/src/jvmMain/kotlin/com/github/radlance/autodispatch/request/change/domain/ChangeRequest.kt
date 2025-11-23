@@ -1,8 +1,12 @@
 package com.github.radlance.autodispatch.request.change.domain
 
 data class ChangeRequest(
-    val loadingPoint: String,
-    val unloadingPoint: String,
+    val loadingAddress: String?,
+    val loadingLat: Double,
+    val loadingLon: Double,
+    val unloadingAddress: String?,
+    val unloadingLat: Double,
+    val unloadingLon: Double,
     val cargoTypeId: Int,
     val cargoWeight: Double,
     val cargoVolume: Double?,

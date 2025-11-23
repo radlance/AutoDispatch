@@ -19,7 +19,11 @@ data class ChangeRequestFieldsUiState(
     val cargoVolumeFieldValue: String = "",
     val cargoVolumeErrorMessage: String = "",
     val cargoDescriptionFieldValue: String = "",
-    val loadingFieldValue: String = "",
-    val unloadingFieldValue: String = "",
+    val loadingFieldAddressValue: String = "",
+    val loadingFieldLatValue: Double? = null,
+    val loadingFieldLonValue: Double? = null,
+    val unloadingFieldAddressValue: String = "",
+    val unloadingFieldLatValue: Double? = null,
+    val unloadingFieldLonValue: Double? = null,
     val additionalInfoFieldValue: String = "",
 )

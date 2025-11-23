@@ -4,8 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChangeRequestDto(
-    val loadingPoint: String,
-    val unloadingPoint: String,
+    val loadingAddress: String?,
+    val loadingLat: Double,
+    val loadingLon: Double,
+    val unloadingAddress: String?,
+    val unloadingLat: Double,
+    val unloadingLon: Double,
     val cargoTypeId: Int,
     val cargoWeight: Double,
     val cargoVolume: Double?,

@@ -25,7 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.github.radlance.autodispatch.request.change.domain.Point
+import com.github.radlance.autodispatch.request.change.domain.PointDetailed
+import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import kotlinx.serialization.json.jsonPrimitive
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,7 +35,7 @@ import org.openstreetmap.gui.jmapviewer.Coordinate
 @Composable
 fun PointSelectionDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (Point) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PointSelectionViewModel = koinViewModel()
 ) {
@@ -43,7 +44,7 @@ fun PointSelectionDialog(
 
     var placeSuggestionFieldValue by rememberSaveable { mutableStateOf("") }
 
-    var searchResult by remember { mutableStateOf<Point?>(null) }
+    var searchResult by remember { mutableStateOf<PointDetailed?>(null) }
     var markerLocation by remember { mutableStateOf<Coordinate?>(null) }
 
     val finalSelectedCoordinate: Coordinate? = remember(markerLocation, searchResult) {
@@ -142,18 +143,16 @@ fun PointSelectionDialog(
                 Spacer(Modifier.width(12.dp))
                 Button(
                     onClick = {
-                        val resultString = when {
-                            searchResult != null -> {
-                                searchResult!!.displayName
-                            }
-                            markerLocation != null -> {
-                                "${markerLocation!!.lat}, ${markerLocation!!.lon}"
-                            }
-                            else -> ""
-                        }
+                        val resultPoint = if (searchResult != null || markerLocation != null) {
+                            Point(
+                                address = searchResult?.displayName,
+                                lat = searchResult?.lat ?: markerLocation!!.lat,
+                                lon = searchResult?.lon ?: markerLocation!!.lon
+                            )
+                        } else null
 
-                        if (resultString.isNotBlank()) {
-                            onConfirm(resultString)
+                        if (resultPoint != null) {
+                            onConfirm(resultPoint)
                             onDismissRequest()
                         }
                     },

@@ -7,7 +7,7 @@ import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.Coords
-import com.github.radlance.autodispatch.request.change.domain.Point
+import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.core.data.CityDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
@@ -38,8 +38,12 @@ fun FiltersDto.toFilters(): Filters {
 
 fun ChangeRequest.toCreateRequestDto(): ChangeRequestDto {
     return ChangeRequestDto(
-        loadingPoint = loadingPoint,
-        unloadingPoint = unloadingPoint,
+        loadingAddress = loadingAddress,
+        loadingLat = loadingLat,
+        loadingLon = loadingLon,
+        unloadingAddress = unloadingAddress,
+        unloadingLat = unloadingLat,
+        unloadingLon = unloadingLon,
         cargoTypeId = cargoTypeId,
         cargoWeight = cargoWeight,
         cargoVolume = cargoVolume,
@@ -72,11 +76,11 @@ fun CoordsDto.toCoords(): Coords {
     )
 }
 
-fun PointDto.toPoint(): Point {
-    return Point(
+fun PointDto.toPoint(): PointDetailed {
+    return PointDetailed(
         placeId = placeId,
-        lat = lat,
-        lon = lon,
+        lat = lat.toDouble(),
+        lon = lon.toDouble(),
         importance = importance,
         name = name,
         displayName = displayName,

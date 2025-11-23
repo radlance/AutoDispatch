@@ -6,7 +6,7 @@ import com.github.radlance.autodispatch.common.data.toCoords
 import com.github.radlance.autodispatch.common.data.toPoint
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.request.change.domain.Coords
-import com.github.radlance.autodispatch.request.change.domain.Point
+import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.change.domain.PointSelectionRepository
 
 class RemotePointSelectionRepository(
@@ -18,7 +18,7 @@ class RemotePointSelectionRepository(
             apiService.coords().toCoords()
         }
 
-    override suspend fun searchPoint(query: String): List<Point> {
+    override suspend fun searchPoint(query: String): List<PointDetailed> {
         return try {
             apiService.points(query).sortedByDescending { it.importance }.map { it.toPoint() }
         } catch (_: Exception) {
