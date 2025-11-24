@@ -68,6 +68,10 @@ class SignInViewModel(
                     }
                 }
             }
+
+            override fun resetState() {
+                authResultUiStateMutable.value = FetchResultUiState.Idle
+            }
         }
         event.apply(action = action)
     }

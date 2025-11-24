@@ -147,14 +147,10 @@ fun DeliveryDetails(
             },
             dismissButton = {},
             confirmButton = {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = contentColor,
-                        containerColor = backgroundColor
-                    )
+                TextButton(
+                    onClick = onDismiss
                 ) {
-                    Text(text = "ОК")
+                    Text(text = "ОК", color = contentColor)
                 }
             }
         )
