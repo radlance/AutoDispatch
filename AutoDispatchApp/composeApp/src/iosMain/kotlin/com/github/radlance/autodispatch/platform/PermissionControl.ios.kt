@@ -9,35 +9,38 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.darwin.NSObject
 
-// TODO проверить ios + plist, сделатть открытие настроек
 @Composable
-actual fun createLocationPermissionController(onPermissionResult: (Boolean) -> Unit): LocationPermissionController {
+actual fun createLocationPermissionController(
+    onPermissionResult: (Boolean) -> Unit
+): LocationPermissionController {
     return remember { IosPermissionController(onPermissionResult) }
 }
 
 private class IosPermissionController(
-    val onResult: (Boolean) -> Unit
-) : NSObject(), CLLocationManagerDelegateProtocol, LocationPermissionController {
+    private val onResult: (Boolean) -> Unit
+) : LocationPermissionController {
+
     private val locationManager = CLLocationManager()
 
-    init {
-        locationManager.delegate = this
-    }
-
     override fun askPermission() {
-        val status = locationManager.authorizationStatus
+        locationManager.delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
+            override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
+                onResult(hasPermission())
+            }
+        }
+
+        val status = locationManager.authorizationStatus()
+
         if (status == kCLAuthorizationStatusNotDetermined) {
             locationManager.requestWhenInUseAuthorization()
-        } else onResult(hasPermission())
+        } else {
+            onResult(hasPermission())
+        }
     }
 
     override fun hasPermission(): Boolean {
-        val status = locationManager.authorizationStatus
-        return (status == kCLAuthorizationStatusAuthorizedAlways ||
-                status == kCLAuthorizationStatusAuthorizedWhenInUse)
-    }
-
-    override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
-        onResult(hasPermission())
+        val status = locationManager.authorizationStatus()
+        return status == kCLAuthorizationStatusAuthorizedWhenInUse ||
+                status == kCLAuthorizationStatusAuthorizedAlways
     }
 }
