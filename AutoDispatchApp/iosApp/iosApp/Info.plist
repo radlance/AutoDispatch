@@ -19,5 +19,7 @@
             <string>yandexmaps</string>
             <string>dgis</string>
         </array>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>Приложению нужен доступ к вашей геолокации для корректной работы.</string>
     </dict>
 </plist>

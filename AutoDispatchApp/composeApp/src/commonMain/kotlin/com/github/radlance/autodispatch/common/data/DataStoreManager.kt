@@ -19,6 +19,10 @@ interface DataStoreManager {
     val sessionExpired: Flow<Boolean>
 
     suspend fun saveSessionExpired(expired: Boolean)
+
+    val locationPermissionAsked: Flow<Boolean>
+
+    suspend fun setLocationPermissionAsked(asked: Boolean)
 }
 
 internal class BaseDataStoreManager(
@@ -44,8 +48,17 @@ internal class BaseDataStoreManager(
         dataStore.edit { settings -> settings[KEY_SESSION_EXPIRED] = expired }
     }
 
+    override val locationPermissionAsked: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[KEY_LOCATION_ASKED] ?: false
+    }
+
+    override suspend fun setLocationPermissionAsked(asked: Boolean) {
+        dataStore.edit { settings -> settings[KEY_LOCATION_ASKED] = asked }
+    }
+
     companion object {
         private val KEY_TOKEN = stringPreferencesKey("token")
         private val KEY_SESSION_EXPIRED = booleanPreferencesKey("session_expired")
+        private val KEY_LOCATION_ASKED = booleanPreferencesKey("location_permission_asked")
     }
 }

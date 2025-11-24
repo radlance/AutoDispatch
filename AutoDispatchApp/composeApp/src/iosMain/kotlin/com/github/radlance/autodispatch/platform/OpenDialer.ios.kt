@@ -8,10 +8,6 @@ actual fun openDialer(phoneNumber: String, context: Any?) {
     val app = UIApplication.sharedApplication
 
     if (app.canOpenURL(url)) {
-        app.openURL(
-            url = url,
-            options = emptyMap<Any?, Any>(),
-            completionHandler = {}
-        )
+        app.openUrlSimple(url = url)
     }
 }
