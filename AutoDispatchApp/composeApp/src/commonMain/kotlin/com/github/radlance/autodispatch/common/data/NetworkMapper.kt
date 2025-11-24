@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.auth.data.LoginResponseDto
+import com.github.radlance.autodispatch.auth.domain.LoginResponse
 import com.github.radlance.autodispatch.profile.data.UserDto
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
@@ -28,6 +30,13 @@ internal fun UserDto.toUser(): User {
         login = login,
         fullName = fullName,
         phoneNumber = phoneNumber
+    )
+}
+
+fun LoginResponseDto.toLoginResponse(): LoginResponse {
+    return LoginResponse(
+        accessToken = accessToken,
+        roleId = roleId
     )
 }
 

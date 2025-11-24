@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.auth.domain.LoginResponse
 import com.github.radlance.autodispatch.common.presentation.BaseColumn
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import org.koin.compose.viewmodel.koinViewModel
@@ -54,7 +55,7 @@ fun SignInScreen(
 @Composable
 private fun SignInScreen(
     fieldsUiState: SignInFieldsUiState,
-    signInResultUiState: FetchResultUiState<String, String>,
+    signInResultUiState: FetchResultUiState<LoginResponse, String>,
     navigateToHomeScreen: () -> Unit,
     onEvent: (SignInEvent) -> Unit,
     modifier: Modifier = Modifier
@@ -72,8 +73,37 @@ private fun SignInScreen(
             }
         },
         onSuccess = {
-            navigateToHomeScreen()
-            onEvent(SignInEvent.ResetState)
+            if (it.roleId == 2) {
+                navigateToHomeScreen()
+            } else {
+                AlertDialog(
+                    onDismissRequest = {
+                        onEvent(SignInEvent.ResetState)
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Outlined.WarningAmber,
+                            contentDescription = null
+                        )
+                    },
+                    title = {
+                        Text(text = "Ошибка")
+                    },
+                    text = {
+                        Text(text = "Этот аккаунт принадлежит диспетчеру. Вход в приложение диспетчера с такими данными невозможен.")
+                    },
+                    dismissButton = {},
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                onEvent(SignInEvent.ResetState)
+                            }
+                        ) {
+                            Text(text = "ОК")
+                        }
+                    }
+                )
+            }
         },
         onError = {
             AlertDialog(
