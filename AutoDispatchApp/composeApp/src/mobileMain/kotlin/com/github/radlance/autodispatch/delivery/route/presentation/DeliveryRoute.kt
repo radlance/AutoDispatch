@@ -54,6 +54,7 @@ import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.createLocationPermissionController
 import com.github.radlance.autodispatch.platform.getPlatformContext
+import com.github.radlance.autodispatch.platform.openAppSettings
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
@@ -72,6 +73,7 @@ fun DeliveryRoute(
     val controller = createLocationPermissionController {
         hasPermission = it
     }
+    val context = getPlatformContext()
 
     if (hasPermission == false) {
         AlertDialog(
@@ -86,9 +88,14 @@ fun DeliveryRoute(
             title = { Text("Доступ к локации") },
             text = { Text("Разрешите доступ к геолокации для корректной работы приложения.") },
             confirmButton = {
-                TextButton(onClick = {
-
-                }) { Text("Настройки") }
+                TextButton(
+                    onClick = {
+                        openAppSettings(context)
+                        hasPermission = null
+                    }
+                ) {
+                    Text("Настройки")
+                }
             },
             dismissButton = {
                 TextButton(onClick = { hasPermission = null }) { Text("Отмена") }

@@ -13,3 +13,5 @@ interface LocationPermissionController {
 
     fun hasPermission(): Boolean
 }
+
+expect fun openAppSettings(context: Any?)

@@ -7,6 +7,9 @@ import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.darwin.NSObject
 
 @Composable
@@ -42,5 +45,12 @@ private class IosPermissionController(
         val status = locationManager.authorizationStatus()
         return status == kCLAuthorizationStatusAuthorizedWhenInUse ||
                 status == kCLAuthorizationStatusAuthorizedAlways
+    }
+}
+
+actual fun openAppSettings(context: Any?) {
+    val url = NSURL(string = UIApplicationOpenSettingsURLString)
+    if (UIApplication.sharedApplication.canOpenURL(url)) {
+        UIApplication.sharedApplication.openUrlSimple(url)
     }
 }

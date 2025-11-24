@@ -15,7 +15,6 @@ import platform.UIKit.UIAlertActionStyleDefault
 import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyleActionSheet
 import platform.UIKit.UIApplication
-import platform.UIKit.popoverPresentationController
 
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
 @Composable
@@ -41,11 +40,7 @@ actual fun MapPoint(address: String, onDismiss: () -> Unit) {
             style = UIAlertActionStyleDefault
         ) {
             val url = NSURL(string = "http://maps.apple.com/?q=$encoded")
-            app.openURL(
-                url = url,
-                options = emptyMap<Any?, Any>(),
-                completionHandler = {}
-            )
+            app.openUrlSimple(url = url)
             onDismiss()
         }
     )
@@ -58,11 +53,7 @@ actual fun MapPoint(address: String, onDismiss: () -> Unit) {
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "comgooglemaps://?q=$encoded")
-                app.openURL(
-                    url = url,
-                    options = emptyMap<Any?, Any>(),
-                    completionHandler = {}
-                )
+                app.openUrlSimple(url = url)
                 onDismiss()
             }
         )
@@ -76,11 +67,7 @@ actual fun MapPoint(address: String, onDismiss: () -> Unit) {
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "yandexmaps://maps.yandex.ru/?text=$encoded")
-                app.openURL(
-                    url = url,
-                    options = emptyMap<Any?, Any>(),
-                    completionHandler = {}
-                )
+                app.openUrlSimple(url = url)
                 onDismiss()
             }
         )
@@ -94,11 +81,7 @@ actual fun MapPoint(address: String, onDismiss: () -> Unit) {
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "dgis://2gis.ru/search/$encoded")
-                app.openURL(
-                    url = url,
-                    options = emptyMap<Any?, Any>(),
-                    completionHandler = {}
-                )
+                app.openUrlSimple(url = url)
                 onDismiss()
             }
         )

@@ -9,7 +9,6 @@ import platform.UIKit.UIAlertActionStyleDefault
 import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyleActionSheet
 import platform.UIKit.UIApplication
-import platform.UIKit.popoverPresentationController
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -30,11 +29,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
             style = UIAlertActionStyleDefault
         ) {
             val url = NSURL(string = "http://maps.apple.com/?daddr=$lat,$lon&dirflg=d")
-            app.openURL(
-                url = url,
-                options = emptyMap<Any?, Any>(),
-                completionHandler = {}
-            )
+            app.openUrlSimple(url = url)
             onDismiss()
         }
     )
@@ -47,11 +42,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
                 style = UIAlertActionStyleDefault
             ) {
                 val url = NSURL(string = "comgooglemaps://?daddr=$lat,$lon&directionsmode=driving")
-                app.openURL(
-                    url = url,
-                    options = emptyMap<Any?, Any>(),
-                    completionHandler = {}
-                )
+                app.openUrlSimple(url = url)
                 onDismiss()
             }
         )
@@ -66,11 +57,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
             ) {
                 val url =
                     NSURL(string = "yandexmaps://build_route_on_map?lat_to=$lat&lon_to=$lon&what=auto")
-                app.openURL(
-                    url = url,
-                    options = emptyMap<Any?, Any>(),
-                    completionHandler = {}
-                )
+                app.openUrlSimple(url = url)
                 onDismiss()
             }
         )
@@ -85,11 +72,7 @@ actual fun MapRouteDialog(lat: Double, lon: Double, onDismiss: () -> Unit) {
             ) {
                 val url =
                     NSURL(string = "yandexmaps://build_route_on_map?lat_to=$lat&lon_to=$lon&what=auto")
-                app.openURL(
-                    url = url,
-                    options = emptyMap<Any?, Any>(),
-                    completionHandler = {}
-                )
+                app.openUrlSimple(url = url)
                 onDismiss()
             }
         )
