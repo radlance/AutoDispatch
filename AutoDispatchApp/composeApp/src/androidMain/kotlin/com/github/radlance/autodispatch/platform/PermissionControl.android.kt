@@ -18,6 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.github.radlance.autodispatch.delivery.route.domain.Location
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
 actual fun createLocationPermissionController(
@@ -102,4 +106,35 @@ actual fun openAppSettings(context: Any?) {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     ctx.startActivity(intent)
+}
+
+actual suspend fun getCurrentLocation(context: Any?): Location? {
+
+    val con = context as? Context ?: return null
+
+    val fine = ContextCompat.checkSelfPermission(
+        con, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!fine) return null
+
+    return suspendCancellableCoroutine { cont ->
+        val provider = LocationServices.getFusedLocationProviderClient(con)
+
+        provider.lastLocation.addOnSuccessListener { loc ->
+            if (loc != null) {
+                cont.resume(value = Location(loc.latitude, loc.longitude)) { _, _, _ ->
+
+                }
+            } else {
+                provider.getCurrentLocation(
+                    Priority.PRIORITY_HIGH_ACCURACY, null
+                ).addOnSuccessListener { fresh ->
+                    cont.resume(
+                        fresh?.let { Location(it.latitude, it.longitude) }
+                    ) { _, _, _ -> }
+                }
+            }
+        }
+    }
 }

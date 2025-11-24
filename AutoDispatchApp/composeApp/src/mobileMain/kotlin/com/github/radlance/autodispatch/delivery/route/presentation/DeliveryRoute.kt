@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,10 +48,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
+import com.github.radlance.autodispatch.delivery.route.domain.Location
 import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.createLocationPermissionController
 import com.github.radlance.autodispatch.platform.getPlatformContext
@@ -61,19 +64,29 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun DeliveryRoute(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: DeliveryRouteViewModel = koinViewModel()
 ) {
     var selectedPoint by remember { mutableStateOf<Point?>(null) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
+
     val controller = createLocationPermissionController {
         hasPermission = it
     }
     val context = getPlatformContext()
+    val currentLocation by viewModel.currentLocation.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        if (controller.hasPermission()) {
+            hasPermission = true
+        }
+    }
 
     if (hasPermission == false) {
         AlertDialog(
@@ -101,7 +114,12 @@ fun DeliveryRoute(
                 TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
             }
         )
+    } else if (hasPermission == true) {
+        LaunchedEffect(hasPermission) {
+            viewModel.fetchCurrentLocation()
+        }
     }
+
     selectedPoint?.let {
         MapRouteDialog(
             lat = it.lat,
@@ -126,10 +144,11 @@ fun DeliveryRoute(
         ActionButtons(
             onRefreshLocationClick = {
                 if (controller.hasPermission()) {
-
+                    viewModel.fetchCurrentLocation()
                 } else controller.askPermission()
             },
             onArrivedPlaceClick = {},
+            location = currentLocation,
             arrivedButtonEnabled = true
         )
     }
@@ -370,6 +389,7 @@ private fun CustomerCard(customer: Customer, modifier: Modifier = Modifier) {
 
 @Composable
 private fun ActionButtons(
+    location: Location?,
     onRefreshLocationClick: () -> Unit,
     onArrivedPlaceClick: () -> Unit,
     arrivedButtonEnabled: Boolean,
@@ -389,7 +409,7 @@ private fun ActionButtons(
         ) {
             Icon(imageVector = Icons.Default.Check, contentDescription = null)
             Spacer(Modifier.width(12.dp))
-            Text(text = "Прибыл на место")
+            Text(text = location?.let { "${it.lat}, ${it.lon}" } ?: "Получите геолокацию")
         }
     }
 }

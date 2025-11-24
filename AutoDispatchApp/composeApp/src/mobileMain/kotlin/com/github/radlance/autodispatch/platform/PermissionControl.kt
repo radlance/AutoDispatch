@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.platform
 
 import androidx.compose.runtime.Composable
+import com.github.radlance.autodispatch.delivery.route.domain.Location
 
 @Composable
 expect fun createLocationPermissionController(
@@ -15,3 +16,5 @@ interface LocationPermissionController {
 }
 
 expect fun openAppSettings(context: Any?)
+
+expect suspend fun getCurrentLocation(context: Any?): Location?

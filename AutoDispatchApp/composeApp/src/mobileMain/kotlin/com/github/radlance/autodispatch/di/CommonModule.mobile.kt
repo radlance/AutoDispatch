@@ -8,6 +8,7 @@ import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryViewM
 import com.github.radlance.autodispatch.delivery.details.data.RemoteDeliveryDetailsRepository
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
+import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRouteViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -24,4 +25,5 @@ val deliveryModule
         viewModelOf(::DeliveryViewModel)
         singleOf(::RemoteDeliveryDetailsRepository).bind<DeliveryDetailsRepository>()
         viewModelOf(::DeliveryDetailsViewModel)
+        viewModelOf(::DeliveryRouteViewModel)
     }
