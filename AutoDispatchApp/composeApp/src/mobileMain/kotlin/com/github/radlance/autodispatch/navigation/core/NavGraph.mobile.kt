@@ -30,6 +30,10 @@ import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.home.presentation.HomeScreen
 import com.github.radlance.autodispatch.platform.MapPoint
 import com.github.radlance.autodispatch.platform.MapRouteDialog
+import com.github.radlance.autodispatch.platform.createLocationPermissionController
+import com.github.radlance.autodispatch.platform.getPlatformContext
+import com.github.radlance.autodispatch.platform.openAppSettings
+import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
@@ -109,6 +113,10 @@ actual fun NavGraph(navController: NavHostController) {
         composable<SignIn> {
             var selectedAddress by remember { mutableStateOf<String?>(null) }
             var selectedPoint by remember { mutableStateOf<Point?>(null) }
+            val context = getPlatformContext()
+            val permissionController = createLocationPermissionController {
+
+            }
 
             selectedAddress?.let {
                 MapPoint(
@@ -129,6 +137,9 @@ actual fun NavGraph(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Button(onClick = { openDialer(phoneNumber = "+79999999999", context) }) {
+                    Text(text = "Набрать номер")
+                }
                 Button(onClick = { selectedAddress = "59.91166445623312, 30.318145751953125" }) {
                     Text(text = "Открыть точку")
                 }
@@ -140,6 +151,14 @@ actual fun NavGraph(navController: NavHostController) {
                     )
                 }) {
                     Text(text = "Построить маршрут")
+                }
+
+                Button(onClick = { openAppSettings(context) }) {
+                    Text(text = "Открыть настройки")
+                }
+
+                Button(onClick = { permissionController.askPermission() }) {
+                    Text(text = "запросить геолокацию")
                 }
             }
         }
