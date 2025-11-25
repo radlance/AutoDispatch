@@ -232,7 +232,11 @@ class ChangeRequestViewModel(
                         cargoVolumeErrorMessage = "",
                         cargoDescriptionFieldValue = "",
                         loadingFieldAddressValue = "",
+                        loadingFieldLatValue = null,
+                        loadingFieldLonValue = null,
                         unloadingFieldAddressValue = "",
+                        unloadingFieldLatValue = null,
+                        unloadingFieldLonValue = null,
                         additionalInfoFieldValue = ""
                     )
                 }
