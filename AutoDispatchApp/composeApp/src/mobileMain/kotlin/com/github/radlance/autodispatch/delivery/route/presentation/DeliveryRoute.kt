@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +54,6 @@ import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
-import com.github.radlance.autodispatch.delivery.route.domain.Location
 import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.createLocationPermissionController
 import com.github.radlance.autodispatch.platform.getPlatformContext
@@ -65,6 +65,12 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.PI
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @Composable
 fun DeliveryRoute(
@@ -81,6 +87,34 @@ fun DeliveryRoute(
     }
     val context = getPlatformContext()
     val currentLocation by viewModel.currentLocation.collectAsStateWithLifecycle()
+
+    val uiState = remember(currentLocation, delivery.unloadingPoint) {
+        derivedStateOf {
+            if (currentLocation == null) {
+                return@derivedStateOf ArriveUi(
+                    enabled = false,
+                    text = "Получите геолокацию"
+                )
+            }
+
+            val distance = distanceMeters(
+                currentLocation!!.lat, currentLocation!!.lon,
+                delivery.unloadingPoint.lat, delivery.unloadingPoint.lon
+            )
+
+            if (distance > 300) {
+                ArriveUi(
+                    enabled = false,
+                    text = "Подъедьте ближе (${formatDistance(distance)})"
+                )
+            } else {
+                ArriveUi(
+                    enabled = true,
+                    text = "Вы прибыли"
+                )
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (controller.hasPermission()) {
@@ -148,8 +182,8 @@ fun DeliveryRoute(
                 } else controller.askPermission()
             },
             onArrivedPlaceClick = {},
-            location = currentLocation,
-            arrivedButtonEnabled = true
+            arrivedButtonEnabled = uiState.value.enabled,
+            buttonText = uiState.value.text
         )
     }
 }
@@ -389,10 +423,10 @@ private fun CustomerCard(customer: Customer, modifier: Modifier = Modifier) {
 
 @Composable
 private fun ActionButtons(
-    location: Location?,
     onRefreshLocationClick: () -> Unit,
     onArrivedPlaceClick: () -> Unit,
     arrivedButtonEnabled: Boolean,
+    buttonText: String,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -409,7 +443,33 @@ private fun ActionButtons(
         ) {
             Icon(imageVector = Icons.Default.Check, contentDescription = null)
             Spacer(Modifier.width(12.dp))
-            Text(text = location?.let { "${it.lat}, ${it.lon}" } ?: "Получите геолокацию")
+            Text(text = buttonText)
         }
+    }
+}
+
+fun distanceMeters(
+    lat1: Double, lon1: Double,
+    lat2: Double, lon2: Double
+): Double {
+    val r = 6371000.0
+    fun Double.toRad() = this * PI / 180.0
+
+    val dLat = (lat2 - lat1).toRad()
+    val dLon = (lon2 - lon1).toRad()
+
+    val a = sin(dLat / 2).pow(2.0) +
+            cos(lat1.toRad()) * cos(lat2.toRad()) *
+            sin(dLon / 2).pow(2.0)
+
+    return 2.0 * r * asin(sqrt(a))
+}
+
+fun formatDistance(meters: Double): String {
+    return if (meters >= 1000) {
+        val km = (meters / 1000 * 10).toInt() / 10.0
+        "$km км"
+    } else {
+        "${meters.toInt()} м"
     }
 }
