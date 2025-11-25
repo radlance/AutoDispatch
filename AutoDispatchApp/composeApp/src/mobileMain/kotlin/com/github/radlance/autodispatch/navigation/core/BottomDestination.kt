@@ -69,3 +69,7 @@ data class DeliveryRoute(
     val deliveryId: Int,
     val deliveryNumber: String
 ) : HomeDestination
+
+@Destination
+@Serializable
+data class DeliveryConfirmation(val deliveryId: Int) : HomeDestination

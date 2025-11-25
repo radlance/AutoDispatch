@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.delivery.route.presentation
+package com.github.radlance.autodispatch.delivery.confirmation.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,28 +20,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeliveryRouteScreen(
+fun DeliveryConfirmationScreen(
     deliveryId: Int,
-    deliveryNumber: String,
     navigateUp: () -> Unit,
-    navigateToDeliveryConfirmation: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
@@ -52,17 +43,7 @@ fun DeliveryRouteScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = buildAnnotatedString {
-                            append("${stringResource(Res.string.delivery)} ")
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                val currentState = requestState
-                                if (currentState is FetchResultUiState.Success) {
-                                    append(currentState.data.requestNumber)
-                                } else append(deliveryNumber)
-                            }
-                        }
-                    )
+                    Text(text = "Прибытие на место")
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateUp) {
@@ -112,11 +93,9 @@ fun DeliveryRouteScreen(
                             }
                         )
                     }
-
-                    DeliveryRoute(
-                        scrollState = scrollState,
+                    DeliveryConfirmation(
                         delivery = delivery,
-                        navigateToDeliveryConfirmation = navigateToDeliveryConfirmation
+                        scrollState = scrollState
                     )
                 },
                 onError = {

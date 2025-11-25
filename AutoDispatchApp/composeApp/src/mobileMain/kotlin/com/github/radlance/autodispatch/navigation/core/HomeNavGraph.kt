@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationScreen
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
@@ -83,6 +84,18 @@ fun HomeNavGraph(
                 DeliveryRouteScreen(
                     deliveryId = args.deliveryId,
                     deliveryNumber = args.deliveryNumber,
+                    navigateUp = navController::navigateUp,
+                    navigateToDeliveryConfirmation = {
+                        navController.navigate(DeliveryConfirmation(args.deliveryId))
+                    },
+                    viewModel = deliveryDetailsViewModel
+                )
+            }
+
+            composable<DeliveryConfirmation> {
+                val args = it.toRoute<DeliveryConfirmation>()
+                DeliveryConfirmationScreen(
+                    deliveryId = args.deliveryId,
                     navigateUp = navController::navigateUp,
                     viewModel = deliveryDetailsViewModel
                 )

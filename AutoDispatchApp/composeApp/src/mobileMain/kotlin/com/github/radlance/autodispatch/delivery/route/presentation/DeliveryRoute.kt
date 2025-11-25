@@ -18,11 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -76,6 +77,7 @@ import kotlin.math.sqrt
 fun DeliveryRoute(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
+    navigateToDeliveryConfirmation: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryRouteViewModel = koinViewModel()
 ) {
@@ -110,7 +112,7 @@ fun DeliveryRoute(
             } else {
                 ArriveUi(
                     enabled = true,
-                    text = "Вы прибыли"
+                    text = "Прибыл на место"
                 )
             }
         }
@@ -181,7 +183,7 @@ fun DeliveryRoute(
                     viewModel.fetchCurrentLocation()
                 } else controller.askPermission()
             },
-            onArrivedPlaceClick = {},
+            onArrivedPlaceClick = navigateToDeliveryConfirmation,
             arrivedButtonEnabled = uiState.value.enabled,
             buttonText = uiState.value.text
         )
@@ -213,7 +215,7 @@ private fun RoutePoints(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(24.dp)) {
                         Icon(
-                            imageVector = Icons.Default.Circle,
+                            imageVector = Icons.Outlined.Circle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(4.dp)
@@ -275,7 +277,7 @@ private fun RoutePoints(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(24.dp)) {
                         Icon(
-                            imageVector = Icons.Default.LocationOn,
+                            imageVector = Icons.Outlined.LocationOn,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary
                         )
