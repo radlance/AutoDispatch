@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.delivery.confirmation.presentation
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,14 +30,15 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,6 +49,7 @@ import com.github.radlance.autodispatch.platform.MapPoint
 import com.github.radlance.autodispatch.platform.createCameraPermissionController
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
+import com.github.radlance.autodispatch.platform.rememberCameraLauncher
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 
 @Composable
@@ -60,15 +63,15 @@ fun DeliveryConfirmation(
     val controller = createCameraPermissionController {
         hasPermission = it
     }
+
+    val images = remember { mutableStateListOf<ByteArray>() }
+    val cameraLauncher = rememberCameraLauncher {
+        it?.let { element -> images.add(element) }
+    }
     val context = getPlatformContext()
     var selectedAddress by remember { mutableStateOf<String?>(null) }
     selectedAddress?.let {
         MapPoint(address = it, onDismiss = { selectedAddress = null })
-    }
-    LaunchedEffect(Unit) {
-        if (controller.hasPermission()) {
-            hasPermission = true
-        }
     }
     if (hasPermission == false) {
         AlertDialog(
@@ -96,9 +99,8 @@ fun DeliveryConfirmation(
                 TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
             }
         )
-    } else if (hasPermission == true) {
-        // TODO
     }
+
     Column(
         modifier = modifier
             .verticalScroll(scrollState)
@@ -176,8 +178,21 @@ fun DeliveryConfirmation(
             }
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            images.forEach { image ->
+                Image(
+                    image.decodeToImageBitmap(),
+                    null,
+                    modifier = Modifier.fillMaxWidth().height(150.dp)
+                )
+            }
             Button(
-                onClick = { controller.askPermission() },
+                onClick = {
+                    if (controller.hasPermission()) {
+                        cameraLauncher.capture()
+                    } else {
+                        controller.askPermission()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(imageVector = Icons.Outlined.AddAPhoto, contentDescription = null)

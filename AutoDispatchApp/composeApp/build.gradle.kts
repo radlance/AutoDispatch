@@ -17,7 +17,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -27,7 +27,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
 
     sourceSets {
@@ -46,11 +46,11 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.datetime)
-            api(libs.slf4j.simple)
+            implementation(libs.slf4j.simple)
             implementation(libs.atomicfu)
             implementation(libs.androidx.datastore)
             implementation(libs.androidx.datastore.datastore.preferences)
-            api(libs.koin.compose)
+            implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodel.navigation)
             implementation(libs.bundles.ktor)
