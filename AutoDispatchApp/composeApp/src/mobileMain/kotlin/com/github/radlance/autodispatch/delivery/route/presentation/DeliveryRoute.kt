@@ -18,11 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -35,6 +36,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
@@ -61,19 +65,69 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.PI
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @Composable
 fun DeliveryRoute(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
-    modifier: Modifier = Modifier
+    navigateToDeliveryConfirmation: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DeliveryRouteViewModel = koinViewModel()
 ) {
     var selectedPoint by remember { mutableStateOf<Point?>(null) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
+
     val controller = createLocationPermissionController {
         hasPermission = it
     }
     val context = getPlatformContext()
+    val currentLocation by viewModel.currentLocation.collectAsStateWithLifecycle()
+
+    val uiState = remember(currentLocation, delivery.unloadingPoint) {
+        derivedStateOf {
+            if (currentLocation == null) {
+                return@derivedStateOf ArriveUi(
+                    enabled = false,
+                    text = "Получите геолокацию"
+                )
+            }
+
+            val distance = distanceMeters(
+                currentLocation!!.lat, currentLocation!!.lon,
+                delivery.unloadingPoint.lat, delivery.unloadingPoint.lon
+            )
+
+            if (distance > 300) {
+                // TODO test data
+//                ArriveUi(
+//                    enabled = false,
+//                    text = "Подъедьте ближе (${formatDistance(distance)})"
+//                )
+                ArriveUi(
+                    enabled = true,
+                    text = "Прибыл на место"
+                )
+            } else {
+                ArriveUi(
+                    enabled = true,
+                    text = "Прибыл на место"
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (controller.hasPermission()) {
+            hasPermission = true
+        }
+    }
 
     if (hasPermission == false) {
         AlertDialog(
@@ -101,7 +155,12 @@ fun DeliveryRoute(
                 TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
             }
         )
+    } else if (hasPermission == true) {
+        LaunchedEffect(hasPermission) {
+            viewModel.fetchCurrentLocation()
+        }
     }
+
     selectedPoint?.let {
         MapRouteDialog(
             lat = it.lat,
@@ -126,11 +185,12 @@ fun DeliveryRoute(
         ActionButtons(
             onRefreshLocationClick = {
                 if (controller.hasPermission()) {
-
+                    viewModel.fetchCurrentLocation()
                 } else controller.askPermission()
             },
-            onArrivedPlaceClick = {},
-            arrivedButtonEnabled = true
+            onArrivedPlaceClick = navigateToDeliveryConfirmation,
+            arrivedButtonEnabled = uiState.value.enabled,
+            buttonText = uiState.value.text
         )
     }
 }
@@ -160,7 +220,7 @@ private fun RoutePoints(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(24.dp)) {
                         Icon(
-                            imageVector = Icons.Default.Circle,
+                            imageVector = Icons.Outlined.Circle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(4.dp)
@@ -222,7 +282,7 @@ private fun RoutePoints(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(24.dp)) {
                         Icon(
-                            imageVector = Icons.Default.LocationOn,
+                            imageVector = Icons.Outlined.LocationOn,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -373,6 +433,7 @@ private fun ActionButtons(
     onRefreshLocationClick: () -> Unit,
     onArrivedPlaceClick: () -> Unit,
     arrivedButtonEnabled: Boolean,
+    buttonText: String,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -389,7 +450,33 @@ private fun ActionButtons(
         ) {
             Icon(imageVector = Icons.Default.Check, contentDescription = null)
             Spacer(Modifier.width(12.dp))
-            Text(text = "Прибыл на место")
+            Text(text = buttonText)
         }
+    }
+}
+
+fun distanceMeters(
+    lat1: Double, lon1: Double,
+    lat2: Double, lon2: Double
+): Double {
+    val r = 6371000.0
+    fun Double.toRad() = this * PI / 180.0
+
+    val dLat = (lat2 - lat1).toRad()
+    val dLon = (lon2 - lon1).toRad()
+
+    val a = sin(dLat / 2).pow(2.0) +
+            cos(lat1.toRad()) * cos(lat2.toRad()) *
+            sin(dLon / 2).pow(2.0)
+
+    return 2.0 * r * asin(sqrt(a))
+}
+
+fun formatDistance(meters: Double): String {
+    return if (meters >= 1000) {
+        val km = (meters / 1000 * 10).toInt() / 10.0
+        "$km км"
+    } else {
+        "${meters.toInt()} м"
     }
 }

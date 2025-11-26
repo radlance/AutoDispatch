@@ -22,7 +22,7 @@ import androidx.core.content.ContextCompat
 @Composable
 actual fun createLocationPermissionController(
     onPermissionResult: (Boolean) -> Unit
-): LocationPermissionController {
+): PermissionController {
 
     val context = LocalContext.current
     val activity = context as Activity
@@ -56,7 +56,7 @@ actual fun createLocationPermissionController(
     }
 
     return remember {
-        object : LocationPermissionController {
+        object : PermissionController {
 
             override fun askPermission() {
                 val isGranted =
@@ -102,4 +102,61 @@ actual fun openAppSettings(context: Any?) {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     ctx.startActivity(intent)
+}
+
+@Composable
+actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): PermissionController {
+    val context = LocalContext.current
+    val activity = context as Activity
+
+    var firstRequestDone by rememberSaveable { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onPermissionResult(true)
+            return@rememberLauncherForActivityResult
+        }
+
+        if (firstRequestDone) {
+            val permanentlyDenied = !ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                Manifest.permission.CAMERA
+            )
+
+            if (permanentlyDenied) {
+                onPermissionResult(false)
+                return@rememberLauncherForActivityResult
+            }
+        }
+
+        onPermissionResult(false)
+    }
+
+    return remember {
+        object : PermissionController {
+            override fun askPermission() {
+                val isGranted = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+
+                if (isGranted) {
+                    onPermissionResult(true)
+                    return
+                }
+
+                launcher.launch(Manifest.permission.CAMERA)
+                firstRequestDone = true
+            }
+
+            override fun hasPermission(): Boolean {
+                return ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+    }
 }

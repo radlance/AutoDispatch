@@ -20,6 +20,12 @@ interface SignInEvent : Event {
 
         override fun apply(action: SignInAction) = action.signIn(login, password)
     }
+
+    object ResetState : SignInEvent {
+        override fun apply(action: SignInAction) {
+            action.resetState()
+        }
+    }
 }
 
 interface SignInAction {
@@ -29,4 +35,6 @@ interface SignInAction {
     fun changePassword(value: String)
 
     fun signIn(email: String, password: String)
+
+    fun resetState()
 }

@@ -5,9 +5,9 @@ import androidx.compose.runtime.Composable
 @Composable
 expect fun createLocationPermissionController(
     onPermissionResult: (Boolean) -> Unit
-): LocationPermissionController
+): PermissionController
 
-interface LocationPermissionController {
+interface PermissionController {
 
     fun askPermission()
 
@@ -15,3 +15,8 @@ interface LocationPermissionController {
 }
 
 expect fun openAppSettings(context: Any?)
+
+@Composable
+expect fun createCameraPermissionController(
+    onPermissionResult: (Boolean) -> Unit
+): PermissionController

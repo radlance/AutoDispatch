@@ -4,6 +4,7 @@ import com.github.radlance.autodispatch.domain.auth.LoginUser
 import com.github.radlance.autodispatch.domain.auth.RegisterUser
 import com.github.radlance.autodispatch.domain.auth.Token
 import com.github.radlance.autodispatch.domain.auth.User
+import com.github.radlance.autodispatch.domain.request.LoginResponse
 import com.github.radlance.autodispatch.repository.AuthRepository
 import com.github.radlance.autodispatch.security.hashing.HashingService
 import com.github.radlance.autodispatch.security.hashing.SaltedHash
@@ -33,7 +34,7 @@ class AuthService(
         return authRepository.create(registerUser, saltedHash.salt)
     }
 
-    suspend fun login(user: LoginUser): Token {
+    suspend fun login(user: LoginUser): LoginResponse {
         val existingUser = authRepository.getUserByLogin(user.login)
             ?: throw MissingCredentialException("Incorrect login or password")
 
@@ -49,7 +50,7 @@ class AuthService(
         }
 
         val accessToken = tokenService.generateToken(userLogin = user.login)
-        return Token(accessToken = accessToken)
+        return LoginResponse(accessToken = accessToken, roleId = existingUser.roleId)
     }
 
     fun refreshToken(token: Token): Token = tokenService.refreshToken(token)

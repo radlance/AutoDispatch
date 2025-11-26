@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.auth.presentation
 
 import com.github.radlance.autodispatch.auth.domain.AuthRepository
+import com.github.radlance.autodispatch.auth.domain.LoginResponse
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
@@ -19,7 +20,7 @@ class SignInViewModel(
     val fieldsUiState get() = fieldsUiStateMutable.asStateFlow()
 
     private val authResultUiStateMutable =
-        MutableStateFlow<FetchResultUiState<String, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<LoginResponse, String>>(FetchResultUiState.Idle)
 
     val authResultUiState get() = authResultUiStateMutable.asStateFlow()
 
@@ -67,6 +68,10 @@ class SignInViewModel(
                         }
                     }
                 }
+            }
+
+            override fun resetState() {
+                authResultUiStateMutable.value = FetchResultUiState.Idle
             }
         }
         event.apply(action = action)

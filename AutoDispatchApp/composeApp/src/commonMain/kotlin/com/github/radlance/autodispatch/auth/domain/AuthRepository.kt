@@ -4,5 +4,5 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 
 interface AuthRepository {
 
-    suspend fun signIn(login: String, password: String): FetchResult<String, String>
+    suspend fun signIn(login: String, password: String): FetchResult<LoginResponse, String>
 }

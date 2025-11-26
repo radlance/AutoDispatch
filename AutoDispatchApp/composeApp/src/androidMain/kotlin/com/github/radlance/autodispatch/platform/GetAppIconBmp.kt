@@ -2,11 +2,11 @@ package com.github.radlance.autodispatch.platform
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.createBitmap
 
 internal fun PackageManager.getAppIconBmp(packageName: String): ImageBitmap {
     val drawable = getApplicationIcon(packageName)
@@ -14,11 +14,7 @@ internal fun PackageManager.getAppIconBmp(packageName: String): ImageBitmap {
         return drawable.bitmap.asImageBitmap()
     }
 
-    val bitmap = Bitmap.createBitmap(
-        drawable.intrinsicWidth,
-        drawable.intrinsicHeight,
-        Bitmap.Config.ARGB_8888
-    )
+    val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
 
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, canvas.width, canvas.height)

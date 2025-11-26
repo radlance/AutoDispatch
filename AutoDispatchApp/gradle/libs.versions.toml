@@ -16,6 +16,7 @@ ktor = "3.3.2"
 koin = "4.1.1"
 datastore = "1.1.7"
 atomicfu = "0.29.0"
+playServicesLocation = "21.3.0"
 slf4jSimple = "2.0.17"
 kotlinxDateTime = "0.7.1"
 jmapviewer = "2.24"
@@ -25,6 +26,7 @@ javafx = "17.0.2"
 datatable-material3 = { module = "com.seanproctor:datatable-material3", version.ref = "datatableMaterial3" }
 jmapviewer = { module = "org.openstreetmap.jmapviewer:jmapviewer", version.ref = "jmapviewer" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4jSimple" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
