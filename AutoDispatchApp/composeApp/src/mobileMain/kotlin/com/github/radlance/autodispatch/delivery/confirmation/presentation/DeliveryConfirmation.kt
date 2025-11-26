@@ -65,7 +65,7 @@ import com.github.radlance.autodispatch.platform.rememberCameraLauncher
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
-
+// TODO lazyRow + image scroll
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun DeliveryConfirmation(
@@ -75,64 +75,62 @@ fun DeliveryConfirmation(
     modifier: Modifier = Modifier
 ) {
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
-
-    val controller = createCameraPermissionController {
-        hasPermission = it
-    }
+    val controller = createCameraPermissionController { hasPermission = it }
 
     val images = remember { mutableStateListOf<ByteArray>() }
-    val cameraLauncher = rememberCameraLauncher {
-        it?.let { element -> images.add(element) }
-    }
+    val cameraLauncher = rememberCameraLauncher { it?.let(images::add) }
+
     val context = getPlatformContext()
+
     var selectedAddress by remember { mutableStateOf<String?>(null) }
     selectedAddress?.let {
         MapPoint(address = it, onDismiss = { selectedAddress = null })
     }
+
     var fullscreenIndex by remember { mutableStateOf<Int?>(null) }
-    val currentNavigateUp: () -> Unit = fullscreenIndex?.let {
-        { fullscreenIndex = null }
-    } ?: navigateUp
+    var currentIndex by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(fullscreenIndex) {
+        if (fullscreenIndex != null) {
+            currentIndex = fullscreenIndex
+        }
+    }
+
+    val currentNavigateUp =
+        if (fullscreenIndex != null) { { fullscreenIndex = null } }
+        else navigateUp
 
     BackHandler(onBack = currentNavigateUp)
+
     if (hasPermission == false) {
         AlertDialog(
             onDismissRequest = { hasPermission = null },
             icon = {
-                Icon(
-                    Icons.Default.PhotoCamera,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Default.PhotoCamera, null, tint = MaterialTheme.colorScheme.primary)
             },
             title = { Text("Доступ к камере") },
             text = { Text("Разрешите доступ к камере для корректной работы приложения.") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        openAppSettings(context)
-                        hasPermission = null
-                    }
-                ) {
-                    Text("Настройки")
-                }
+                TextButton(onClick = {
+                    openAppSettings(context)
+                    hasPermission = null
+                }) { Text("Настройки") }
             },
             dismissButton = {
                 TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
             }
         )
     } else if (hasPermission == true) {
-        LaunchedEffect(hasPermission) {
-            cameraLauncher.capture()
-        }
+        LaunchedEffect(hasPermission) { cameraLauncher.capture() }
     }
 
     SharedTransitionLayout {
         AnimatedContent(
             targetState = fullscreenIndex != null,
             label = "basic_transition"
-        ) { targetState ->
-            if (!targetState) {
+        ) { isFullscreen ->
+
+            if (!isFullscreen) {
                 Column(
                     modifier = modifier
                         .verticalScroll(scrollState)
@@ -141,20 +139,19 @@ fun DeliveryConfirmation(
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
                         ),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary)
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier.padding(18.dp)
-                            ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(18.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(modifier = Modifier.size(24.dp)) {
+                                    Box(Modifier.size(24.dp)) {
                                         Icon(
-                                            imageVector = Icons.Outlined.ErrorOutline,
+                                            Icons.Outlined.ErrorOutline,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary
                                         )
@@ -171,82 +168,80 @@ fun DeliveryConfirmation(
                                     .padding(bottom = 18.dp)
                             ) {
                                 Text(
-                                    text = "Сделайте фото документа о доставке (накладная, товарно-транспортная накладная). Фотография должна быть чёткой и читаемой.",
+                                    text = "Сделайте фото документа о доставке (накладная, ТТН). Фотография должна быть чёткой и читаемой.",
                                     fontSize = 14.sp
                                 )
                             }
                         }
                     }
+
                     Card {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier.padding(18.dp)
-                            ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(18.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(modifier = Modifier.size(24.dp)) {
+                                    Box(Modifier.size(24.dp)) {
                                         Icon(
-                                            imageVector = Icons.Outlined.LocationOn,
+                                            Icons.Outlined.LocationOn,
                                             contentDescription = null
                                         )
                                     }
                                     Spacer(Modifier.width(12.dp))
-                                    Text(
-                                        text = "Точка разгрузки"
-                                    )
+                                    Text("Точка разгрузки")
                                 }
                             }
-                            Column(modifier = Modifier.padding(horizontal = 18.dp)) {
+                            Column(Modifier.padding(horizontal = 18.dp)) {
                                 Text(
                                     text = delivery.unloadingPoint.toStringAddress(),
                                     fontSize = 14.sp
                                 )
-
                                 OutlinedButton(
                                     onClick = {
                                         selectedAddress = delivery.unloadingPoint.toStringAddress()
                                     },
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 18.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = GlobalLocationPinIcon,
-                                        contentDescription = null
-                                    )
+                                    Icon(GlobalLocationPinIcon, null)
                                     Spacer(Modifier.width(12.dp))
-                                    Text(text = "Открыть на карте")
+                                    Text("Открыть на карте")
                                 }
                             }
                         }
                     }
+
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        images.forEachIndexed { idx, image ->
-                            val sharedState = rememberSharedContentState(key = "image_$idx")
-                            Image(
-                                bitmap = image.decodeToImageBitmap(),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(150.dp)
-                                    .clickable { fullscreenIndex = idx }
-                                    .sharedElement(
-                                        sharedState,
-                                        animatedVisibilityScope = this@AnimatedContent
-                                    )
-                            )
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            images.forEachIndexed { idx, image ->
+                                val sharedState = rememberSharedContentState(key = "image_$idx")
+
+                                Image(
+                                    bitmap = image.decodeToImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .height(150.dp)
+                                        .width(100.dp)
+                                        .clickable { fullscreenIndex = idx }
+                                        .sharedElement(
+                                            sharedState,
+                                            animatedVisibilityScope = this@AnimatedContent
+                                        )
+                                )
+                            }
                         }
+
                         Button(
                             onClick = {
-                                if (controller.hasPermission()) {
-                                    cameraLauncher.capture()
-                                } else {
-                                    controller.askPermission()
-                                }
+                                if (controller.hasPermission()) cameraLauncher.capture()
+                                else controller.askPermission()
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(imageVector = Icons.Outlined.AddAPhoto, contentDescription = null)
+                            Icon(Icons.Outlined.AddAPhoto, null)
                             Spacer(Modifier.width(12.dp))
-                            Text(text = "Сделать фото документа")
+                            Text("Сделать фото документа")
                         }
+
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = "Фото будет сделано через камеру устройства",
@@ -256,28 +251,24 @@ fun DeliveryConfirmation(
                         )
                     }
                 }
+
             } else {
-                var currentIndex = 0
-                LaunchedEffect(fullscreenIndex) {
-                    fullscreenIndex?.let {
-                        currentIndex = it
-                    }
+                val index = currentIndex ?: return@AnimatedContent
+                val sharedState = rememberSharedContentState(key = "image_$index")
+
+                val bmp = remember(images, index) {
+                    BitmapPainter(images[index].decodeToImageBitmap())
                 }
-                val sharedState = rememberSharedContentState(key = "image_$currentIndex")
-                val bmp = remember { BitmapPainter(images[currentIndex].decodeToImageBitmap()) }
                 val zoomState = rememberZoomState(contentSize = bmp.intrinsicSize)
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
+                Box(Modifier.fillMaxSize()) {
                     Image(
                         painter = bmp,
                         contentDescription = null,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxSize()
-                            .zoomable(zoomState = zoomState)
+                            .zoomable(zoomState)
                             .sharedElement(
                                 sharedState,
                                 animatedVisibilityScope = this@AnimatedContent
@@ -286,14 +277,9 @@ fun DeliveryConfirmation(
 
                     IconButton(
                         onClick = { fullscreenIndex = null },
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(16.dp)
+                        modifier = Modifier.align(Alignment.TopStart)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close"
-                        )
+                        Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 }
             }

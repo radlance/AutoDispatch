@@ -21,6 +21,8 @@ slf4jSimple = "2.0.17"
 kotlinxDateTime = "0.7.1"
 jmapviewer = "2.24"
 javafx = "17.0.2"
+uiBackhandler = "1.9.3"
+zoomable = "2.9.0"
 
 [libraries]
 datatable-material3 = { module = "com.seanproctor:datatable-material3", version.ref = "datatableMaterial3" }
@@ -49,6 +51,8 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "uiBackhandler" }
+zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 
 [plugins]
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
