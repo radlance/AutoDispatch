@@ -138,3 +138,60 @@ actual suspend fun getCurrentLocation(context: Any?): Location? {
         }
     }
 }
+
+@Composable
+actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): CameraPermissionController {
+    val context = LocalContext.current
+    val activity = context as Activity
+
+    var firstRequestDone by rememberSaveable { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onPermissionResult(true)
+            return@rememberLauncherForActivityResult
+        }
+
+        if (firstRequestDone) {
+            val permanentlyDenied = !ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                Manifest.permission.CAMERA
+            )
+
+            if (permanentlyDenied) {
+                onPermissionResult(false)
+                return@rememberLauncherForActivityResult
+            }
+        }
+
+        onPermissionResult(false)
+    }
+
+    return remember {
+        object : CameraPermissionController {
+            override fun askPermission() {
+                val isGranted = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+
+                if (isGranted) {
+                    onPermissionResult(true)
+                    return
+                }
+
+                launcher.launch(Manifest.permission.CAMERA)
+                firstRequestDone = true
+            }
+
+            override fun hasPermission(): Boolean {
+                return ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+    }
+}

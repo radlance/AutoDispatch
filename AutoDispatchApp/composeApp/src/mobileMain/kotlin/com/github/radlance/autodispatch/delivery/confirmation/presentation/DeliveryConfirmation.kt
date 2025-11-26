@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,7 +27,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +44,9 @@ import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapPoint
+import com.github.radlance.autodispatch.platform.createCameraPermissionController
+import com.github.radlance.autodispatch.platform.getPlatformContext
+import com.github.radlance.autodispatch.platform.openAppSettings
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 
 @Composable
@@ -48,9 +55,49 @@ fun DeliveryConfirmation(
     scrollState: ScrollState,
     modifier: Modifier = Modifier
 ) {
+    var hasPermission by remember { mutableStateOf<Boolean?>(null) }
+
+    val controller = createCameraPermissionController {
+        hasPermission = it
+    }
+    val context = getPlatformContext()
     var selectedAddress by remember { mutableStateOf<String?>(null) }
     selectedAddress?.let {
         MapPoint(address = it, onDismiss = { selectedAddress = null })
+    }
+    LaunchedEffect(Unit) {
+        if (controller.hasPermission()) {
+            hasPermission = true
+        }
+    }
+    if (hasPermission == false) {
+        AlertDialog(
+            onDismissRequest = { hasPermission = null },
+            icon = {
+                Icon(
+                    Icons.Default.PhotoCamera,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { Text("Доступ к камере") },
+            text = { Text("Разрешите доступ к камере для корректной работы приложения.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openAppSettings(context)
+                        hasPermission = null
+                    }
+                ) {
+                    Text("Настройки")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
+            }
+        )
+    } else if (hasPermission == true) {
+        // TODO
     }
     Column(
         modifier = modifier
@@ -130,7 +177,7 @@ fun DeliveryConfirmation(
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Button(
-                onClick = { selectedAddress = delivery.unloadingPoint.toStringAddress() },
+                onClick = { controller.askPermission() },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(imageVector = Icons.Outlined.AddAPhoto, contentDescription = null)

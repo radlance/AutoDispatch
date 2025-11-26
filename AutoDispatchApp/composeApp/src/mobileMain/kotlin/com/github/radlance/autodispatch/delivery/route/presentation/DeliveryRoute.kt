@@ -105,9 +105,14 @@ fun DeliveryRoute(
             )
 
             if (distance > 300) {
+                // TODO test data
+//                ArriveUi(
+//                    enabled = false,
+//                    text = "Подъедьте ближе (${formatDistance(distance)})"
+//                )
                 ArriveUi(
-                    enabled = false,
-                    text = "Подъедьте ближе (${formatDistance(distance)})"
+                    enabled = true,
+                    text = "Прибыл на место"
                 )
             } else {
                 ArriveUi(

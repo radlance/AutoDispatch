@@ -18,3 +18,15 @@ interface LocationPermissionController {
 expect fun openAppSettings(context: Any?)
 
 expect suspend fun getCurrentLocation(context: Any?): Location?
+
+@Composable
+expect fun createCameraPermissionController(
+    onPermissionResult: (Boolean) -> Unit
+): CameraPermissionController
+
+interface CameraPermissionController {
+
+    fun askPermission()
+
+    fun hasPermission(): Boolean
+}

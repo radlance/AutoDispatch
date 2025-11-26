@@ -8,6 +8,12 @@ import kotlinx.cinterop.useContents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import platform.AVFoundation.AVAuthorizationStatusAuthorized
+import platform.AVFoundation.AVAuthorizationStatusNotDetermined
+import platform.AVFoundation.AVCaptureDevice
+import platform.AVFoundation.AVMediaTypeVideo
+import platform.AVFoundation.authorizationStatusForMediaType
+import platform.AVFoundation.requestAccessForMediaType
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
@@ -19,6 +25,8 @@ import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import kotlin.coroutines.resume
 
 @Composable
@@ -165,5 +173,40 @@ actual suspend fun getCurrentLocation(context: Any?): Location? = withContext(Di
                 IOSLocationHolder.delegate = null
             }
         }
+    }
+}
+
+@Composable
+actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): CameraPermissionController {
+    return remember { IosCameraPermissionController(onPermissionResult) }
+}
+
+private class IosCameraPermissionController(
+    private val onResult: (Boolean) -> Unit
+) : CameraPermissionController {
+
+    override fun askPermission() {
+        val status = AVCaptureDevice.authorizationStatusForMediaType(AVMediaTypeVideo)
+
+        when (status) {
+            AVAuthorizationStatusNotDetermined -> {
+                AVCaptureDevice.requestAccessForMediaType(AVMediaTypeVideo) { granted ->
+                    dispatch_async(dispatch_get_main_queue()) {
+                        onResult(granted)
+                    }
+                }
+            }
+            AVAuthorizationStatusAuthorized -> {
+                onResult(true)
+            }
+            else -> {
+                onResult(false)
+            }
+        }
+    }
+
+    override fun hasPermission(): Boolean {
+        val status = AVCaptureDevice.authorizationStatusForMediaType(AVMediaTypeVideo)
+        return status == AVAuthorizationStatusAuthorized
     }
 }
