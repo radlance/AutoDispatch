@@ -32,13 +32,13 @@ import kotlin.coroutines.resume
 @Composable
 actual fun createLocationPermissionController(
     onPermissionResult: (Boolean) -> Unit
-): LocationPermissionController {
-    return remember { IosPermissionController(onPermissionResult) }
+): PermissionController {
+    return remember { IosLocationPermissionController(onPermissionResult) }
 }
 
-private class IosPermissionController(
+private class IosLocationPermissionController(
     private val onResult: (Boolean) -> Unit
-) : LocationPermissionController {
+) : PermissionController {
 
     private val manager = CLLocationManager()
     private var authDelegate: AuthorizationDelegate? = null
@@ -177,13 +177,13 @@ actual suspend fun getCurrentLocation(context: Any?): Location? = withContext(Di
 }
 
 @Composable
-actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): CameraPermissionController {
+actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): PermissionController {
     return remember { IosCameraPermissionController(onPermissionResult) }
 }
 
 private class IosCameraPermissionController(
     private val onResult: (Boolean) -> Unit
-) : CameraPermissionController {
+) : PermissionController {
 
     override fun askPermission() {
         val status = AVCaptureDevice.authorizationStatusForMediaType(AVMediaTypeVideo)

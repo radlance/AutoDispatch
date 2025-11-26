@@ -26,7 +26,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @Composable
 actual fun createLocationPermissionController(
     onPermissionResult: (Boolean) -> Unit
-): LocationPermissionController {
+): PermissionController {
 
     val context = LocalContext.current
     val activity = context as Activity
@@ -60,7 +60,7 @@ actual fun createLocationPermissionController(
     }
 
     return remember {
-        object : LocationPermissionController {
+        object : PermissionController {
 
             override fun askPermission() {
                 val isGranted =
@@ -140,7 +140,7 @@ actual suspend fun getCurrentLocation(context: Any?): Location? {
 }
 
 @Composable
-actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): CameraPermissionController {
+actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): PermissionController {
     val context = LocalContext.current
     val activity = context as Activity
 
@@ -170,7 +170,7 @@ actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Uni
     }
 
     return remember {
-        object : CameraPermissionController {
+        object : PermissionController {
             override fun askPermission() {
                 val isGranted = ContextCompat.checkSelfPermission(
                     context,

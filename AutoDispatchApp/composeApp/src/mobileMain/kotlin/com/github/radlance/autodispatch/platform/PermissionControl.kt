@@ -6,9 +6,9 @@ import com.github.radlance.autodispatch.delivery.route.domain.Location
 @Composable
 expect fun createLocationPermissionController(
     onPermissionResult: (Boolean) -> Unit
-): LocationPermissionController
+): PermissionController
 
-interface LocationPermissionController {
+interface PermissionController {
 
     fun askPermission()
 
@@ -22,11 +22,4 @@ expect suspend fun getCurrentLocation(context: Any?): Location?
 @Composable
 expect fun createCameraPermissionController(
     onPermissionResult: (Boolean) -> Unit
-): CameraPermissionController
-
-interface CameraPermissionController {
-
-    fun askPermission()
-
-    fun hasPermission(): Boolean
-}
+): PermissionController
