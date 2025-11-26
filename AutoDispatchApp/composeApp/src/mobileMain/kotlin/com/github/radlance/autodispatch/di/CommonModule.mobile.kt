@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.di
 
 import com.github.radlance.autodispatch.common.data.ApiServiceMobile
 import com.github.radlance.autodispatch.common.data.KtorApiServiceMobile
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationViewModel
 import com.github.radlance.autodispatch.delivery.core.data.RemoteDeliveryRepository
 import com.github.radlance.autodispatch.delivery.core.domain.DeliveryRepository
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryViewModel
@@ -26,4 +27,5 @@ val deliveryModule
         singleOf(::RemoteDeliveryDetailsRepository).bind<DeliveryDetailsRepository>()
         viewModelOf(::DeliveryDetailsViewModel)
         viewModelOf(::DeliveryRouteViewModel)
+        viewModelOf(::DeliveryConfirmationViewModel)
     }

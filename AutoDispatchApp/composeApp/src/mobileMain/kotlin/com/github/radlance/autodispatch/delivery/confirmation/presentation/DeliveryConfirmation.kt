@@ -6,7 +6,9 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -39,7 +43,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,20 +68,22 @@ import com.github.radlance.autodispatch.platform.rememberCameraLauncher
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
-// TODO lazyRow + image scroll
+import org.koin.compose.viewmodel.koinViewModel
+
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun DeliveryConfirmation(
     navigateUp: () -> Unit,
     delivery: DeliveryDetailed,
     scrollState: ScrollState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: DeliveryConfirmationViewModel = koinViewModel()
 ) {
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
     val controller = createCameraPermissionController { hasPermission = it }
 
-    val images = remember { mutableStateListOf<ByteArray>() }
-    val cameraLauncher = rememberCameraLauncher { it?.let(images::add) }
+    val documents = viewModel.documents
+    val cameraLauncher = rememberCameraLauncher { it?.let(documents::add) }
 
     val context = getPlatformContext()
 
@@ -97,8 +102,9 @@ fun DeliveryConfirmation(
     }
 
     val currentNavigateUp =
-        if (fullscreenIndex != null) { { fullscreenIndex = null } }
-        else navigateUp
+        if (fullscreenIndex != null) {
+            { fullscreenIndex = null }
+        } else navigateUp
 
     BackHandler(onBack = currentNavigateUp)
 
@@ -211,8 +217,12 @@ fun DeliveryConfirmation(
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            images.forEachIndexed { idx, image ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                        ) {
+                            documents.forEachIndexed { idx, image ->
                                 val sharedState = rememberSharedContentState(key = "image_$idx")
 
                                 Image(
@@ -239,7 +249,11 @@ fun DeliveryConfirmation(
                         ) {
                             Icon(Icons.Outlined.AddAPhoto, null)
                             Spacer(Modifier.width(12.dp))
-                            Text("Сделать фото документа")
+                            Text(
+                                if (documents.isEmpty()) {
+                                    "Сделать фото документа"
+                                } else "Добавить фото документа"
+                            )
                         }
 
                         Spacer(Modifier.height(8.dp))
@@ -256,8 +270,8 @@ fun DeliveryConfirmation(
                 val index = currentIndex ?: return@AnimatedContent
                 val sharedState = rememberSharedContentState(key = "image_$index")
 
-                val bmp = remember(images, index) {
-                    BitmapPainter(images[index].decodeToImageBitmap())
+                val bmp = remember(documents, index) {
+                    BitmapPainter(documents[index].decodeToImageBitmap())
                 }
                 val zoomState = rememberZoomState(contentSize = bmp.intrinsicSize)
 
@@ -277,9 +291,20 @@ fun DeliveryConfirmation(
 
                     IconButton(
                         onClick = { fullscreenIndex = null },
-                        modifier = Modifier.align(Alignment.TopStart)
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(16.dp)
+                            .size(40.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                                shape = CircleShape
+                            )
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
