@@ -45,6 +45,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation("org.jetbrains.compose.ui:ui-backhandler:1.9.3")
+            implementation("net.engawapg.lib:zoomable:2.9.0")
             implementation(libs.kotlinx.datetime)
             implementation(libs.slf4j.simple)
             implementation(libs.atomicfu)

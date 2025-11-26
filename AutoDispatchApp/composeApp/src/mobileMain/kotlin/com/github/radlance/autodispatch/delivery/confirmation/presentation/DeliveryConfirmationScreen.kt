@@ -94,6 +94,7 @@ fun DeliveryConfirmationScreen(
                         )
                     }
                     DeliveryConfirmation(
+                        navigateUp = navigateUp,
                         delivery = delivery,
                         scrollState = scrollState
                     )
