@@ -4,10 +4,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
@@ -99,13 +101,6 @@ fun DeliveryConfirmation(
     }
 
     var fullscreenIndex by remember { mutableStateOf<Int?>(null) }
-    var currentIndex by remember { mutableStateOf<Int?>(null) }
-
-    LaunchedEffect(fullscreenIndex) {
-        if (fullscreenIndex != null) {
-            currentIndex = fullscreenIndex
-        }
-    }
 
     val currentNavigateUp =
         if (fullscreenIndex != null) {
@@ -118,7 +113,11 @@ fun DeliveryConfirmation(
         AlertDialog(
             onDismissRequest = { hasPermission = null },
             icon = {
-                Icon(Icons.Default.PhotoCamera, null, tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Default.PhotoCamera,
+                    null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
             },
             title = { Text("Доступ к камере") },
             text = { Text("Разрешите доступ к камере для корректной работы приложения.") },
@@ -138,11 +137,14 @@ fun DeliveryConfirmation(
 
     SharedTransitionLayout {
         AnimatedContent(
-            targetState = fullscreenIndex != null,
-            label = "basic_transition"
-        ) { isFullscreen ->
+            targetState = fullscreenIndex,
+            label = "basic_transition",
+            transitionSpec = {
+                fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+            }
+        ) { targetIndex ->
 
-            if (!isFullscreen) {
+            if (targetIndex == null) {
                 Column(
                     modifier = modifier
                         .verticalScroll(scrollState)
@@ -258,7 +260,6 @@ fun DeliveryConfirmation(
                                                 animatedVisibilityScope = this@AnimatedContent
                                             )
                                     )
-
                                     IconButton(
                                         onClick = { viewModel.documents.remove(image) },
                                         modifier = Modifier
@@ -310,44 +311,46 @@ fun DeliveryConfirmation(
                 }
 
             } else {
-                val index = currentIndex ?: return@AnimatedContent
-                val sharedState = rememberSharedContentState(key = "image_$index")
+                if (targetIndex < documents.size) {
+                    val sharedState = rememberSharedContentState(key = "image_$targetIndex")
 
-                val bmp = remember(documents, index) {
-                    BitmapPainter(documents[index].decodeToImageBitmap())
-                }
-                val zoomState = rememberZoomState(contentSize = bmp.intrinsicSize)
+                    val bmp = remember(documents, targetIndex) {
+                        documents[targetIndex].decodeToImageBitmap()
+                    }
+                    val bmpPainter = remember(bmp) { BitmapPainter(bmp) }
+                    val zoomState = rememberZoomState(contentSize = bmpPainter.intrinsicSize)
 
-                Box(Modifier.fillMaxSize()) {
-                    Image(
-                        painter = bmp,
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .zoomable(zoomState)
-                            .sharedElement(
-                                sharedState,
-                                animatedVisibilityScope = this@AnimatedContent
-                            )
-                    )
-
-                    IconButton(
-                        onClick = { fullscreenIndex = null },
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-                                shape = CircleShape
-                            )
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
+                    Box(Modifier.fillMaxSize()) {
+                        Image(
+                            painter = bmpPainter,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .zoomable(zoomState)
+                                .sharedElement(
+                                    sharedState,
+                                    animatedVisibilityScope = this@AnimatedContent
+                                )
                         )
+
+                        IconButton(
+                            onClick = { fullscreenIndex = null },
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(8.dp)
+                                .size(40.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }

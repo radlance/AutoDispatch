@@ -62,7 +62,7 @@ private class IosCameraLauncher(
             val image =
                 didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
             val jpegData =
-                image?.let { UIImageJPEGRepresentation(it, 0.8) }
+                image?.let { UIImageJPEGRepresentation(it, 1.0) }
 
             val byteArray = jpegData?.toByteArray()
 
