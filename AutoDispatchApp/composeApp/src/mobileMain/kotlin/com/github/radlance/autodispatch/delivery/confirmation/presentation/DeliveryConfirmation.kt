@@ -291,20 +291,23 @@ fun DeliveryConfirmation(
                         }
                     }
                     Spacer(Modifier.height(if (documents.isEmpty()) 24.dp else 8.dp))
+                    val canAddMore = documents.size < 10
+                    val buttonText = if (canAddMore) {
+                        if (documents.isEmpty()) "Сделать фото документа" else "Добавить фото документа"
+                    } else {
+                        "Максимум 10 фото"
+                    }
                     Button(
                         onClick = {
                             if (controller.hasPermission()) cameraLauncher.capture()
                             else controller.askPermission()
                         },
+                        enabled = canAddMore,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Outlined.AddAPhoto, null)
+                        Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
                         Spacer(Modifier.width(12.dp))
-                        Text(
-                            if (documents.isEmpty()) {
-                                "Сделать фото документа"
-                            } else "Добавить фото документа"
-                        )
+                        Text(buttonText)
                     }
 
                     Spacer(Modifier.height(8.dp))
