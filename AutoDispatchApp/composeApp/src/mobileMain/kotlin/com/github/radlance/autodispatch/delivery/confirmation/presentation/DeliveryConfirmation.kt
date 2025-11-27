@@ -18,6 +18,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -53,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -94,13 +97,14 @@ fun DeliveryConfirmation(
     val cameraLauncher = rememberCameraLauncher { it?.let(documents::add) }
 
     val context = getPlatformContext()
+    val lazyRowState = rememberLazyListState()
 
     var selectedAddress by remember { mutableStateOf<String?>(null) }
     selectedAddress?.let {
         MapPoint(address = it, onDismiss = { selectedAddress = null })
     }
 
-    var fullscreenIndex by remember { mutableStateOf<Int?>(null) }
+    var fullscreenIndex by rememberSaveable { mutableStateOf<Int?>(null) }
 
     val currentNavigateUp =
         if (fullscreenIndex != null) {
@@ -230,6 +234,8 @@ fun DeliveryConfirmation(
                         exit = fadeOut() + shrinkVertically()
                     ) {
                         LazyRow(
+                            state = lazyRowState,
+                            contentPadding = PaddingValues(end = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
