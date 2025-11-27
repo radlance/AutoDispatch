@@ -1,14 +1,18 @@
 package com.github.radlance.autodispatch.delivery.confirmation.presentation
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +21,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -142,10 +148,8 @@ fun DeliveryConfirmation(
                         .verticalScroll(scrollState)
                         .padding(horizontal = 18.dp)
                         .padding(bottom = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -180,7 +184,7 @@ fun DeliveryConfirmation(
                             }
                         }
                     }
-
+                    Spacer(Modifier.height(24.dp))
                     Card {
                         Column(Modifier.fillMaxWidth()) {
                             Column(Modifier.padding(18.dp)) {
@@ -215,55 +219,94 @@ fun DeliveryConfirmation(
                             }
                         }
                     }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.fillMaxWidth()
-                                .horizontalScroll(rememberScrollState())
+                    if (documents.isNotEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    AnimatedVisibility(
+                        visible = documents.isNotEmpty(),
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
                         ) {
-                            documents.forEachIndexed { idx, image ->
-                                val sharedState = rememberSharedContentState(key = "image_$idx")
+                            itemsIndexed(
+                                items = documents,
+                                key = { idx, _ -> idx }
+                            ) { idx, image ->
 
-                                Image(
-                                    bitmap = image.decodeToImageBitmap(),
-                                    contentDescription = null,
+                                val sharedKey = remember(image) { "image_${idx}" }
+                                val sharedState = rememberSharedContentState(key = sharedKey)
+
+                                Box(
                                     modifier = Modifier
-                                        .height(150.dp)
-                                        .width(100.dp)
+                                        .animateItem()
+                                        .width(80.dp)
+                                        .fillMaxSize()
                                         .clickable { fullscreenIndex = idx }
-                                        .sharedElement(
-                                            sharedState,
-                                            animatedVisibilityScope = this@AnimatedContent
+                                ) {
+                                    Image(
+                                        bitmap = image.decodeToImageBitmap(),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .sharedElement(
+                                                sharedState,
+                                                animatedVisibilityScope = this@AnimatedContent
+                                            )
+                                    )
+
+                                    IconButton(
+                                        onClick = { viewModel.documents.remove(image) },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .offset(x = 8.dp, y = (-8).dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                    alpha = 0.8f
+                                                ),
+                                                shape = CircleShape
+                                            )
+                                            .size(24.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Close",
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(16.dp)
                                         )
-                                )
+                                    }
+                                }
                             }
                         }
-
-                        Button(
-                            onClick = {
-                                if (controller.hasPermission()) cameraLauncher.capture()
-                                else controller.askPermission()
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(Icons.Outlined.AddAPhoto, null)
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                if (documents.isEmpty()) {
-                                    "Сделать фото документа"
-                                } else "Добавить фото документа"
-                            )
-                        }
-
-                        Spacer(Modifier.height(8.dp))
+                    }
+                    Spacer(Modifier.height(if (documents.isEmpty()) 24.dp else 8.dp))
+                    Button(
+                        onClick = {
+                            if (controller.hasPermission()) cameraLauncher.capture()
+                            else controller.askPermission()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Outlined.AddAPhoto, null)
+                        Spacer(Modifier.width(12.dp))
                         Text(
-                            text = "Фото будет сделано через камеру устройства",
-                            textAlign = TextAlign.Center,
-                            fontSize = 12.sp,
-                            modifier = Modifier.alpha(0.7f)
+                            if (documents.isEmpty()) {
+                                "Сделать фото документа"
+                            } else "Добавить фото документа"
                         )
                     }
+
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Фото будет сделано через камеру устройства",
+                        textAlign = TextAlign.Center,
+                        fontSize = 12.sp,
+                        modifier = Modifier.alpha(0.7f)
+                    )
                 }
 
             } else {
@@ -293,7 +336,7 @@ fun DeliveryConfirmation(
                         onClick = { fullscreenIndex = null },
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .padding(16.dp)
+                            .padding(8.dp)
                             .size(40.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
@@ -302,7 +345,7 @@ fun DeliveryConfirmation(
                     ) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
