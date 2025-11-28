@@ -34,7 +34,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -90,6 +92,8 @@ fun DeliveryConfirmation(
     modifier: Modifier = Modifier,
     viewModel: DeliveryConfirmationViewModel = koinViewModel()
 ) {
+    var showBackDialog by remember { mutableStateOf(false) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
     val controller = createCameraPermissionController { hasPermission = it }
 
@@ -111,7 +115,13 @@ fun DeliveryConfirmation(
             { fullscreenIndex = null }
         } else navigateUp
 
-    BackHandler(onBack = currentNavigateUp)
+    BackHandler {
+        if (documents.isNotEmpty() && fullscreenIndex == null) {
+            showBackDialog = true
+        } else {
+            currentNavigateUp()
+        }
+    }
 
     if (hasPermission == false) {
         AlertDialog(
@@ -137,6 +147,58 @@ fun DeliveryConfirmation(
         )
     } else if (hasPermission == true) {
         LaunchedEffect(hasPermission) { cameraLauncher.capture() }
+    }
+
+    if (showBackDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackDialog = false },
+            icon = {
+                Icon(
+                    Icons.Default.ErrorOutline,
+                    null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { Text("Вернуться назад?") },
+            text = { Text("У вас есть несохранённые фотографии (${documents.size}) шт. При возврате назад все фотографии будут удалены.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showBackDialog = false
+                        navigateUp()
+                    }
+                ) { Text("Вернуться назад") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (showConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            icon = {
+                Icon(
+                    Icons.Default.ErrorOutline,
+                    null
+                )
+            },
+            title = { Text(text = "Подтвердите отправку", textAlign = TextAlign.Center) },
+            text = { Text(text = "После завершения доставки изменить данные будет невозможно. Вы уверены, что хотите отправить фото и завершить доставку?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmationDialog = false
+                    }
+                ) { Text(text = "Подтвердить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmationDialog = false }) {
+                    Text(text = "Отмена")
+                }
+            }
+        )
     }
 
     SharedTransitionLayout {
@@ -291,23 +353,52 @@ fun DeliveryConfirmation(
                         }
                     }
                     Spacer(Modifier.height(if (documents.isEmpty()) 24.dp else 8.dp))
-                    val canAddMore = documents.size < 10
-                    val buttonText = if (canAddMore) {
-                        if (documents.isEmpty()) "Сделать фото документа" else "Добавить фото документа"
-                    } else {
-                        "Максимум 10 фото"
-                    }
-                    Button(
-                        onClick = {
-                            if (controller.hasPermission()) cameraLauncher.capture()
-                            else controller.askPermission()
-                        },
-                        enabled = canAddMore,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
-                        Spacer(Modifier.width(12.dp))
-                        Text(buttonText)
+                    when {
+                        documents.isEmpty() -> {
+                            Button(
+                                onClick = {
+                                    if (controller.hasPermission()) cameraLauncher.capture()
+                                    else controller.askPermission()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
+                                Spacer(Modifier.width(12.dp))
+                                Text(text = "Сделать фото документа")
+                            }
+                        }
+
+                        else -> {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                OutlinedButton(
+                                    onClick = {
+                                        if (controller.hasPermission()) cameraLauncher.capture()
+                                        else controller.askPermission()
+                                    },
+                                    enabled = documents.size < 10,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(text = "Добавить")
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Button(
+                                    onClick = {
+                                        if (documents.isNotEmpty()) {
+                                            showConfirmationDialog = true
+                                        }
+                                    }, modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Outlined.Send,
+                                        contentDescription = null
+                                    )
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(text = "Отправить")
+                                }
+                            }
+                        }
                     }
 
                     Spacer(Modifier.height(8.dp))
