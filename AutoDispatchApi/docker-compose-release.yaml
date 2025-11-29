@@ -12,6 +12,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      MODE: release
       DB_URL: jdbc:postgresql://db:5432/auto_dispatch_api
 
   nginx:
@@ -29,7 +30,7 @@ services:
     container_name: postgres_db
     image: postgres:18
     volumes:
-      - ./tmp/db:/var/lib/postgresql
+      - tmp_db:/var/lib/postgresql
     environment:
       POSTGRES_DB: auto_dispatch_api
       POSTGRES_USER: postgres
@@ -43,4 +44,3 @@ services:
 volumes:
   uploaded_files:
   tmp_db:
-    driver: local

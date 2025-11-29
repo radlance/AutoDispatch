@@ -1,0 +1,13 @@
+services:
+  nginx:
+    container_name: auto_dispatch_nginx_debug
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.debug.conf:/etc/nginx/nginx.conf:ro
+      - ./uploaded_files:/uploads:ro
+    environment:
+      MODE: debug
+
+volumes: {}

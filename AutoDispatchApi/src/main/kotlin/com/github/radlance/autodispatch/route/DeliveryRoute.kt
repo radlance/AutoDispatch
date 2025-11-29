@@ -14,7 +14,14 @@ import java.io.File
 import java.util.UUID
 
 fun Route.deliveries(repository: DeliveryRepository) {
-    val uploadDir = File("/uploads")
+    val mode = System.getenv("MODE") ?: "debug"
+
+    val uploadDir = if (mode == "release") {
+        File("/uploads")
+    } else {
+        File("uploaded_files")
+    }
+
     if (!uploadDir.exists()) {
         uploadDir.mkdirs()
     }
