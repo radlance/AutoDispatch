@@ -79,7 +79,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
                     part.dispose()
                 }
                 try {
-                    repository.completeDelivery(deliveryId = id, driverLogin = login)
+                    repository.completeDelivery(deliveryId = id, driverLogin = login, imageUrls = photoUrls)
 
                     call.respond(HttpStatusCode.OK)
                 } catch (e: Exception) {

@@ -245,14 +245,19 @@ class DeliveryRepository {
         }
     }
 
-    suspend fun completeDelivery(deliveryId: Int, driverLogin: String) = loggedTransaction {
+    suspend fun completeDelivery(deliveryId: Int, driverLogin: String, imageUrls: List<String>) = loggedTransaction {
         val driverId = UserTable.select(UserTable.id).where {
             UserTable.login eq driverLogin
         }.first()[UserTable.id].value
 
         val requestData = RequestTable
             .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
-            .select(RequestTable.statusId, RequestTable.requestNumber, AssignmentTable.driverId)
+            .select(
+                RequestTable.statusId,
+                RequestTable.requestNumber,
+                AssignmentTable.driverId,
+                AssignmentTable.id
+            )
             .where { RequestTable.id eq deliveryId }
             .firstOrNull()
 
@@ -280,6 +285,11 @@ class DeliveryRepository {
         AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
             it[completedAt] = CurrentTimestampWithTimeZone
         }
+        val assignmentId = requestData[AssignmentTable.id].value
 
+        DeliveryDocumentTable.batchInsert(imageUrls) { url ->
+            this[DeliveryDocumentTable.assignmentId] = assignmentId
+            this[DeliveryDocumentTable.imageUrl] = url
+        }
     }
 }

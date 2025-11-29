@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.database.table
 
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.sql.javatime.timestampWithTimeZone
 
 object UserTable : IntIdTable(name = "users") {
     val login = varchar(name = "login", length = 50)
@@ -10,5 +10,5 @@ object UserTable : IntIdTable(name = "users") {
     val fullName = varchar(name = "full_name", length = 100)
     val phoneNumber = varchar(name = "phone_number", length = 20)
     val roleId = integer(name = "role_id")
-    val createdAt = timestamp(name = "created_at").nullable()
+    val createdAt = timestampWithTimeZone(name = "created_at").nullable()
 }

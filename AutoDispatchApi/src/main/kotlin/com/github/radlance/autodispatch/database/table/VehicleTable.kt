@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.database.table
 
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.sql.javatime.timestampWithTimeZone
 
 object VehicleTable : IntIdTable(name = "vehicle") {
     val model = varchar(name = "model", length = 100)
@@ -10,6 +10,6 @@ object VehicleTable : IntIdTable(name = "vehicle") {
     val mileage = integer(name = "mileage")
     val fuelType = varchar(name = "fuel_type", length = 20)
     val statusId = reference(name = "status_id", VehicleStatusTable)
-    val lastServiceDate = timestamp(name = "last_service_date").nullable()
+    val lastServiceDate = timestampWithTimeZone(name = "last_service_date").nullable()
     val isActive = bool(name = "is_active").nullable()
 }
