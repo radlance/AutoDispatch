@@ -9,9 +9,6 @@ import com.github.radlance.autodispatch.security.hashing.SHA256HashingService
 import com.github.radlance.autodispatch.security.token.TokenConfig
 import com.github.radlance.autodispatch.security.token.TokenService
 import com.github.radlance.autodispatch.service.AuthService
-import com.github.radlance.autodispatch.service.DeliveryService
-import com.github.radlance.autodispatch.service.ProfileService
-import com.github.radlance.autodispatch.service.RequestService
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import org.koin.core.module.dsl.singleOf
@@ -38,17 +35,14 @@ val Application.authModule
 val profileModule
     get() = module {
         singleOf(::ProfileRepository)
-        singleOf(::ProfileService)
     }
 
 val requestModule
     get() = module {
         singleOf(::RequestRepository)
-        singleOf(::RequestService)
     }
 
 val deliveryModule
     get() = module {
         singleOf(::DeliveryRepository)
-        singleOf(::DeliveryService)
     }

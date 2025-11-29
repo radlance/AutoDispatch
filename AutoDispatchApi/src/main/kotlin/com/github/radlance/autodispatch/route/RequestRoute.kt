@@ -2,7 +2,7 @@ package com.github.radlance.autodispatch.route
 
 import com.github.radlance.autodispatch.domain.request.AssignRequest
 import com.github.radlance.autodispatch.domain.request.CreateRequest
-import com.github.radlance.autodispatch.service.RequestService
+import com.github.radlance.autodispatch.repository.RequestRepository
 import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -10,7 +10,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.requests(requestService: RequestService) {
+fun Route.requests(repository: RequestRepository) {
     authenticate {
         route("/requests") {
             get {
@@ -35,7 +35,7 @@ fun Route.requests(requestService: RequestService) {
                 val driverIds = parseIds("driverIds")
                 val vehicleIds = parseIds("vehicleIds")
 
-                val paginatedRequests = requestService.requests(
+                val paginatedRequests = repository.requests(
                     page = page,
                     pageSize = pageSize,
                     searchQuery = searchQuery,
@@ -51,20 +51,20 @@ fun Route.requests(requestService: RequestService) {
             }
 
             get("/filters") {
-                val filters = requestService.filters()
+                val filters = repository.filters()
                 call.respond(HttpStatusCode.OK, filters)
             }
 
             get("/customers") {
                 val query = call.request.queryParameters["q"] ?: ""
-                val customers = requestService.customers(query = query)
+                val customers = repository.customers(query = query)
                 call.respond(HttpStatusCode.OK, customers)
             }
 
             post {
                 val login = call.claimByNameOrUnauthorized<String>(name = "login")
                 val request = call.receive<CreateRequest>()
-                requestService.createRequest(login = login, request = request)
+                repository.createRequest(createdByLogin = login, req = request)
                 call.respond(HttpStatusCode.Created)
             }
 
@@ -76,10 +76,10 @@ fun Route.requests(requestService: RequestService) {
 
                 val createRequest = call.receive<CreateRequest>()
 
-                requestService.editRequest(
-                    login = login,
+                repository.editRequest(
+                    createdByLogin = login,
                     requestId = id,
-                    request = createRequest
+                    req = createRequest
                 )
 
                 call.respond(HttpStatusCode.OK)
@@ -89,19 +89,19 @@ fun Route.requests(requestService: RequestService) {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
 
-                requestService.cancelRequest(requestId = id)
+                repository.cancelRequest(requestId = id)
                 call.respond(HttpStatusCode.OK)
             }
 
             put("/{id}/assignment/cancel") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
-                requestService.cancelAssignment(requestId = id)
+                repository.cancelAssignment(requestId = id)
                 call.respond(HttpStatusCode.OK)
             }
 
             get("/request-assignment") {
-                val assignment = requestService.requestAssignment()
+                val assignment = repository.requestAssignment()
                 call.respond(HttpStatusCode.OK, assignment)
             }
 
@@ -111,7 +111,7 @@ fun Route.requests(requestService: RequestService) {
 
                 val body = call.receive<AssignRequest>()
 
-                requestService.assignRequestToDriver(
+                repository.assignRequestToDriver(
                     requestId = id,
                     driverId = body.driverId
                 )
@@ -125,7 +125,7 @@ fun Route.requests(requestService: RequestService) {
 
                 val body = call.receive<AssignRequest>()
 
-                requestService.reAssignRequestToDriver(
+                repository.reassignRequestToDriver(
                     requestId = id,
                     driverId = body.driverId
                 )

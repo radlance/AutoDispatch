@@ -242,4 +242,40 @@ class DeliveryRepository {
             it[startedAt] = CurrentTimestampWithTimeZone
         }
     }
+
+    suspend fun completeDelivery(deliveryId: Int, driverLogin: String) = loggedTransaction {
+        val driverId = UserTable.select(UserTable.id).where {
+            UserTable.login eq driverLogin
+        }.first()[UserTable.id].value
+
+        val requestData = RequestTable
+            .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
+            .select(RequestTable.statusId, RequestTable.requestNumber, AssignmentTable.driverId)
+            .where { RequestTable.id eq deliveryId }
+            .firstOrNull()
+
+        if (requestData == null) {
+            throw DeliveryNotFoundException("Доставка не найдена")
+        }
+
+        val assignedDriverId = requestData.getOrNull(AssignmentTable.driverId)?.value
+        if (assignedDriverId != driverId) {
+            throw DeliveryForbiddenException("Доставка ${requestData[RequestTable.requestNumber]} недоступна")
+        }
+
+        val currentStatusId = requestData[RequestTable.statusId].value
+        val requestNumber = requestData[RequestTable.requestNumber]!!
+        if (currentStatusId == 5) {
+            throw DeliveryCanceledException(requestNumber)
+        }
+
+        RequestTable.update({ RequestTable.id eq deliveryId }) {
+            it[statusId] = 4
+        }
+
+        AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
+            it[completedAt] = CurrentTimestampWithTimeZone
+        }
+
+    }
 }

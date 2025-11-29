@@ -1,0 +1,46 @@
+services:
+  api:
+    container_name: auto_dispatch_api
+    build: .
+    expose:
+      - "8084"
+    ports:
+      - "8084:8084"
+    volumes:
+      - uploaded_files:/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/auto_dispatch_api
+
+  nginx:
+    container_name: auto_dispatch_nginx
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - uploaded_files:/uploads:ro
+    depends_on:
+      - api
+
+  db:
+    container_name: postgres_db
+    image: postgres:18
+    volumes:
+      - ./tmp/db:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: auto_dispatch_api
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  uploaded_files:
+  tmp_db:
+    driver: local
