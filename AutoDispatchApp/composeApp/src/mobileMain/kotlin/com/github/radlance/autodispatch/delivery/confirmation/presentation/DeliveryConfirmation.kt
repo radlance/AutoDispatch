@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
@@ -41,10 +42,13 @@ import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +68,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
@@ -71,6 +76,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapPoint
@@ -97,6 +104,7 @@ fun DeliveryConfirmation(
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
     val controller = createCameraPermissionController { hasPermission = it }
 
+    val completeDeliveryState by viewModel.completeDeliveryState.collectAsStateWithLifecycle()
     val documents = viewModel.documents
     val cameraLauncher = rememberCameraLauncher { it?.let(documents::add) }
 
@@ -122,6 +130,46 @@ fun DeliveryConfirmation(
             currentNavigateUp()
         }
     }
+
+    completeDeliveryState.Reduce(
+        onSuccess = {
+            viewModel.resetState()
+            // TODO
+        },
+        onLoading = {
+            Dialog(onDismissRequest = {}) {
+                Box(
+                    modifier = Modifier.clip(
+                        RoundedCornerShape(18.dp)
+                    ).background(AlertDialogDefaults.containerColor)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.padding(24.dp))
+                }
+            }
+        },
+        onError = {
+            AlertDialog(
+                onDismissRequest = viewModel::resetState,
+                icon = {
+                    Icon(imageVector = Icons.Outlined.WarningAmber, contentDescription = null)
+                },
+                title = {
+                    Text(text = "Ошибка")
+                },
+                text = {
+                    Text(text = it)
+                },
+                dismissButton = {},
+                confirmButton = {
+                    TextButton(
+                        onClick = viewModel::resetState
+                    ) {
+                        Text(text = "ОК")
+                    }
+                }
+            )
+        }
+    )
 
     if (hasPermission == false) {
         AlertDialog(
@@ -190,6 +238,7 @@ fun DeliveryConfirmation(
                 TextButton(
                     onClick = {
                         showConfirmationDialog = false
+                        viewModel.completeDelivery(deliveryId = delivery.id, documents = documents)
                     }
                 ) { Text(text = "Подтвердить") }
             },

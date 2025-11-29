@@ -4,8 +4,10 @@ import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.http.content.PartData
 
 interface ApiServiceMobile : ApiService {
 
@@ -14,6 +16,8 @@ interface ApiServiceMobile : ApiService {
     suspend fun deliveryDetails(deliveryId: Int): DeliveryDetailedDto
 
     suspend fun startDelivery(deliveryId: Int)
+
+    suspend fun completeDelivery(deliveryId: Int, formData: List<PartData>)
 }
 
 internal class KtorApiServiceMobile(
@@ -31,5 +35,16 @@ internal class KtorApiServiceMobile(
 
     override suspend fun startDelivery(deliveryId: Int) {
         httpClient.post("deliveries/${deliveryId}/start")
+    }
+
+    override suspend fun completeDelivery(
+        deliveryId: Int,
+        formData: List<PartData>
+    ) {
+
+        httpClient.submitFormWithBinaryData(
+            url = "deliveries/$deliveryId/complete",
+            formData = formData
+        )
     }
 }
