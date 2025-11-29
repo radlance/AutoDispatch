@@ -10,4 +10,4 @@ data class DeliveryStateException(override val message: String = "Illegal delive
 
 class DriverBusyException : RuntimeException("Вы уже выполняете другую доставку. Завершите ее, прежде чем начинать новую.")
 
-class DeliveryCanceledException(requestNumber: String) : RuntimeException("Доставка $requestNumber отменена")
+class DeliveryCanceledException(override val message: String) : RuntimeException()

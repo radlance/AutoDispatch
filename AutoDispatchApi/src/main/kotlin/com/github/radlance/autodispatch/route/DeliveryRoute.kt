@@ -75,7 +75,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
                     repository.completeDelivery(deliveryId = id, driverLogin = login)
 
                     call.respond(HttpStatusCode.OK)
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     photoUrls.forEach { url ->
                         val fileName = url.substringAfter("/static/")
                         val fileToDelete = File(uploadDir, fileName)
@@ -84,7 +84,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
                             fileToDelete.delete()
                         }
                     }
-                    call.respond(HttpStatusCode.InternalServerError, "Delivery completion failed due to server error.")
+                    call.respond(HttpStatusCode.InternalServerError, e.message!!)
                 }
             }
         }

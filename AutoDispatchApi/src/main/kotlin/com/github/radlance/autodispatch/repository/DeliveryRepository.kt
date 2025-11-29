@@ -231,7 +231,9 @@ class DeliveryRepository {
         val currentStatusId = requestData[RequestTable.statusId].value
         val requestNumber = requestData[RequestTable.requestNumber]!!
         if (currentStatusId == 5) {
-            throw DeliveryCanceledException(requestNumber)
+            throw DeliveryCanceledException("Доставка $requestNumber отменена.")
+        } else if (currentStatusId != 2) {
+            throw DeliveryCanceledException("Доставка $requestNumber отменена или недоступна.")
         }
 
         RequestTable.update({ RequestTable.id eq deliveryId }) {
@@ -266,7 +268,9 @@ class DeliveryRepository {
         val currentStatusId = requestData[RequestTable.statusId].value
         val requestNumber = requestData[RequestTable.requestNumber]!!
         if (currentStatusId == 5) {
-            throw DeliveryCanceledException(requestNumber)
+            throw DeliveryCanceledException("Доставка $requestNumber отменена.")
+        } else if (currentStatusId != 3) {
+            throw DeliveryCanceledException("Доставка $requestNumber отменена или недоступна.")
         }
 
         RequestTable.update({ RequestTable.id eq deliveryId }) {
