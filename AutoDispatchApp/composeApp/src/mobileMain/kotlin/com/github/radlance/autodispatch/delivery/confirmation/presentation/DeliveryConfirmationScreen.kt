@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
@@ -34,6 +35,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun DeliveryConfirmationScreen(
     deliveryId: Int,
     navigateUp: () -> Unit,
+    navigateToSuccessDeliveryScreen: (DeliveryDetailed) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
@@ -96,6 +98,9 @@ fun DeliveryConfirmationScreen(
                     }
                     DeliveryConfirmation(
                         navigateUp = navigateUp,
+                        navigateToSuccessDeliveryScreen = {
+                            navigateToSuccessDeliveryScreen(delivery)
+                                                          },
                         delivery = delivery,
                         scrollState = scrollState
                     )

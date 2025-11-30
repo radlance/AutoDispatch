@@ -6,7 +6,9 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
 import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DeliveryDetailed(
     val id: Int,
     val status: RequestStatus,

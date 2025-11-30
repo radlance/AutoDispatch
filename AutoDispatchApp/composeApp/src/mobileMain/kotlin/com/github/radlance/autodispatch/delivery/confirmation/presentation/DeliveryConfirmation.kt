@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -53,7 +52,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -72,7 +70,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -94,6 +91,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DeliveryConfirmation(
     navigateUp: () -> Unit,
+    navigateToSuccessDeliveryScreen: () -> Unit,
     delivery: DeliveryDetailed,
     scrollState: ScrollState,
     modifier: Modifier = Modifier,
@@ -134,7 +132,7 @@ fun DeliveryConfirmation(
     completeDeliveryState.Reduce(
         onSuccess = {
             viewModel.resetState()
-            // TODO
+            navigateToSuccessDeliveryScreen()
         },
         onLoading = {
             Dialog(onDismissRequest = {}) {
@@ -267,15 +265,13 @@ fun DeliveryConfirmation(
                         .padding(bottom = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    OutlinedCard(
-                        colors = CardDefaults.outlinedCardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary)
+                    Column(
+                        modifier = Modifier.clip(CardDefaults.shape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
                     ) {
                         Column(Modifier.fillMaxWidth()) {
-                            Column(Modifier.padding(18.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.padding(horizontal = 18.dp, vertical = 12.dp)) {
+                                Row(verticalAlignment = Alignment.Top) {
                                     Box(Modifier.size(24.dp)) {
                                         Icon(
                                             Icons.Outlined.ErrorOutline,
@@ -285,19 +281,11 @@ fun DeliveryConfirmation(
                                     }
                                     Spacer(Modifier.width(12.dp))
                                     Text(
-                                        text = "Вы на месте!",
-                                        fontWeight = FontWeight.SemiBold
+                                        text = "Сделайте фото документа о доставке (накладная, ТТН). Фотография должна быть чёткой и читаемой.",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
-                            }
-                            Column(
-                                modifier = Modifier.padding(horizontal = 18.dp)
-                                    .padding(bottom = 18.dp)
-                            ) {
-                                Text(
-                                    text = "Сделайте фото документа о доставке (накладная, ТТН). Фотография должна быть чёткой и читаемой.",
-                                    fontSize = 14.sp
-                                )
                             }
                         }
                     }

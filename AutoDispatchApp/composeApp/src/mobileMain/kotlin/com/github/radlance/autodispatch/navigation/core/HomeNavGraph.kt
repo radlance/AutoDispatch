@@ -15,10 +15,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationScreen
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.SuccessDeliveryScreen
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
+import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRouteScreen
+import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -97,7 +100,24 @@ fun HomeNavGraph(
                 DeliveryConfirmationScreen(
                     deliveryId = args.deliveryId,
                     navigateUp = navController::navigateUp,
+                    navigateToSuccessDeliveryScreen = { delivery ->
+                        val json = Json.encodeToString(delivery)
+                        navController.navigate(
+                            SuccessDelivery(deliveryDetailedJson = json)
+                        ) {
+                            popUpTo<DeliveryList>()
+                        }
+                    },
                     viewModel = deliveryDetailsViewModel
+                )
+            }
+
+            composable<SuccessDelivery> {
+                val args = it.toRoute<SuccessDelivery>()
+                val delivery = Json.decodeFromString<DeliveryDetailed>(args.deliveryDetailedJson)
+                SuccessDeliveryScreen(
+                    delivery = delivery,
+                    navigateToDeliveryList = navController::navigateUp
                 )
             }
         }

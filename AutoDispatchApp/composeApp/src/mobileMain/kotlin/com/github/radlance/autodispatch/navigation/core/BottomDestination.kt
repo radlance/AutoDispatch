@@ -73,3 +73,7 @@ data class DeliveryRoute(
 @Destination
 @Serializable
 data class DeliveryConfirmation(val deliveryId: Int) : HomeDestination
+
+@Destination
+@Serializable
+data class SuccessDelivery(val deliveryDetailedJson: String) : HomeDestination
