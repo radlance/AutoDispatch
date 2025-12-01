@@ -18,8 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,12 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.utils.formatKg
@@ -54,7 +50,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SuccessDeliveryScreen(
+fun SuccessUploadScreen(
     delivery: DeliveryDetailed,
     navigateToDeliveryList: () -> Unit,
     modifier: Modifier = Modifier
@@ -65,7 +61,7 @@ fun SuccessDeliveryScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Успех!")
+                    Text(text = "Отправлено")
                 }
             )
         }
@@ -80,29 +76,24 @@ fun SuccessDeliveryScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier.clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
+                    imageVector = Icons.Outlined.Schedule,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(100.dp).padding(12.dp)
                 )
             }
             Text(
-                text = buildAnnotatedString {
-                    append("Доставка ")
-                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(delivery.requestNumber)
-                    }
-                    append(" выполнена")
-                },
+                text = "Документы отправлены",
                 fontSize = 22.sp,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Доставка успешно завершена. Фото документов отправлены диспетчеру.",
+                text = "Фото документов отправлены диспетчеру на проверку. Ожидайте подтверждения.",
                 textAlign = TextAlign.Center
             )
             Box(
@@ -138,7 +129,7 @@ fun SuccessDeliveryScreen(
                                 .background(MaterialTheme.colorScheme.primaryContainer)
                         ) {
                             Text(
-                                text = "Завершена",
+                                text = "Нв проверке",
                                 maxLines = 1,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 overflow = TextOverflow.Ellipsis,
@@ -165,7 +156,7 @@ fun SuccessDeliveryScreen(
                             }
                             Spacer(Modifier.width(12.dp))
                             Text(
-                                text = "Данные о доставке переданы в систему. Отчёт доступен в истории доставок.",
+                                text = "Диспетчер проверит качество фотографий и подтвердит завершение доставки.",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
@@ -207,7 +198,7 @@ private fun InfoRow(
 @Composable
 private fun SuccessDeliveryScreenPreview() {
     MaterialTheme {
-        SuccessDeliveryScreen(
+        SuccessUploadScreen(
             delivery = DeliveryDetailed(
                 id = 1,
                 status = RequestStatus(

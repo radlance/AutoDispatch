@@ -13,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
-import com.github.radlance.autodispatch.request.core.presentation.core.RequestsScreen
+import com.github.radlance.autodispatch.request.core.presentation.RequestsScreen
 
 @Composable
 fun DrawerNavGraph(

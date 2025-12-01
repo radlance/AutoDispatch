@@ -53,7 +53,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
                 call.respond(HttpStatusCode.OK)
             }
 
-            post("/{id}/complete") {
+            post("/{id}/upload-documents") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
 
@@ -79,7 +79,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
                     part.dispose()
                 }
                 try {
-                    repository.completeDelivery(deliveryId = id, driverLogin = login, imageUrls = photoUrls)
+                    repository.uploadDeliveryDocuments(deliveryId = id, driverLogin = login, imageUrls = photoUrls)
 
                     call.respond(HttpStatusCode.OK)
                 } catch (e: Exception) {

@@ -43,7 +43,7 @@ internal class KtorApiServiceMobile(
     ) {
 
         httpClient.submitFormWithBinaryData(
-            url = "deliveries/$deliveryId/complete",
+            url = "deliveries/$deliveryId/upload-documents",
             formData = formData
         )
     }

@@ -15,7 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationScreen
-import com.github.radlance.autodispatch.delivery.confirmation.presentation.SuccessDeliveryScreen
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.SuccessUploadScreen
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
@@ -103,7 +103,7 @@ fun HomeNavGraph(
                     navigateToSuccessDeliveryScreen = { delivery ->
                         val json = Json.encodeToString(delivery)
                         navController.navigate(
-                            SuccessDelivery(deliveryDetailedJson = json)
+                            SuccessUpload(deliveryDetailedJson = json)
                         ) {
                             popUpTo<DeliveryList>()
                         }
@@ -112,10 +112,10 @@ fun HomeNavGraph(
                 )
             }
 
-            composable<SuccessDelivery> {
-                val args = it.toRoute<SuccessDelivery>()
+            composable<SuccessUpload> {
+                val args = it.toRoute<SuccessUpload>()
                 val delivery = Json.decodeFromString<DeliveryDetailed>(args.deliveryDetailedJson)
-                SuccessDeliveryScreen(
+                SuccessUploadScreen(
                     delivery = delivery,
                     navigateToDeliveryList = navController::navigateUp
                 )

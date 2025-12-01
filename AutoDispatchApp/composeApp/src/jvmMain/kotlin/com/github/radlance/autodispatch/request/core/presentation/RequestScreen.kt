@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.core.presentation.core
+package com.github.radlance.autodispatch.request.core.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize

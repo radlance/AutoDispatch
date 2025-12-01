@@ -70,7 +70,7 @@ class DeliveryRepository {
             .select(selectCols)
             .where {
                 (AssignmentTable.driverId eq driverId) and
-                        (RequestTable.statusId inList listOf(2, 3))
+                        (RequestTable.statusId inList listOf(2, 3, 6, 7))
             }
             .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .map { mapDeliveryRow(it) }
@@ -245,7 +245,7 @@ class DeliveryRepository {
         }
     }
 
-    suspend fun completeDelivery(deliveryId: Int, driverLogin: String, imageUrls: List<String>) = loggedTransaction {
+    suspend fun uploadDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) = loggedTransaction {
         val driverId = UserTable.select(UserTable.id).where {
             UserTable.login eq driverLogin
         }.first()[UserTable.id].value
@@ -279,7 +279,7 @@ class DeliveryRepository {
         }
 
         RequestTable.update({ RequestTable.id eq deliveryId }) {
-            it[statusId] = 4
+            it[statusId] = 6
         }
 
         AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {

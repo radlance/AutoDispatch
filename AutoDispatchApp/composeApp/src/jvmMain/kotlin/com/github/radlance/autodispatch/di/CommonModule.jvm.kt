@@ -16,7 +16,7 @@ import com.github.radlance.autodispatch.request.change.presentation.PointSelecti
 import com.github.radlance.autodispatch.request.change.presentation.RequestValidator
 import com.github.radlance.autodispatch.request.core.data.RemoteRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
-import com.github.radlance.autodispatch.request.core.presentation.core.RequestViewModel
+import com.github.radlance.autodispatch.request.core.presentation.RequestViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind

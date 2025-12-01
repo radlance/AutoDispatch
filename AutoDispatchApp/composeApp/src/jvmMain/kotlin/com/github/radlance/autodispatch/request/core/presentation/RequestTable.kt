@@ -1,15 +1,26 @@
-package com.github.radlance.autodispatch.request.core.presentation.core
+package com.github.radlance.autodispatch.request.core.presentation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cargo_type
 import autodispatch.composeapp.generated.resources.created
@@ -77,6 +88,9 @@ fun RequestTable(
             DataColumn(width = TableColumnWidth.Flex(1.2f)) {
                 Text(stringResource(Res.string.status))
             },
+            DataColumn(width = TableColumnWidth.Flex(0.5f)) {
+                Text("Документы")
+            },
             DataColumn(width = TableColumnWidth.Flex(1.5f)) {
                 Text(stringResource(Res.string.driver))
             },
@@ -133,6 +147,9 @@ fun RequestTable(
                     StatusWithColor(status = item.status.name)
                 }
                 cell {
+                    DocumentsStatusWithColor(status = item.status.name)
+                }
+                cell {
                     Text(text = item.driverFullName?.let { abbreviateName(it) } ?: "—",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis)
@@ -147,4 +164,37 @@ fun RequestTable(
             }
         }
     }
+}
+
+@Composable
+fun DocumentsStatusWithColor(status: String?) {
+    val (bgColor, textColor, icon) = when (status) {
+        "На проверке" -> Triple(
+            MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
+            Icons.Outlined.Schedule
+        )
+
+
+        else -> Triple(
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer,
+            Icons.Outlined.ErrorOutline
+        )
+    }
+
+    if (status == "На проверке" || status == "Отклонена") {
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.clip(CircleShape)
+                .background(bgColor)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = textColor,
+                modifier = Modifier.padding(4.dp)
+            )
+        }
+    } else Text(text = "—")
 }

@@ -76,4 +76,4 @@ data class DeliveryConfirmation(val deliveryId: Int) : HomeDestination
 
 @Destination
 @Serializable
-data class SuccessDelivery(val deliveryDetailedJson: String) : HomeDestination
+data class SuccessUpload(val deliveryDetailedJson: String) : HomeDestination
