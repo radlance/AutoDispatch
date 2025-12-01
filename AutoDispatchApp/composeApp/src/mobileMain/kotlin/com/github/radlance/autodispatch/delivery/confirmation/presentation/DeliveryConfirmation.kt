@@ -46,7 +46,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -75,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapPoint
@@ -265,30 +265,12 @@ fun DeliveryConfirmation(
                         .padding(bottom = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier.clip(CardDefaults.shape)
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                    ) {
-                        Column(Modifier.fillMaxWidth()) {
-                            Column(Modifier.padding(horizontal = 18.dp, vertical = 12.dp)) {
-                                Row(verticalAlignment = Alignment.Top) {
-                                    Box(Modifier.size(24.dp)) {
-                                        Icon(
-                                            Icons.Outlined.ErrorOutline,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                    Spacer(Modifier.width(12.dp))
-                                    Text(
-                                        text = "Сделайте фото документа о доставке (накладная, ТТН). Фотография должна быть чёткой и читаемой.",
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    WarningCard(
+                        icon = Icons.Outlined.ErrorOutline,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        message = "Сделайте фото документа о доставке (накладная, ТТН). Фотография должна быть чёткой и читаемой."
+                    )
                     Spacer(Modifier.height(24.dp))
                     Card {
                         Column(Modifier.fillMaxWidth()) {

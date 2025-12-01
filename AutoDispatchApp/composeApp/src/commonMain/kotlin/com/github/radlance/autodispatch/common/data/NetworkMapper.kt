@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.auth.data.LoginResponseDto
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
+import com.github.radlance.autodispatch.di.CurrentIp
 import com.github.radlance.autodispatch.profile.data.UserDto
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
@@ -57,6 +58,7 @@ fun RequestDto.toRequest(): Request {
         transportationDescription = transportationDescription,
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
+        documents = documents.map { "http://$CurrentIp/$it" }
     )
 }
 

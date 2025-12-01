@@ -25,11 +25,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 
+const val CurrentIp = "10.230.82.88"
+
 fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
     return HttpClient(engine = httpClientEngine) {
         expectSuccess = true
         defaultRequest {
-            url("http://10.40.222.88:8084/api/")
+            url("http://$CurrentIp:8084/api/")
             contentType(ContentType.Application.Json)
         }
         install(ContentNegotiation) {
@@ -62,7 +64,7 @@ fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
                         }
 
                         BearerTokens(accessToken = newToken, refreshToken = null)
-                    } catch (e: TimeoutCancellationException) {
+                    } catch (_: TimeoutCancellationException) {
                         dataStoreManager.deleteToken()
                         dataStoreManager.saveSessionExpired(expired = true)
                         null

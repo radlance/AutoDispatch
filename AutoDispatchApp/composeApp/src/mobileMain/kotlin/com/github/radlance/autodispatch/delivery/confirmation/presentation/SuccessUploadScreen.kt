@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
@@ -140,30 +140,12 @@ fun SuccessUploadScreen(
                     }
                 }
             }
-            Column(
-                modifier = Modifier.clip(CardDefaults.shape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-            ) {
-                Column(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(horizontal = 18.dp, vertical = 12.dp)) {
-                        Row(verticalAlignment = Alignment.Top) {
-                            Box(Modifier.size(24.dp)) {
-                                Icon(
-                                    Icons.Outlined.ErrorOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                text = "Диспетчер проверит качество фотографий и подтвердит завершение доставки.",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
-            }
+            WarningCard(
+                icon = Icons.Outlined.ErrorOutline,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                message = "Диспетчер проверит качество фотографий и подтвердит завершение доставки.",
+            )
             Column {
                 Button(onClick = navigateToDeliveryList, modifier = Modifier.fillMaxWidth()) {
                     Icon(

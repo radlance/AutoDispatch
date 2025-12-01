@@ -1,22 +1,34 @@
 package com.github.radlance.autodispatch.request.core.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
@@ -27,7 +39,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,9 +53,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.additional_info
 import autodispatch.composeapp.generated.resources.cargo_info
@@ -62,6 +79,13 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import coil3.PlatformContext
+import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.size.Scale
+import coil3.size.Size
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
@@ -78,6 +102,8 @@ import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import kotlinx.coroutines.launch
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -95,6 +121,8 @@ fun RequestDetailsPanel(
     modifier: Modifier = Modifier,
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
+    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
+    val lazyRowState = rememberLazyListState()
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
@@ -105,6 +133,96 @@ fun RequestDetailsPanel(
 
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+
+    selectedImageUrl?.let {
+        Dialog(
+            onDismissRequest = { selectedImageUrl = null },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background.copy(alpha = 0.3f)
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    val painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                            .data(selectedImageUrl)
+                            .size(Size.ORIGINAL)
+                            .scale(Scale.FILL)
+                            .crossfade(true)
+                            .build(),
+                    )
+                    val zoomState = rememberZoomState(contentSize = painter.intrinsicSize)
+
+                    Image(
+                        painter = painter,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                            .zoomable(zoomState),
+                    )
+
+                    IconButton(
+                        onClick = { selectedImageUrl = null },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp)
+                            .size(40.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface,
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = null
+                        )
+                    }
+
+                    val indexOf = request.documents.indexOf(selectedImageUrl)
+                    if (indexOf > 0) {
+                        IconButton(
+                            onClick = { selectedImageUrl = request.documents[indexOf - 1] },
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(16.dp)
+                                .size(40.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Default.ArrowForwardIos,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(180f)
+                            )
+                        }
+                    }
+
+                    if (indexOf != request.documents.size - 1) {
+                        IconButton(
+                            onClick = { selectedImageUrl = request.documents[indexOf + 1] },
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(16.dp)
+                                .size(40.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Default.ArrowForwardIos,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if (showReassignErrorDialog) {
         val onDismiss: () -> Unit = {
@@ -350,6 +468,53 @@ fun RequestDetailsPanel(
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     val vehicle = request.vehicleInfo?.takeIf { it.isNotBlank() } ?: "—"
                     LabeledValue(label = stringResource(Res.string.vehicle), value = vehicle)
+                }
+                if (request.status.id == 6) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            top = SECTION_GAP,
+                            bottom = SECTION_GAP,
+                            end = 6.dp
+                        )
+                    )
+                    Section(header = "Документы от водителя") {
+                        Text(
+                            text = "Фотографии документов:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(ITEM_GAP))
+                        LazyRow(
+                            state = lazyRowState,
+                            contentPadding = PaddingValues(end = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                        ) {
+                            itemsIndexed(
+                                items = request.documents,
+                                key = { idx, _ -> idx }
+                            ) { _, documentUrl ->
+
+                                AsyncImage(
+                                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                                        .data(documentUrl)
+                                        .size(Size.ORIGINAL)
+                                        .scale(Scale.FILL)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .width(80.dp)
+                                        .fillMaxSize()
+                                        .clickable {
+                                            selectedImageUrl = documentUrl
+                                        }
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))

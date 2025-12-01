@@ -45,6 +45,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
             implementation(libs.ui.backhandler)
             implementation(libs.zoomable)
             implementation(libs.kotlinx.datetime)

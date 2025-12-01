@@ -170,7 +170,8 @@ fun RequestTable(
 fun DocumentsStatusWithColor(status: String?) {
     val (bgColor, textColor, icon) = when (status) {
         "На проверке" -> Triple(
-            MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
             Icons.Outlined.Schedule
         )
 
