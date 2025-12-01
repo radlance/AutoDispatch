@@ -19,6 +19,7 @@ data class Request(
     val createdAt: String?,
     val updatedAt: String?,
     val requestNumber: String?,
+    val documents: List<String> = emptyList()
 )
 
 @Serializable

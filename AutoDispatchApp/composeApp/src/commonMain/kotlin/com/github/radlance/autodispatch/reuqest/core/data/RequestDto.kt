@@ -18,7 +18,8 @@ data class RequestDto(
     val vehicleInfo: String?,
     val createdAt: String,
     val updatedAt: String?,
-    val requestNumber: String
+    val requestNumber: String,
+    val documents: List<String> = emptyList()
 )
 
 

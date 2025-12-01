@@ -8,6 +8,7 @@ import com.github.radlance.autodispatch.database.table.AssignmentTable
 import com.github.radlance.autodispatch.database.table.CargoTypeTable
 import com.github.radlance.autodispatch.database.table.CityTable
 import com.github.radlance.autodispatch.database.table.CustomerTable
+import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
 import com.github.radlance.autodispatch.database.table.DriverStatusTable
 import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
@@ -228,13 +229,30 @@ class RequestRepository {
 
         val offset = (page - 1L) * pageSize
 
-        val items = query
+        val requestsWithoutDocs = query
             .select(selectColumns(originCity, destCity, vehicleInfo))
             .where(where)
             .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .limit(pageSize)
             .offset(offset)
             .map { row -> mapRequestRow(row, originCity, destCity, vehicleInfo) }
+
+        val requestIds = requestsWithoutDocs.map { it.id }
+        val documentsMap = if (requestIds.isNotEmpty()) {
+            DeliveryDocumentTable
+                .innerJoin(AssignmentTable)
+                .select(AssignmentTable.requestId, DeliveryDocumentTable.imageUrl)
+                .where { AssignmentTable.requestId inList requestIds }
+                .map { row ->
+                    row[AssignmentTable.requestId].value to row[DeliveryDocumentTable.imageUrl]
+                }
+                .groupBy({ it.first }, { it.second })
+        } else {
+            emptyMap()
+        }
+        val items = requestsWithoutDocs.map { req ->
+            req.copy(documents = documentsMap[req.id] ?: emptyList())
+        }
 
         PaginatedResult(items = items, totalCount = total)
     }
