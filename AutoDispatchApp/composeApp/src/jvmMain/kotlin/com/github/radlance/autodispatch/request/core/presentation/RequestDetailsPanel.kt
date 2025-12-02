@@ -59,6 +59,8 @@ fun RequestDetailsPanel(
     var showCancelAssignmentDialog by remember { mutableStateOf(false) }
     var showReassignErrorDialog by remember { mutableStateOf(false) }
     var reassignErrorMessage by remember { mutableStateOf("") }
+    var showRejectDocumentsDialog by remember { mutableStateOf(false) }
+    var showApproveDocumentsDialog by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -182,6 +184,14 @@ fun RequestDetailsPanel(
         )
     }
 
+    if (showRejectDocumentsDialog) {
+        // TODO
+    }
+
+    if (showApproveDocumentsDialog) {
+        // TODO
+    }
+
     Column(modifier = modifier.padding(8.dp)) {
         PanelHeader(
             requestNumber = request.requestNumber,
@@ -201,7 +211,9 @@ fun RequestDetailsPanel(
                 onSelectImageUrl = { selectedImageUrl = it },
                 isReassign = isReassign,
                 onChangeReassign = { isReassign = it },
-                onShowDriverAssignmentDialog = { showDriverAssignmentDialog = it }
+                onShowDriverAssignmentDialog = { showDriverAssignmentDialog = it },
+                onShowRejectDocumentsDialog = { showRejectDocumentsDialog = it },
+                onShowApproveDocumentsDialog = { showApproveDocumentsDialog = it }
             )
 
             VerticalScrollbar(

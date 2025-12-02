@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
@@ -26,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -75,6 +78,8 @@ fun RequestDetailsSections(
     isReassign: Boolean,
     onChangeReassign: (Boolean) -> Unit,
     onShowDriverAssignmentDialog: (Boolean) -> Unit,
+    onShowRejectDocumentsDialog: (Boolean) -> Unit,
+    onShowApproveDocumentsDialog: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.verticalScroll(scrollState)) {
@@ -239,6 +244,26 @@ fun RequestDetailsSections(
                             lastRetryAttempt = lastImageRetryAttempt,
                             onImageSelected = onSelectImageUrl
                         )
+                    }
+                }
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(
+                        onClick = { onShowRejectDocumentsDialog(true) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
+                        Spacer(Modifier.width(12.dp))
+                        Text(text = "Отклонить")
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Button(
+                        onClick = { onShowApproveDocumentsDialog(true) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(imageVector = Icons.Outlined.Done, contentDescription = null)
+                        Spacer(Modifier.width(12.dp))
+                        Text(text = "Одобрить")
                     }
                 }
             }
