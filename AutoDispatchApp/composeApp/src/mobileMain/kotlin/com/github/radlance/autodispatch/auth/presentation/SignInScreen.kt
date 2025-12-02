@@ -92,7 +92,6 @@ private fun SignInScreen(
                     text = {
                         Text(text = "Этот аккаунт принадлежит диспетчеру. Вход в приложение диспетчера с такими данными невозможен.")
                     },
-                    dismissButton = {},
                     confirmButton = {
                         TextButton(
                             onClick = {

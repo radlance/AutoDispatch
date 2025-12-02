@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RequestDetailsPanel(
     cities: List<City>,
@@ -50,21 +52,23 @@ fun RequestDetailsPanel(
     modifier: Modifier = Modifier,
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
-    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
-    val lazyRowState = rememberLazyListState()
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
+    val rejectDocumentsState by viewModel.rejectRequestState.collectAsState()
+
+    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
-    var isReassign by remember { mutableStateOf(false) }
+    var isReassign by remember { mutableStateOf(request.driverId != null) }
     var showCancelAssignmentDialog by remember { mutableStateOf(false) }
     var showReassignErrorDialog by remember { mutableStateOf(false) }
     var reassignErrorMessage by remember { mutableStateOf("") }
     var showRejectDocumentsDialog by remember { mutableStateOf(false) }
     var showApproveDocumentsDialog by remember { mutableStateOf(false) }
+    var lastImageRetryAttempt by remember { mutableStateOf(0L) }
 
+    val lazyRowState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    var lastImageRetryAttempt by remember { mutableStateOf(0L) }
 
     selectedImageUrl?.let {
         FullScreenImageDialog(
@@ -185,7 +189,32 @@ fun RequestDetailsPanel(
     }
 
     if (showRejectDocumentsDialog) {
-        // TODO
+        val onDismissRejectDialog = {
+            showRejectDocumentsDialog = false
+            viewModel.reduce(ChangeRequestEvent.ResetRejectState)
+        }
+
+        LaunchedEffect(rejectDocumentsState) {
+            if (rejectDocumentsState is FetchResultUiState.Success) {
+                onSuccessCreateRequest()
+                onDismissRejectDialog()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+            }
+        }
+        RejectDocumentDialog(
+            onDismissRequest = onDismissRejectDialog,
+            onReject = {
+                viewModel.reduce(
+                    ChangeRequestEvent.ClickRejectDocument(
+                        requestId = request.id,
+                        rejectReason = it
+                    )
+                )
+            },
+            rejectState = rejectDocumentsState
+        )
     }
 
     if (showApproveDocumentsDialog) {

@@ -23,4 +23,5 @@ object RequestTable : IntIdTable(name = "request") {
     val destinationId = reference("destination_id", CityTable).nullable()
     val requestNumber = varchar("request_number", 6).nullable()
     val transportationDescription = text("transportation_description").nullable()
+    val rejectionReason = text("rejection_reason").nullable()
 }

@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDto
+import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
@@ -54,6 +55,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun coords(): CoordsDto
 
     suspend fun points(query: String): List<PointDto>
+
+    suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto)
 }
 
 internal class KtorApiServiceJvm(
@@ -164,5 +167,11 @@ internal class KtorApiServiceJvm(
             parameter("countrycodes", "ru")
             parameter("polygon_geojson", 1)
         }.body()
+    }
+
+    override suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto) {
+        httpClient.post("documents/${requestId}/reject") {
+            setBody(rejectDocumentDto)
+        }
     }
 }

@@ -47,4 +47,14 @@ class RemoteChangeRequestRepository(
         handleRequest.handle {
             apiService.cancelAssignment(requestId = requestId)
         }
+
+    override suspend fun rejectDocument(
+        requestId: Int,
+        rejectionReason: String
+    ): FetchResult<Unit, String> = handleRequest.handle {
+        apiService.rejectDocument(
+            requestId = requestId,
+            rejectDocumentDto = RejectDocumentDto(rejectionReason)
+        )
+    }
 }

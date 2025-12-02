@@ -126,6 +126,16 @@ interface ChangeRequestEvent : Event {
         }
     }
 
+    class ClickRejectDocument(
+        private val requestId: Int,
+        private val rejectReason: String
+    ) : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) {
+            action.rejectDocument(requestId, rejectReason)
+        }
+    }
+
     object ResetChangeState : ChangeRequestEvent {
         override fun apply(action: CreateRequestAction) {
             action.resetChangeState()
@@ -136,6 +146,13 @@ interface ChangeRequestEvent : Event {
 
         override fun apply(action: CreateRequestAction) {
             action.resetRemoveState()
+        }
+    }
+
+    object ResetRejectState : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) {
+            action.resetRejectState()
         }
     }
 
@@ -197,9 +214,13 @@ interface CreateRequestAction {
 
     fun cancelAssignment(requestId: Int)
 
+    fun rejectDocument(requestId: Int, rejectReason: String)
+
     fun resetChangeState()
 
     fun resetRemoveState()
+
+    fun resetRejectState()
 
     fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState)
 }

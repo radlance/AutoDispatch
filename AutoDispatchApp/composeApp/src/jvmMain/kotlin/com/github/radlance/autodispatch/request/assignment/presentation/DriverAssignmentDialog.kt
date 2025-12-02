@@ -1,7 +1,5 @@
 package com.github.radlance.autodispatch.request.assignment.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -99,9 +97,8 @@ fun DriverAssignmentDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .animateContentSize()
                 ) {
-                    AnimatedVisibility(visible = error != null) {
+                    error?.let {
                         Column(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -112,7 +109,7 @@ fun DriverAssignmentDialog(
                                 contentDescription = "Error",
                                 tint = MaterialTheme.colorScheme.error
                             )
-                            if (error!! is DeliveryError.BaseError) {
+                            if (error is DeliveryError.BaseError) {
                                 Text(
                                     text = error.message,
                                     color = MaterialTheme.colorScheme.error,
@@ -123,7 +120,7 @@ fun DriverAssignmentDialog(
                                 viewModel.reduce(AssignmentEvent.ResetStates)
                                 onStateReassignError(error.message)
                             }
-                        }
+                            }
                     }
                     Card {
                         Column(modifier = Modifier.fillMaxWidth().padding(18.dp)) {

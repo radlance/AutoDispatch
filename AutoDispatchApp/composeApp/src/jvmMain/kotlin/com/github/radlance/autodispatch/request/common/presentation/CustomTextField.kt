@@ -107,9 +107,7 @@ fun CustomTextField(
                     placeholder = {
                         Text(
                             text = placeholder,
-                            fontSize = placeholderFontSize,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+                            fontSize = placeholderFontSize
                         )
                     },
                     colors = TextFieldDefaults.colors(

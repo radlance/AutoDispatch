@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 
-const val CurrentIp = "10.230.82.88"
+const val CurrentIp = "192.168.56.1"
 
 fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
     return HttpClient(engine = httpClientEngine) {

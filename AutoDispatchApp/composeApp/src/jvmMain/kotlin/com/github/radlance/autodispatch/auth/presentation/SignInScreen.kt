@@ -74,7 +74,6 @@ private fun SignInScreen(
     ) {
         signInResultUiState.Reduce(
             onLoading = {
-
                 Dialog(onDismissRequest = {}) {
                     Box(
                         modifier = Modifier.clip(
@@ -105,7 +104,6 @@ private fun SignInScreen(
                         text = {
                             Text(text = "Этот аккаунт принадлежит водителю. Вход в приложение диспетчера с такими данными невозможен.")
                         },
-                        dismissButton = {},
                         confirmButton = {
                             TextButton(
                                 onClick = {

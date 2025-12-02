@@ -40,6 +40,10 @@ class ChangeRequestViewModel(
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
     val cancelRequestState = cancelRequestStateMutable.asStateFlow()
 
+    private val rejectRequestStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+    val rejectRequestState get() = rejectRequestStateMutable.asStateFlow()
+
     override fun reduce(event: ChangeRequestEvent) {
         val action = object : CreateRequestAction {
             override fun changeDepartureCity(city: City) {
@@ -248,6 +252,10 @@ class ChangeRequestViewModel(
                 cancelRequestStateMutable.value = FetchResultUiState.Idle
             }
 
+            override fun resetRejectState() {
+                rejectRequestStateMutable.value = FetchResultUiState.Idle
+            }
+
             override fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState) {
                 fieldsUiStateMutable.value = fieldsUiState
             }
@@ -269,6 +277,13 @@ class ChangeRequestViewModel(
                     background = { repository.cancelAssignment(requestId) }
                 ) {
                     cancelRequestStateMutable.value = it.toUiState()
+                }
+            }
+
+            override fun rejectDocument(requestId: Int, rejectReason: String) {
+                rejectRequestStateMutable.value = FetchResultUiState.Loading
+                handle(background = { repository.rejectDocument(requestId, rejectReason) }) {
+                    rejectRequestStateMutable.value = it.toUiState()
                 }
             }
         }

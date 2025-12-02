@@ -14,4 +14,6 @@ interface ChangeRequestRepository {
     suspend fun cancelRequest(requestId: Int): FetchResult<Unit, String>
 
     suspend fun cancelAssignment(requestId: Int): FetchResult<Unit, String>
+
+    suspend fun rejectDocument(requestId: Int, rejectionReason: String): FetchResult<Unit, String>
 }
