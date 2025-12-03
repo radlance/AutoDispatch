@@ -1,22 +1,37 @@
 package com.github.radlance.autodispatch.delivery.details.presentation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
@@ -32,6 +47,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -40,19 +56,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import coil3.compose.LocalPlatformContext
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.size.Scale
+import coil3.size.Size
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
@@ -70,7 +97,15 @@ import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.ConversionPathIcon
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalTime::class
+)
 @Composable
 fun DeliveryDetails(
     scrollState: ScrollState,
@@ -85,11 +120,23 @@ fun DeliveryDetails(
 ) {
     val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
     val context = getPlatformContext()
+    val coilContext = LocalPlatformContext.current
+    val lazyRowState = rememberLazyListState()
     var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
+    var fullscreenIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var lastImageRetryAttempt by remember { mutableStateOf(0L) }
 
     val isLoading = acceptDeliveryState is FetchResultUiState.Loading
     val error = (acceptDeliveryState as? FetchResultUiState.Error)?.error
 
+    BackHandler {
+        val currentNavigateUp =
+            if (fullscreenIndex != null) {
+                { fullscreenIndex = null }
+            } else navigateUp
+
+        currentNavigateUp()
+    }
     LaunchedEffect(acceptDeliveryState) {
         if (acceptDeliveryState is FetchResultUiState.Success) {
             fetchDeliveryDetails()
@@ -195,112 +242,211 @@ fun DeliveryDetails(
             }
         )
     }
-    Column(
-        modifier = modifier
-            .verticalScroll(scrollState)
-            .padding(horizontal = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        val createdAt = delivery.createdAt
-        StatusCard(
-            status = delivery.status.name,
-            createdAt = "${createdAt.date}, ${
-                createdAt.hour.toString().padStart(2, '0')
-            }:${
-                createdAt.minute.toString().padStart(2, '0')
-            }:${createdAt.second.toString().padStart(2, '0')}",
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = fullscreenIndex,
+            label = "basic_transition",
+            transitionSpec = {
+                fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+            }
+        ) { targetIndex ->
+            if (targetIndex == null) {
+                Column(
+                    modifier = modifier
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    val createdAt = delivery.createdAt
+                    StatusCard(
+                        status = delivery.status.name,
+                        createdAt = "${createdAt.date}, ${
+                            createdAt.hour.toString().padStart(2, '0')
+                        }:${
+                            createdAt.minute.toString().padStart(2, '0')
+                        }:${createdAt.second.toString().padStart(2, '0')}",
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-        RouteCard(
-            fromPoint = delivery.loadingPoint.toStringAddress(),
-            toPoint = delivery.unloadingPoint.toStringAddress(),
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
+                    RouteCard(
+                        fromPoint = delivery.loadingPoint.toStringAddress(),
+                        toPoint = delivery.unloadingPoint.toStringAddress(),
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-        CargoCard(
-            cargo = delivery.cargo,
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
+                    CargoCard(
+                        cargo = delivery.cargo,
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-        VehicleCard(
-            vehicle = delivery.vehicle,
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
+                    VehicleCard(
+                        vehicle = delivery.vehicle,
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-        ContactsCard(
-            customer = delivery.customer,
-            dispatcherFullName = delivery.dispatcherFullName,
-            dispatcherPhoneNumber = delivery.dispatcherPhoneNumber,
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
+                    ContactsCard(
+                        customer = delivery.customer,
+                        dispatcherFullName = delivery.dispatcherFullName,
+                        dispatcherPhoneNumber = delivery.dispatcherPhoneNumber,
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-        delivery.transportationDescription?.let {
-            AdditionalInfoCard(
-                description = it,
-                backgroundColor = backgroundColor,
-                contentColor = contentColor,
-                modifier = Modifier.fillMaxWidth()
-            )
+                    delivery.transportationDescription?.let {
+                        AdditionalInfoCard(
+                            description = it,
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    if (delivery.status.id == 6 || delivery.status.id == 7) {
+                        LazyRow(
+                            state = lazyRowState,
+                            contentPadding = PaddingValues(end = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                        ) {
+                            itemsIndexed(
+                                items = delivery.documents.map { it.imageUrl },
+                                key = { idx, _ -> idx }
+                            ) { idx, image ->
+
+                                val sharedKey = remember(image) { "image_${idx}" }
+                                val sharedState = rememberSharedContentState(key = sharedKey)
+
+
+                                LoadableImage(
+                                    documentUrl = image,
+                                    onRetry = {
+                                        lastImageRetryAttempt =
+                                            Clock.System.now().toEpochMilliseconds()
+                                    },
+                                    lastRetryAttempt = lastImageRetryAttempt,
+                                    onImageSelected = { fullscreenIndex = idx },
+                                    showLoading = false,
+                                    modifier = Modifier
+                                        .sharedElement(
+                                            sharedState,
+                                            animatedVisibilityScope = this@AnimatedContent
+                                        ),
+                                )
+
+                            }
+                        }
+                    }
+                    if (delivery.status.id == 6) {
+                        val sentAt = delivery.updatedAt
+                        WarningCard(
+                            modifier = modifier,
+                            icon = Icons.Outlined.ErrorOutline,
+                            contentColor = contentColor,
+                            containerColor = backgroundColor,
+                            message = "Отправлено: ${sentAt.date}, ${
+                                sentAt.hour.toString().padStart(2, '0')
+                            }:${
+                                sentAt.minute.toString().padStart(2, '0')
+                            }:${
+                                sentAt.second.toString().padStart(2, '0')
+                            }\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
+                        )
+                    }
+
+                    if (delivery.status.id == 7) {
+                        val lastSent = delivery.documents.maxOf { it.uploadedAt }
+                        val updatedAt = delivery.updatedAt
+
+                        DocumentRejectCard(
+                            rejectionReason = delivery.rejectionReason ?: "",
+                            sentAt = "${lastSent.date}, ${
+                                lastSent.hour.toString().padStart(2, '0')
+                            }:${
+                                lastSent.minute.toString().padStart(2, '0')
+                            }:${lastSent.second.toString().padStart(2, '0')}",
+                            rejectedAt = "${updatedAt.date}, ${
+                                updatedAt.hour.toString().padStart(2, '0')
+                            }:${
+                                updatedAt.minute.toString().padStart(2, '0')
+                            }:${updatedAt.second.toString().padStart(2, '0')}",
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor
+                        )
+                    }
+
+                    ActionButtons(
+                        deliveryStatusId = delivery.status.id,
+                        onContinueDeliveryClick = onContinueDeliveryClick,
+                        onAcceptClick = { showConfirmDialog = true },
+                        onContactClick = {
+                            openDialer(delivery.dispatcherPhoneNumber, context)
+                        },
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                    )
+                }
+            } else {
+                if (targetIndex < delivery.documents.size) {
+                    val sharedState = rememberSharedContentState(key = "image_$targetIndex")
+                    val imageUrl = remember(delivery.documents, targetIndex) {
+                        delivery.documents[targetIndex].imageUrl
+                    }
+                    val painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(coilContext)
+                            .data(imageUrl)
+                            .size(Size.ORIGINAL)
+                            .scale(Scale.FILL)
+                            .crossfade(true)
+                            .build()
+                    )
+                    val zoomState = rememberZoomState(contentSize = painter.intrinsicSize)
+                    Box(Modifier.fillMaxSize()) {
+                        Image(
+                            painter = painter,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .zoomable(zoomState)
+                                .sharedElement(
+                                    sharedState,
+                                    animatedVisibilityScope = this@AnimatedContent
+                                )
+                        )
+
+                        IconButton(
+                            onClick = { fullscreenIndex = null },
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(8.dp)
+                                .size(40.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
         }
-
-        if (delivery.status.id == 6) {
-            val sentAt = delivery.updatedAt
-            WarningCard(
-                modifier = modifier,
-                icon = Icons.Outlined.ErrorOutline,
-                contentColor = contentColor,
-                containerColor = backgroundColor,
-                message = "Отправлено: ${sentAt.date}, ${
-                    sentAt.hour.toString().padStart(2, '0')
-                }:${
-                    sentAt.minute.toString().padStart(2, '0')
-                }:${sentAt.second.toString().padStart(2, '0')}\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
-            )
-        }
-
-        if (delivery.status.id == 7) {
-            val lastSent = delivery.documents.maxOf { it.uploadedAt }
-            val updatedAt = delivery.updatedAt
-
-            DocumentRejectCard(
-                rejectionReason = delivery.rejectionReason ?: "",
-                sentAt = "${lastSent.date}, ${
-                    lastSent.hour.toString().padStart(2, '0')
-                }:${
-                    lastSent.minute.toString().padStart(2, '0')
-                }:${lastSent.second.toString().padStart(2, '0')}",
-                rejectedAt = "${updatedAt.date}, ${
-                    updatedAt.hour.toString().padStart(2, '0')
-                }:${
-                    updatedAt.minute.toString().padStart(2, '0')
-                }:${updatedAt.second.toString().padStart(2, '0')}",
-                backgroundColor = backgroundColor,
-                contentColor = contentColor
-            )
-        }
-
-        ActionButtons(
-            deliveryStatusId = delivery.status.id,
-            onContinueDeliveryClick = onContinueDeliveryClick,
-            onAcceptClick = { showConfirmDialog = true },
-            onContactClick = {
-                openDialer(delivery.dispatcherPhoneNumber, context)
-            },
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-        )
     }
 }
 

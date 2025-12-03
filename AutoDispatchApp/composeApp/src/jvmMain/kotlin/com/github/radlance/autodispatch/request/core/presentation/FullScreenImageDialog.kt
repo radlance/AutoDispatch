@@ -21,7 +21,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.PlatformContext
+import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -38,6 +38,7 @@ fun FullScreenImageDialog(
     onChangeImageIconClick: (document: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalPlatformContext.current
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -50,7 +51,7 @@ fun FullScreenImageDialog(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 val painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                    model = ImageRequest.Builder(context)
                         .data(selectedImageUrl)
                         .size(Size.ORIGINAL)
                         .scale(Scale.FILL)

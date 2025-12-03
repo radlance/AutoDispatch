@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.core.presentation
+package com.github.radlance.autodispatch.common.presentation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,7 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import coil3.PlatformContext
+import coil3.compose.LocalPlatformContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.CachePolicy
@@ -28,8 +28,11 @@ fun LoadableImage(
     documentUrl: String,
     onRetry: () -> Unit,
     onImageSelected: (String) -> Unit,
-    lastRetryAttempt: Long
+    lastRetryAttempt: Long,
+    modifier: Modifier = Modifier,
+    showLoading: Boolean = true
 ) {
+    val context = LocalPlatformContext.current
     val request = remember(documentUrl, lastRetryAttempt) {
         val uniqueDataUrl = if (lastRetryAttempt > 0) {
             "$documentUrl?retry=$lastRetryAttempt"
@@ -37,7 +40,7 @@ fun LoadableImage(
             documentUrl
         }
 
-        ImageRequest.Builder(PlatformContext.INSTANCE)
+        ImageRequest.Builder(context)
             .data(uniqueDataUrl)
             .memoryCachePolicy(CachePolicy.DISABLED)
             .diskCachePolicy(CachePolicy.DISABLED)
@@ -49,14 +52,16 @@ fun LoadableImage(
     SubcomposeAsyncImage(
         model = request,
         contentDescription = null,
-        modifier = Modifier
+        modifier = modifier
             .width(80.dp)
             .fillMaxHeight(),
-        loading = {
-            Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
+        loading = if (showLoading) {
+            {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-        },
+        } else null,
         error = {
             Box(Modifier.fillMaxSize(), Alignment.Center) {
                 IconButton(onClick = {

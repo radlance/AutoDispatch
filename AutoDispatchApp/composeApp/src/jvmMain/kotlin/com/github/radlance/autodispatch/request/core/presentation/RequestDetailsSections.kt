@@ -56,6 +56,7 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
