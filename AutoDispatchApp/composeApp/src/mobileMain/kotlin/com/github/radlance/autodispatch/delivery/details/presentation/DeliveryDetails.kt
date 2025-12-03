@@ -374,12 +374,12 @@ fun DeliveryDetails(
                                 lastSent.hour.toString().padStart(2, '0')
                             }:${
                                 lastSent.minute.toString().padStart(2, '0')
-                            }:${lastSent.second.toString().padStart(2, '0')}",
+                            }",
                             rejectedAt = "${updatedAt.date}, ${
                                 updatedAt.hour.toString().padStart(2, '0')
                             }:${
                                 updatedAt.minute.toString().padStart(2, '0')
-                            }:${updatedAt.second.toString().padStart(2, '0')}",
+                            }",
                             backgroundColor = backgroundColor,
                             contentColor = contentColor
                         )
