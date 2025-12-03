@@ -53,7 +53,8 @@ fun RequestDetailsPanel(
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
-    val rejectDocumentsState by viewModel.rejectRequestState.collectAsState()
+    val rejectDocumentsState by viewModel.rejectDocumentsState.collectAsState()
+    val approveDocumentsState by viewModel.approveDocumentsState.collectAsState()
 
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -218,7 +219,31 @@ fun RequestDetailsPanel(
     }
 
     if (showApproveDocumentsDialog) {
-        // TODO
+        val onDismissApproveDialog = {
+            showApproveDocumentsDialog = false
+            viewModel.reduce(ChangeRequestEvent.ResetApproveState)
+        }
+
+        LaunchedEffect(approveDocumentsState) {
+            if (approveDocumentsState is FetchResultUiState.Success) {
+                onSuccessCreateRequest()
+                onDismissApproveDialog()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+            }
+        }
+        ApproveDocumentDialog(
+            onDismissRequest = onDismissApproveDialog,
+            onApprove = {
+                viewModel.reduce(
+                    ChangeRequestEvent.ClickApproveDocument(
+                        requestId = request.id
+                    )
+                )
+            },
+            approveState = approveDocumentsState
+        )
     }
 
     Column(modifier = modifier.padding(8.dp)) {

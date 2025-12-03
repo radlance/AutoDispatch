@@ -19,6 +19,14 @@ fun Route.documentRoute(repository: DocumentsRepository) {
                 repository.rejectDocument(requestId = id, rejectDocumentDto = body)
                 call.respond(HttpStatusCode.OK)
             }
+
+            post("/{id}/approve") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                repository.approveDocument(requestId = id)
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

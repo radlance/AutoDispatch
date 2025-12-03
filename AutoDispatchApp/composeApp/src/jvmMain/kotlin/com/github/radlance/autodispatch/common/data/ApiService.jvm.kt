@@ -57,6 +57,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun points(query: String): List<PointDto>
 
     suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto)
+
+    suspend fun approveDocument(requestId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -173,5 +175,9 @@ internal class KtorApiServiceJvm(
         httpClient.post("documents/${requestId}/reject") {
             setBody(rejectDocumentDto)
         }
+    }
+
+    override suspend fun approveDocument(requestId: Int) {
+        httpClient.post("documents/${requestId}/approve")
     }
 }

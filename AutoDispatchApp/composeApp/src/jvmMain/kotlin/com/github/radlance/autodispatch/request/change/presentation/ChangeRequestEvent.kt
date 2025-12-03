@@ -136,6 +136,12 @@ interface ChangeRequestEvent : Event {
         }
     }
 
+    class ClickApproveDocument(private val requestId: Int): ChangeRequestEvent {
+        override fun apply(action: CreateRequestAction) {
+            action.approveDocument(requestId)
+        }
+    }
+
     object ResetChangeState : ChangeRequestEvent {
         override fun apply(action: CreateRequestAction) {
             action.resetChangeState()
@@ -153,6 +159,13 @@ interface ChangeRequestEvent : Event {
 
         override fun apply(action: CreateRequestAction) {
             action.resetRejectState()
+        }
+    }
+
+    object ResetApproveState : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) {
+            action.resetApproveState()
         }
     }
 
@@ -216,11 +229,15 @@ interface CreateRequestAction {
 
     fun rejectDocument(requestId: Int, rejectReason: String)
 
+    fun approveDocument(requestId: Int)
+
     fun resetChangeState()
 
     fun resetRemoveState()
 
     fun resetRejectState()
+
+    fun resetApproveState()
 
     fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState)
 }

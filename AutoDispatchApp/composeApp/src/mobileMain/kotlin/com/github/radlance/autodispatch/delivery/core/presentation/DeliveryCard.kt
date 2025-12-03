@@ -360,7 +360,7 @@ fun deliveryStatusColors(status: String) =
             MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
         }
 
-        "Отменена" -> {
+        "Отменена", "Отклонена" -> {
             MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
         }
 

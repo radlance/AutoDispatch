@@ -40,9 +40,13 @@ class ChangeRequestViewModel(
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
     val cancelRequestState = cancelRequestStateMutable.asStateFlow()
 
-    private val rejectRequestStateMutable =
+    private val rejectDocumentsStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
-    val rejectRequestState get() = rejectRequestStateMutable.asStateFlow()
+    val rejectDocumentsState get() = rejectDocumentsStateMutable.asStateFlow()
+
+    private val approveDocumentsStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+    val approveDocumentsState get() = approveDocumentsStateMutable.asStateFlow()
 
     override fun reduce(event: ChangeRequestEvent) {
         val action = object : CreateRequestAction {
@@ -253,7 +257,11 @@ class ChangeRequestViewModel(
             }
 
             override fun resetRejectState() {
-                rejectRequestStateMutable.value = FetchResultUiState.Idle
+                rejectDocumentsStateMutable.value = FetchResultUiState.Idle
+            }
+
+            override fun resetApproveState() {
+                approveDocumentsStateMutable.value = FetchResultUiState.Idle
             }
 
             override fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState) {
@@ -281,9 +289,16 @@ class ChangeRequestViewModel(
             }
 
             override fun rejectDocument(requestId: Int, rejectReason: String) {
-                rejectRequestStateMutable.value = FetchResultUiState.Loading
+                rejectDocumentsStateMutable.value = FetchResultUiState.Loading
                 handle(background = { repository.rejectDocument(requestId, rejectReason) }) {
-                    rejectRequestStateMutable.value = it.toUiState()
+                    rejectDocumentsStateMutable.value = it.toUiState()
+                }
+            }
+
+            override fun approveDocument(requestId: Int) {
+                approveDocumentsStateMutable.value = FetchResultUiState.Loading
+                handle(background = { repository.approveDocument(requestId) }) {
+                    approveDocumentsStateMutable.value = it.toUiState()
                 }
             }
         }

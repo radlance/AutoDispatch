@@ -13,4 +13,10 @@ class DocumentsRepository {
             it[rejectionReason] = rejectDocumentDto.reason
         }
     }
+
+    suspend fun approveDocument(requestId: Int) = loggedTransaction {
+        RequestTable.update({ RequestTable.id eq requestId }) {
+            it[statusId] = 4
+        }
+    }
 }

@@ -57,4 +57,10 @@ class RemoteChangeRequestRepository(
             rejectDocumentDto = RejectDocumentDto(rejectionReason)
         )
     }
+
+    override suspend fun approveDocument(
+        requestId: Int
+    ): FetchResult<Unit, String> = handleRequest.handle {
+        apiService.approveDocument(requestId = requestId)
+    }
 }
