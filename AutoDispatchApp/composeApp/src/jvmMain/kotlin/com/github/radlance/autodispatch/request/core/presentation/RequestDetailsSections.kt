@@ -208,7 +208,7 @@ fun RequestDetailsSections(
             val vehicle = request.vehicleInfo?.takeIf { it.isNotBlank() } ?: "—"
             LabeledValue(label = stringResource(Res.string.vehicle), value = vehicle)
         }
-        if (request.status.id == 6) {
+        if ((request.status.id == 6 || request.status.id == 4 || request.status.id == 7) && request.documents.isNotEmpty()) {
             HorizontalDivider(
                 modifier = Modifier.padding(
                     top = SECTION_GAP,
@@ -246,24 +246,26 @@ fun RequestDetailsSections(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(ITEM_GAP))
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(
-                        onClick = { onShowRejectDocumentsDialog(true) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
+                if (request.status.id == 6) {
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(
+                            onClick = { onShowRejectDocumentsDialog(true) },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
+                            Spacer(Modifier.width(12.dp))
+                            Text(text = "Отклонить")
+                        }
                         Spacer(Modifier.width(12.dp))
-                        Text(text = "Отклонить")
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Button(
-                        onClick = { onShowApproveDocumentsDialog(true) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(imageVector = Icons.Outlined.Done, contentDescription = null)
-                        Spacer(Modifier.width(12.dp))
-                        Text(text = "Одобрить")
+                        Button(
+                            onClick = { onShowApproveDocumentsDialog(true) },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(imageVector = Icons.Outlined.Done, contentDescription = null)
+                            Spacer(Modifier.width(12.dp))
+                            Text(text = "Одобрить")
+                        }
                     }
                 }
             }
