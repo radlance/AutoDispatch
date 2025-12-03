@@ -109,14 +109,15 @@ fun RequestDetailsSections(
         )
 
         Section(header = stringResource(Res.string.request_creation_date)) {
+            val createdAt = request.createdAt
             InfoRow(
                 icon = Icons.Outlined.CalendarToday,
                 iconDesc = stringResource(Res.string.creation_date),
-                text = "${request.createdAt.date}, ${
-                    request.createdAt.hour.toString().padStart(2, '0')
+                text = "${createdAt.date}, ${
+                    createdAt.hour.toString().padStart(2, '0')
                 }:${
-                    request.createdAt.minute.toString().padStart(2, '0')
-                }:${request.createdAt.second.toString().padStart(2, '0')}"
+                    createdAt.minute.toString().padStart(2, '0')
+                }:${createdAt.second.toString().padStart(2, '0')}"
             )
         }
 
@@ -217,6 +218,19 @@ fun RequestDetailsSections(
                 )
             )
             Section(header = "Документы от водителя") {
+
+                val lastSent = request.documents.maxOf { it.uploadedAt }
+                InfoRow(
+                    icon = Icons.Outlined.CalendarToday,
+                    iconDesc = stringResource(Res.string.creation_date),
+                    text = "${lastSent.date}, ${
+                        lastSent.hour.toString().padStart(2, '0')
+                    }:${
+                        lastSent.minute.toString().padStart(2, '0')
+                    }:${lastSent.second.toString().padStart(2, '0')}"
+                )
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+
                 Text(
                     text = "Фотографии документов:",
                     style = MaterialTheme.typography.labelMedium,
@@ -234,10 +248,10 @@ fun RequestDetailsSections(
                     itemsIndexed(
                         items = request.documents,
                         key = { idx, _ -> idx }
-                    ) { _, documentUrl ->
+                    ) { _, document ->
 
                         LoadableImage(
-                            documentUrl = documentUrl,
+                            documentUrl = document.imageUrl,
                             onRetry = {
                                 onReloadImage(System.currentTimeMillis())
                             },
@@ -307,7 +321,7 @@ private fun Section(
 @Composable
 private fun InfoRow(
     icon: ImageVector,
-    iconDesc: String,
+    iconDesc: String?,
     text: String
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {

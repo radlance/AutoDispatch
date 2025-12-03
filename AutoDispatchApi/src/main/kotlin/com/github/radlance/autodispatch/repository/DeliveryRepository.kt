@@ -1,16 +1,38 @@
 package com.github.radlance.autodispatch.repository
 
-import com.github.radlance.autodispatch.database.table.*
+import com.github.radlance.autodispatch.database.table.AssignmentTable
+import com.github.radlance.autodispatch.database.table.CargoTypeTable
+import com.github.radlance.autodispatch.database.table.CityTable
+import com.github.radlance.autodispatch.database.table.CustomerTable
+import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
+import com.github.radlance.autodispatch.database.table.DriverTable
+import com.github.radlance.autodispatch.database.table.RequestStatusTable
+import com.github.radlance.autodispatch.database.table.RequestTable
+import com.github.radlance.autodispatch.database.table.UserTable
+import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
-import com.github.radlance.autodispatch.domain.request.*
+import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
+import com.github.radlance.autodispatch.domain.request.Cargo
+import com.github.radlance.autodispatch.domain.request.CargoType
+import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.Point
+import com.github.radlance.autodispatch.domain.request.RequestStatus
+import com.github.radlance.autodispatch.domain.request.VehicleFilter
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
 import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.util.loggedTransaction
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Coalesce
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
+import org.jetbrains.exposed.sql.update
 
 class DeliveryRepository {
 
@@ -119,6 +141,7 @@ class DeliveryRepository {
                 RequestTable.cargoDescription,
                 RequestTable.createdAt,
                 RequestTable.updatedAt,
+                RequestTable.rejectionReason,
                 CustomerTable.id,
                 CustomerTable.organizationName,
                 CustomerTable.email,
@@ -143,6 +166,23 @@ class DeliveryRepository {
         if (assignedDriverId != driverId) {
             throw DeliveryForbiddenException("Доставка ${row[RequestTable.requestNumber]} недоступна")
         }
+
+        val documents = DeliveryDocumentTable
+            .innerJoin(AssignmentTable)
+            .select(
+                DeliveryDocumentTable.id,
+                DeliveryDocumentTable.imageUrl,
+                DeliveryDocumentTable.uploadedAt
+            )
+            .where { AssignmentTable.requestId eq deliveryId }
+            .orderBy(DeliveryDocumentTable.uploadedAt, SortOrder.DESC)
+            .map { docRow ->
+                DeliveryDocument(
+                    id = docRow[DeliveryDocumentTable.id].value,
+                    imageUrl = docRow[DeliveryDocumentTable.imageUrl],
+                    uploadedAt = docRow[DeliveryDocumentTable.uploadedAt]?.toString()
+                )
+            }
 
         val delivery = DeliveryDetailed(
             id = row[RequestTable.id].value,
@@ -189,7 +229,9 @@ class DeliveryRepository {
             },
             createdAt = row[RequestTable.createdAt]?.toString(),
             updatedAt = row[RequestTable.updatedAt]?.toString(),
-            requestNumber = row[RequestTable.requestNumber]
+            requestNumber = row[RequestTable.requestNumber],
+            rejectionReason = row[RequestTable.rejectionReason],
+            documents = documents
         )
 
         return@loggedTransaction delivery
@@ -245,51 +287,52 @@ class DeliveryRepository {
         }
     }
 
-    suspend fun uploadDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) = loggedTransaction {
-        val driverId = UserTable.select(UserTable.id).where {
-            UserTable.login eq driverLogin
-        }.first()[UserTable.id].value
+    suspend fun uploadDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
+        loggedTransaction {
+            val driverId = UserTable.select(UserTable.id).where {
+                UserTable.login eq driverLogin
+            }.first()[UserTable.id].value
 
-        val requestData = RequestTable
-            .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
-            .select(
-                RequestTable.statusId,
-                RequestTable.requestNumber,
-                AssignmentTable.driverId,
-                AssignmentTable.id
-            )
-            .where { RequestTable.id eq deliveryId }
-            .firstOrNull()
+            val requestData = RequestTable
+                .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
+                .select(
+                    RequestTable.statusId,
+                    RequestTable.requestNumber,
+                    AssignmentTable.driverId,
+                    AssignmentTable.id
+                )
+                .where { RequestTable.id eq deliveryId }
+                .firstOrNull()
 
-        if (requestData == null) {
-            throw DeliveryNotFoundException("Доставка не найдена")
+            if (requestData == null) {
+                throw DeliveryNotFoundException("Доставка не найдена")
+            }
+
+            val assignedDriverId = requestData.getOrNull(AssignmentTable.driverId)?.value
+            if (assignedDriverId != driverId) {
+                throw DeliveryForbiddenException("Доставка ${requestData[RequestTable.requestNumber]} недоступна")
+            }
+
+            val currentStatusId = requestData[RequestTable.statusId].value
+            val requestNumber = requestData[RequestTable.requestNumber]!!
+            if (currentStatusId == 5) {
+                throw DeliveryCanceledException("Доставка $requestNumber отменена.")
+            } else if (currentStatusId != 3) {
+                throw DeliveryCanceledException("Доставка $requestNumber отменена или недоступна.")
+            }
+
+            RequestTable.update({ RequestTable.id eq deliveryId }) {
+                it[statusId] = 6
+            }
+
+            AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
+                it[completedAt] = CurrentTimestampWithTimeZone
+            }
+            val assignmentId = requestData[AssignmentTable.id].value
+
+            DeliveryDocumentTable.batchInsert(imageUrls) { url ->
+                this[DeliveryDocumentTable.assignmentId] = assignmentId
+                this[DeliveryDocumentTable.imageUrl] = url
+            }
         }
-
-        val assignedDriverId = requestData.getOrNull(AssignmentTable.driverId)?.value
-        if (assignedDriverId != driverId) {
-            throw DeliveryForbiddenException("Доставка ${requestData[RequestTable.requestNumber]} недоступна")
-        }
-
-        val currentStatusId = requestData[RequestTable.statusId].value
-        val requestNumber = requestData[RequestTable.requestNumber]!!
-        if (currentStatusId == 5) {
-            throw DeliveryCanceledException("Доставка $requestNumber отменена.")
-        } else if (currentStatusId != 3) {
-            throw DeliveryCanceledException("Доставка $requestNumber отменена или недоступна.")
-        }
-
-        RequestTable.update({ RequestTable.id eq deliveryId }) {
-            it[statusId] = 6
-        }
-
-        AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
-            it[completedAt] = CurrentTimestampWithTimeZone
-        }
-        val assignmentId = requestData[AssignmentTable.id].value
-
-        DeliveryDocumentTable.batchInsert(imageUrls) { url ->
-            this[DeliveryDocumentTable.assignmentId] = assignmentId
-            this[DeliveryDocumentTable.imageUrl] = url
-        }
-    }
 }

@@ -224,7 +224,9 @@ private fun SuccessDeliveryScreenPreview() {
                 ),
                 createdAt = LocalDateTime(1, 1, 1, 1, 1),
                 updatedAt = LocalDateTime(1, 1, 1, 1, 1),
-                requestNumber = "d123ge"
+                requestNumber = "d123ge",
+                rejectionReason = "",
+                documents = emptyList()
             ),
             navigateToDeliveryList = {}
         )

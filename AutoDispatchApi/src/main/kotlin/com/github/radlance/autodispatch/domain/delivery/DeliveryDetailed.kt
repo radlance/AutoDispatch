@@ -24,4 +24,6 @@ data class DeliveryDetailed(
     val createdAt: String?,
     val updatedAt: String?,
     val requestNumber: String?,
+    val rejectionReason: String?,
+    val documents: List<DeliveryDocument> = emptyList()
 )

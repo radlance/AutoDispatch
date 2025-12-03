@@ -8,6 +8,7 @@ import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
 import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
+import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
@@ -15,6 +16,7 @@ import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
@@ -58,7 +60,7 @@ fun RequestDto.toRequest(): Request {
         transportationDescription = transportationDescription,
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
-        documents = documents.map { "http://$CurrentIp/$it" }
+        documents = documents.map { it.toDeliveryDocument() }
     )
 }
 
@@ -113,5 +115,13 @@ fun PointDto.toPoint(): Point {
         address = address,
         lat = lat,
         lon = lon
+    )
+}
+
+fun DeliveryDocumentDto.toDeliveryDocument(): DeliveryDocument {
+    return DeliveryDocument(
+        id = id,
+        imageUrl = "http://$CurrentIp/$imageUrl",
+        uploadedAt = uploadedAt.toLocalDateTimeFromUtc()
     )
 }

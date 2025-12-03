@@ -20,5 +20,5 @@ data class Request(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime?,
     val requestNumber: String,
-    val documents: List<String> = emptyList()
+    val documents: List<DeliveryDocument> = emptyList()
 )

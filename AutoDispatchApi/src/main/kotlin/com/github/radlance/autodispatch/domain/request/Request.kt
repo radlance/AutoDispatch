@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.domain.request
 
+import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,7 +20,7 @@ data class Request(
     val createdAt: String?,
     val updatedAt: String?,
     val requestNumber: String?,
-    val documents: List<String> = emptyList()
+    val documents: List<DeliveryDocument> = emptyList()
 )
 
 @Serializable

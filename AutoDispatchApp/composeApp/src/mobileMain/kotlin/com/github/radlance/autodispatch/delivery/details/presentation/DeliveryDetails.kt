@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Person
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
@@ -199,13 +201,14 @@ fun DeliveryDetails(
             .padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        val createdAt = delivery.createdAt
         StatusCard(
             status = delivery.status.name,
-            createdAt = "${delivery.createdAt.date}, ${
-                delivery.createdAt.hour.toString().padStart(2, '0')
+            createdAt = "${createdAt.date}, ${
+                createdAt.hour.toString().padStart(2, '0')
             }:${
-                delivery.createdAt.minute.toString().padStart(2, '0')
-            }:${delivery.createdAt.second.toString().padStart(2, '0')}",
+                createdAt.minute.toString().padStart(2, '0')
+            }:${createdAt.second.toString().padStart(2, '0')}",
             backgroundColor = backgroundColor,
             contentColor = contentColor,
             modifier = Modifier.fillMaxWidth()
@@ -242,12 +245,50 @@ fun DeliveryDetails(
             modifier = Modifier.fillMaxWidth()
         )
 
-        AdditionalInfoCard(
-            description = delivery.transportationDescription,
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
+        delivery.transportationDescription?.let {
+            AdditionalInfoCard(
+                description = it,
+                backgroundColor = backgroundColor,
+                contentColor = contentColor,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        if (delivery.status.id == 6) {
+            val sentAt = delivery.updatedAt
+            WarningCard(
+                modifier = modifier,
+                icon = Icons.Outlined.ErrorOutline,
+                contentColor = contentColor,
+                containerColor = backgroundColor,
+                message = "Отправлено: ${sentAt.date}, ${
+                    sentAt.hour.toString().padStart(2, '0')
+                }:${
+                    sentAt.minute.toString().padStart(2, '0')
+                }:${sentAt.second.toString().padStart(2, '0')}\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
+            )
+        }
+
+        if (delivery.status.id == 7) {
+            val lastSent = delivery.documents.maxOf { it.uploadedAt }
+            val updatedAt = delivery.updatedAt
+
+            DocumentRejectCard(
+                rejectionReason = delivery.rejectionReason ?: "",
+                sentAt = "${lastSent.date}, ${
+                    lastSent.hour.toString().padStart(2, '0')
+                }:${
+                    lastSent.minute.toString().padStart(2, '0')
+                }:${lastSent.second.toString().padStart(2, '0')}",
+                rejectedAt = "${updatedAt.date}, ${
+                    updatedAt.hour.toString().padStart(2, '0')
+                }:${
+                    updatedAt.minute.toString().padStart(2, '0')
+                }:${updatedAt.second.toString().padStart(2, '0')}",
+                backgroundColor = backgroundColor,
+                contentColor = contentColor
+            )
+        }
 
         ActionButtons(
             deliveryStatusId = delivery.status.id,
@@ -556,29 +597,28 @@ private fun ContactsCard(
 
 @Composable
 private fun AdditionalInfoCard(
-    description: String?,
+    description: String,
     backgroundColor: Color,
     contentColor: Color,
     modifier: Modifier = Modifier
 ) {
-    description?.let {
-        Card(modifier = modifier) {
-            Column {
-                SectionHeader(
-                    text = "Дополнительная информация",
-                    icon = Icons.AutoMirrored.Outlined.StickyNote2,
-                    color = contentColor,
-                    backgroundColor = backgroundColor
+
+    Card(modifier = modifier) {
+        Column {
+            SectionHeader(
+                text = "Дополнительная информация",
+                icon = Icons.AutoMirrored.Outlined.StickyNote2,
+                color = contentColor,
+                backgroundColor = backgroundColor
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(18.dp)
+            ) {
+                Text(
+                    text = description,
+                    fontSize = 14.sp
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(18.dp)
-                ) {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp
-                    )
-                }
             }
         }
     }
@@ -631,6 +671,42 @@ private fun ActionButtons(
             Icon(imageVector = Icons.Outlined.Phone, contentDescription = null)
             Spacer(Modifier.width(12.dp))
             Text(text = "Связаться с диспетчером")
+        }
+    }
+}
+
+@Composable
+private fun DocumentRejectCard(
+    rejectionReason: String,
+    sentAt: String,
+    rejectedAt: String,
+    backgroundColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Column {
+        WarningCard(
+            modifier = modifier,
+            icon = Icons.Outlined.ErrorOutline,
+            contentColor = contentColor,
+            containerColor = backgroundColor,
+            message = rejectionReason,
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Card(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp)) {
+                    Text(text = "Отправлено", fontSize = 12.sp, modifier = Modifier.alpha(0.7f))
+                    Text(text = sentAt, fontSize = 12.sp)
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Card(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp)) {
+                    Text(text = "Отклонено", fontSize = 12.sp, modifier = Modifier.alpha(0.7f))
+                    Text(text = rejectedAt, fontSize = 12.sp)
+                }
+            }
         }
     }
 }

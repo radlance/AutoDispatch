@@ -19,7 +19,7 @@ data class RequestDto(
     val createdAt: String,
     val updatedAt: String?,
     val requestNumber: String,
-    val documents: List<String> = emptyList()
+    val documents: List<DeliveryDocumentDto> = emptyList()
 )
 
 

@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
 import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
+import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -22,6 +23,8 @@ data class DeliveryDetailedDto(
     val customer: CustomerDto,
     val vehicle: VehicleFilterDto,
     val createdAt: String,
-    val updatedAt: String?,
-    val requestNumber: String
+    val updatedAt: String,
+    val requestNumber: String,
+    val rejectionReason: String?,
+    val documents: List<DeliveryDocumentDto>
 )

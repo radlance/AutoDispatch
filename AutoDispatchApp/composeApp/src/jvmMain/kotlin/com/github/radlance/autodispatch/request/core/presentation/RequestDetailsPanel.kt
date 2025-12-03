@@ -75,7 +75,7 @@ fun RequestDetailsPanel(
         FullScreenImageDialog(
             onDismissRequest = { selectedImageUrl = null },
             selectedImageUrl = selectedImageUrl,
-            documents = request.documents,
+            documents = request.documents.map { it.imageUrl },
             onChangeImageIconClick = { selectedImageUrl = it }
         )
     }

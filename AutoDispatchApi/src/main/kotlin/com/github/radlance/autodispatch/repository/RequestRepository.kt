@@ -15,6 +15,7 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.CreateRequest
@@ -241,10 +242,24 @@ class RequestRepository {
         val documentsMap = if (requestIds.isNotEmpty()) {
             DeliveryDocumentTable
                 .innerJoin(AssignmentTable)
-                .select(AssignmentTable.requestId, DeliveryDocumentTable.imageUrl)
+                .select(
+                    AssignmentTable.requestId,
+                    DeliveryDocumentTable.id,
+                    DeliveryDocumentTable.imageUrl,
+                    DeliveryDocumentTable.uploadedAt
+                )
                 .where { AssignmentTable.requestId inList requestIds }
+                .orderBy(DeliveryDocumentTable.uploadedAt, SortOrder.DESC)
                 .map { row ->
-                    row[AssignmentTable.requestId].value to row[DeliveryDocumentTable.imageUrl]
+                    val requestId = row[AssignmentTable.requestId].value
+
+                    val doc = DeliveryDocument(
+                        id = row[DeliveryDocumentTable.id].value,
+                        imageUrl = row[DeliveryDocumentTable.imageUrl],
+                        uploadedAt = row[DeliveryDocumentTable.uploadedAt]?.toString()
+                    )
+
+                    requestId to doc
                 }
                 .groupBy({ it.first }, { it.second })
         } else {

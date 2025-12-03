@@ -35,7 +35,9 @@ fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
         customer = customer.toCustomer(),
         vehicle = vehicle.toVehicleFilter(),
         createdAt = createdAt.toLocalDateTimeFromUtc(),
-        updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
-        requestNumber = requestNumber
+        updatedAt = updatedAt.toLocalDateTimeFromUtc(),
+        requestNumber = requestNumber,
+        rejectionReason = rejectionReason,
+        documents = documents.map { it.toDeliveryDocument() }
     )
 }

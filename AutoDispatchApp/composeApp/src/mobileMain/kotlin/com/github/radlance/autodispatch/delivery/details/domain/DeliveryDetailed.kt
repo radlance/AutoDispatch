@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.delivery.details.domain
 
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
 import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
@@ -23,6 +24,8 @@ data class DeliveryDetailed(
     val customer: Customer,
     val vehicle: VehicleFilter,
     val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime?,
-    val requestNumber: String
+    val updatedAt: LocalDateTime,
+    val requestNumber: String,
+    val rejectionReason: String?,
+    val documents: List<DeliveryDocument>
 )
