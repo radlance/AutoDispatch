@@ -55,6 +55,7 @@ import org.jetbrains.exposed.sql.intLiteral
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
+import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.update
@@ -316,27 +317,14 @@ class RequestRepository {
     }
 
     suspend fun createRequest(createdByLogin: String, req: CreateRequest) = loggedTransaction {
-        val userId = UserTable.select(UserTable.id).where {
-            UserTable.login eq createdByLogin
-        }.first()[UserTable.id].value
+        val userId = UserTable
+            .select(UserTable.id)
+            .where { UserTable.login eq createdByLogin }
+            .first()[UserTable.id].value
 
         RequestTable.insert { row ->
             row[statusId] = 1
-            row[this.createdById] = userId
-            row[loadingAddress] = req.loadingAddress
-            row[loadingLat] = req.loadingLat
-            row[loadingLon] = req.loadingLon
-            row[unloadingAddress] = req.unloadingAddress
-            row[unloadingLat] = req.unloadingLat
-            row[unloadingLon] = req.unloadingLon
-            row[cargoTypeId] = req.cargoTypeId
-            row[cargoWeight] = req.cargoWeight
-            row[cargoVolume] = req.cargoVolume
-            row[cargoDescription] = req.cargoDescription
-            row[this.customerId] = getOrganizationId(req.customerName, req.customerEmail, req.customerPhone)
-            row[originId] = req.originId
-            row[destinationId] = req.destinationId
-            row[transportationDescription] = req.transportationDescription
+            setRequestFields(row, req, userId)
         }
     }
 
@@ -348,26 +336,13 @@ class RequestRepository {
     }
 
     suspend fun editRequest(createdByLogin: String, requestId: Int, req: CreateRequest) = loggedTransaction {
-        val userId = UserTable.select(UserTable.id).where {
-            UserTable.login eq createdByLogin
-        }.first()[UserTable.id].value
+        val userId = UserTable
+            .select(UserTable.id)
+            .where { UserTable.login eq createdByLogin }
+            .first()[UserTable.id].value
 
         RequestTable.update({ RequestTable.id eq requestId }) { row ->
-            row[this.createdById] = userId
-            row[loadingAddress] = req.loadingAddress
-            row[loadingLat] = req.loadingLat
-            row[loadingLon] = req.loadingLon
-            row[unloadingAddress] = req.unloadingAddress
-            row[unloadingLat] = req.unloadingLat
-            row[unloadingLon] = req.unloadingLon
-            row[cargoTypeId] = req.cargoTypeId
-            row[cargoWeight] = req.cargoWeight
-            row[cargoVolume] = req.cargoVolume
-            row[cargoDescription] = req.cargoDescription
-            row[this.customerId] = getOrganizationId(req.customerName, req.customerEmail, req.customerPhone)
-            row[originId] = req.originId
-            row[destinationId] = req.destinationId
-            row[transportationDescription] = req.transportationDescription
+            setRequestFields(row, req, userId)
         }
     }
 
@@ -466,5 +441,27 @@ class RequestRepository {
             it[this.driverId] = EntityID(driverId, UserTable)
         }
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
+    }
+
+    private fun <T : Any> setRequestFields(
+        row: UpdateBuilder<T>,
+        req: CreateRequest,
+        userId: Int
+    ) {
+        row[RequestTable.createdById] = userId
+        row[RequestTable.loadingAddress] = req.loadingAddress
+        row[RequestTable.loadingLat] = req.loadingLat
+        row[RequestTable.loadingLon] = req.loadingLon
+        row[RequestTable.unloadingAddress] = req.unloadingAddress
+        row[RequestTable.unloadingLat] = req.unloadingLat
+        row[RequestTable.unloadingLon] = req.unloadingLon
+        row[RequestTable.cargoTypeId] = req.cargoTypeId
+        row[RequestTable.cargoWeight] = req.cargoWeight
+        row[RequestTable.cargoVolume] = req.cargoVolume
+        row[RequestTable.cargoDescription] = req.cargoDescription
+        row[RequestTable.customerId] = getOrganizationId(req.customerName, req.customerEmail, req.customerPhone)
+        row[RequestTable.originId] = req.originId
+        row[RequestTable.destinationId] = req.destinationId
+        row[RequestTable.transportationDescription] = req.transportationDescription
     }
 }

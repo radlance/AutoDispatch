@@ -7,6 +7,7 @@ import com.github.radlance.autodispatch.delivery.confirmation.domain.DeliveryCon
 import io.ktor.client.request.forms.formData
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.content.PartData
 
 class RemoteDeliveryConfirmationRepository(
     private val apiService: ApiServiceMobile,
@@ -16,22 +17,30 @@ class RemoteDeliveryConfirmationRepository(
         deliveryId: Int,
         documents: List<ByteArray>
     ): FetchResult<Unit, String> = handleRequest.handle {
-        val formData = formData {
-            documents.forEachIndexed { index, bytes ->
+        apiService.completeDelivery(deliveryId, documents.createImageFormData())
+    }
+
+    override suspend fun retakeDocument(
+        deliveryId: Int,
+        documents: List<ByteArray>
+    ): FetchResult<Unit, String> = handleRequest.handle {
+
+        apiService.retakeDocument(deliveryId, documents.createImageFormData())
+    }
+}
+
+private fun List<ByteArray>.createImageFormData(): List<PartData> = formData {
+    this@createImageFormData.forEachIndexed { index, bytes ->
+        append(
+            "file$index",
+            bytes,
+            Headers.build {
+                append(HttpHeaders.ContentType, "image/jpeg")
                 append(
-                    "file$index",
-                    bytes,
-                    Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(
-                            HttpHeaders.ContentDisposition,
-                            "form-data; name=\"file$index\"; filename=\"photo_$index.jpg\""
-                        )
-                    }
+                    HttpHeaders.ContentDisposition,
+                    "form-data; name=\"file$index\"; filename=\"photo_$index.jpg\""
                 )
             }
-        }
-
-        apiService.completeDelivery(deliveryId, formData)
+        )
     }
 }

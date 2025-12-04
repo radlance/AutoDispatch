@@ -28,9 +28,11 @@ import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.update
 
@@ -289,37 +291,16 @@ class DeliveryRepository {
 
     suspend fun uploadDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
         loggedTransaction {
-            val driverId = UserTable.select(UserTable.id).where {
-                UserTable.login eq driverLogin
-            }.first()[UserTable.id].value
 
-            val requestData = RequestTable
-                .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
-                .select(
-                    RequestTable.statusId,
-                    RequestTable.requestNumber,
-                    AssignmentTable.driverId,
-                    AssignmentTable.id
-                )
-                .where { RequestTable.id eq deliveryId }
-                .firstOrNull()
-
-            if (requestData == null) {
-                throw DeliveryNotFoundException("Доставка не найдена")
-            }
-
-            val assignedDriverId = requestData.getOrNull(AssignmentTable.driverId)?.value
-            if (assignedDriverId != driverId) {
-                throw DeliveryForbiddenException("Доставка ${requestData[RequestTable.requestNumber]} недоступна")
-            }
-
-            val currentStatusId = requestData[RequestTable.statusId].value
-            val requestNumber = requestData[RequestTable.requestNumber]!!
-            if (currentStatusId == 5) {
-                throw DeliveryCanceledException("Доставка $requestNumber отменена.")
-            } else if (currentStatusId != 3) {
-                throw DeliveryCanceledException("Доставка $requestNumber отменена или недоступна.")
-            }
+            val assignmentId = validateAndGetAssignmentId(
+                deliveryId,
+                driverLogin,
+                allowedStatuses = listOf(3),
+                canceledStatus = 5,
+                unexpectedStatusMessage = { number, _ ->
+                    "Доставка $number отменена или недоступна."
+                }
+            )
 
             RequestTable.update({ RequestTable.id eq deliveryId }) {
                 it[statusId] = 6
@@ -328,11 +309,86 @@ class DeliveryRepository {
             AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
                 it[completedAt] = CurrentTimestampWithTimeZone
             }
-            val assignmentId = requestData[AssignmentTable.id].value
 
             DeliveryDocumentTable.batchInsert(imageUrls) { url ->
                 this[DeliveryDocumentTable.assignmentId] = assignmentId
                 this[DeliveryDocumentTable.imageUrl] = url
             }
         }
+
+    suspend fun retakeDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
+        loggedTransaction {
+
+            val assignmentId = validateAndGetAssignmentId(
+                deliveryId,
+                driverLogin,
+                allowedStatuses = listOf(7),
+                canceledStatus = 5,
+                unexpectedStatusMessage = { number, status ->
+                    "Невозможно пересдать документы для доставки $number. Текущий статус: $status"
+                }
+            )
+
+            DeliveryDocumentTable.deleteWhere {
+                this.assignmentId eq assignmentId
+            }
+
+            DeliveryDocumentTable.batchInsert(imageUrls) { url ->
+                this[DeliveryDocumentTable.assignmentId] = assignmentId
+                this[DeliveryDocumentTable.imageUrl] = url
+            }
+
+            RequestTable.update({ RequestTable.id eq deliveryId }) {
+                it[statusId] = 6
+                it[rejectionReason] = null
+            }
+
+            AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
+                it[completedAt] = CurrentTimestampWithTimeZone
+            }
+        }
+
+    private suspend fun validateAndGetAssignmentId(
+        deliveryId: Int,
+        driverLogin: String,
+        allowedStatuses: List<Int>,
+        canceledStatus: Int,
+        unexpectedStatusMessage: (requestNumber: String, status: Int) -> String
+    ): Int = loggedTransaction {
+
+        val driverId = UserTable
+            .select(UserTable.id)
+            .where { UserTable.login eq driverLogin }
+            .first()[UserTable.id].value
+
+        val requestData = RequestTable
+            .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
+            .select(
+                RequestTable.statusId,
+                RequestTable.requestNumber,
+                AssignmentTable.driverId,
+                AssignmentTable.id
+            )
+            .where { RequestTable.id eq deliveryId }
+            .firstOrNull()
+            ?: throw DeliveryNotFoundException("Доставка не найдена")
+
+        val assignedDriverId = requestData.getOrNull(AssignmentTable.driverId)?.value
+        if (assignedDriverId != driverId) {
+            throw DeliveryForbiddenException("Доставка ${requestData[RequestTable.requestNumber]} недоступна")
+        }
+
+        val currentStatus = requestData[RequestTable.statusId].value
+        val requestNumber = requestData[RequestTable.requestNumber]!!
+
+        if (currentStatus == canceledStatus) {
+            throw DeliveryCanceledException("Доставка $requestNumber отменена.")
+        }
+
+        if (currentStatus !in allowedStatuses) {
+            throw DeliveryCanceledException(unexpectedStatusMessage(requestNumber, currentStatus))
+        }
+
+        requestData[AssignmentTable.id].value
+    }
 }

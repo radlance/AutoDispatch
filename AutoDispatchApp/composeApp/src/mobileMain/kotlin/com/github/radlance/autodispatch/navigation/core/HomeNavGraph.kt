@@ -78,18 +78,26 @@ fun HomeNavGraph(
                     navigateUp = navController::navigateUp,
                     deliveryId = deliveryId,
                     deliveryNumber = deliveryNumber,
+                    navigateToDeliveryConfirmation = {
+                        navController.navigate(
+                            DeliveryConfirmation(deliveryId = deliveryId, retake = true)
+                        )
+                    },
                     viewModel = deliveryDetailsViewModel
                 )
             }
 
             composable<DeliveryRoute> {
                 val args = it.toRoute<DeliveryRoute>()
+                val deliveryId = args.deliveryId
                 DeliveryRouteScreen(
-                    deliveryId = args.deliveryId,
+                    deliveryId = deliveryId,
                     deliveryNumber = args.deliveryNumber,
                     navigateUp = navController::navigateUp,
                     navigateToDeliveryConfirmation = {
-                        navController.navigate(DeliveryConfirmation(args.deliveryId))
+                        navController.navigate(
+                            DeliveryConfirmation(deliveryId = deliveryId, retake = false)
+                        )
                     },
                     viewModel = deliveryDetailsViewModel
                 )
@@ -99,6 +107,7 @@ fun HomeNavGraph(
                 val args = it.toRoute<DeliveryConfirmation>()
                 DeliveryConfirmationScreen(
                     deliveryId = args.deliveryId,
+                    retake = args.retake,
                     navigateUp = navController::navigateUp,
                     navigateToSuccessDeliveryScreen = { delivery ->
                         val json = Json.encodeToString(delivery)

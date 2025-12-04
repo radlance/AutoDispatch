@@ -32,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
@@ -111,6 +112,7 @@ fun DeliveryDetails(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
     onContinueDeliveryClick: () -> Unit,
+    onRetakeDocumentsClick: () -> Unit,
     onAcceptClick: () -> Unit,
     onCloseError: () -> Unit,
     navigateUp: () -> Unit,
@@ -388,6 +390,7 @@ fun DeliveryDetails(
                     ActionButtons(
                         deliveryStatusId = delivery.status.id,
                         onContinueDeliveryClick = onContinueDeliveryClick,
+                        onRetakeDocumentsClick = onRetakeDocumentsClick,
                         onAcceptClick = { showConfirmDialog = true },
                         onContactClick = {
                             openDialer(delivery.dispatcherPhoneNumber, context)
@@ -774,6 +777,7 @@ private fun AdditionalInfoCard(
 private fun ActionButtons(
     deliveryStatusId: Int,
     onContinueDeliveryClick: () -> Unit,
+    onRetakeDocumentsClick: () -> Unit,
     onAcceptClick: () -> Unit,
     onContactClick: () -> Unit,
     backgroundColor: Color,
@@ -794,8 +798,9 @@ private fun ActionButtons(
                 Spacer(Modifier.width(12.dp))
                 Text(text = "Начать рейс")
             }
-            Spacer(Modifier.height(8.dp))
-        } else if (deliveryStatusId == 3) {
+            Spacer(Modifier.height(4.dp))
+        }
+        if (deliveryStatusId == 3) {
             Button(
                 onClick = onContinueDeliveryClick,
                 modifier = Modifier.fillMaxWidth(),
@@ -808,8 +813,24 @@ private fun ActionButtons(
                 Spacer(Modifier.width(12.dp))
                 Text(text = "Продолжить доставку")
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
         }
+        if (deliveryStatusId == 7) {
+            Button(
+                onClick = onRetakeDocumentsClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = backgroundColor,
+                    contentColor = contentColor
+                )
+            ) {
+                Icon(imageVector = Icons.Outlined.AddAPhoto, contentDescription = null)
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Переснять докумены")
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+
         OutlinedButton(
             onClick = onContactClick,
             modifier = Modifier.fillMaxWidth()

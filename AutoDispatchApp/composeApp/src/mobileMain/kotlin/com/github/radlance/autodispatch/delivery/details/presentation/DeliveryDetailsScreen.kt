@@ -39,6 +39,7 @@ fun DeliveryDetailsScreen(
     deliveryId: Int,
     deliveryNumber: String,
     navigateToDeliveryRoute: () -> Unit,
+    navigateToDeliveryConfirmation: () -> Unit,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
@@ -90,6 +91,7 @@ fun DeliveryDetailsScreen(
                         scrollState = scrollState,
                         delivery = delivery,
                         onContinueDeliveryClick = navigateToDeliveryRoute,
+                        onRetakeDocumentsClick = navigateToDeliveryConfirmation,
                         onAcceptClick = { viewModel.acceptDelivery(delivery.id) },
                         onCloseError = viewModel::resetAcceptState,
                         navigateUp = navigateUp,

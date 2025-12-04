@@ -13,19 +13,27 @@ class DeliveryConfirmationViewModel(
 ) : BaseViewModel() {
     val documents = mutableStateListOf<ByteArray>()
 
-    private val completeDeliveryStateMutable = MutableStateFlow<FetchResultUiState<Unit, String>>(
+    private val deliveryStateMutable = MutableStateFlow<FetchResultUiState<Unit, String>>(
         FetchResultUiState.Idle
     )
-    val completeDeliveryState = completeDeliveryStateMutable.asStateFlow()
+    val deliveryState = deliveryStateMutable.asStateFlow()
 
-    fun completeDelivery(deliveryId: Int, documents: List<ByteArray>) {
-        completeDeliveryStateMutable.value = FetchResultUiState.Loading
-        handle(background = { repository.completeDelivery(deliveryId, documents) }) {
-            completeDeliveryStateMutable.value = it.toUiState()
+    fun completeDelivery(deliveryId: Int, documents: List<ByteArray>, retake: Boolean) {
+        deliveryStateMutable.value = FetchResultUiState.Loading
+        handle(
+            background = {
+                if (retake) {
+                    repository.retakeDocument(deliveryId, documents)
+                } else {
+                    repository.completeDelivery(deliveryId, documents)
+                }
+            }
+        ) {
+            deliveryStateMutable.value = it.toUiState()
         }
     }
 
     fun resetState() {
-        completeDeliveryStateMutable.value = FetchResultUiState.Idle
+        deliveryStateMutable.value = FetchResultUiState.Idle
     }
 }

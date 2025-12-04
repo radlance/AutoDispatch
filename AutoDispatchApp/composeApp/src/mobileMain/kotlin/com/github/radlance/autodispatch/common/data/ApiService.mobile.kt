@@ -18,6 +18,8 @@ interface ApiServiceMobile : ApiService {
     suspend fun startDelivery(deliveryId: Int)
 
     suspend fun completeDelivery(deliveryId: Int, formData: List<PartData>)
+
+    suspend fun retakeDocument(deliveryId: Int, formData: List<PartData>)
 }
 
 internal class KtorApiServiceMobile(
@@ -44,6 +46,16 @@ internal class KtorApiServiceMobile(
 
         httpClient.submitFormWithBinaryData(
             url = "deliveries/$deliveryId/upload-documents",
+            formData = formData
+        )
+    }
+
+    override suspend fun retakeDocument(
+        deliveryId: Int,
+        formData: List<PartData>
+    ) {
+        httpClient.submitFormWithBinaryData(
+            url = "deliveries/$deliveryId/retake-documents",
             formData = formData
         )
     }

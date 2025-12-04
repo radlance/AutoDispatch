@@ -34,6 +34,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DeliveryConfirmationScreen(
     deliveryId: Int,
+    retake: Boolean,
     navigateUp: () -> Unit,
     navigateToSuccessDeliveryScreen: (DeliveryDetailed) -> Unit,
     modifier: Modifier = Modifier,
@@ -46,7 +47,8 @@ fun DeliveryConfirmationScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Прибытие на место")
+                    val text = if (retake) "Повторная отправка" else "Прибытие на место"
+                    Text(text = text)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateUp) {
@@ -71,7 +73,7 @@ fun DeliveryConfirmationScreen(
                     DeliveryDetailsShimmer()
                 },
                 onSuccess = { delivery ->
-                    if (delivery.status.id != 3) {
+                    if (delivery.status.id != 3 && !(retake && delivery.status.id == 7)) {
                         AlertDialog(
                             onDismissRequest = navigateUp,
                             icon = {
@@ -97,10 +99,11 @@ fun DeliveryConfirmationScreen(
                         )
                     }
                     DeliveryConfirmation(
+                        retake = retake,
                         navigateUp = navigateUp,
                         navigateToSuccessDeliveryScreen = {
                             navigateToSuccessDeliveryScreen(delivery)
-                                                          },
+                        },
                         delivery = delivery,
                         scrollState = scrollState
                     )

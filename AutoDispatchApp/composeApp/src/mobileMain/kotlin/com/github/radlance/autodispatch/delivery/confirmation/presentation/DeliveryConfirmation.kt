@@ -90,6 +90,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun DeliveryConfirmation(
+    retake: Boolean,
     navigateUp: () -> Unit,
     navigateToSuccessDeliveryScreen: () -> Unit,
     delivery: DeliveryDetailed,
@@ -102,7 +103,7 @@ fun DeliveryConfirmation(
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
     val controller = createCameraPermissionController { hasPermission = it }
 
-    val completeDeliveryState by viewModel.completeDeliveryState.collectAsStateWithLifecycle()
+    val completeDeliveryState by viewModel.deliveryState.collectAsStateWithLifecycle()
     val documents = viewModel.documents
     val cameraLauncher = rememberCameraLauncher { it?.let(documents::add) }
 
@@ -231,14 +232,19 @@ fun DeliveryConfirmation(
                 )
             },
             title = { Text(text = "Подтвердите отправку", textAlign = TextAlign.Center) },
-            text = { Text(text = "После завершения доставки изменить данные будет невозможно. Вы уверены, что хотите отправить фото и завершить доставку?") },
+            text = { Text(text = "После отправки документов изменить данные будет невозможно. Вы уверены, что хотите отправить документы?") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showConfirmationDialog = false
-                        viewModel.completeDelivery(deliveryId = delivery.id, documents = documents)
+
+                        viewModel.completeDelivery(
+                            deliveryId = delivery.id,
+                            documents = documents,
+                            retake = retake
+                        )
                     }
-                ) { Text(text = "Подтвердить") }
+                ) { Text(text = "Отправить") }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmationDialog = false }) {

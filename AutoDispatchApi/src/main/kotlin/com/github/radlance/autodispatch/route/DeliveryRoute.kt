@@ -94,6 +94,50 @@ fun Route.deliveries(repository: DeliveryRepository) {
                     call.respond(HttpStatusCode.InternalServerError, e.message!!)
                 }
             }
+
+            post("/{id}/retake-documents") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+
+                val multipart = call.receiveMultipart()
+                val photoUrls = mutableListOf<String>()
+
+                multipart.forEachPart { part ->
+                    if (part is PartData.FileItem) {
+                        val extension = File(part.originalFileName ?: "file.jpg").extension
+                        val fileName = "${UUID.randomUUID()}.$extension"
+                        val file = File(uploadDir, fileName)
+
+                        part.provider().toInputStream().use { input ->
+                            file.outputStream().buffered().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+
+                        photoUrls.add("/static/$fileName")
+                    }
+                    part.dispose()
+                }
+
+                try {
+                    repository.retakeDeliveryDocuments(deliveryId = id, driverLogin = login, imageUrls = photoUrls)
+
+                    call.respond(HttpStatusCode.OK)
+                } catch (e: Exception) {
+                    photoUrls.forEach { url ->
+                        val fileName = url.substringAfter("/static/")
+                        val fileToDelete = File(uploadDir, fileName)
+
+                        if (fileToDelete.exists()) {
+                            fileToDelete.delete()
+                        }
+                    }
+
+                    call.respond(HttpStatusCode.InternalServerError, e.message!!)
+                }
+            }
         }
     }
 }
