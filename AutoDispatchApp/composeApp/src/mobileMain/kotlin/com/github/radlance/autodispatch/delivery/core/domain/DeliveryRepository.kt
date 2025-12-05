@@ -4,5 +4,5 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 
 interface DeliveryRepository {
 
-    suspend fun request(): FetchResult<List<Delivery>, String>
+    suspend fun deliveries(): FetchResult<List<Delivery>, String>
 }

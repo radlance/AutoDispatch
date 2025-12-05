@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.core.App
 import com.github.radlance.autodispatch.di.authModule
 import com.github.radlance.autodispatch.di.commonModule
 import com.github.radlance.autodispatch.di.dataStoreModule
+import com.github.radlance.autodispatch.di.deliveryHistoryModule
 import com.github.radlance.autodispatch.di.deliveryModule
 import com.github.radlance.autodispatch.di.deliveryPlatformModule
 import com.github.radlance.autodispatch.di.navigationModule
@@ -23,7 +24,8 @@ fun MainViewController() = ComposeUIViewController(
                 profileModule,
                 requestModule,
                 deliveryModule,
-                deliveryPlatformModule
+                deliveryPlatformModule,
+                deliveryHistoryModule
             )
         }
     }

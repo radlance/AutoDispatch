@@ -62,43 +62,7 @@ class DeliveryRepository {
         updatedAt = row[RequestTable.updatedAt]?.toString()
     )
 
-    suspend fun deliveries(driverLogin: String): List<Delivery> = loggedTransaction {
-        val driverId = UserTable.select(UserTable.id).where {
-            UserTable.login eq driverLogin
-        }.first()[UserTable.id].value
-
-        val joinQuery = RequestTable
-            .join(AssignmentTable, JoinType.INNER, RequestTable.id, AssignmentTable.requestId)
-            .join(RequestStatusTable, JoinType.LEFT, RequestTable.statusId, RequestStatusTable.id)
-            .join(CargoTypeTable, JoinType.LEFT, RequestTable.cargoTypeId, CargoTypeTable.id) // Добавлено
-
-        val selectCols = listOf(
-            RequestTable.id,
-            RequestTable.requestNumber,
-            RequestStatusTable.id,
-            RequestStatusTable.name,
-            RequestTable.loadingAddress,
-            RequestTable.loadingLat,
-            RequestTable.loadingLon,
-            RequestTable.unloadingAddress,
-            RequestTable.unloadingLat,
-            RequestTable.unloadingLon,
-            RequestTable.cargoWeight,
-            RequestTable.cargoVolume,
-            CargoTypeTable.name.alias("cargo_type_name"),
-            RequestTable.createdAt,
-            RequestTable.updatedAt
-        )
-
-        joinQuery
-            .select(selectCols)
-            .where {
-                (AssignmentTable.driverId eq driverId) and
-                        (RequestTable.statusId inList listOf(2, 3, 6, 7))
-            }
-            .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
-            .map { mapDeliveryRow(it) }
-    }
+    suspend fun deliveries(driverLogin: String): List<Delivery> = fetchDeliveries(driverLogin, listOf(2, 3, 6, 7))
 
     suspend fun delivery(driverLogin: String, deliveryId: Int): DeliveryDetailed = loggedTransaction {
         val originCity = CityTable.alias("origin_city")
@@ -348,6 +312,8 @@ class DeliveryRepository {
             }
         }
 
+    suspend fun deliveryHistory(driverLogin: String): List<Delivery> = fetchDeliveries(driverLogin, listOf(4, 5))
+
     private suspend fun validateAndGetAssignmentId(
         deliveryId: Int,
         driverLogin: String,
@@ -390,5 +356,43 @@ class DeliveryRepository {
         }
 
         requestData[AssignmentTable.id].value
+    }
+
+    private suspend fun fetchDeliveries(driverLogin: String, statusIds: List<Int>): List<Delivery> = loggedTransaction {
+        val driverId = UserTable.select(UserTable.id).where {
+            UserTable.login eq driverLogin
+        }.first()[UserTable.id].value
+
+        val joinQuery = RequestTable
+            .join(AssignmentTable, JoinType.INNER, RequestTable.id, AssignmentTable.requestId)
+            .join(RequestStatusTable, JoinType.LEFT, RequestTable.statusId, RequestStatusTable.id)
+            .join(CargoTypeTable, JoinType.LEFT, RequestTable.cargoTypeId, CargoTypeTable.id)
+
+        val selectCols = listOf(
+            RequestTable.id,
+            RequestTable.requestNumber,
+            RequestStatusTable.id,
+            RequestStatusTable.name,
+            RequestTable.loadingAddress,
+            RequestTable.loadingLat,
+            RequestTable.loadingLon,
+            RequestTable.unloadingAddress,
+            RequestTable.unloadingLat,
+            RequestTable.unloadingLon,
+            RequestTable.cargoWeight,
+            RequestTable.cargoVolume,
+            CargoTypeTable.name.alias("cargo_type_name"),
+            RequestTable.createdAt,
+            RequestTable.updatedAt
+        )
+
+        joinQuery
+            .select(selectCols)
+            .where {
+                (AssignmentTable.driverId eq driverId) and
+                        (RequestTable.statusId inList statusIds)
+            }
+            .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
+            .map { mapDeliveryRow(it) }
     }
 }

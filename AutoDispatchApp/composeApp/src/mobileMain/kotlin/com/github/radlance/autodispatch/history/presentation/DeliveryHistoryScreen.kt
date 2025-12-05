@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.delivery.core.presentation
+package com.github.radlance.autodispatch.history.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,33 +31,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.deliveries
-import autodispatch.composeapp.generated.resources.no_deliveries_yet
-import autodispatch.composeapp.generated.resources.when_deliveries_appear
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryCard
+import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryCardShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeliveryScreen(
+fun DeliveryHistoryScreen(
     navigateToDeliveryDetails: (Int, String) -> Unit,
     navigateToDeliveryRoute: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
-    deliveryViewModel: DeliveryViewModel = koinViewModel(),
+    deliveryHistoryViewModel: DeliveryHistoryViewModel = koinViewModel(),
     deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
-    val deliveriesState by deliveryViewModel.deliveriesState.collectAsStateWithLifecycle()
+    val historyState by deliveryHistoryViewModel.historyState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(Res.string.deliveries))
+                    Text(text = "История доставок")
                 }
             )
         }
@@ -66,10 +63,10 @@ fun DeliveryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
-            isRefreshing = deliveriesState is FetchResultUiState.Loading,
-            onRefresh = deliveryViewModel::fetchDeliveries
+            isRefreshing = historyState is FetchResultUiState.Loading,
+            onRefresh = deliveryHistoryViewModel::fetchHistory
         ) {
-            deliveriesState.Reduce(
+            historyState.Reduce(
                 onLoading = {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -81,8 +78,8 @@ fun DeliveryScreen(
                         }
                     }
                 },
-                onSuccess = { requests ->
-                    if (requests.isNotEmpty()) {
+                onSuccess = { history ->
+                    if (history.isNotEmpty()) {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(24.dp),
                             contentPadding = PaddingValues(bottom = 24.dp),
@@ -90,7 +87,7 @@ fun DeliveryScreen(
                                 .fillMaxSize()
                                 .padding(horizontal = 18.dp)
                         ) {
-                            items(items = requests, key = { it.id }) { delivery ->
+                            items(items = history, key = { it.id }) { delivery ->
                                 DeliveryCard(
                                     navigateToDeliveryDetails = {
                                         navigateToDeliveryDetails(
@@ -120,13 +117,13 @@ fun DeliveryScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Inbox,
+                                    imageVector = Icons.Default.History,
                                     contentDescription = null,
                                     modifier = Modifier.size(64.dp).alpha(0.7f)
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = stringResource(Res.string.no_deliveries_yet),
+                                    text = "История доставок пуста",
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Medium
@@ -135,7 +132,7 @@ fun DeliveryScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = stringResource(Res.string.when_deliveries_appear),
+                                    text = "Здесь появятся завершённые и отменённые доставки",
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.alpha(0.5f)
@@ -146,7 +143,7 @@ fun DeliveryScreen(
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(message = it, onRetry = deliveryViewModel::fetchDeliveries)
+                        ErrorMessage(message = it, onRetry = deliveryHistoryViewModel::fetchHistory)
                     }
                 }
             )

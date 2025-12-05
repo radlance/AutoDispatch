@@ -12,6 +12,9 @@ import com.github.radlance.autodispatch.delivery.details.data.RemoteDeliveryDeta
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRouteViewModel
+import com.github.radlance.autodispatch.history.data.RemoteDeliveryHistoryRepository
+import com.github.radlance.autodispatch.history.domain.DeliveryHistoryRepository
+import com.github.radlance.autodispatch.history.presentation.DeliveryHistoryViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -32,4 +35,10 @@ val deliveryModule
         viewModelOf(::DeliveryConfirmationViewModel)
         singleOf(::RemoteDeliveryConfirmationRepository).bind<DeliveryConfirmationRepository>()
         viewModelOf(::DeliveryConfirmationViewModel)
+    }
+
+val deliveryHistoryModule
+    get() = module {
+        singleOf(::RemoteDeliveryHistoryRepository).bind<DeliveryHistoryRepository>()
+        viewModelOf(::DeliveryHistoryViewModel)
     }

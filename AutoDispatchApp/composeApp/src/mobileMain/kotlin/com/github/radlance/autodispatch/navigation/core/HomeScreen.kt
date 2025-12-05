@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.home.presentation
+package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -12,12 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.github.radlance.autodispatch.navigation.core.History
-import com.github.radlance.autodispatch.navigation.core.HomeNavGraph
-import com.github.radlance.autodispatch.navigation.core.NavigationState
-import com.github.radlance.autodispatch.navigation.core.Profile
-import com.github.radlance.autodispatch.navigation.core.Deliveries
-import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {

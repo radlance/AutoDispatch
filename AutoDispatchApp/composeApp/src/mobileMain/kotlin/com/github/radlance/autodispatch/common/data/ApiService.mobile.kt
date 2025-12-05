@@ -20,6 +20,8 @@ interface ApiServiceMobile : ApiService {
     suspend fun completeDelivery(deliveryId: Int, formData: List<PartData>)
 
     suspend fun retakeDocument(deliveryId: Int, formData: List<PartData>)
+
+    suspend fun history(): List<DeliveryDto>
 }
 
 internal class KtorApiServiceMobile(
@@ -58,5 +60,9 @@ internal class KtorApiServiceMobile(
             url = "deliveries/$deliveryId/retake-documents",
             formData = formData
         )
+    }
+
+    override suspend fun history(): List<DeliveryDto> {
+        return httpClient.get("deliveries/history").body()
     }
 }

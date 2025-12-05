@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onStart
 
 class DeliveryViewModel(
-    private val deliveryRepository: DeliveryRepository
+    private val repository: DeliveryRepository
 ) : BaseViewModel() {
 
     private val deliveriesStateMutable =
@@ -20,7 +20,7 @@ class DeliveryViewModel(
 
     fun fetchDeliveries() {
         deliveriesStateMutable.value = FetchResultUiState.Loading
-        handle(background = deliveryRepository::request) {
+        handle(background = repository::deliveries) {
             deliveriesStateMutable.value = it.toUiState()
         }
     }

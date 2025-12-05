@@ -21,7 +21,6 @@ import autodispatch.composeapp.generated.resources.ok
 import autodispatch.composeapp.generated.resources.session_expired
 import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.auth.presentation.SignInScreen
-import com.github.radlance.autodispatch.home.presentation.HomeScreen
 import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

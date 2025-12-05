@@ -3,13 +3,13 @@ package com.github.radlance.autodispatch.route
 import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
 import io.ktor.http.*
-import io.ktor.http.content.PartData
-import io.ktor.http.content.forEachPart
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.receiveMultipart
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.utils.io.jvm.javaio.toInputStream
+import io.ktor.http.content.*
+import io.ktor.utils.io.jvm.javaio.*
 import java.io.File
 import java.util.UUID
 
@@ -22,9 +22,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
         File("uploaded_files")
     }
 
-    if (!uploadDir.exists()) {
-        uploadDir.mkdirs()
-    }
+    if (!uploadDir.exists()) uploadDir.mkdirs()
 
     authenticate {
         route("/deliveries") {
@@ -59,39 +57,8 @@ fun Route.deliveries(repository: DeliveryRepository) {
 
                 val login = call.claimByNameOrUnauthorized<String>("login")
 
-                val multipart = call.receiveMultipart()
-                val photoUrls = mutableListOf<String>()
-
-                multipart.forEachPart { part ->
-                    if (part is PartData.FileItem) {
-                        val extension = File(part.originalFileName ?: "file.jpg").extension
-                        val fileName = "${UUID.randomUUID()}.$extension"
-                        val file = File(uploadDir, fileName)
-
-                        part.provider().toInputStream().use { input ->
-                            file.outputStream().buffered().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-
-                        photoUrls.add("/static/$fileName")
-                    }
-                    part.dispose()
-                }
-                try {
-                    repository.uploadDeliveryDocuments(deliveryId = id, driverLogin = login, imageUrls = photoUrls)
-
-                    call.respond(HttpStatusCode.OK)
-                } catch (e: Exception) {
-                    photoUrls.forEach { url ->
-                        val fileName = url.substringAfter("/static/")
-                        val fileToDelete = File(uploadDir, fileName)
-
-                        if (fileToDelete.exists()) {
-                            fileToDelete.delete()
-                        }
-                    }
-                    call.respond(HttpStatusCode.InternalServerError, e.message!!)
+                call.processDocumentUpload(uploadDir) { photoUrls ->
+                    repository.uploadDeliveryDocuments(id, login, photoUrls)
                 }
             }
 
@@ -101,43 +68,66 @@ fun Route.deliveries(repository: DeliveryRepository) {
 
                 val login = call.claimByNameOrUnauthorized<String>("login")
 
-                val multipart = call.receiveMultipart()
-                val photoUrls = mutableListOf<String>()
-
-                multipart.forEachPart { part ->
-                    if (part is PartData.FileItem) {
-                        val extension = File(part.originalFileName ?: "file.jpg").extension
-                        val fileName = "${UUID.randomUUID()}.$extension"
-                        val file = File(uploadDir, fileName)
-
-                        part.provider().toInputStream().use { input ->
-                            file.outputStream().buffered().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-
-                        photoUrls.add("/static/$fileName")
-                    }
-                    part.dispose()
-                }
-
-                try {
-                    repository.retakeDeliveryDocuments(deliveryId = id, driverLogin = login, imageUrls = photoUrls)
-
-                    call.respond(HttpStatusCode.OK)
-                } catch (e: Exception) {
-                    photoUrls.forEach { url ->
-                        val fileName = url.substringAfter("/static/")
-                        val fileToDelete = File(uploadDir, fileName)
-
-                        if (fileToDelete.exists()) {
-                            fileToDelete.delete()
-                        }
-                    }
-
-                    call.respond(HttpStatusCode.InternalServerError, e.message!!)
+                call.processDocumentUpload(uploadDir) { photoUrls ->
+                    repository.retakeDeliveryDocuments(id, login, photoUrls)
                 }
             }
+
+            get("/history") {
+                val login = call.claimByNameOrUnauthorized<String>(name = "login")
+                val history = repository.deliveryHistory(login)
+                call.respond(HttpStatusCode.OK, history)
+            }
         }
+    }
+}
+
+private suspend fun handleFileUpload(
+    call: ApplicationCall,
+    uploadDir: File
+): List<String> {
+    val multipart = call.receiveMultipart()
+    val photoUrls = mutableListOf<String>()
+
+    multipart.forEachPart { part ->
+        if (part is PartData.FileItem) {
+            val extension = File(part.originalFileName ?: "file.jpg").extension
+            val fileName = "${UUID.randomUUID()}.$extension"
+            val file = File(uploadDir, fileName)
+
+            part.provider().toInputStream().use { input ->
+                file.outputStream().buffered().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            photoUrls.add("/static/$fileName")
+        }
+        part.dispose()
+    }
+
+    return photoUrls
+}
+
+private fun deleteUploadedFiles(photoUrls: List<String>, uploadDir: File) {
+    photoUrls.forEach { url ->
+        val fileName = url.substringAfter("/static/")
+        val file = File(uploadDir, fileName)
+        if (file.exists()) file.delete()
+    }
+}
+
+private suspend fun ApplicationCall.processDocumentUpload(
+    uploadDir: File,
+    block: suspend (photoUrls: List<String>) -> Unit
+) {
+    val photoUrls = handleFileUpload(this, uploadDir)
+
+    try {
+        block(photoUrls)
+        respond(HttpStatusCode.OK)
+    } catch (e: Exception) {
+        deleteUploadedFiles(photoUrls, uploadDir)
+        respond(HttpStatusCode.InternalServerError, e.message ?: "Unknown error")
     }
 }

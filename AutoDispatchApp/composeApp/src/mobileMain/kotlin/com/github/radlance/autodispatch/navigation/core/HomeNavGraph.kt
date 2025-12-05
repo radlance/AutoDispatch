@@ -21,6 +21,7 @@ import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsScreen
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRouteScreen
+import com.github.radlance.autodispatch.history.presentation.DeliveryHistoryScreen
 import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -132,9 +133,17 @@ fun HomeNavGraph(
         }
 
         composable<History> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "History")
-            }
+            DeliveryHistoryScreen(
+                navigateToDeliveryDetails = { id, number ->
+                    navController.navigate(
+                        DeliveryDetails(id, number)
+                    )
+                },
+                navigateToDeliveryRoute = { id, number ->
+                    navController.navigate(DeliveryRoute(id, number))
+                },
+                deliveryDetailsViewModel = deliveryDetailsViewModel
+            )
         }
 
         composable<Profile> {
