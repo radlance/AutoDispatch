@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
+import com.github.radlance.autodispatch.profile.data.ProfileDetailsDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -22,6 +23,8 @@ interface ApiServiceMobile : ApiService {
     suspend fun retakeDocument(deliveryId: Int, formData: List<PartData>)
 
     suspend fun history(): List<DeliveryDto>
+
+    suspend fun profileDetails(): ProfileDetailsDto
 }
 
 internal class KtorApiServiceMobile(
@@ -64,5 +67,9 @@ internal class KtorApiServiceMobile(
 
     override suspend fun history(): List<DeliveryDto> {
         return httpClient.get("deliveries/history").body()
+    }
+
+    override suspend fun profileDetails(): ProfileDetailsDto {
+        return httpClient.get("profile/details").body()
     }
 }

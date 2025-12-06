@@ -14,7 +14,7 @@ import com.github.radlance.autodispatch.common.data.KtorApiService
 import com.github.radlance.autodispatch.navigation.core.NavigationViewModel
 import com.github.radlance.autodispatch.navigation.data.LocalNavigationRepository
 import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
-import com.github.radlance.autodispatch.profile.data.RemoteProfileRepository
+import com.github.radlance.autodispatch.profile.data.LocalProfileRepository
 import com.github.radlance.autodispatch.profile.domain.ProfileRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
@@ -42,5 +42,5 @@ val authModule = module {
 }
 
 val profileModule = module {
-    singleOf(::RemoteProfileRepository).bind<ProfileRepository>()
+    singleOf(::LocalProfileRepository).bind<ProfileRepository>()
 }

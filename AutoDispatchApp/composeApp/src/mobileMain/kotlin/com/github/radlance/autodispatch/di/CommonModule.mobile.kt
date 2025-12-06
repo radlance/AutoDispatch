@@ -15,6 +15,9 @@ import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRout
 import com.github.radlance.autodispatch.history.data.RemoteDeliveryHistoryRepository
 import com.github.radlance.autodispatch.history.domain.DeliveryHistoryRepository
 import com.github.radlance.autodispatch.history.presentation.DeliveryHistoryViewModel
+import com.github.radlance.autodispatch.profile.data.RemoteDriverProfileRepository
+import com.github.radlance.autodispatch.profile.domain.DriverProfileRepository
+import com.github.radlance.autodispatch.profile.presentation.ProfileViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -41,4 +44,10 @@ val deliveryHistoryModule
     get() = module {
         singleOf(::RemoteDeliveryHistoryRepository).bind<DeliveryHistoryRepository>()
         viewModelOf(::DeliveryHistoryViewModel)
+    }
+
+val driverProfileModule
+    get() = module {
+        singleOf(::RemoteDriverProfileRepository).bind<DriverProfileRepository>()
+        viewModelOf(::ProfileViewModel)
     }

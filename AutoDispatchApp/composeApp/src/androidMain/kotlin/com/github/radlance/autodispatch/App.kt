@@ -7,6 +7,7 @@ import com.github.radlance.autodispatch.di.dataStoreModule
 import com.github.radlance.autodispatch.di.deliveryHistoryModule
 import com.github.radlance.autodispatch.di.deliveryModule
 import com.github.radlance.autodispatch.di.deliveryPlatformModule
+import com.github.radlance.autodispatch.di.driverProfileModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
@@ -28,7 +29,8 @@ class App : Application() {
                 requestModule,
                 deliveryModule,
                 deliveryPlatformModule,
-                deliveryHistoryModule
+                deliveryHistoryModule,
+                driverProfileModule
             )
         }
     }

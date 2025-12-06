@@ -2,6 +2,8 @@ package com.github.radlance.autodispatch.di
 
 import com.github.radlance.autodispatch.common.data.ApiServiceJvm
 import com.github.radlance.autodispatch.common.data.KtorApiServiceJvm
+import com.github.radlance.autodispatch.controlpanel.data.RemoteControlPanelRepository
+import com.github.radlance.autodispatch.controlpanel.domain.ControlPanelRepository
 import com.github.radlance.autodispatch.controlpanel.presentation.ControlPanelViewModel
 import com.github.radlance.autodispatch.request.assignment.data.RemoteAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
@@ -24,6 +26,7 @@ import org.koin.dsl.module
 
 val controlPanelModule
     get() = module {
+        singleOf(::RemoteControlPanelRepository).bind<ControlPanelRepository>()
         viewModelOf(::ControlPanelViewModel)
     }
 

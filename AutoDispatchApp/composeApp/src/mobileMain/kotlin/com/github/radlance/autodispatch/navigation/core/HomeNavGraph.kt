@@ -3,11 +3,7 @@ package com.github.radlance.autodispatch.navigation.core
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,6 +18,7 @@ import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDe
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRouteScreen
 import com.github.radlance.autodispatch.history.presentation.DeliveryHistoryScreen
+import com.github.radlance.autodispatch.profile.presentation.ProfileScreen
 import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -163,9 +160,7 @@ fun HomeNavGraph(
         }
 
         composable<Profile> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Profile")
-            }
+            ProfileScreen()
         }
     }
 }

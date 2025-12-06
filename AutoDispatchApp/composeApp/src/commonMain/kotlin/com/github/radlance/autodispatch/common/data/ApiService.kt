@@ -24,6 +24,6 @@ internal class KtorApiService(private val httpClient: HttpClient) : ApiService {
     }
 
     override suspend fun profile(): UserDto {
-        return httpClient.get("users").body()
+        return httpClient.get("profile").body()
     }
 }

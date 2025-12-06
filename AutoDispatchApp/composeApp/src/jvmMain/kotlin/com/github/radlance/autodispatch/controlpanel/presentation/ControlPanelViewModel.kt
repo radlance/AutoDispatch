@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
-import com.github.radlance.autodispatch.profile.domain.ProfileRepository
+import com.github.radlance.autodispatch.controlpanel.domain.ControlPanelRepository
 import com.github.radlance.autodispatch.profile.domain.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class ControlPanelViewModel(
-    private val profileRepository: ProfileRepository
+    private val repository: ControlPanelRepository
 ) : BaseViewModel() {
     private val loadProfileUiStateMutable =
         MutableStateFlow<FetchResultUiState<User, String>>(FetchResultUiState.Idle)
@@ -25,14 +25,14 @@ class ControlPanelViewModel(
 
     fun loadProfile() {
         loadProfileUiStateMutable.value = FetchResultUiState.Loading
-        handle(background = profileRepository::profile) { result ->
+        handle(background = repository::profile) { result ->
             loadProfileUiStateMutable.value = result.toUiState()
         }
     }
 
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
-            profileRepository.logout()
+            repository.logout()
         }
     }
 }

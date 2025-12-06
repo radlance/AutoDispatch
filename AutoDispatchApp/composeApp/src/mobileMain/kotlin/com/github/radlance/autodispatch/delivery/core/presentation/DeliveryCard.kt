@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Circle
@@ -31,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,48 +67,56 @@ fun DeliveryCard(
 ) {
     val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        onClick = navigateToDeliveryDetails
-    ) {
-        Column {
-            DeliveryHeader(navigateToDeliveryDetails, delivery, backgroundColor, contentColor)
-            DeliveryRoute(
-                fromPoint = delivery.loadingPoint.toStringAddress(),
-                toPoint = delivery.unloadingPoint.toStringAddress(),
-                color = contentColor,
-                Modifier.padding(horizontal = 18.dp)
-            )
-            Spacer(Modifier.height(12.dp))
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.background(backgroundColor.copy(alpha = 0.3f))
-            ) {
-                Column {
-                    HorizontalDivider(
-                        modifier = Modifier.fillMaxWidth(),
-                        thickness = 2.dp,
-                        color = contentColor.copy(0.3f)
-                    )
-                    DeliveryFooter(delivery)
-                    if (delivery.status.id == 3) {
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = contentColor,
+        backgroundColor = backgroundColor.copy(alpha = 0.5f)
+    )
+
+    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            onClick = navigateToDeliveryDetails
+        ) {
+            Column {
+                DeliveryHeader(navigateToDeliveryDetails, delivery, backgroundColor, contentColor)
+                DeliveryRoute(
+                    fromPoint = delivery.loadingPoint.toStringAddress(),
+                    toPoint = delivery.unloadingPoint.toStringAddress(),
+                    color = contentColor,
+                    Modifier.padding(horizontal = 18.dp)
+                )
+                Spacer(Modifier.height(12.dp))
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.background(backgroundColor.copy(alpha = 0.3f))
+                ) {
+                    Column {
                         HorizontalDivider(
                             modifier = Modifier.fillMaxWidth(),
                             thickness = 2.dp,
                             color = contentColor.copy(0.3f)
                         )
+                        DeliveryFooter(delivery)
+                        if (delivery.status.id == 3) {
+                            HorizontalDivider(
+                                modifier = Modifier.fillMaxWidth(),
+                                thickness = 2.dp,
+                                color = contentColor.copy(0.3f)
+                            )
+                        }
                     }
                 }
-            }
-            if (delivery.status.id == 3) {
-                DeliveryRouteAction(
-                    onContinueDeliveryClick = onContinueDeliveryClick,
-                    backgroundColor = backgroundColor,
-                    contentColor = contentColor
-                )
+                if (delivery.status.id == 3) {
+                    DeliveryRouteAction(
+                        onContinueDeliveryClick = onContinueDeliveryClick,
+                        backgroundColor = backgroundColor,
+                        contentColor = contentColor
+                    )
+                }
             }
         }
     }
+
 }
 
 @Composable
@@ -234,11 +246,14 @@ fun DeliveryRoute(
                     modifier = Modifier.alpha(0.7f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = fromPoint,
-                    fontSize = 14.sp,
-                    overflow = TextOverflow.Ellipsis
-                )
+                SelectionContainer {
+                    Text(
+                        text = fromPoint,
+                        fontSize = 14.sp,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 if (showOpenMapButton) {
                     Spacer(modifier = Modifier.height(4.dp))
                     OpenMapButton(color = color, onClick = { selectedAddress = fromPoint })
@@ -253,11 +268,14 @@ fun DeliveryRoute(
                     modifier = Modifier.alpha(0.7f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = toPoint,
-                    fontSize = 14.sp,
-                    overflow = TextOverflow.Ellipsis
-                )
+                SelectionContainer {
+                    Text(
+                        text = toPoint,
+                        fontSize = 14.sp,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 if (showOpenMapButton) {
                     Spacer(modifier = Modifier.height(4.dp))
                     OpenMapButton(color = color, onClick = { selectedAddress = toPoint })

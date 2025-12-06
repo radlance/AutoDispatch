@@ -28,6 +28,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
@@ -54,6 +57,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +71,6 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -80,7 +83,9 @@ import coil3.request.crossfade
 import coil3.size.Scale
 import coil3.size.Size
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
+import com.github.radlance.autodispatch.common.presentation.SectionHeader
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
@@ -253,152 +258,158 @@ fun DeliveryDetails(
             }
         ) { targetIndex ->
             if (targetIndex == null) {
-                Column(
-                    modifier = modifier
-                        .verticalScroll(scrollState)
-                        .padding(horizontal = 18.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    val createdAt = delivery.createdAt
-                    StatusCard(
-                        status = delivery.status.name,
-                        createdAt = "${createdAt.date}, ${
-                            createdAt.hour.toString().padStart(2, '0')
-                        }:${
-                            createdAt.minute.toString().padStart(2, '0')
-                        }:${createdAt.second.toString().padStart(2, '0')}",
-                        backgroundColor = backgroundColor,
-                        contentColor = contentColor,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    RouteCard(
-                        fromPoint = delivery.loadingPoint.toStringAddress(),
-                        toPoint = delivery.unloadingPoint.toStringAddress(),
-                        backgroundColor = backgroundColor,
-                        contentColor = contentColor,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    CargoCard(
-                        cargo = delivery.cargo,
-                        backgroundColor = backgroundColor,
-                        contentColor = contentColor,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    VehicleCard(
-                        vehicle = delivery.vehicle,
-                        backgroundColor = backgroundColor,
-                        contentColor = contentColor,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    ContactsCard(
-                        customer = delivery.customer,
-                        dispatcherFullName = delivery.dispatcherFullName,
-                        dispatcherPhoneNumber = delivery.dispatcherPhoneNumber,
-                        backgroundColor = backgroundColor,
-                        contentColor = contentColor,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    delivery.transportationDescription?.let {
-                        AdditionalInfoCard(
-                            description = it,
+                val customTextSelectionColors = TextSelectionColors(
+                    handleColor = contentColor,
+                    backgroundColor = backgroundColor.copy(alpha = 0.5f)
+                )
+                CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+                    Column(
+                        modifier = modifier
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 18.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        val createdAt = delivery.createdAt
+                        StatusCard(
+                            status = delivery.status.name,
+                            createdAt = "${createdAt.date}, ${
+                                createdAt.hour.toString().padStart(2, '0')
+                            }:${
+                                createdAt.minute.toString().padStart(2, '0')
+                            }:${createdAt.second.toString().padStart(2, '0')}",
                             backgroundColor = backgroundColor,
                             contentColor = contentColor,
                             modifier = Modifier.fillMaxWidth()
                         )
-                    }
 
-                    if (delivery.status.id == 6 || delivery.status.id == 7) {
-                        LazyRow(
-                            state = lazyRowState,
-                            contentPadding = PaddingValues(end = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp)
-                        ) {
-                            itemsIndexed(
-                                items = delivery.documents.map { it.imageUrl },
-                                key = { idx, _ -> idx }
-                            ) { idx, image ->
+                        RouteCard(
+                            fromPoint = delivery.loadingPoint.toStringAddress(),
+                            toPoint = delivery.unloadingPoint.toStringAddress(),
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                                val sharedKey = remember(image) { "image_${idx}" }
-                                val sharedState = rememberSharedContentState(key = sharedKey)
+                        CargoCard(
+                            cargo = delivery.cargo,
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        VehicleCard(
+                            vehicle = delivery.vehicle,
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        ContactsCard(
+                            customer = delivery.customer,
+                            dispatcherFullName = delivery.dispatcherFullName,
+                            dispatcherPhoneNumber = delivery.dispatcherPhoneNumber,
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        delivery.transportationDescription?.let {
+                            AdditionalInfoCard(
+                                description = it,
+                                backgroundColor = backgroundColor,
+                                contentColor = contentColor,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        if (delivery.status.id == 6 || delivery.status.id == 7) {
+                            LazyRow(
+                                state = lazyRowState,
+                                contentPadding = PaddingValues(end = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp)
+                            ) {
+                                itemsIndexed(
+                                    items = delivery.documents.map { it.imageUrl },
+                                    key = { idx, _ -> idx }
+                                ) { idx, image ->
+
+                                    val sharedKey = remember(image) { "image_${idx}" }
+                                    val sharedState = rememberSharedContentState(key = sharedKey)
 
 
-                                LoadableImage(
-                                    documentUrl = image,
-                                    onRetry = {
-                                        lastImageRetryAttempt =
-                                            Clock.System.now().toEpochMilliseconds()
-                                    },
-                                    lastRetryAttempt = lastImageRetryAttempt,
-                                    onImageSelected = { fullscreenIndex = idx },
-                                    showLoading = false,
-                                    modifier = Modifier
-                                        .sharedElement(
-                                            sharedState,
-                                            animatedVisibilityScope = this@AnimatedContent
-                                        ),
-                                )
+                                    LoadableImage(
+                                        documentUrl = image,
+                                        onRetry = {
+                                            lastImageRetryAttempt =
+                                                Clock.System.now().toEpochMilliseconds()
+                                        },
+                                        lastRetryAttempt = lastImageRetryAttempt,
+                                        onImageSelected = { fullscreenIndex = idx },
+                                        showLoading = false,
+                                        modifier = Modifier
+                                            .sharedElement(
+                                                sharedState,
+                                                animatedVisibilityScope = this@AnimatedContent
+                                            ),
+                                    )
 
+                                }
                             }
                         }
-                    }
-                    if (delivery.status.id == 6) {
-                        val sentAt = delivery.updatedAt
-                        WarningCard(
-                            modifier = modifier,
-                            icon = Icons.Outlined.ErrorOutline,
-                            contentColor = contentColor,
-                            containerColor = backgroundColor,
-                            message = "Отправлено: ${sentAt.date}, ${
-                                sentAt.hour.toString().padStart(2, '0')
-                            }:${
-                                sentAt.minute.toString().padStart(2, '0')
-                            }:${
-                                sentAt.second.toString().padStart(2, '0')
-                            }\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
-                        )
-                    }
+                        if (delivery.status.id == 6) {
+                            val sentAt = delivery.updatedAt
+                            WarningCard(
+                                modifier = modifier,
+                                icon = Icons.Outlined.ErrorOutline,
+                                contentColor = contentColor,
+                                containerColor = backgroundColor,
+                                message = "Отправлено: ${sentAt.date}, ${
+                                    sentAt.hour.toString().padStart(2, '0')
+                                }:${
+                                    sentAt.minute.toString().padStart(2, '0')
+                                }:${
+                                    sentAt.second.toString().padStart(2, '0')
+                                }\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
+                            )
+                        }
 
-                    if (delivery.status.id == 7) {
-                        val lastSent = delivery.documents.maxOf { it.uploadedAt }
-                        val updatedAt = delivery.updatedAt
+                        if (delivery.status.id == 7) {
+                            val lastSent = delivery.documents.maxOf { it.uploadedAt }
+                            val updatedAt = delivery.updatedAt
 
-                        DocumentRejectCard(
-                            rejectionReason = delivery.rejectionReason ?: "",
-                            sentAt = "${lastSent.date}, ${
-                                lastSent.hour.toString().padStart(2, '0')
-                            }:${
-                                lastSent.minute.toString().padStart(2, '0')
-                            }",
-                            rejectedAt = "${updatedAt.date}, ${
-                                updatedAt.hour.toString().padStart(2, '0')
-                            }:${
-                                updatedAt.minute.toString().padStart(2, '0')
-                            }",
+                            DocumentRejectCard(
+                                rejectionReason = delivery.rejectionReason ?: "",
+                                sentAt = "${lastSent.date}, ${
+                                    lastSent.hour.toString().padStart(2, '0')
+                                }:${
+                                    lastSent.minute.toString().padStart(2, '0')
+                                }",
+                                rejectedAt = "${updatedAt.date}, ${
+                                    updatedAt.hour.toString().padStart(2, '0')
+                                }:${
+                                    updatedAt.minute.toString().padStart(2, '0')
+                                }",
+                                backgroundColor = backgroundColor,
+                                contentColor = contentColor
+                            )
+                        }
+
+                        ActionButtons(
+                            deliveryStatusId = delivery.status.id,
+                            onContinueDeliveryClick = onContinueDeliveryClick,
+                            onRetakeDocumentsClick = onRetakeDocumentsClick,
+                            onAcceptClick = { showConfirmDialog = true },
+                            onContactClick = {
+                                openDialer(delivery.dispatcherPhoneNumber, context)
+                            },
                             backgroundColor = backgroundColor,
-                            contentColor = contentColor
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
                         )
                     }
-
-                    ActionButtons(
-                        deliveryStatusId = delivery.status.id,
-                        onContinueDeliveryClick = onContinueDeliveryClick,
-                        onRetakeDocumentsClick = onRetakeDocumentsClick,
-                        onAcceptClick = { showConfirmDialog = true },
-                        onContactClick = {
-                            openDialer(delivery.dispatcherPhoneNumber, context)
-                        },
-                        backgroundColor = backgroundColor,
-                        contentColor = contentColor,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                    )
                 }
             } else {
                 if (targetIndex < delivery.documents.size) {
@@ -449,80 +460,6 @@ fun DeliveryDetails(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SectionHeader(
-    text: String,
-    icon: ImageVector,
-    color: Color,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(backgroundColor.copy(alpha = 0.3f))
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(18.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(text = text)
-        }
-    }
-}
-
-@Composable
-private fun InfoRow(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    iconTint: Color,
-    iconBackgroundColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(iconBackgroundColor)
-                .border(
-                    width = 2.dp,
-                    color = iconTint.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(10.dp)
-                )
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = iconTint
-            )
-        }
-        Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
-            Text(
-                text = title,
-                fontSize = 14.sp
-            )
-            Text(
-                text = subtitle,
-                fontSize = 12.sp,
-                modifier = Modifier.alpha(0.7f)
-            )
         }
     }
 }
@@ -690,14 +627,16 @@ private fun VehicleCard(
                 color = contentColor,
                 backgroundColor = backgroundColor
             )
-            InfoRow(
-                title = vehicle.model,
-                subtitle = "Гос. номер: ${vehicle.licensePlate}",
-                icon = Icons.Outlined.LocationOn,
-                iconTint = contentColor,
-                iconBackgroundColor = backgroundColor,
-                modifier = Modifier.padding(18.dp)
-            )
+            SelectionContainer {
+                InfoRow(
+                    title = vehicle.model,
+                    subtitle = "Гос. номер: ${vehicle.licensePlate}",
+                    icon = Icons.Outlined.LocationOn,
+                    iconTint = contentColor,
+                    iconBackgroundColor = backgroundColor,
+                    modifier = Modifier.padding(18.dp)
+                )
+            }
         }
     }
 }
@@ -711,6 +650,7 @@ private fun ContactsCard(
     contentColor: Color,
     modifier: Modifier = Modifier
 ) {
+
     Card(modifier = modifier) {
         Column {
             SectionHeader(
@@ -722,23 +662,27 @@ private fun ContactsCard(
             Column(modifier = Modifier.padding(18.dp)) {
                 Text(text = "Заказчик", fontSize = 12.sp, modifier = Modifier.alpha(0.7f))
                 Spacer(Modifier.height(8.dp))
-                InfoRow(
-                    title = customer.organizationName,
-                    subtitle = customer.phoneNumber,
-                    icon = Icons.Outlined.Person,
-                    iconTint = contentColor,
-                    iconBackgroundColor = backgroundColor
-                )
+                SelectionContainer {
+                    InfoRow(
+                        title = customer.organizationName,
+                        subtitle = customer.phoneNumber,
+                        icon = Icons.Outlined.Person,
+                        iconTint = contentColor,
+                        iconBackgroundColor = backgroundColor
+                    )
+                }
                 HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp))
                 Text(text = "Диспетчер", fontSize = 12.sp, modifier = Modifier.alpha(0.7f))
                 Spacer(Modifier.height(8.dp))
-                InfoRow(
-                    title = dispatcherFullName,
-                    subtitle = dispatcherPhoneNumber,
-                    icon = Icons.Outlined.Person,
-                    iconTint = contentColor,
-                    iconBackgroundColor = backgroundColor
-                )
+                SelectionContainer {
+                    InfoRow(
+                        title = dispatcherFullName,
+                        subtitle = dispatcherPhoneNumber,
+                        icon = Icons.Outlined.Person,
+                        iconTint = contentColor,
+                        iconBackgroundColor = backgroundColor
+                    )
+                }
             }
         }
     }
