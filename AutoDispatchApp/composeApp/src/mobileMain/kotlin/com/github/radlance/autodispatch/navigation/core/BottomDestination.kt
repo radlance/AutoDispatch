@@ -77,3 +77,14 @@ data class DeliveryConfirmation(val deliveryId: Int, val retake: Boolean) : Home
 @Destination
 @Serializable
 data class SuccessUpload(val deliveryDetailedJson: String) : HomeDestination
+
+@Destination
+@Serializable
+object HistoryList : HomeDestination
+
+@Destination
+@Serializable
+data class HistoryDetails(
+    val deliveryId: Int,
+    val deliveryNumber: String
+) : HomeDestination

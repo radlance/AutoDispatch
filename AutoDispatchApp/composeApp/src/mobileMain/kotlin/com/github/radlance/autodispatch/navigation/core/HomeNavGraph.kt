@@ -132,18 +132,34 @@ fun HomeNavGraph(
             }
         }
 
-        composable<History> {
-            DeliveryHistoryScreen(
-                navigateToDeliveryDetails = { id, number ->
-                    navController.navigate(
-                        DeliveryDetails(id, number)
-                    )
-                },
-                navigateToDeliveryRoute = { id, number ->
-                    navController.navigate(DeliveryRoute(id, number))
-                },
-                deliveryDetailsViewModel = deliveryDetailsViewModel
-            )
+        navigation<History>(startDestination = HistoryList) {
+            composable<HistoryList> {
+                DeliveryHistoryScreen(
+                    navigateToDeliveryDetails = { id, number ->
+                        navController.navigate(
+                            HistoryDetails(id, number)
+                        )
+                    },
+                    navigateToDeliveryRoute = { _, _ -> },
+                    deliveryDetailsViewModel = deliveryDetailsViewModel
+                )
+            }
+
+            composable<HistoryDetails> {
+                val args = it.toRoute<DeliveryDetails>()
+
+                val deliveryId = args.deliveryId
+                val deliveryNumber = args.deliveryNumber
+
+                DeliveryDetailsScreen(
+                    navigateToDeliveryRoute = {},
+                    navigateUp = navController::navigateUp,
+                    deliveryId = deliveryId,
+                    deliveryNumber = deliveryNumber,
+                    navigateToDeliveryConfirmation = {},
+                    viewModel = deliveryDetailsViewModel
+                )
+            }
         }
 
         composable<Profile> {
