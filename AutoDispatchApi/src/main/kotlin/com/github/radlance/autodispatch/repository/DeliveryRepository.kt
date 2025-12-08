@@ -18,7 +18,7 @@ import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.RequestStatus
-import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
@@ -115,6 +115,7 @@ class DeliveryRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.payloadCapacity,
                 dispatcherUser[UserTable.fullName].alias("dispatcher_full_name"),
                 dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number"),
                 AssignmentTable.driverId
@@ -187,10 +188,11 @@ class DeliveryRepository {
                 phoneNumber = row[CustomerTable.phoneNumber]
             ),
             vehicle = row.getOrNull(VehicleTable.id)?.let {
-                VehicleFilter(
+                Vehicle(
                     id = it.value,
                     model = row[VehicleTable.model],
-                    licensePlate = row[VehicleTable.licensePlate]
+                    licensePlate = row[VehicleTable.licensePlate],
+                    payloadCapacity = row[VehicleTable.payloadCapacity]
                 )
             },
             createdAt = row[RequestTable.createdAt]?.toString(),

@@ -98,7 +98,7 @@ import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.ConversionPathIcon
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
@@ -614,7 +614,7 @@ private fun CargoCard(
 
 @Composable
 private fun VehicleCard(
-    vehicle: VehicleFilter,
+    vehicle: Vehicle,
     backgroundColor: Color,
     contentColor: Color,
     modifier: Modifier = Modifier

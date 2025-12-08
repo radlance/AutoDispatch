@@ -51,7 +51,7 @@ fun ProfileDetailsDto.toProfileDetails(): ProfileDetails {
         fullName = fullName,
         deliveriesStats = deliveriesStats.toDeliveriesStats(),
         phoneNumber = phoneNumber,
-        vehicle = vehicleFilter
+        vehicle = vehicle
     )
 }
 

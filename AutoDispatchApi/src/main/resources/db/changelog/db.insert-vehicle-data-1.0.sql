@@ -1,6 +1,14 @@
-INSERT INTO vehicle (model, license_plate, year, mileage, fuel_type, status_id)
-VALUES ('Toyota Camry', 'A123MB', 2019, 50000, 'Бензин', 2),
-       ('Skoda Octavia', 'C456EX', 2020, 60000, 'Бензин', 2),
-       ('Hyundai Solaris', 'H789PC', 2018, 70000, 'Бензин', 2),
-       ('Kia Rio', 'K3A1ЗC', 2021, 30000, 'Бензин', 1),
-       ('Ford Focus', 'E654TK', 2019, 55000, 'Дизель', 1);
+INSERT INTO vehicle (model, license_plate, year, mileage, fuel_type, status_id, payload_capacity)
+VALUES
+-- Лёгкие грузовики (LCV)
+('GAZelle NEXT', 'А123МВ', 2021, 120000, 'Бензин', 2, 1500),
+('Ford Transit', 'В456ЕК', 2020, 180000, 'Дизель', 2, 1700),
+('Mercedes-Benz Sprinter 316', 'С789ТР', 2019, 220000, 'Дизель', 1, 1600),
+
+-- Среднетоннажные
+('Hyundai HD78', 'М234ОР', 2018, 250000, 'Дизель', 2, 5000),
+('ISUZU NQR90', 'Т567РУ', 2019, 300000, 'Дизель', 1, 6000),
+
+-- Тяжёлые грузовики
+('KAMAZ 65115', 'К890АМ', 2020, 280000, 'Дизель', 1, 14000),
+('VOLVO FM 6x4', 'Р345НЕ', 2018, 450000, 'Дизель', 2, 18000);

@@ -2,7 +2,7 @@ package com.github.radlance.autodispatch.request.core.data
 
 import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,5 +11,5 @@ data class FiltersDto(
     val cargoTypes: List<CargoTypeDto>,
     val statuses: List<RequestStatusDto>,
     val drivers: List<UserFilterDto>,
-    val vehicles: List<VehicleFilterDto>
+    val vehicles: List<VehicleDto>
 )

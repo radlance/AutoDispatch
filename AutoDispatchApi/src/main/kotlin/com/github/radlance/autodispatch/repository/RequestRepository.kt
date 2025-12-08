@@ -27,7 +27,7 @@ import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.RequestStatus
 import com.github.radlance.autodispatch.domain.request.UserFilter
-import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryStateException
 import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.util.loggedTransaction
@@ -283,12 +283,13 @@ class RequestRepository {
             .map { UserFilter(it[UserTable.id].value, it[UserTable.fullName]) }
 
         val vehicles = VehicleTable
-            .select(VehicleTable.id, VehicleTable.model, VehicleTable.licensePlate)
+            .select(VehicleTable.id, VehicleTable.model, VehicleTable.licensePlate, VehicleTable.payloadCapacity)
             .map {
-                VehicleFilter(
+                Vehicle(
                     it[VehicleTable.id].value,
                     it[VehicleTable.model],
-                    it[VehicleTable.licensePlate]
+                    it[VehicleTable.licensePlate],
+                    it[VehicleTable.payloadCapacity]
                 )
             }
 

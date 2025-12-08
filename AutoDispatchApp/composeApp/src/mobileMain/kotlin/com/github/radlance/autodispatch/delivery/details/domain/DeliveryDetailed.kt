@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
-import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
@@ -22,7 +22,7 @@ data class DeliveryDetailed(
     val dispatcherFullName: String,
     val dispatcherPhoneNumber: String,
     val customer: Customer,
-    val vehicle: VehicleFilter,
+    val vehicle: Vehicle,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val requestNumber: String,

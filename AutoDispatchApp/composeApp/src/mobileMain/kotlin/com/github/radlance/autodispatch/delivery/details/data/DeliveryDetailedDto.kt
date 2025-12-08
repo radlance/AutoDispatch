@@ -4,7 +4,7 @@ import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
 import kotlinx.serialization.Serializable
 
@@ -21,7 +21,7 @@ data class DeliveryDetailedDto(
     val dispatcherFullName: String,
     val dispatcherPhoneNumber: String,
     val customer: CustomerDto,
-    val vehicle: VehicleFilterDto,
+    val vehicle: VehicleDto,
     val createdAt: String,
     val updatedAt: String,
     val requestNumber: String,

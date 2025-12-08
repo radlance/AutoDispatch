@@ -8,5 +8,5 @@ data class Filters(
     val cargoTypes: List<CargoType>,
     val statuses: List<RequestStatus>,
     val drivers: List<UserFilter>,
-    val vehicles: List<VehicleFilter>
+    val vehicles: List<Vehicle>
 )

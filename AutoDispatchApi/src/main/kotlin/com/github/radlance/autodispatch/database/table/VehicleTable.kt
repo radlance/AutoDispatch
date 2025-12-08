@@ -12,4 +12,5 @@ object VehicleTable : IntIdTable(name = "vehicle") {
     val statusId = reference(name = "status_id", VehicleStatusTable)
     val lastServiceDate = timestampWithTimeZone(name = "last_service_date").nullable()
     val isActive = bool(name = "is_active").nullable()
+    val payloadCapacity = integer(name = "payload_capacity")
 }

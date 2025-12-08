@@ -44,7 +44,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
-import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -217,10 +217,11 @@ private fun SuccessDeliveryScreenPreview() {
                     email = "",
                     phoneNumber = ""
                 ),
-                vehicle = VehicleFilter(
+                vehicle = Vehicle(
                     id = 1,
                     model = "",
-                    licensePlate = ""
+                    licensePlate = "",
+                    payloadCapacity = 0
                 ),
                 createdAt = LocalDateTime(1, 1, 1, 1, 1),
                 updatedAt = LocalDateTime(1, 1, 1, 1, 1),

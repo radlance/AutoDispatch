@@ -24,7 +24,7 @@ import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
-import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -39,7 +39,7 @@ fun RequestFilters(
     filterCargoTypes: List<CargoType>,
     filterStatuses: List<RequestStatus>,
     filterDrivers: List<UserFilter>,
-    filterVehicles: List<VehicleFilter>,
+    filterVehicles: List<Vehicle>,
     onDepartureCitiesChanged: (List<String>) -> Unit,
     onDestinationCitiesChanged: (List<String>) -> Unit,
     onCargoTypesChanged: (List<String>) -> Unit,

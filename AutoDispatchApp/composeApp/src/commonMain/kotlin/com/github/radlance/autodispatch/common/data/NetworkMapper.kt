@@ -12,7 +12,7 @@ import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleFilterDto
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
@@ -20,7 +20,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
-import com.github.radlance.autodispatch.reuqest.core.domain.VehicleFilter
+import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -96,11 +96,12 @@ fun CargoTypeDto.toCargoType(): CargoType {
     )
 }
 
-fun VehicleFilterDto.toVehicleFilter(): VehicleFilter {
-    return VehicleFilter(
+fun VehicleDto.toVehicleFilter(): Vehicle {
+    return Vehicle(
         id = id,
         model = model,
         licensePlate = licensePlate,
+        payloadCapacity = payloadCapacity
     )
 }
 

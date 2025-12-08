@@ -8,5 +8,6 @@ CREATE TABLE vehicle
     fuel_type         VARCHAR(20)        NOT NULL CHECK (fuel_type IN ('Бензин', 'Дизель', 'Электро')),
     status_id         INT REFERENCES vehicle_status (id),
     last_service_date DATE,
-    is_active         BOOLEAN            NOT NULL DEFAULT TRUE
+    is_active         BOOLEAN            NOT NULL DEFAULT TRUE,
+    payload_capacity  INT                NOT NULL CHECK (payload_capacity >= 0)
 );

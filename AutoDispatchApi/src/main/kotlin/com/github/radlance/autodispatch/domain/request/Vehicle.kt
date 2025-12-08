@@ -3,8 +3,9 @@ package com.github.radlance.autodispatch.domain.request
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VehicleFilter(
+data class Vehicle(
     val id: Int,
     val model: String,
-    val licensePlate: String
+    val licensePlate: String,
+    val payloadCapacity: Int
 )

@@ -8,7 +8,7 @@ import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.auth.User
-import com.github.radlance.autodispatch.domain.request.VehicleFilter
+import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.domain.profile.DeliveriesStats
 import com.github.radlance.autodispatch.domain.profile.ProfileDetails
 import com.github.radlance.autodispatch.util.loggedTransaction
@@ -36,6 +36,7 @@ class ProfileRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.payloadCapacity,
                 RequestStatusTable.name,
                 countExpression
             )
@@ -47,6 +48,7 @@ class ProfileRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.payloadCapacity,
                 RequestStatusTable.name
             )
             .toList()
@@ -71,13 +73,12 @@ class ProfileRepository {
             fullName = first[UserTable.fullName],
             phoneNumber = first[UserTable.phoneNumber],
             deliveriesStats = deliveriesStats,
-            vehicleFilter = VehicleFilter(
+            vehicle = Vehicle(
                 id = first[VehicleTable.id].value,
                 model = first[VehicleTable.model],
-                licensePlate = first[VehicleTable.licensePlate]
+                licensePlate = first[VehicleTable.licensePlate],
+                payloadCapacity = first[VehicleTable.payloadCapacity]
             )
         )
     }
-
-
 }
