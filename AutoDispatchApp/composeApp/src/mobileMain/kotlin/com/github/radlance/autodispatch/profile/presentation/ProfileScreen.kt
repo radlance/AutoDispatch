@@ -44,7 +44,7 @@ fun ProfileScreen(
         ) {
             profileState.Reduce(
                 onLoading = {
-                    // TODO shimmer
+                    DriverProfileShimmer()
                 },
                 onSuccess = { profileDetails ->
                     DriverProfile(profileDetails = profileDetails)
@@ -61,45 +61,3 @@ fun ProfileScreen(
 
 // TODO добавить грузоподьемность у автомобиля
 // TODO обработать отсутствие аввтомобиля
-// TODO? сделать иконки у доставок
-/*
-* item {
-        StatTile(
-            title = "Активные",
-            value = stats.activeCount,
-            icon = Icons.Outlined.LocalShipping
-        )
-    }
-
-    item {
-        StatTile(
-            title = "На проверке",
-            value = stats.onCheckCount,
-            icon = Icons.Outlined.HourglassTop
-        )
-    }
-
-    item {
-        StatTile(
-            title = "Завершённые",
-            value = stats.completedCount,
-            icon = Icons.Outlined.CheckCircle
-        )
-    }
-
-    item {
-        StatTile(
-            title = "Отменённые",
-            value = stats.canceledCount,
-            icon = Icons.Outlined.Cancel
-        )
-    }
-
-    item {
-        StatTile(
-            title = "Отклонённые",
-            value = stats.rejectedCount,
-            icon = Icons.Outlined.Block
-        )
-    }
-* */

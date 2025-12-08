@@ -24,7 +24,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.NearMe
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
@@ -55,6 +59,7 @@ import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.platform.MapPoint
+import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 
@@ -139,8 +144,16 @@ private fun DeliveryHeader(
                     shape = RoundedCornerShape(12.dp)
                 )
         ) {
+            val icon = when (delivery.status.id) {
+                2 -> Package2Icon
+                3 -> AppIcon
+                6 -> Icons.Outlined.Schedule
+                4 -> Icons.Outlined.CheckCircle
+                5 -> Icons.Outlined.Cancel
+                else -> Icons.Outlined.Block
+            }
             Icon(
-                imageVector = Package2Icon,
+                imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(35.dp),
                 tint = contentColor
