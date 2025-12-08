@@ -1,12 +1,16 @@
 package com.github.radlance.autodispatch.profile.presentation
 
+import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.profile.domain.DriverProfileRepository
 import com.github.radlance.autodispatch.profile.domain.ProfileDetails
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: DriverProfileRepository) : BaseViewModel() {
 
@@ -20,6 +24,12 @@ class ProfileViewModel(private val repository: DriverProfileRepository) : BaseVi
         profileStateMutable.value = FetchResultUiState.Loading
         handle(background = repository::profileDetails) {
             profileStateMutable.value = it.toUiState()
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.logout()
         }
     }
 }

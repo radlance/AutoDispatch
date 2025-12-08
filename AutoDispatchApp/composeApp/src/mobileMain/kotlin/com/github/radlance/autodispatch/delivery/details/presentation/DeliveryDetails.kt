@@ -497,8 +497,8 @@ private fun StatusCard(
             }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp))
             InfoRow(
-                title = "Дата и время создания",
-                subtitle = createdAt,
+                title = createdAt,
+                subtitle = "Дата и время создания",
                 icon = Icons.Outlined.CalendarMonth,
                 iconTint = contentColor,
                 iconBackgroundColor = backgroundColor,

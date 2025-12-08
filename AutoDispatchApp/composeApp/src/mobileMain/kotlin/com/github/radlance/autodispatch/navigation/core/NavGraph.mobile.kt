@@ -107,7 +107,13 @@ actual fun NavGraph(navController: NavHostController) {
         }
 
         composable<Home> {
-            HomeScreen()
+            HomeScreen(
+                navigateToSignInScreen = {
+                    navController.navigate(SignIn) {
+                        popUpTo<Home> { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

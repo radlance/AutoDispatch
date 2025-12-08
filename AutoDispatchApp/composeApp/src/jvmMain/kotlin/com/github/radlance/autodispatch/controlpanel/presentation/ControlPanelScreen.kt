@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -101,7 +100,7 @@ fun ControlPanelScreen(
                 }
             },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
                         viewModel.logout()
                         showLogoutDialog = false

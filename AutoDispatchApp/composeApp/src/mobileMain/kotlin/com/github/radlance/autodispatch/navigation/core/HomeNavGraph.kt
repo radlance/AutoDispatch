@@ -24,6 +24,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeNavGraph(
+    navigateToSignInScreen: () -> Unit,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
@@ -160,7 +161,7 @@ fun HomeNavGraph(
         }
 
         composable<Profile> {
-            ProfileScreen()
+            ProfileScreen(navigateToSignInScreen = navigateToSignInScreen)
         }
     }
 }

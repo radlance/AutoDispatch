@@ -14,7 +14,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    navigateToSignInScreen: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val navController = rememberNavController()
     val navigationState = rememberNavigationState(navController)
     Scaffold(
@@ -25,6 +28,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     ) { padding ->
         HomeNavGraph(
             navController = navController,
+            navigateToSignInScreen = navigateToSignInScreen,
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         )
     }

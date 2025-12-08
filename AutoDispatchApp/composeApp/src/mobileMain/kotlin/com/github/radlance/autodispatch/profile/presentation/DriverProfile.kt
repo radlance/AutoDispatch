@@ -44,6 +44,7 @@ import com.github.radlance.autodispatch.uikit.vector.SearchInsightsIcon
 @Composable
 fun DriverProfile(
     profileDetails: ProfileDetails,
+    onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -188,7 +189,7 @@ fun DriverProfile(
         }
 
         item {
-            Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onLogoutClick, modifier = Modifier.fillMaxWidth()) {
                 Icon(imageVector = Icons.AutoMirrored.Outlined.Logout, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
                 Text(text = "Выйти из аккаунта")
