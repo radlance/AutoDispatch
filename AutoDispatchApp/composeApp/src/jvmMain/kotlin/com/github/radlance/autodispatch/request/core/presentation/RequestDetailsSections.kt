@@ -211,7 +211,7 @@ fun RequestDetailsSections(
             LabeledValue(label = stringResource(Res.string.vehicle), value = vehicle)
             request.vehicle?.let {
                 Spacer(modifier = Modifier.height(ITEM_GAP))
-                LabeledValue(label = "Грузоподъемность", value = "${it.payloadCapacity} кг")
+                LabeledValue(label = "Грузоподъёмность", value = "${it.payloadCapacity} кг")
             }
         }
         if ((request.status.id == 6 || request.status.id == 4 || request.status.id == 7) && request.documents.isNotEmpty()) {

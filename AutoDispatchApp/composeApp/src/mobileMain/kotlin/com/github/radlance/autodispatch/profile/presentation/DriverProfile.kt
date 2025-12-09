@@ -40,6 +40,7 @@ import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.DocumentIcon
 import com.github.radlance.autodispatch.uikit.vector.SearchInsightsIcon
+import com.github.radlance.autodispatch.uikit.vector.WeightIcon
 
 @Composable
 fun DriverProfile(
@@ -180,6 +181,17 @@ fun DriverProfile(
                         title = vehicle.licensePlate,
                         subtitle = "Гос. номер",
                         icon = DocumentIcon,
+                        iconTint = onPrimaryContainer,
+                        iconBackgroundColor = primaryContainer,
+                        modifier = Modifier.padding(18.dp)
+                    )
+                }
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
+                SelectionContainer {
+                    InfoRow(
+                        title = "${vehicle.payloadCapacity} кг",
+                        subtitle = "Грузоподъёмность",
+                        icon = WeightIcon,
                         iconTint = onPrimaryContainer,
                         iconBackgroundColor = primaryContainer,
                         modifier = Modifier.padding(18.dp)
