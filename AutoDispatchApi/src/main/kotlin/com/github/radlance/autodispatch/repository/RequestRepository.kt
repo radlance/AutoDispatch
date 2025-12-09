@@ -63,19 +63,6 @@ import org.jetbrains.exposed.sql.upsert
 
 class RequestRepository {
 
-    private fun vehicleInfoExpr(): Expression<String> =
-        Case()
-            .When(VehicleTable.id.isNull(), stringLiteral(""))
-            .Else(
-                Concat(
-                    "",
-                    VehicleTable.model,
-                    stringLiteral(" ("),
-                    VehicleTable.licensePlate,
-                    stringLiteral(")")
-                )
-            )
-
     private fun joinBaseQuery(originCity: Alias<CityTable>, destCity: Alias<CityTable>): Join =
         RequestTable
             .join(originCity, JoinType.LEFT, RequestTable.originId, originCity[CityTable.id])
@@ -90,8 +77,7 @@ class RequestRepository {
 
     private fun selectColumns(
         originCity: Alias<CityTable>,
-        destCity: Alias<CityTable>,
-        vehicleInfo: Expression<String>
+        destCity: Alias<CityTable>
     ): List<Expression<*>> = listOf(
         RequestTable.id,
         RequestTable.requestNumber,
@@ -119,55 +105,67 @@ class RequestRepository {
         CustomerTable.organizationName,
         CustomerTable.phoneNumber.alias("organization_phone_number"),
         CustomerTable.email.alias("organization_email"),
-        vehicleInfo.alias("vehicle_info")
+        VehicleTable.id,
+        VehicleTable.model,
+        VehicleTable.licensePlate,
+        VehicleTable.payloadCapacity
     )
 
     private fun mapRequestRow(
         row: ResultRow,
         originCity: Alias<CityTable>,
-        destCity: Alias<CityTable>,
-        vehicleInfo: Expression<String>
-    ): Request = Request(
-        id = row[RequestTable.id].value,
-        requestNumber = row[RequestTable.requestNumber],
-        status = RequestStatus(
-            id = row[RequestStatusTable.id].value,
-            name = row[RequestStatusTable.name]
-        ),
-        transportationDescription = row[RequestTable.transportationDescription],
-        origin = row[originCity[CityTable.name].alias("origin_name")],
-        destination = row[destCity[CityTable.name].alias("destination_name")],
-        createdAt = row[RequestTable.createdAt]?.toString(),
-        updatedAt = row[RequestTable.updatedAt]?.toString(),
-        cargo = Cargo(
-            type = CargoType(
-                id = row[CargoTypeTable.id].value,
-                name = row[CargoTypeTable.name.alias("cargo_type_name")]
+        destCity: Alias<CityTable>
+    ): Request {
+        val vehicle = row.getOrNull(VehicleTable.id)?.let {
+            Vehicle(
+                id = it.value,
+                model = row[VehicleTable.model],
+                licensePlate = row[VehicleTable.licensePlate],
+                payloadCapacity = row[VehicleTable.payloadCapacity]
+            )
+        }
+        return Request(
+            id = row[RequestTable.id].value,
+            requestNumber = row[RequestTable.requestNumber],
+            status = RequestStatus(
+                id = row[RequestStatusTable.id].value,
+                name = row[RequestStatusTable.name]
             ),
-            weight = row[RequestTable.cargoWeight],
-            volume = row[RequestTable.cargoVolume],
-            description = row[RequestTable.cargoDescription]
-        ),
-        loadingPoint = Point(
-            address = row[RequestTable.loadingAddress],
-            lat = row[RequestTable.loadingLat],
-            lon = row[RequestTable.loadingLon]
-        ),
-        unloadingPoint = Point(
-            address = row[RequestTable.unloadingAddress],
-            lat = row[RequestTable.unloadingLat],
-            lon = row[RequestTable.unloadingLon]
-        ),
-        driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
-        driverFullName = row[UserTable.fullName.alias("driver_full_name")],
-        customer = Customer(
-            id = row[CustomerTable.id].value,
-            organizationName = row[CustomerTable.organizationName],
-            email = row[CustomerTable.email],
-            phoneNumber = row[CustomerTable.phoneNumber]
-        ),
-        vehicleInfo = row[vehicleInfo.alias("vehicle_info")]
-    )
+            transportationDescription = row[RequestTable.transportationDescription],
+            origin = row[originCity[CityTable.name].alias("origin_name")],
+            destination = row[destCity[CityTable.name].alias("destination_name")],
+            createdAt = row[RequestTable.createdAt]?.toString(),
+            updatedAt = row[RequestTable.updatedAt]?.toString(),
+            cargo = Cargo(
+                type = CargoType(
+                    id = row[CargoTypeTable.id].value,
+                    name = row[CargoTypeTable.name.alias("cargo_type_name")]
+                ),
+                weight = row[RequestTable.cargoWeight],
+                volume = row[RequestTable.cargoVolume],
+                description = row[RequestTable.cargoDescription]
+            ),
+            loadingPoint = Point(
+                address = row[RequestTable.loadingAddress],
+                lat = row[RequestTable.loadingLat],
+                lon = row[RequestTable.loadingLon]
+            ),
+            unloadingPoint = Point(
+                address = row[RequestTable.unloadingAddress],
+                lat = row[RequestTable.unloadingLat],
+                lon = row[RequestTable.unloadingLon]
+            ),
+            driverId = row.getOrNull(UserTable.id.alias("driver_id"))?.value,
+            driverFullName = row[UserTable.fullName.alias("driver_full_name")],
+            customer = Customer(
+                id = row[CustomerTable.id].value,
+                organizationName = row[CustomerTable.organizationName],
+                email = row[CustomerTable.email],
+                phoneNumber = row[CustomerTable.phoneNumber]
+            ),
+            vehicle = vehicle
+        )
+    }
 
     private fun buildSearchConditions(
         q: String,
@@ -210,7 +208,6 @@ class RequestRepository {
 
         val originCity = CityTable.alias("origin_city")
         val destCity = CityTable.alias("dest_city")
-        val vehicleInfo = vehicleInfoExpr()
 
         val query = joinBaseQuery(originCity, destCity)
 
@@ -232,12 +229,12 @@ class RequestRepository {
         val offset = (page - 1L) * pageSize
 
         val requestsWithoutDocs = query
-            .select(selectColumns(originCity, destCity, vehicleInfo))
+            .select(selectColumns(originCity, destCity))
             .where(where)
             .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .limit(pageSize)
             .offset(offset)
-            .map { row -> mapRequestRow(row, originCity, destCity, vehicleInfo) }
+            .map { row -> mapRequestRow(row, originCity, destCity) }
 
         val requestIds = requestsWithoutDocs.map { it.id }
         val documentsMap = if (requestIds.isNotEmpty()) {

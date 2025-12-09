@@ -15,7 +15,7 @@ data class RequestDto(
     val driverId: Int?,
     val driverFullName: String?,
     val customer: CustomerDto,
-    val vehicleInfo: String?,
+    val vehicle: VehicleDto?,
     val createdAt: String,
     val updatedAt: String?,
     val requestNumber: String,

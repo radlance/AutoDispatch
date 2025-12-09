@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.choice_driver
 import autodispatch.composeapp.generated.resources.driver
-import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.presentation.CustomDropDownMenu
 import org.jetbrains.compose.resources.stringResource
@@ -77,7 +76,7 @@ fun DriverAssignmentFields(
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = currentOption.vehicleModel?.let { "${currentOption.vehicleModel} • ${currentOption.vehicleLicensePlate} • г/п: ${currentOption.vehiclePayloadCapacity?.toDouble().formatKg()}" }
+                        text = currentOption.vehicleModel?.let { "${currentOption.vehicleModel} • ${currentOption.vehicleLicensePlate} • г/п: ${currentOption.vehiclePayloadCapacity} кг" }
                             ?: "Нет автомобиля",
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,

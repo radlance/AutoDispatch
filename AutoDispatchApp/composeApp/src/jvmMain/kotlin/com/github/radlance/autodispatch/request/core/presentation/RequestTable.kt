@@ -156,7 +156,7 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = item.vehicleInfo?.ifEmpty { "—" } ?: "—",
+                        text = item.vehicle?.let { "${it.model} (${it.licensePlate})" } ?: "—",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

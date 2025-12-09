@@ -32,7 +32,7 @@ fun FiltersDto.toFilters(): Filters {
         cargoTypes = cargoTypes.map { it.toCargoType() },
         statuses = statuses.map { it.toRequestStatus() },
         drivers = drivers.map { it.toUserFilter() },
-        vehicles = vehicles.map { it.toVehicleFilter() }
+        vehicles = vehicles.map { it.toVehicle() }
     )
 }
 

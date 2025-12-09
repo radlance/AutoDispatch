@@ -56,7 +56,7 @@ fun RequestDto.toRequest(): Request {
         driverId = driverId,
         driverFullName = driverFullName,
         customer = customer.toCustomer(),
-        vehicleInfo = vehicleInfo,
+        vehicle = vehicle?.toVehicle(),
         transportationDescription = transportationDescription,
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
@@ -96,7 +96,7 @@ fun CargoTypeDto.toCargoType(): CargoType {
     )
 }
 
-fun VehicleDto.toVehicleFilter(): Vehicle {
+fun VehicleDto.toVehicle(): Vehicle {
     return Vehicle(
         id = id,
         model = model,

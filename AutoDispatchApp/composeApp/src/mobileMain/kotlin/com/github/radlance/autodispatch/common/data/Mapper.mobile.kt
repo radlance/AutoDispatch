@@ -37,7 +37,7 @@ fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
         dispatcherFullName = dispatcherFullName,
         dispatcherPhoneNumber = dispatcherPhoneNumber,
         customer = customer.toCustomer(),
-        vehicle = vehicle.toVehicleFilter(),
+        vehicle = vehicle.toVehicle(),
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt.toLocalDateTimeFromUtc(),
         requestNumber = requestNumber,

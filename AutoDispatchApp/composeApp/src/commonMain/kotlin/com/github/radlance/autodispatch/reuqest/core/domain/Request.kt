@@ -16,7 +16,7 @@ data class Request(
     val driverId: Int?,
     val driverFullName: String?,
     val customer: Customer,
-    val vehicleInfo: String?,
+    val vehicle: Vehicle?,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime?,
     val requestNumber: String,
