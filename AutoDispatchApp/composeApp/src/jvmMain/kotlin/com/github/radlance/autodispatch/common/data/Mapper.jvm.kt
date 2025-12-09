@@ -65,6 +65,7 @@ fun DriverStatsDto.toDriverStats(): DriverStats {
         status = status,
         vehicleModel = vehicleModel,
         vehicleLicensePlate = vehicleLicensePlate,
+        vehiclePayloadCapacity = vehiclePayloadCapacity,
         totalAssignedRequests = totalAssignedRequests
     )
 }

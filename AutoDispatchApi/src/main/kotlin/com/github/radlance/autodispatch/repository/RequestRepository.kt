@@ -384,6 +384,7 @@ class RequestRepository {
                 DriverStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.payloadCapacity,
                 requestCount
             )
             .groupBy(
@@ -393,7 +394,8 @@ class RequestRepository {
                 DriverStatusTable.id,
                 DriverStatusTable.name,
                 VehicleTable.model,
-                VehicleTable.licensePlate
+                VehicleTable.licensePlate,
+                VehicleTable.payloadCapacity
             )
             .orderBy(statusOrder, SortOrder.ASC)
             .orderBy(UserTable.fullName, SortOrder.ASC)
@@ -405,6 +407,7 @@ class RequestRepository {
                     status = row[DriverStatusTable.name],
                     vehicleModel = row[VehicleTable.model],
                     vehicleLicensePlate = row[VehicleTable.licensePlate],
+                    vehiclePayloadCapacity = row[VehicleTable.payloadCapacity],
                     totalAssignedRequests = row[requestCount] ?: 0L
                 )
             }

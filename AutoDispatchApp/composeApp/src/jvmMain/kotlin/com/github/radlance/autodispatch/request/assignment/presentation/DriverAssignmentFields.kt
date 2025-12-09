@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.choice_driver
 import autodispatch.composeapp.generated.resources.driver
+import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.presentation.CustomDropDownMenu
 import org.jetbrains.compose.resources.stringResource
@@ -52,7 +53,7 @@ fun DriverAssignmentFields(
             hint = stringResource(Res.string.choice_driver),
             modifier = Modifier.fillMaxWidth(),
             isRequired = true,
-            itemHeight = 64.dp
+            itemHeight = 95.dp
         ) { optionLabel ->
             val currentOption = driversStats.first {
                 it.driverName == optionLabel
@@ -69,17 +70,28 @@ fun DriverAssignmentFields(
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "${currentOption.phoneNumber} • ${currentOption.vehicleModel?.let { "${currentOption.vehicleModel} (${currentOption.vehicleLicensePlate})" } ?: "Нет автомобиля"}",
+                        text = currentOption.phoneNumber.toString(),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 12.sp,
+                        modifier = Modifier.alpha(0.7f)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = currentOption.vehicleModel?.let { "${currentOption.vehicleModel} • ${currentOption.vehicleLicensePlate} • г/п: ${currentOption.vehiclePayloadCapacity?.toDouble().formatKg()}" }
+                            ?: "Нет автомобиля",
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,
                         modifier = Modifier.alpha(0.7f)
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(2f)) {
-                    RequestCountContainer(currentOption.totalAssignedRequests.toInt())
+                    RequestCountContainer(
+                        count = currentOption.totalAssignedRequests.toInt(),
+                        fontSize = 12.sp
+                    )
                     Spacer(Modifier.width(12.dp))
                     currentOption.vehicleModel?.let {
-                        DriverStatusWithColor(status = currentOption.status)
+                        DriverStatusWithColor(status = currentOption.status, fontSize = 12.sp)
                     } ?: Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))

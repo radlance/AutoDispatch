@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
@@ -46,6 +47,7 @@ import autodispatch.composeapp.generated.resources.loading_error
 import autodispatch.composeapp.generated.resources.reassign
 import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
@@ -128,7 +130,10 @@ fun DriverAssignmentDialog(
                             Spacer(Modifier.height(12.dp))
                             Text("${request.origin} → ${request.destination}", fontSize = 16.sp)
                             Spacer(Modifier.height(12.dp))
-                            Text("${request.cargo.type.name} • ${request.createdAt.date}", modifier = Modifier.alpha(0.7f))
+                            Text(
+                                "${request.cargo.type.name} • ${request.cargo.weight.formatKg()} • ${request.createdAt.date}",
+                                modifier = Modifier.alpha(0.7f)
+                            )
                         }
                     }
                     Spacer(Modifier.height(24.dp))
@@ -215,34 +220,57 @@ fun DriverAssignmentDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismissAction, enabled = !isLoading) {
-                Text(text = stringResource(Res.string.cancel))
-            }
-        },
-        confirmButton = {
             val isDriverSelected = fieldsState.selectedDriverStats != null
             val hasDriverChanged = fieldsState.selectedDriverStats?.driverId != assignedDriverId
+            val vehicleCapacity = fieldsState.selectedDriverStats?.vehiclePayloadCapacity
+            val isOverweight = vehicleCapacity != null &&
+                    request.cargo.weight > vehicleCapacity
             val isButtonEnabled =
-                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && fieldsState.selectedDriverStats?.vehicleModel != null
+                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && fieldsState.selectedDriverStats?.vehicleModel != null && vehicleCapacity != null && !isOverweight
 
-            Button(
-                onClick = {
-                    viewModel.reduce(
-                        AssignmentEvent.AssignRequestClick(
-                            requestId = request.id,
-                            driverId = fieldsState.selectedDriverStats!!.driverId,
-                            isReassign = isReassign
+
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                fieldsState.selectedDriverStats?.vehiclePayloadCapacity?.let {
+                    if (request.cargo.weight > it) {
+                        Icon(
+                            imageVector = Icons.Outlined.WarningAmber,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
                         )
-                    )
-                },
-                enabled = isButtonEnabled
-            ) {
-                val text = if (isReassign) {
-                    Res.string.reassign
-                } else Res.string.assign
-                Text(text = stringResource(text))
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = "Перегруз",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+                Spacer(Modifier.weight(1f))
+
+                TextButton(onClick = onDismissAction, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(12.dp))
+                Button(
+                    onClick = {
+                        viewModel.reduce(
+                            AssignmentEvent.AssignRequestClick(
+                                requestId = request.id,
+                                driverId = fieldsState.selectedDriverStats!!.driverId,
+                                isReassign = isReassign
+                            )
+                        )
+                    },
+                    enabled = isButtonEnabled
+                ) {
+                    val text = if (isReassign) {
+                        Res.string.reassign
+                    } else Res.string.assign
+                    Text(text = stringResource(text))
+                }
             }
         },
+        confirmButton = {},
         modifier = modifier
     )
 }
