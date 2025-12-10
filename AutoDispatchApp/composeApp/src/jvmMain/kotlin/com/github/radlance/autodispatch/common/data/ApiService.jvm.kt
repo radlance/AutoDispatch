@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.driver.data.DriverDto
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
@@ -59,6 +60,12 @@ interface ApiServiceJvm : ApiService {
     suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto)
 
     suspend fun approveDocument(requestId: Int)
+
+    suspend fun drivers(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): PaginatedResultDto<DriverDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -179,5 +186,20 @@ internal class KtorApiServiceJvm(
 
     override suspend fun approveDocument(requestId: Int) {
         httpClient.post("documents/${requestId}/approve")
+    }
+
+    override suspend fun drivers(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): PaginatedResultDto<DriverDto> {
+        return httpClient.get("drivers") {
+            url {
+                parameters.append("page", page.toString())
+                parameters.append("pageSize", pageSize.toString())
+
+                searchQuery?.let { parameters.append("search", it) }
+            }
+        }.body()
     }
 }

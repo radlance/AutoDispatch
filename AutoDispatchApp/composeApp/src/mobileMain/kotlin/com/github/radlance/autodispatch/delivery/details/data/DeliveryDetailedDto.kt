@@ -3,7 +3,7 @@ package com.github.radlance.autodispatch.delivery.details.data
 import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
-import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.common.data.StatusDto
 import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
 import kotlinx.serialization.Serializable
@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeliveryDetailedDto(
     val id: Int,
-    val status: RequestStatusDto,
+    val status: StatusDto,
     val origin: String,
     val destination: String,
     val transportationDescription: String?,

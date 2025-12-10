@@ -1,20 +1,14 @@
 package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.graphics.vector.ImageVector
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.destinations
 import autodispatch.composeapp.generated.resources.drivers
-import autodispatch.composeapp.generated.resources.notifications
-import autodispatch.composeapp.generated.resources.reports
 import autodispatch.composeapp.generated.resources.requests
 import autodispatch.composeapp.generated.resources.vehicles
 import com.github.radlance.autodispatch.uikit.vector.DeliveryBoltIcon
 import com.github.radlance.autodispatch.uikit.vector.DocumentIcon
-import com.github.radlance.autodispatch.uikit.vector.FinanceIcon
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 
@@ -30,12 +24,6 @@ object Requests : DrawerDestination {
 }
 
 @Serializable
-object Destinations : DrawerDestination {
-    override val icon: ImageVector = Icons.Outlined.CalendarToday
-    override val titleRes: StringResource = Res.string.destinations
-}
-
-@Serializable
 object Vehicles : DrawerDestination {
     override val icon: ImageVector = DeliveryBoltIcon
     override val titleRes: StringResource = Res.string.vehicles
@@ -45,16 +33,4 @@ object Vehicles : DrawerDestination {
 object Drivers : DrawerDestination {
     override val icon: ImageVector = Icons.Outlined.Group
     override val titleRes: StringResource = Res.string.drivers
-}
-
-@Serializable
-object Reports : DrawerDestination {
-    override val icon: ImageVector = FinanceIcon
-    override val titleRes: StringResource = Res.string.reports
-}
-
-@Serializable
-object Notifications : DrawerDestination {
-    override val icon: ImageVector = Icons.Outlined.Notifications
-    override val titleRes: StringResource = Res.string.notifications
 }

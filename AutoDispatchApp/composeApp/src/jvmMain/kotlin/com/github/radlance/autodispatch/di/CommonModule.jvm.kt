@@ -5,6 +5,9 @@ import com.github.radlance.autodispatch.common.data.KtorApiServiceJvm
 import com.github.radlance.autodispatch.controlpanel.data.RemoteControlPanelRepository
 import com.github.radlance.autodispatch.controlpanel.domain.ControlPanelRepository
 import com.github.radlance.autodispatch.controlpanel.presentation.ControlPanelViewModel
+import com.github.radlance.autodispatch.driver.data.RemoteDriverRepository
+import com.github.radlance.autodispatch.driver.domain.DriverRepository
+import com.github.radlance.autodispatch.driver.presentation.DriverViewModel
 import com.github.radlance.autodispatch.request.assignment.data.RemoteAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.presentation.AssignmentViewModel
@@ -54,4 +57,10 @@ val pointSelectionModule
     get() = module {
         singleOf(::RemotePointSelectionRepository).bind<PointSelectionRepository>()
         viewModelOf(::PointSelectionViewModel)
+    }
+
+val driverModule
+    get() = module {
+        singleOf(::RemoteDriverRepository).bind<DriverRepository>()
+        viewModelOf(::DriverViewModel)
     }

@@ -36,7 +36,6 @@ import org.jetbrains.exposed.sql.Alias
 import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
 import org.jetbrains.exposed.sql.Coalesce
-import org.jetbrains.exposed.sql.Concat
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Join
 import org.jetbrains.exposed.sql.JoinType
@@ -46,7 +45,6 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
@@ -56,7 +54,6 @@ import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
-import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert

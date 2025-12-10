@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.driver.data.DriverDto
+import com.github.radlance.autodispatch.driver.domain.Driver
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
@@ -30,7 +32,7 @@ fun FiltersDto.toFilters(): Filters {
     return Filters(
         cities = cities.map { it.toCity() },
         cargoTypes = cargoTypes.map { it.toCargoType() },
-        statuses = statuses.map { it.toRequestStatus() },
+        statuses = statuses.map { it.toStatus() },
         drivers = drivers.map { it.toUserFilter() },
         vehicles = vehicles.map { it.toVehicle() }
     )
@@ -90,6 +92,13 @@ fun PointDto.toPoint(): PointDetailed {
     )
 }
 
+fun PaginatedResultDto<DriverDto>.toPaginatedResultDriver(): PaginatedResult<Driver> {
+    return PaginatedResult(
+        items = items.map { it.toDriver() },
+        totalCount = totalCount
+    )
+}
+
 private fun CityDto.toCity(): City {
     return City(
         id = id,
@@ -101,5 +110,15 @@ private fun UserFilterDto.toUserFilter(): UserFilter {
     return UserFilter(
         id = id,
         fullName = fullName
+    )
+}
+
+private fun DriverDto.toDriver(): Driver {
+    return Driver(
+        fullName = fullName,
+        phoneNumber = phoneNumber,
+        status = status.toStatus(),
+        vehicle = vehicle.toVehicle(),
+        deliveryCount = deliveryCount
     )
 }

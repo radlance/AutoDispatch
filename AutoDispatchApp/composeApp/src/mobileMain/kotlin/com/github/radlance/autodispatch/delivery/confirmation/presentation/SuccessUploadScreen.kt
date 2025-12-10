@@ -43,7 +43,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
-import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
+import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -183,7 +183,7 @@ private fun SuccessDeliveryScreenPreview() {
         SuccessUploadScreen(
             delivery = DeliveryDetailed(
                 id = 1,
-                status = RequestStatus(
+                status = Status(
                     id = 4,
                     name = "Завершена"
                 ),

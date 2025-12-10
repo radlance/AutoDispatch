@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 
 class RequestViewModel(
-    private val requestRepository: RequestRepository
+    private val repository: RequestRepository
 ) : BaseViewModel() {
 
     private val requestScreenStateMutable = MutableStateFlow(RequestScreenState())
@@ -38,7 +38,7 @@ class RequestViewModel(
     fun loadFilters() {
         requestScreenStateMutable.update { it.copy(filters = FetchResultUiState.Loading) }
         handle(
-            background = { requestRepository.filters() }
+            background = { repository.filters() }
         ) { filtersResult ->
             requestScreenStateMutable.update { state ->
                 state.copy(filters = filtersResult.toUiState())
@@ -139,7 +139,7 @@ class RequestViewModel(
         }
         handle(
             background = {
-                requestRepository.requests(
+                repository.requests(
                     page = page,
                     pageSize = pageSize,
                     searchQuery = searchQuery,

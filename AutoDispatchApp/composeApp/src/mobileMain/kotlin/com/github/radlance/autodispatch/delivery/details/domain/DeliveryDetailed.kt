@@ -4,7 +4,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
-import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
+import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeliveryDetailed(
     val id: Int,
-    val status: RequestStatus,
+    val status: Status,
     val origin: String,
     val destination: String,
     val transportationDescription: String?,

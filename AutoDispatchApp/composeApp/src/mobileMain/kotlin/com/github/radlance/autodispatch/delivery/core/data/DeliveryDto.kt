@@ -1,13 +1,13 @@
 package com.github.radlance.autodispatch.delivery.core.data
 
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
-import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
+import com.github.radlance.autodispatch.common.data.StatusDto
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class DeliveryDto(
     val id: Int,
-    val status: RequestStatusDto,
+    val status: StatusDto,
     val loadingPoint: PointDto,
     val unloadingPoint: PointDto,
     val cargoWeight: Double,

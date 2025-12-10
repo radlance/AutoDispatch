@@ -11,7 +11,6 @@ import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
 import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
-import com.github.radlance.autodispatch.reuqest.core.data.RequestStatusDto
 import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
 import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
@@ -19,7 +18,7 @@ import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
-import com.github.radlance.autodispatch.reuqest.core.domain.RequestStatus
+import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -47,7 +46,7 @@ fun RequestDto.toRequest(): Request {
     return Request(
         id = id,
         requestNumber = requestNumber,
-        status = status.toRequestStatus(),
+        status = status.toStatus(),
         origin = origin,
         destination = destination,
         cargo = cargo.toCargo(),
@@ -64,8 +63,8 @@ fun RequestDto.toRequest(): Request {
     )
 }
 
-fun RequestStatusDto.toRequestStatus(): RequestStatus {
-    return RequestStatus(
+fun StatusDto.toStatus(): Status {
+    return Status(
         id = id,
         name = name
     )

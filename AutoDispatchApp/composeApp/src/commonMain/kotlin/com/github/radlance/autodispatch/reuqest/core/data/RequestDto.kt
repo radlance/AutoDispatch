@@ -1,11 +1,12 @@
 package com.github.radlance.autodispatch.reuqest.core.data
 
+import com.github.radlance.autodispatch.common.data.StatusDto
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class RequestDto(
     val id: Int,
-    val status: RequestStatusDto,
+    val status: StatusDto,
     val origin: String,
     val destination: String,
     val transportationDescription: String?,

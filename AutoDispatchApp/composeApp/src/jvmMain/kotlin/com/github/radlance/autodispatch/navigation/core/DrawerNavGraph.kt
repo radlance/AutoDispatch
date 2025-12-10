@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.driver.presentation.DriverScreen
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.core.presentation.RequestsScreen
 
@@ -42,32 +43,18 @@ fun DrawerNavGraph(
         composable<Requests> {
             RequestsScreen(
                 loadProfileUiState = loadProfileUiState,
-                onReloadProfile = onReloadProfile,
+                onReloadProfile = onReloadProfile
             )
         }
-        composable<Destinations> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Destinations")
-            }
+        composable<Drivers> {
+            DriverScreen(
+                loadProfileUiState = loadProfileUiState,
+                onReloadProfile = onReloadProfile,
+            )
         }
         composable<Vehicles> {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "Cars")
-            }
-        }
-        composable<Drivers> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Drivers")
-            }
-        }
-        composable<Reports> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Reports")
-            }
-        }
-        composable<Notifications> {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Text(text = "Notifications")
             }
         }
     }

@@ -12,7 +12,7 @@ import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 fun DeliveryDto.toDelivery(): Delivery {
     return Delivery(
         id = id,
-        status = status.toRequestStatus(),
+        status = status.toStatus(),
         loadingPoint = loadingPoint.toPoint(),
         unloadingPoint = unloadingPoint.toPoint(),
         cargoWeight = cargoWeight,
@@ -27,7 +27,7 @@ fun DeliveryDto.toDelivery(): Delivery {
 fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
     return DeliveryDetailed(
         id = id,
-        status = status.toRequestStatus(),
+        status = status.toStatus(),
         origin = origin,
         destination = destination,
         transportationDescription = transportationDescription,
