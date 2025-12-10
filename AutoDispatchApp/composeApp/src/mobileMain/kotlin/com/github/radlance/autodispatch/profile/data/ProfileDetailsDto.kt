@@ -1,6 +1,6 @@
 package com.github.radlance.autodispatch.profile.data
 
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -8,5 +8,5 @@ data class ProfileDetailsDto(
     val fullName: String,
     val deliveriesStats: DeliveriesStatsDto,
     val phoneNumber: String,
-    val vehicle: Vehicle
+    val vehicle: VehicleDto?
 )

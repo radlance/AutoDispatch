@@ -6,5 +6,5 @@ data class ProfileDetails(
     val fullName: String,
     val deliveriesStats: DeliveriesStats,
     val phoneNumber: String,
-    val vehicle: Vehicle
+    val vehicle: Vehicle?
 )

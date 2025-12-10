@@ -25,7 +25,7 @@ class ProfileRepository {
 
         val rows = UserTable
             .join(DriverTable, JoinType.INNER, UserTable.id, DriverTable.userId)
-            .join(VehicleTable, JoinType.INNER, DriverTable.vehicleId, VehicleTable.id)
+            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
             .join(AssignmentTable, JoinType.LEFT, UserTable.id, AssignmentTable.driverId)
             .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
             .join(RequestStatusTable, JoinType.LEFT, RequestTable.statusId, RequestStatusTable.id)
@@ -69,16 +69,20 @@ class ProfileRepository {
             rejectedCount = statsMap["Отклонена"] ?: 0
         )
 
-        ProfileDetails(
-            fullName = first[UserTable.fullName],
-            phoneNumber = first[UserTable.phoneNumber],
-            deliveriesStats = deliveriesStats,
-            vehicle = Vehicle(
-                id = first[VehicleTable.id].value,
+        val vehicle = first.getOrNull(VehicleTable.id)?.value?.let { id ->
+            Vehicle(
+                id = id,
                 model = first[VehicleTable.model],
                 licensePlate = first[VehicleTable.licensePlate],
                 payloadCapacity = first[VehicleTable.payloadCapacity]
             )
+        }
+
+        ProfileDetails(
+            fullName = first[UserTable.fullName],
+            phoneNumber = first[UserTable.phoneNumber],
+            deliveriesStats = deliveriesStats,
+            vehicle = vehicle
         )
     }
 }

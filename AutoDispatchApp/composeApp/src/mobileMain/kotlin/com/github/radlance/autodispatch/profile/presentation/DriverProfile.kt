@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.InfoRow
@@ -164,37 +166,64 @@ fun DriverProfile(
                     color = onPrimaryContainer,
                     backgroundColor = primaryContainer
                 )
-                val vehicle = profileDetails.vehicle
-                SelectionContainer {
-                    InfoRow(
-                        title = vehicle.model,
-                        subtitle = "Модель",
-                        icon = AppIcon,
-                        iconTint = onPrimaryContainer,
-                        iconBackgroundColor = primaryContainer,
-                        modifier = Modifier.padding(18.dp)
+                profileDetails.vehicle?.let { vehicle ->
+                    SelectionContainer {
+                        InfoRow(
+                            title = vehicle.model,
+                            subtitle = "Модель",
+                            icon = AppIcon,
+                            iconTint = onPrimaryContainer,
+                            iconBackgroundColor = primaryContainer,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
+                    SelectionContainer {
+                        InfoRow(
+                            title = vehicle.licensePlate,
+                            subtitle = "Гос. номер",
+                            icon = DocumentIcon,
+                            iconTint = onPrimaryContainer,
+                            iconBackgroundColor = primaryContainer,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
+                    SelectionContainer {
+                        InfoRow(
+                            title = "${vehicle.payloadCapacity} кг",
+                            subtitle = "Грузоподъёмность",
+                            icon = WeightIcon,
+                            iconTint = onPrimaryContainer,
+                            iconBackgroundColor = primaryContainer,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+                } ?: Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ErrorOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(48.dp).alpha(0.7f)
                     )
-                }
-                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
-                SelectionContainer {
-                    InfoRow(
-                        title = vehicle.licensePlate,
-                        subtitle = "Гос. номер",
-                        icon = DocumentIcon,
-                        iconTint = onPrimaryContainer,
-                        iconBackgroundColor = primaryContainer,
-                        modifier = Modifier.padding(18.dp)
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "Автомобиль не назначен",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.alpha(0.9f)
                     )
-                }
-                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
-                SelectionContainer {
-                    InfoRow(
-                        title = "${vehicle.payloadCapacity} кг",
-                        subtitle = "Грузоподъёмность",
-                        icon = WeightIcon,
-                        iconTint = onPrimaryContainer,
-                        iconBackgroundColor = primaryContainer,
-                        modifier = Modifier.padding(18.dp)
+                    Text(
+                        text = "Обратитесь к диспетчеру для назначения автомобиля",
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.alpha(0.9f)
                     )
                 }
             }
