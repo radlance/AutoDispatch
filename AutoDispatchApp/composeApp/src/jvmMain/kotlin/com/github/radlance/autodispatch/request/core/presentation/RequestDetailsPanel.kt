@@ -247,7 +247,7 @@ fun RequestDetailsPanel(
     }
 
     Column(modifier = modifier.padding(8.dp)) {
-        PanelHeader(
+        RequestPanelHeader(
             requestNumber = request.requestNumber,
             requestStatusId = request.status.id,
             onSettingsClick = { showEditDialog = true },

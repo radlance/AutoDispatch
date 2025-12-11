@@ -3,14 +3,12 @@ package com.github.radlance.autodispatch.request.core.presentation
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -31,9 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
@@ -56,17 +52,18 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
+import com.github.radlance.autodispatch.common.presentation.InfoRow
+import com.github.radlance.autodispatch.common.presentation.LabeledValue
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
+import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
+import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
-
-private val SECTION_GAP = 18.dp
-private val ITEM_GAP = 12.dp
-private val ICON_TEXT_GAP = 6.dp
 
 @Composable
 fun RequestDetailsSections(
@@ -304,62 +301,6 @@ fun RequestDetailsSections(
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
-    }
-}
-
-@Composable
-private fun Section(
-    header: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = header,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(ITEM_GAP))
-        Column(modifier = Modifier.fillMaxWidth(), content = content)
-    }
-}
-
-@Composable
-private fun InfoRow(
-    icon: ImageVector,
-    iconDesc: String?,
-    text: String
-) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Icon(
-            imageVector = icon,
-            contentDescription = iconDesc,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(ICON_TEXT_GAP))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            fontSize = 14.sp,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-private fun LabeledValue(label: String, value: String?) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = value ?: "—",
-            style = MaterialTheme.typography.bodyMedium,
-            fontSize = 14.sp
-        )
     }
 }
 

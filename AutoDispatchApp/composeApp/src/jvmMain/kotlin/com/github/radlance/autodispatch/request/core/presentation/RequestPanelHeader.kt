@@ -29,14 +29,15 @@ import autodispatch.composeapp.generated.resources.request_details
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun PanelHeader(
+fun RequestPanelHeader(
     requestNumber: String?,
     requestStatusId: Int,
     onSettingsClick: () -> Unit,
     cancelAssignment: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(Res.string.request_details),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),

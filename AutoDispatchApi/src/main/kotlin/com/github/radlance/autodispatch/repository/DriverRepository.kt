@@ -3,7 +3,6 @@ package com.github.radlance.autodispatch.repository
 import com.github.radlance.autodispatch.database.table.AssignmentTable
 import com.github.radlance.autodispatch.database.table.DriverStatusTable
 import com.github.radlance.autodispatch.database.table.DriverTable
-import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.Status

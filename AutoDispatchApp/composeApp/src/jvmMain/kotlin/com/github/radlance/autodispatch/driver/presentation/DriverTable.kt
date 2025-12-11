@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.vehicle
+import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
 import com.github.radlance.autodispatch.driver.domain.Driver
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
@@ -91,7 +92,7 @@ fun DriverTable(
                 }
                 cell {
                     Text(
-                        text = item.fullName,
+                        text = abbreviateName(item.fullName),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

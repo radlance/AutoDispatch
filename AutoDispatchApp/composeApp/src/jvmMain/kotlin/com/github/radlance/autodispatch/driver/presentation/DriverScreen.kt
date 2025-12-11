@@ -275,7 +275,13 @@ fun DriverScreen(
             ) {
                 val driver = selectedDriver
                 if (driver != null) {
-                    // TODO details
+                    DriverDetailsPanel(
+                        driver = driver,
+                        onClosePanel = { showDriverDetailsPanel = false },
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(350.dp)
+                    )
                     Box(
                         Modifier
                             .fillMaxHeight()
