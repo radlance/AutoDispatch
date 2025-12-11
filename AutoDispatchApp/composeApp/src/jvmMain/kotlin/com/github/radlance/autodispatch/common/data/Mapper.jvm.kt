@@ -115,10 +115,11 @@ private fun UserFilterDto.toUserFilter(): UserFilter {
 
 private fun DriverDto.toDriver(): Driver {
     return Driver(
+        id = id,
         fullName = fullName,
         phoneNumber = phoneNumber,
         status = status.toStatus(),
-        vehicle = vehicle.toVehicle(),
+        vehicle = vehicle?.toVehicle(),
         deliveryCount = deliveryCount
     )
 }

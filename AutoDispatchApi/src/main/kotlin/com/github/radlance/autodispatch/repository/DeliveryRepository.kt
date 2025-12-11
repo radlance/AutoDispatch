@@ -17,7 +17,7 @@ import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.Point
-import com.github.radlance.autodispatch.domain.request.RequestStatus
+import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
@@ -41,7 +41,7 @@ class DeliveryRepository {
     private fun mapDeliveryRow(row: ResultRow): Delivery = Delivery(
         id = row[RequestTable.id].value,
         requestNumber = row[RequestTable.requestNumber],
-        status = RequestStatus(
+        status = Status(
             id = row[RequestStatusTable.id].value,
             name = row[RequestStatusTable.name]
         ),
@@ -153,7 +153,7 @@ class DeliveryRepository {
 
         val delivery = DeliveryDetailed(
             id = row[RequestTable.id].value,
-            status = RequestStatus(
+            status = Status(
                 id = row[RequestStatusTable.id].value,
                 name = row[RequestStatusTable.name]
             ),

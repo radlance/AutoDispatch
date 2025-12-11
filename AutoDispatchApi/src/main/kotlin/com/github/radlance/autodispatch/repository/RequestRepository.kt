@@ -25,7 +25,7 @@ import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
-import com.github.radlance.autodispatch.domain.request.RequestStatus
+import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryStateException
@@ -124,7 +124,7 @@ class RequestRepository {
         return Request(
             id = row[RequestTable.id].value,
             requestNumber = row[RequestTable.requestNumber],
-            status = RequestStatus(
+            status = Status(
                 id = row[RequestStatusTable.id].value,
                 name = row[RequestStatusTable.name]
             ),

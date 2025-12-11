@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.di
 import com.github.radlance.autodispatch.repository.AuthRepository
 import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.repository.DocumentsRepository
+import com.github.radlance.autodispatch.repository.DriverRepository
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
 import com.github.radlance.autodispatch.security.hashing.HashingService
@@ -51,4 +52,9 @@ val deliveryModule
 val documentModule
     get() = module {
         singleOf(::DocumentsRepository)
+    }
+
+val driverModule
+    get() = module {
+        singleOf(::DriverRepository)
     }

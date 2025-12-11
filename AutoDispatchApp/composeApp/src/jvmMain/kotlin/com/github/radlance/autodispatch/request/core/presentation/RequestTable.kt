@@ -167,7 +167,7 @@ fun RequestTable(
 }
 
 @Composable
-fun DocumentsStatusWithColor(status: String?) {
+private fun DocumentsStatusWithColor(status: String?) {
     val (bgColor, textColor, icon) = when (status) {
         "На проверке" -> Triple(
             MaterialTheme.colorScheme.secondaryContainer,

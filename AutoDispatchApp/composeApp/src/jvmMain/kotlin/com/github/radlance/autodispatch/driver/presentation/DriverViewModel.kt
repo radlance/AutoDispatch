@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class DriverViewModel(
     private val repository: DriverRepository
@@ -96,5 +97,30 @@ class DriverViewModel(
         } else {
             triggerDriverLoad()
         }
+    }
+
+    fun onPageIndexChanged(pageIndex: Int) {
+        val safeIndex = max(0, pageIndex)
+        driverScreenStateMutable.update {
+            it.copy(pageIndex = safeIndex)
+        }
+        triggerDriverLoad()
+    }
+
+    fun onPageSizeChanged(newPageSize: Int) {
+        val state = driverScreenStateMutable.value
+        val oldPageSize = state.pageSize
+        val oldPageIndex = state.pageIndex
+        val absoluteOffset = oldPageIndex * oldPageSize
+        val newPageIndex = absoluteOffset / newPageSize
+
+        driverScreenStateMutable.update {
+            it.copy(
+                pageSize = newPageSize,
+                pageIndex = newPageIndex
+            )
+        }
+
+        triggerDriverLoad()
     }
 }

@@ -1,9 +1,9 @@
-package com.github.radlance.autodispatch.domain.request
+package com.github.radlance.autodispatch.domain.common
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RequestStatus(
+data class Status(
     val id: Int,
     val name: String
 )

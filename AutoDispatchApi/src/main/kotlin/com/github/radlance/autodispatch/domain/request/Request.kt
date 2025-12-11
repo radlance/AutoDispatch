@@ -1,12 +1,13 @@
 package com.github.radlance.autodispatch.domain.request
 
+import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Request(
     val id: Int,
-    val status: RequestStatus?,
+    val status: Status?,
     val origin: String?,
     val destination: String?,
     val transportationDescription: String?,

@@ -1,7 +1,7 @@
-package com.github.radlance.autodispatch.driver.domain
+package com.github.radlance.autodispatch.domain.driver
 
-import com.github.radlance.autodispatch.common.domain.Status
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.domain.common.Status
+import com.github.radlance.autodispatch.domain.request.Vehicle
 import kotlinx.serialization.Serializable
 
 @Serializable
