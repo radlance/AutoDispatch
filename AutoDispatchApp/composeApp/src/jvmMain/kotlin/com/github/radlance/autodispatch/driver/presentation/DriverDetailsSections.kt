@@ -4,19 +4,24 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -82,25 +87,53 @@ fun DriverDetailsSections(
         }
         Spacer(modifier = Modifier.height(SECTION_GAP))
 
-        Section(header = "Закреплённый автомобиль") {
+        Section(header = "Автомобиль") {
             driver.vehicle?.let { vehicle ->
                 LabeledValue(label = "Модель", value = vehicle.model)
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 LabeledValue(label = "Гос. номер", value = vehicle.licensePlate)
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 LabeledValue(label = "Грузоподъёмность", value = "${vehicle.payloadCapacity} кг")
-            } ?: Text(
-                text = "Аввтомобиль не закреплён",
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.sp
-            )
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+                OutlinedButton(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
+                ) {
+                    Text(text = "Переназначить автомобиль")
+                }
+            } ?: run {
+                Text(
+                    text = "Аввтомобиль не закреплён",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+                OutlinedButton(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
+                ) {
+                    Text(text = "Закрепить автомобиль")
+                }
+            }
         }
         HorizontalDivider(
             modifier = Modifier.padding(top = SECTION_GAP, bottom = SECTION_GAP, end = 6.dp)
         )
         Section(header = "Статистика") {
-            LabeledValue(label = "Доставок выполнено", value = driver.deliveryCount.toString())
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Доставок выполнено: ${driver.deliveryCount}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(SECTION_GAP))
 
+        Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth().padding(end = 6.dp)) {
+            Icon(imageVector = Icons.Outlined.History, contentDescription = null)
+            Spacer(Modifier.width(12.dp))
+            Text(text = "История доставок")
         }
     }
 }
