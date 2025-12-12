@@ -70,7 +70,7 @@ class RequestRepository {
             .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
             .join(UserTable, JoinType.LEFT, AssignmentTable.driverId, UserTable.id)
             .join(DriverTable, JoinType.LEFT, UserTable.id, DriverTable.userId)
-            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
+            .join(VehicleTable, JoinType.LEFT, AssignmentTable.vehicleId, VehicleTable.id)
 
     private fun selectColumns(
         originCity: Alias<CityTable>,
@@ -215,7 +215,7 @@ class RequestRepository {
         if (cargoTypeIds.isNotEmpty()) conditions += RequestTable.cargoTypeId inList cargoTypeIds
         if (statusIds.isNotEmpty()) conditions += RequestTable.statusId inList statusIds
         if (driverIds.isNotEmpty()) conditions += AssignmentTable.driverId inList driverIds
-        if (vehicleIds.isNotEmpty()) conditions += DriverTable.vehicleId inList vehicleIds
+        if (vehicleIds.isNotEmpty()) conditions += AssignmentTable.vehicleId inList vehicleIds
         if (!searchQuery.isNullOrBlank()) conditions += buildSearchConditions(searchQuery, originCity, destCity)
 
         val where = AndOp(conditions.ifEmpty { listOf(Op.TRUE) })
@@ -415,9 +415,17 @@ class RequestRepository {
 
         if (exists != null) throw MissingCredentialException("Заявка уже назначена водителю")
 
+        val currentVehicleId = DriverTable
+            .select(DriverTable.vehicleId)
+            .where { DriverTable.userId eq driverId }
+            .singleOrNull()
+            ?.get(DriverTable.vehicleId)
+            ?: throw DeliveryStateException("У водителя не выбран автомобиль, назначение невозможно")
+
         AssignmentTable.insert {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)
+            it[this.vehicleId] = currentVehicleId
         }
 
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
@@ -434,9 +442,17 @@ class RequestRepository {
                         "Она уже находится в пути, завершена или отменена."
             )
         }
+        val currentVehicleId = DriverTable
+            .select(DriverTable.vehicleId)
+            .where { DriverTable.userId eq driverId }
+            .singleOrNull()
+            ?.get(DriverTable.vehicleId)
+            ?: throw DeliveryStateException("У водителя не выбран автомобиль")
+
         AssignmentTable.upsert(AssignmentTable.requestId) {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)
+            it[this.vehicleId] = currentVehicleId
         }
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
     }

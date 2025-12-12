@@ -5,11 +5,11 @@ import com.github.radlance.autodispatch.database.table.CargoTypeTable
 import com.github.radlance.autodispatch.database.table.CityTable
 import com.github.radlance.autodispatch.database.table.CustomerTable
 import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
-import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
@@ -17,7 +17,6 @@ import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.Point
-import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
@@ -82,8 +81,7 @@ class DeliveryRepository {
             .join(dispatcherUser, JoinType.LEFT, RequestTable.createdById, dispatcherUser[UserTable.id])
             .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
             .join(UserTable, JoinType.LEFT, AssignmentTable.driverId, UserTable.id)
-            .join(DriverTable, JoinType.LEFT, UserTable.id, DriverTable.userId)
-            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
+            .join(VehicleTable, JoinType.LEFT, AssignmentTable.vehicleId, VehicleTable.id)
 
         val row = query
             .select(
