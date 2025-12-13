@@ -9,23 +9,21 @@ import com.github.radlance.autodispatch.database.table.CargoTypeTable
 import com.github.radlance.autodispatch.database.table.CityTable
 import com.github.radlance.autodispatch.database.table.CustomerTable
 import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
-import com.github.radlance.autodispatch.database.table.DriverStatusTable
 import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
-import com.github.radlance.autodispatch.domain.request.DriverStats
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
-import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryStateException
@@ -34,7 +32,6 @@ import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Alias
 import org.jetbrains.exposed.sql.AndOp
-import org.jetbrains.exposed.sql.Case
 import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Join
@@ -43,18 +40,14 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.intLiteral
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
-import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
-import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
 
@@ -350,61 +343,6 @@ class RequestRepository {
         AssignmentTable.update({ AssignmentTable.requestId eq requestId }) {
             it[completedAt] = CurrentTimestampWithTimeZone
         }
-    }
-
-    suspend fun requestAssignment(): List<DriverStats> = loggedTransaction {
-        val requestCount = Case()
-            .When(RequestTable.statusId inList listOf(1, 2, 3), longLiteral(1))
-            .Else(longLiteral(0))
-            .sum()
-
-        val statusOrder = Case()
-            .When(DriverStatusTable.id eq 1, intLiteral(1))
-            .When(DriverStatusTable.id eq 2, intLiteral(2))
-            .When(DriverStatusTable.id eq 3, intLiteral(3))
-            .Else(intLiteral(4))
-
-        DriverTable
-            .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
-            .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
-            .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
-            .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
-            .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
-            .select(
-                UserTable.id,
-                UserTable.fullName,
-                UserTable.phoneNumber,
-                DriverStatusTable.id,
-                DriverStatusTable.name,
-                VehicleTable.model,
-                VehicleTable.licensePlate,
-                VehicleTable.payloadCapacity,
-                requestCount
-            )
-            .groupBy(
-                UserTable.id,
-                UserTable.fullName,
-                UserTable.phoneNumber,
-                DriverStatusTable.id,
-                DriverStatusTable.name,
-                VehicleTable.model,
-                VehicleTable.licensePlate,
-                VehicleTable.payloadCapacity
-            )
-            .orderBy(statusOrder, SortOrder.ASC)
-            .orderBy(UserTable.fullName, SortOrder.ASC)
-            .map { row ->
-                DriverStats(
-                    driverId = row[UserTable.id].value,
-                    driverName = row[UserTable.fullName],
-                    phoneNumber = row[UserTable.phoneNumber],
-                    status = row[DriverStatusTable.name],
-                    vehicleModel = row[VehicleTable.model],
-                    vehicleLicensePlate = row[VehicleTable.licensePlate],
-                    vehiclePayloadCapacity = row[VehicleTable.payloadCapacity],
-                    totalAssignedRequests = row[requestCount] ?: 0L
-                )
-            }
     }
 
     suspend fun assignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {

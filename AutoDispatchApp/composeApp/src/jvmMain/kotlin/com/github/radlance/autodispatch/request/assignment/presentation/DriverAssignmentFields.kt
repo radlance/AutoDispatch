@@ -32,8 +32,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun DriverAssignmentFields(
     driversStats: List<DriverStats>,
-    fieldsState: AssignmentFieldsState,
-    onEvent: (AssignmentEvent) -> Unit,
+    fieldsState: DriverAssignmentFieldsState,
+    onEvent: (DriverAssignmentEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -46,7 +46,7 @@ fun DriverAssignmentFields(
             filterOptions = driversStats.map { it.driverName },
             onOptionSelected = { option ->
                 onEvent(
-                    AssignmentEvent.ChangeDriverStats(driversStats.first { option == it.driverName })
+                    DriverAssignmentEvent.ChangeDriverStats(driversStats.first { option == it.driverName })
                 )
             },
             hint = stringResource(Res.string.choice_driver),
@@ -90,7 +90,7 @@ fun DriverAssignmentFields(
                     )
                     Spacer(Modifier.width(12.dp))
                     currentOption.vehicleModel?.let {
-                        DriverStatusWithColor(status = currentOption.status, fontSize = 12.sp)
+                        DriverStatusWithColor(status = currentOption.driverStatus, fontSize = 12.sp)
                     } ?: Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))

@@ -1,10 +1,10 @@
-package com.github.radlance.autodispatch.driver.presentation
+package com.github.radlance.autodispatch.driver.core.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
-import com.github.radlance.autodispatch.driver.domain.DriverRepository
+import com.github.radlance.autodispatch.driver.core.domain.DriverRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +26,11 @@ class DriverViewModel(
         triggerDriverLoad()
     }
 
+    fun onDriverChanged() {
+        if (driverScreenStateMutable.value.driversResultState is FetchResultUiState.Success) {
+            triggerDriverLoad()
+        }
+    }
     fun triggerDriverLoad() {
         val state = driverScreenStateMutable.value
         val searchQuery = state.query.takeIf { it.isNotBlank() }

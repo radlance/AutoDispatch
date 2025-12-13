@@ -6,6 +6,7 @@ import com.github.radlance.autodispatch.repository.DocumentsRepository
 import com.github.radlance.autodispatch.repository.DriverRepository
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
+import com.github.radlance.autodispatch.repository.VehicleRepository
 import com.github.radlance.autodispatch.security.hashing.HashingService
 import com.github.radlance.autodispatch.security.hashing.SHA256HashingService
 import com.github.radlance.autodispatch.security.token.TokenConfig
@@ -57,4 +58,9 @@ val documentModule
 val driverModule
     get() = module {
         singleOf(::DriverRepository)
+    }
+
+val vehicleModule
+    get() = module {
+        singleOf(::VehicleRepository)
     }

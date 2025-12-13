@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.driver.data.DriverDto
-import com.github.radlance.autodispatch.driver.domain.Driver
+import com.github.radlance.autodispatch.driver.core.data.DriverDto
+import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
@@ -64,7 +64,7 @@ fun DriverStatsDto.toDriverStats(): DriverStats {
         driverId = driverId,
         driverName = driverName,
         phoneNumber = phoneNumber,
-        status = status,
+        driverStatus = driverStatus,
         vehicleModel = vehicleModel,
         vehicleLicensePlate = vehicleLicensePlate,
         vehiclePayloadCapacity = vehiclePayloadCapacity,

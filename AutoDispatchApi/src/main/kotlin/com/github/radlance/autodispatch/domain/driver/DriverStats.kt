@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.domain.request
+package com.github.radlance.autodispatch.domain.driver
 
 import kotlinx.serialization.Serializable
 
@@ -7,7 +7,7 @@ data class DriverStats(
     val driverId: Int,
     val driverName: String,
     val phoneNumber: String?,
-    val status: String,
+    val driverStatus: String,
     val vehicleModel: String?,
     val vehicleLicensePlate: String?,
     val vehiclePayloadCapacity: Int?,

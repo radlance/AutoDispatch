@@ -15,6 +15,7 @@ import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.pointSelectionModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
+import com.github.radlance.autodispatch.di.vehicleAssignmentModule
 import org.koin.core.context.startKoin
 import java.awt.Dimension
 
@@ -31,7 +32,8 @@ fun main() = application {
             changeRequestModule,
             driverAssignmentModule,
             pointSelectionModule,
-            driverModule
+            driverModule,
+            vehicleAssignmentModule
         )
     }
     Window(

@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.presentation
+package com.github.radlance.autodispatch.driver.core.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
@@ -43,7 +43,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.driver.domain.Driver
+import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.presentation.BottomPagingBar
@@ -267,7 +267,8 @@ fun DriverScreen(
                 }
             )
         }
-        (driverUiState.driversResultState as? FetchResultUiState.Success)?.let {
+        val state = driverUiState.driversResultState
+        if (state is FetchResultUiState.Success || state is FetchResultUiState.Loading) {
             AnimatedVisibility(
                 visible = showDriverDetailsPanel,
                 enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
@@ -278,6 +279,7 @@ fun DriverScreen(
                     DriverDetailsPanel(
                         driver = driver,
                         onClosePanel = { showDriverDetailsPanel = false },
+                        onSuccessAssignDriver = viewModel::onDriverChanged,
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(350.dp)
@@ -296,6 +298,5 @@ fun DriverScreen(
                 }
             }
         }
-
     }
 }

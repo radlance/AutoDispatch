@@ -1,6 +1,6 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.driver.data.DriverDto
+import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
+import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -47,11 +48,11 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun cancelAssignment(requestId: Int)
 
-    suspend fun requestAssignment(): List<DriverStatsDto>
+    suspend fun driverAssignments(): List<DriverStatsDto>
 
-    suspend fun assignRequestToDriver(requestId: Int, driverId: Int)
+    suspend fun assignDriverToRequest(requestId: Int, driverId: Int)
 
-    suspend fun reassignRequestToDriver(requestId: Int, driverId: Int)
+    suspend fun reassignDriverToRequest(requestId: Int, driverId: Int)
 
     suspend fun coords(): CoordsDto
 
@@ -66,6 +67,10 @@ interface ApiServiceJvm : ApiService {
         pageSize: Int,
         searchQuery: String?
     ): PaginatedResultDto<DriverDto>
+
+    suspend fun vehicleAssignments(): List<VehicleDto>
+
+    suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -143,17 +148,17 @@ internal class KtorApiServiceJvm(
         httpClient.put("requests/${requestId}/assignment/cancel")
     }
 
-    override suspend fun requestAssignment(): List<DriverStatsDto> {
-        return httpClient.get("requests/request-assignment").body()
+    override suspend fun driverAssignments(): List<DriverStatsDto> {
+        return httpClient.get("drivers/assignments").body()
     }
 
-    override suspend fun assignRequestToDriver(requestId: Int, driverId: Int) {
+    override suspend fun assignDriverToRequest(requestId: Int, driverId: Int) {
         httpClient.post("requests/${requestId}/assign") {
             setBody(AssignRequestDto(driverId))
         }
     }
 
-    override suspend fun reassignRequestToDriver(requestId: Int, driverId: Int) {
+    override suspend fun reassignDriverToRequest(requestId: Int, driverId: Int) {
         httpClient.put("requests/${requestId}/assign") {
             setBody(AssignRequestDto(driverId))
         }
@@ -201,5 +206,15 @@ internal class KtorApiServiceJvm(
                 searchQuery?.let { parameters.append("search", it) }
             }
         }.body()
+    }
+
+    override suspend fun vehicleAssignments(): List<VehicleDto> {
+        return httpClient.get("vehicles/unassigned").body()
+    }
+
+    override suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int) {
+        httpClient.put("vehicles/${vehicleId}/assign") {
+            setBody(AssignRequestDto(driverId))
+        }
     }
 }

@@ -5,39 +5,39 @@ import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
-import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
+import com.github.radlance.autodispatch.request.assignment.domain.DriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class AssignmentViewModel(
-    private val repository: AssignmentRepository
-) : BaseViewModel(), EventViewModel<AssignmentEvent> {
+class DriverAssignmentViewModel(
+    private val repository: DriverAssignmentRepository
+) : BaseViewModel(), EventViewModel<DriverAssignmentEvent> {
 
-    private val requestAssignmentStateMutable =
+    private val driverAssignmentsStateMutable =
         MutableStateFlow<FetchResultUiState<List<DriverStats>, String>>(FetchResultUiState.Idle)
-    val requestAssignmentState = requestAssignmentStateMutable.asStateFlow()
+    val driverAssignmentsState = driverAssignmentsStateMutable.asStateFlow()
 
     private val assignRequestStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, DeliveryError>>(FetchResultUiState.Idle)
     val assignRequestState = assignRequestStateMutable.asStateFlow()
 
-    private val assignmentFieldsStateMutable = MutableStateFlow(AssignmentFieldsState())
-    val assignmentFieldsState = assignmentFieldsStateMutable.asStateFlow()
+    private val driverAssignmentFieldsStateMutable = MutableStateFlow(DriverAssignmentFieldsState())
+    val driverAssignmentFieldsState = driverAssignmentFieldsStateMutable.asStateFlow()
 
-    fun loadRequestAssignment() {
-        requestAssignmentStateMutable.value = FetchResultUiState.Loading
-        handle(background = repository::requestAssignment) {
-            requestAssignmentStateMutable.value = it.toUiState()
+    fun loadDriverAssignments() {
+        driverAssignmentsStateMutable.value = FetchResultUiState.Loading
+        handle(background = repository::driverAssignments) {
+            driverAssignmentsStateMutable.value = it.toUiState()
         }
     }
 
-    override fun reduce(event: AssignmentEvent) {
-        val action = object : AssignmentAction {
+    override fun reduce(event: DriverAssignmentEvent) {
+        val action = object : DriverAssignmentAction {
 
             override fun changeDriversStats(stats: DriverStats) {
-                assignmentFieldsStateMutable.update { state ->
+                driverAssignmentFieldsStateMutable.update { state ->
                     state.copy(selectedDriverStats = stats)
                 }
             }
@@ -47,9 +47,9 @@ class AssignmentViewModel(
                 handle(
                     background = {
                         if (isReassign) {
-                            repository.reassignRequestToDriver(requestId, driverId)
+                            repository.reassignDriverToRequest(requestId, driverId)
                         } else {
-                            repository.assignRequestToDriver(requestId, driverId)
+                            repository.assignDriverToRequest(requestId, driverId)
                         }
                     }
                 ) {
@@ -58,7 +58,7 @@ class AssignmentViewModel(
             }
 
             override fun resetStates() {
-                assignmentFieldsStateMutable.update { state ->
+                driverAssignmentFieldsStateMutable.update { state ->
                     state.copy(selectedDriverStats = null)
                 }
                 assignRequestStateMutable.value = FetchResultUiState.Idle

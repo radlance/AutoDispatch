@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.domain
+package com.github.radlance.autodispatch.driver.core.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.request.core.domain.PaginatedResult

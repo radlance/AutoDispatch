@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.assignment.presentation
+package com.github.radlance.autodispatch.driver.assignment.presentation
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
@@ -40,62 +39,64 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.assign
+import autodispatch.composeapp.generated.resources.attach
 import autodispatch.composeapp.generated.resources.cancel
-import autodispatch.composeapp.generated.resources.driver_assignment
 import autodispatch.composeapp.generated.resources.loading_error
 import autodispatch.composeapp.generated.resources.reassign
 import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.common.utils.formatKg
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
+import com.github.radlance.autodispatch.driver.core.domain.Driver
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DriverAssignmentDialog(
+fun VehicleAssignmentDialog(
     onDismiss: () -> Unit,
-    request: Request,
+    driver: Driver,
     onSuccessAssignDriver: () -> Unit,
-    onStateReassignError: (String) -> Unit,
     modifier: Modifier = Modifier,
     isReassign: Boolean,
-    assignedDriverId: Int?,
-    viewModel: DriverAssignmentViewModel = koinViewModel()
+    assignedVehicleId: Int?,
+    viewModel: VehicleAssignmentViewModel = koinViewModel()
 ) {
-    val requestAssignmentState by viewModel.driverAssignmentsState.collectAsState()
-    val assignRequestState by viewModel.assignRequestState.collectAsState()
-    val fieldsState by viewModel.driverAssignmentFieldsState.collectAsState()
+    val vehicleAssignmentsState by viewModel.vehicleAssignmentsState.collectAsState()
+    val assignDriverState by viewModel.assignDriverState.collectAsState()
+    val assignRequestState by viewModel.assignDriverState.collectAsState()
+    val fieldsState by viewModel.vehicleAssignmentFieldsState.collectAsState()
     val isLoading = assignRequestState is FetchResultUiState.Loading
-    val error = (assignRequestState as? FetchResultUiState.Error<DeliveryError>)?.error
+    val error = (assignRequestState as? FetchResultUiState.Error<String>)?.error
 
     val onDismissAction = {
         onDismiss()
-        viewModel.reduce(DriverAssignmentEvent.ResetStates)
+        viewModel.reduce(VehicleAssignmentEvent.ResetStates)
     }
 
     LaunchedEffect(Unit) {
-        viewModel.loadDriverAssignments()
+        viewModel.loadVehicleAssignments()
     }
 
-    LaunchedEffect(assignRequestState) {
-        if (assignRequestState is FetchResultUiState.Success) {
+    LaunchedEffect(assignDriverState) {
+        if (assignDriverState is FetchResultUiState.Success) {
             onDismissAction()
             onSuccessAssignDriver()
         }
     }
+
+    val isDriverSelected = fieldsState.selectedVehicle != null
+    val hasDriverChanged = fieldsState.selectedVehicle?.id != assignedVehicleId
+    val isButtonEnabled =
+        isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && (!isReassign || driver.status.id == 1)
 
     AlertDialog(
         onDismissRequest = {
             if (!isLoading) onDismissAction()
         },
         title = {
-            Text(text = stringResource(Res.string.driver_assignment))
+            Text(text = "Назначение автомобиля")
         },
         text = {
-            Box(Modifier.fillMaxWidth()) {
 
+            Box(Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -111,34 +112,42 @@ fun DriverAssignmentDialog(
                                 contentDescription = "Error",
                                 tint = MaterialTheme.colorScheme.error
                             )
-                            if (error is DeliveryError.BaseError) {
-                                Text(
-                                    text = error.message,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    textAlign = TextAlign.Center
-                                )
-                            } else {
-                                viewModel.reduce(DriverAssignmentEvent.ResetStates)
-                                onStateReassignError(error.message)
-                            }
+
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                     Card {
                         Column(modifier = Modifier.fillMaxWidth().padding(18.dp)) {
-                            Text("Заявка ${request.requestNumber}", modifier = Modifier.alpha(0.7f))
+                            Text("Водитель", modifier = Modifier.alpha(0.7f))
                             Spacer(Modifier.height(12.dp))
-                            Text("${request.origin} → ${request.destination}", fontSize = 16.sp)
+                            Text(driver.fullName, fontSize = 16.sp)
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                "${request.cargo.type.name} • ${request.cargo.weight.formatKg()} • ${request.createdAt.date}",
+                                driver.phoneNumber,
                                 modifier = Modifier.alpha(0.7f)
                             )
                         }
                     }
                     Spacer(Modifier.height(24.dp))
-
-                    requestAssignmentState.Reduce(
+                    driver.vehicle?.let {
+                        Card {
+                            Column(modifier = Modifier.fillMaxWidth().padding(18.dp)) {
+                                Text("Текущий автомобиль", modifier = Modifier.alpha(0.7f))
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    "${driver.vehicle.model} • ${driver.vehicle.licensePlate}",
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(24.dp))
+                    }
+                    vehicleAssignmentsState.Reduce(
                         onLoading = {
                             Box(
                                 modifier = Modifier.fillMaxWidth().height(86.dp),
@@ -147,20 +156,9 @@ fun DriverAssignmentDialog(
                                 CircularProgressIndicator()
                             }
                         },
-                        onSuccess = { stats ->
-                            LaunchedEffect(assignedDriverId) {
-                                if (isReassign) {
-                                    viewModel.reduce(
-                                        DriverAssignmentEvent.ChangeDriverStats(
-                                            stats.first {
-                                                it.driverId == assignedDriverId!!
-                                            }
-                                        )
-                                    )
-                                }
-                            }
-                            DriverAssignmentFields(
-                                driversStats = stats,
+                        onSuccess = { vehicles ->
+                            VehicleAssignmentFields(
+                                vehicles = vehicles,
                                 fieldsState = fieldsState,
                                 onEvent = viewModel::reduce
                             )
@@ -169,7 +167,9 @@ fun DriverAssignmentDialog(
                             OutlinedCard(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                 colors = CardDefaults.outlinedCardColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
+                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(
+                                        alpha = 0.2f
+                                    ),
                                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                                 ),
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
@@ -191,12 +191,18 @@ fun DriverAssignmentDialog(
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold
                                         )
-                                        Text(text = error, style = MaterialTheme.typography.bodyMedium)
+                                        Text(
+                                            text = error,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
                                     }
                                     Spacer(Modifier.width(8.dp))
                                     Button(
-                                        onClick = viewModel::loadDriverAssignments,
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        onClick = viewModel::loadVehicleAssignments,
+                                        contentPadding = PaddingValues(
+                                            horizontal = 12.dp,
+                                            vertical = 6.dp
+                                        )
                                     ) {
                                         Text(stringResource(Res.string.retry))
                                     }
@@ -205,7 +211,6 @@ fun DriverAssignmentDialog(
                         }
                     )
                 }
-
                 if (isLoading) {
                     Box(
                         modifier = Modifier
@@ -219,58 +224,32 @@ fun DriverAssignmentDialog(
                 }
             }
         },
+
         dismissButton = {
-            val isDriverSelected = fieldsState.selectedDriverStats != null
-            val hasDriverChanged = fieldsState.selectedDriverStats?.driverId != assignedDriverId
-            val vehicleCapacity = fieldsState.selectedDriverStats?.vehiclePayloadCapacity
-            val isOverweight = vehicleCapacity != null &&
-                    request.cargo.weight > vehicleCapacity
-            val isButtonEnabled =
-                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && fieldsState.selectedDriverStats?.vehicleModel != null && vehicleCapacity != null && !isOverweight
-
-
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                fieldsState.selectedDriverStats?.vehiclePayloadCapacity?.let {
-                    if (request.cargo.weight > it) {
-                        Icon(
-                            imageVector = Icons.Outlined.WarningAmber,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = "Перегруз",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-                Spacer(Modifier.weight(1f))
-
-                TextButton(onClick = onDismissAction, enabled = !isLoading) {
-                    Text(text = stringResource(Res.string.cancel))
-                }
-                Spacer(Modifier.width(12.dp))
-                Button(
-                    onClick = {
-                        viewModel.reduce(
-                            DriverAssignmentEvent.AssignRequestClick(
-                                requestId = request.id,
-                                driverId = fieldsState.selectedDriverStats!!.driverId,
-                                isReassign = isReassign
-                            )
-                        )
-                    },
-                    enabled = isButtonEnabled
-                ) {
-                    val text = if (isReassign) {
-                        Res.string.reassign
-                    } else Res.string.assign
-                    Text(text = stringResource(text))
-                }
+            TextButton(onClick = onDismissAction, enabled = !isLoading) {
+                Text(text = stringResource(Res.string.cancel))
             }
         },
-        confirmButton = {},
+
+        confirmButton = {
+            Button(
+                onClick = {
+                    viewModel.reduce(
+                        VehicleAssignmentEvent.AssignVehicleClick(
+                            driverId = driver.id,
+                            vehicleId = fieldsState.selectedVehicle!!.id,
+                            isReassign = isReassign
+                        )
+                    )
+                },
+                enabled = isButtonEnabled
+            ) {
+                val text = if (isReassign) {
+                    Res.string.reassign
+                } else Res.string.attach
+                Text(text = stringResource(text))
+            }
+        },
         modifier = modifier
     )
 }

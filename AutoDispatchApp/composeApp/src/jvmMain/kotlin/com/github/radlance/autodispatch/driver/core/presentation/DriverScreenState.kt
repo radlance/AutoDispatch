@@ -1,7 +1,7 @@
-package com.github.radlance.autodispatch.driver.presentation
+package com.github.radlance.autodispatch.driver.core.presentation
 
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.driver.domain.Driver
+import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
 
 data class DriverScreenState(

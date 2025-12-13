@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.data
+package com.github.radlance.autodispatch.driver.core.data
 
 import com.github.radlance.autodispatch.common.data.StatusDto
 import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto

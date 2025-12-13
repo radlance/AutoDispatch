@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.presentation
+package com.github.radlance.autodispatch.driver.core.presentation
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

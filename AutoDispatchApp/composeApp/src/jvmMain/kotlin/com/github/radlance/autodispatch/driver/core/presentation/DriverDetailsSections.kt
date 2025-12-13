@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.presentation
+package com.github.radlance.autodispatch.driver.core.presentation
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -35,7 +35,7 @@ import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LabeledValue
 import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
 import com.github.radlance.autodispatch.common.presentation.Section
-import com.github.radlance.autodispatch.driver.domain.Driver
+import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 
 // TODO сделать clickable или selectable данные в деталях
@@ -43,6 +43,7 @@ import com.github.radlance.autodispatch.request.assignment.presentation.DriverSt
 fun DriverDetailsSections(
     scrollState: ScrollState,
     driver: Driver,
+    onShowVehicleAssignmentDialog: (reassign: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -94,12 +95,14 @@ fun DriverDetailsSections(
                 LabeledValue(label = "Гос. номер", value = vehicle.licensePlate)
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 LabeledValue(label = "Грузоподъёмность", value = "${vehicle.payloadCapacity} кг")
-                Spacer(modifier = Modifier.height(ITEM_GAP))
-                OutlinedButton(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
-                ) {
-                    Text(text = "Переназначить автомобиль")
+                if (driver.status.id == 1) {
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
+                    OutlinedButton(
+                        onClick = { onShowVehicleAssignmentDialog(true) },
+                        modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
+                    ) {
+                        Text(text = "Переназначить автомобиль")
+                    }
                 }
             } ?: run {
                 Text(
@@ -109,7 +112,7 @@ fun DriverDetailsSections(
                 )
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { onShowVehicleAssignmentDialog(false) },
                     modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
                 ) {
                     Text(text = "Закрепить автомобиль")

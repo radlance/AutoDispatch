@@ -100,11 +100,6 @@ fun Route.requests(repository: RequestRepository) {
                 call.respond(HttpStatusCode.OK)
             }
 
-            get("/request-assignment") {
-                val assignment = repository.requestAssignment()
-                call.respond(HttpStatusCode.OK, assignment)
-            }
-
             post("/{id}/assign") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid request ID")

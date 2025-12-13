@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.toDriverStats
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
-import com.github.radlance.autodispatch.request.assignment.domain.AssignmentRepository
+import com.github.radlance.autodispatch.request.assignment.domain.DriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ClientRequestException
@@ -13,22 +13,22 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.io.IOException
 
-class RemoteAssignmentRepository(
+class RemoteDriverAssignmentRepository(
     private val apiService: ApiServiceJvm,
     private val handleRequest: HandleRequest
-) : AssignmentRepository {
+) : DriverAssignmentRepository {
 
-    override suspend fun requestAssignment(): FetchResult<List<DriverStats>, String> =
+    override suspend fun driverAssignments(): FetchResult<List<DriverStats>, String> =
         handleRequest.handle {
-            apiService.requestAssignment().map { it.toDriverStats() }
+            apiService.driverAssignments().map { it.toDriverStats() }
         }
 
-    override suspend fun assignRequestToDriver(
+    override suspend fun assignDriverToRequest(
         requestId: Int,
         driverId: Int
     ): FetchResult<Unit, DeliveryError> {
         return try {
-            apiService.assignRequestToDriver(requestId, driverId)
+            apiService.assignDriverToRequest(requestId, driverId)
             FetchResult.Success(Unit)
         } catch (e: ClientRequestException) {
 
@@ -43,12 +43,12 @@ class RemoteAssignmentRepository(
         }
     }
 
-    override suspend fun reassignRequestToDriver(
+    override suspend fun reassignDriverToRequest(
         requestId: Int,
         driverId: Int
     ): FetchResult<Unit, DeliveryError> {
         return try {
-            apiService.reassignRequestToDriver(requestId, driverId)
+            apiService.reassignDriverToRequest(requestId, driverId)
             FetchResult.Success(Unit)
         } catch (e: ClientRequestException) {
             val message = e.response.bodyAsText()

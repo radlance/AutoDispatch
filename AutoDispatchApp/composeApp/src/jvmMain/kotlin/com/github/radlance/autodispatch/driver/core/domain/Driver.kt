@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.domain
+package com.github.radlance.autodispatch.driver.core.domain
 
 import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle

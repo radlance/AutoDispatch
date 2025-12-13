@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.presentation
+package com.github.radlance.autodispatch.driver.core.presentation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
-import com.github.radlance.autodispatch.driver.domain.Driver
+import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
 import com.seanproctor.datatable.DataColumn

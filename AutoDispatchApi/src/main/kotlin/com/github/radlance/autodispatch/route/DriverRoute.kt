@@ -1,12 +1,10 @@
 package com.github.radlance.autodispatch.route
 
 import com.github.radlance.autodispatch.repository.DriverRepository
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.authenticate
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.get
-import io.ktor.server.routing.route
+import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 fun Route.driver(repository: DriverRepository) {
     authenticate {
@@ -25,6 +23,11 @@ fun Route.driver(repository: DriverRepository) {
                 )
 
                 call.respond(HttpStatusCode.OK, paginatedRequests)
+            }
+
+            get("/assignments") {
+                val stats = repository.driverStats()
+                call.respond(HttpStatusCode.OK, stats)
             }
         }
     }

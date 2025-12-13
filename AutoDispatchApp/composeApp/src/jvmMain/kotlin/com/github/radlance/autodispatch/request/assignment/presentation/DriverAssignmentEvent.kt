@@ -3,34 +3,34 @@ package com.github.radlance.autodispatch.request.assignment.presentation
 import com.github.radlance.autodispatch.common.presentation.Event
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 
-interface AssignmentEvent : Event {
+interface DriverAssignmentEvent : Event {
 
-    fun apply(action: AssignmentAction)
+    fun apply(action: DriverAssignmentAction)
 
-    class ChangeDriverStats(private val driverStats: DriverStats) : AssignmentEvent {
+    class ChangeDriverStats(private val driverStats: DriverStats) : DriverAssignmentEvent {
 
-        override fun apply(action: AssignmentAction) {
+        override fun apply(action: DriverAssignmentAction) {
             action.changeDriversStats(driverStats)
         }
     }
 
     class AssignRequestClick(private val requestId: Int, private val driverId: Int, private  val isReassign: Boolean) :
-        AssignmentEvent {
+        DriverAssignmentEvent {
 
-        override fun apply(action: AssignmentAction) {
+        override fun apply(action: DriverAssignmentAction) {
             action.assignRequest(requestId, driverId, isReassign)
         }
     }
 
-    object ResetStates : AssignmentEvent {
+    object ResetStates : DriverAssignmentEvent {
 
-        override fun apply(action: AssignmentAction) {
+        override fun apply(action: DriverAssignmentAction) {
             action.resetStates()
         }
     }
 }
 
-interface AssignmentAction {
+interface DriverAssignmentAction {
 
     fun changeDriversStats(stats: DriverStats)
 
