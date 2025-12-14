@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.delivery.core.presentation
 
+import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
@@ -13,14 +14,16 @@ class DeliveryViewModel(
 ) : BaseViewModel() {
 
     private val deliveriesStateMutable =
-        MutableStateFlow<FetchResultUiState<List<Delivery>, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<ListPaginatedResult<Delivery>, String>>(
+            FetchResultUiState.Idle
+        )
     val deliveriesState = deliveriesStateMutable.onStart {
         fetchDeliveries()
     }.stateInViewModel(initialValue = deliveriesStateMutable.value)
 
     fun fetchDeliveries() {
         deliveriesStateMutable.value = FetchResultUiState.Loading
-        handle(background = repository::deliveries) {
+        handle(background = { repository.deliveries(1, 5) }) {
             deliveriesStateMutable.value = it.toUiState()
         }
     }

@@ -12,17 +12,17 @@ import com.github.radlance.autodispatch.request.change.domain.Coords
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.core.data.CityDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
-import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
+import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Filters
-import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
-fun PaginatedResultDto<RequestDto>.toPaginatedResultRequest(): PaginatedResult<Request> {
-    return PaginatedResult(
+fun TablePaginatedResultDto<RequestDto>.toPaginatedResultRequest(): TablePaginatedResult<Request> {
+    return TablePaginatedResult(
         items = items.map { it.toRequest() },
         totalCount = totalCount
     )
@@ -92,8 +92,8 @@ fun PointDto.toPoint(): PointDetailed {
     )
 }
 
-fun PaginatedResultDto<DriverDto>.toPaginatedResultDriver(): PaginatedResult<Driver> {
-    return PaginatedResult(
+fun TablePaginatedResultDto<DriverDto>.toPaginatedResultDriver(): TablePaginatedResult<Driver> {
+    return TablePaginatedResult(
         items = items.map { it.toDriver() },
         totalCount = totalCount
     )

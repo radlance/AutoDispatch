@@ -3,15 +3,15 @@ package com.github.radlance.autodispatch.route
 import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.http.content.*
 import io.ktor.utils.io.jvm.javaio.*
 import java.io.File
-import java.util.UUID
+import java.util.*
 
 fun Route.deliveries(repository: DeliveryRepository) {
     val mode = System.getenv("MODE") ?: "debug"
@@ -27,9 +27,18 @@ fun Route.deliveries(repository: DeliveryRepository) {
     authenticate {
         route("/deliveries") {
             get {
-                val login = call.claimByNameOrUnauthorized<String>(name = "login")
-                val deliveries = repository.deliveries(login)
-                call.respond(HttpStatusCode.OK, deliveries)
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                val queryParams = call.request.queryParameters
+                val page = queryParams["page"]?.toIntOrNull() ?: 1
+                val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 5
+
+                val paginatedResult = repository.deliveries(
+                    driverLogin = login,
+                    page = page,
+                    pageSie = pageSize
+                )
+
+                call.respond(HttpStatusCode.OK, paginatedResult)
             }
 
             get("/{id}/details") {
@@ -74,9 +83,18 @@ fun Route.deliveries(repository: DeliveryRepository) {
             }
 
             get("/history") {
-                val login = call.claimByNameOrUnauthorized<String>(name = "login")
-                val history = repository.deliveryHistory(login)
-                call.respond(HttpStatusCode.OK, history)
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                val queryParams = call.request.queryParameters
+                val page = queryParams["page"]?.toIntOrNull() ?: 1
+                val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 5
+
+                val paginatedResult = repository.deliveryHistory(
+                    driverLogin = login,
+                    page = page,
+                    pageSize = pageSize
+                )
+
+                call.respond(HttpStatusCode.OK, paginatedResult)
             }
         }
     }

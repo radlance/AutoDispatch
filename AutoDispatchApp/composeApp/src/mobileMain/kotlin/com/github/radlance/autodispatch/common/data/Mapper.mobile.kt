@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
@@ -55,6 +56,12 @@ fun ProfileDetailsDto.toProfileDetails(): ProfileDetails {
     )
 }
 
+fun ListPaginatedResultDto<DeliveryDto>.toDeliveryListPaginatedResult(): ListPaginatedResult<Delivery> {
+    return ListPaginatedResult(
+        items = items.map { it.toDelivery() },
+        hasMore = hasMore
+    )
+}
 private fun DeliveriesStatsDto.toDeliveriesStats(): DeliveriesStats {
     return DeliveriesStats(
         activeCount = activeCount,

@@ -8,7 +8,7 @@ import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDto
 import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
-import com.github.radlance.autodispatch.request.core.data.PaginatedResultDto
+import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
 import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
 import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
@@ -36,7 +36,7 @@ interface ApiServiceJvm : ApiService {
         statusIds: List<Int>,
         driverIds: List<Int>,
         vehicleIds: List<Int>
-    ): PaginatedResultDto<RequestDto>
+    ): TablePaginatedResultDto<RequestDto>
 
     suspend fun customers(query: String): List<CustomerDto>
 
@@ -66,7 +66,7 @@ interface ApiServiceJvm : ApiService {
         page: Int,
         pageSize: Int,
         searchQuery: String?
-    ): PaginatedResultDto<DriverDto>
+    ): TablePaginatedResultDto<DriverDto>
 
     suspend fun vehicleAssignments(): List<VehicleDto>
 
@@ -92,7 +92,7 @@ internal class KtorApiServiceJvm(
         statusIds: List<Int>,
         driverIds: List<Int>,
         vehicleIds: List<Int>
-    ): PaginatedResultDto<RequestDto> {
+    ): TablePaginatedResultDto<RequestDto> {
         return httpClient.get("requests") {
             url {
                 parameters.append("page", page.toString())
@@ -197,14 +197,14 @@ internal class KtorApiServiceJvm(
         page: Int,
         pageSize: Int,
         searchQuery: String?
-    ): PaginatedResultDto<DriverDto> {
+    ): TablePaginatedResultDto<DriverDto> {
         return httpClient.get("drivers") {
-            url {
-                parameters.append("page", page.toString())
-                parameters.append("pageSize", pageSize.toString())
 
-                searchQuery?.let { parameters.append("search", it) }
-            }
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+
+            searchQuery?.let { parameter("search", it) }
+
         }.body()
     }
 

@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.driver.core.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
-import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
 
 interface DriverRepository {
 
@@ -9,5 +9,5 @@ interface DriverRepository {
         page: Int = 1,
         pageSize: Int = 10,
         searchQuery: String? = null
-    ): FetchResult<PaginatedResult<Driver>, String>
+    ): FetchResult<TablePaginatedResult<Driver>, String>
 }

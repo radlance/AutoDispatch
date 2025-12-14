@@ -2,7 +2,7 @@ package com.github.radlance.autodispatch.common.presentation
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
 
-fun <D, E> FetchResult<D, E>.toUiState(): FetchResultUiState<D, E> {
+suspend fun <D, E> FetchResult<D, E>.toUiState(): FetchResultUiState<D, E> {
     var result: FetchResultUiState<D, E> = FetchResultUiState.Loading
 
     this.fold(

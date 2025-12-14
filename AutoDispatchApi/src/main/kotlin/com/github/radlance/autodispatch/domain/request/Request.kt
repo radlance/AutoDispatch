@@ -23,9 +23,3 @@ data class Request(
     val requestNumber: String?,
     val documents: List<DeliveryDocument> = emptyList()
 )
-
-@Serializable
-data class PaginatedResult<T>(
-    val items: List<T>,
-    val totalCount: Long
-)

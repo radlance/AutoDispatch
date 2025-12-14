@@ -6,7 +6,7 @@ import com.github.radlance.autodispatch.common.data.toFilters
 import com.github.radlance.autodispatch.common.data.toPaginatedResultRequest
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.request.core.domain.Filters
-import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
@@ -28,7 +28,7 @@ class RemoteRequestRepository(
         statusIds: List<Int>,
         driverIds: List<Int>,
         vehicleIds: List<Int>
-    ): FetchResult<PaginatedResult<Request>, String> = handleRequest.handle {
+    ): FetchResult<TablePaginatedResult<Request>, String> = handleRequest.handle {
         apiService.requests(
             page = page,
             pageSize = pageSize,

@@ -15,13 +15,13 @@ import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.Status
+import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.Filters
-import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.UserFilter
@@ -194,7 +194,7 @@ class RequestRepository {
         statusIds: List<Int>,
         driverIds: List<Int>,
         vehicleIds: List<Int>
-    ): PaginatedResult<Request> = loggedTransaction {
+    ): TablePaginatedResult<Request> = loggedTransaction {
 
         val originCity = CityTable.alias("origin_city")
         val destCity = CityTable.alias("dest_city")
@@ -257,7 +257,7 @@ class RequestRepository {
             req.copy(documents = documentsMap[req.id] ?: emptyList())
         }
 
-        PaginatedResult(items = items, totalCount = total)
+        TablePaginatedResult(items = items, totalCount = total)
     }
 
     suspend fun filters(): Filters = loggedTransaction {

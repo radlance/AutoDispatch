@@ -1,8 +1,12 @@
 package com.github.radlance.autodispatch.delivery.core.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 
 interface DeliveryRepository {
 
-    suspend fun deliveries(): FetchResult<List<Delivery>, String>
+    suspend fun deliveries(
+        page: Int,
+        pageSize: Int
+    ): FetchResult<ListPaginatedResult<Delivery>, String>
 }

@@ -82,7 +82,7 @@ fun DeliveryScreen(
                     }
                 },
                 onSuccess = { requests ->
-                    if (requests.isNotEmpty()) {
+                    if (requests.items.isNotEmpty()) {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(24.dp),
                             contentPadding = PaddingValues(bottom = 24.dp),
@@ -90,7 +90,7 @@ fun DeliveryScreen(
                                 .fillMaxSize()
                                 .padding(horizontal = 18.dp)
                         ) {
-                            items(items = requests, key = { it.id }) { delivery ->
+                            items(items = requests.items, key = { it.id }) { delivery ->
                                 DeliveryCard(
                                     navigateToDeliveryDetails = {
                                         navigateToDeliveryDetails(

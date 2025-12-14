@@ -38,7 +38,6 @@ import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 
-// TODO сделать clickable или selectable данные в деталях
 @Composable
 fun DriverDetailsSections(
     scrollState: ScrollState,
@@ -125,7 +124,7 @@ fun DriverDetailsSections(
         Section(header = "Статистика") {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Доставок выполнено: ${driver.deliveryCount}",
+                    text = "Всего доставок: ${driver.deliveryCount}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -2,12 +2,12 @@ package com.github.radlance.autodispatch.request.core.presentation
 
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.core.domain.Filters
-import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
 data class RequestScreenState(
     val filters: FetchResultUiState<Filters, String> = FetchResultUiState.Loading,
-    val requestsResultState: FetchResultUiState<PaginatedResult<Request>, String> = FetchResultUiState.Loading,
+    val requestsResultState: FetchResultUiState<TablePaginatedResult<Request>, String> = FetchResultUiState.Loading,
 
     val query: String = "",
     val selectedDepartureCities: List<String> = emptyList(),
@@ -20,7 +20,7 @@ data class RequestScreenState(
     val pageIndex: Int = 0,
     val pageSize: Int = 15,
 
-    val lastSuccessfulRequests: PaginatedResult<Request>? = null,
+    val lastSuccessfulRequests: TablePaginatedResult<Request>? = null,
     val lastAttemptedRequest: LastRequestParams? = null
 )
 

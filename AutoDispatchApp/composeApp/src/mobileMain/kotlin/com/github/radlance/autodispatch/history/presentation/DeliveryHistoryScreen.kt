@@ -6,15 +6,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -36,6 +41,7 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryCard
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryCardShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,10 +50,10 @@ fun DeliveryHistoryScreen(
     navigateToDeliveryDetails: (Int, String) -> Unit,
     navigateToDeliveryRoute: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
-    deliveryHistoryViewModel: DeliveryHistoryViewModel = koinViewModel(),
+    viewModel: DeliveryHistoryViewModel = koinViewModel(),
     deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
-    val historyState by deliveryHistoryViewModel.historyState.collectAsStateWithLifecycle()
+    val historyState by viewModel.historyState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -63,10 +69,10 @@ fun DeliveryHistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
-            isRefreshing = historyState is FetchResultUiState.Loading,
-            onRefresh = deliveryHistoryViewModel::fetchHistory
+            isRefreshing = historyState.itemsState is FetchResultUiState.Loading,
+            onRefresh = viewModel::refreshHistory
         ) {
-            historyState.Reduce(
+            historyState.itemsState.Reduce(
                 onLoading = {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -80,7 +86,21 @@ fun DeliveryHistoryScreen(
                 },
                 onSuccess = { history ->
                     if (history.isNotEmpty()) {
+                        val lazyListState = rememberLazyListState()
+                        val historyItems = (historyState.itemsState as? FetchResultUiState.Success)?.data.orEmpty()
+
+                        LaunchedEffect(lazyListState, historyItems.size) {
+                            if (historyItems.isEmpty()) return@LaunchedEffect
+                            snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                                .distinctUntilChanged()
+                                .collect { lastVisibleIndex ->
+                                    if (lastVisibleIndex == historyItems.lastIndex && historyState.error == null) {
+                                        viewModel.loadNextItems()
+                                    }
+                                }
+                        }
                         LazyColumn(
+                            state = lazyListState,
                             verticalArrangement = Arrangement.spacedBy(24.dp),
                             contentPadding = PaddingValues(bottom = 24.dp),
                             modifier = Modifier
@@ -105,6 +125,25 @@ fun DeliveryHistoryScreen(
                                     },
                                     delivery = delivery
                                 )
+                            }
+                            if (historyState.isLoadingMore) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+
+                            if (historyState.error != null) {
+                                item {
+                                    PaginationErrorItem(
+                                        message = historyState.error ?: "Ошибка загрузки",
+                                        onRetry = viewModel::loadNextItems
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -143,10 +182,36 @@ fun DeliveryHistoryScreen(
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(message = it, onRetry = deliveryHistoryViewModel::fetchHistory)
+                        ErrorMessage(message = it, onRetry = viewModel::loadNextItems)
                     }
                 }
             )
+        }
+    }
+}
+
+@Composable
+fun PaginationErrorItem(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        androidx.compose.material3.Button(onClick = onRetry) {
+            Text("Повторить")
         }
     }
 }

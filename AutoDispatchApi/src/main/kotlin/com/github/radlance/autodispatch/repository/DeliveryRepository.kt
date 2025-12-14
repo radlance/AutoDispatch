@@ -9,6 +9,7 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
@@ -61,7 +62,16 @@ class DeliveryRepository {
         updatedAt = row[RequestTable.updatedAt]?.toString()
     )
 
-    suspend fun deliveries(driverLogin: String): List<Delivery> = fetchDeliveries(driverLogin, listOf(2, 3, 6, 7))
+    suspend fun deliveries(
+        driverLogin: String,
+        page: Int,
+        pageSie: Int
+    ): ListPaginatedResult<Delivery> = fetchDeliveries(
+        driverLogin = driverLogin,
+        statusIds = listOf(2, 3, 6, 7),
+        pageSize = pageSie,
+        page = page
+    )
 
     suspend fun delivery(driverLogin: String, deliveryId: Int): DeliveryDetailed = loggedTransaction {
         val originCity = CityTable.alias("origin_city")
@@ -312,7 +322,16 @@ class DeliveryRepository {
             }
         }
 
-    suspend fun deliveryHistory(driverLogin: String): List<Delivery> = fetchDeliveries(driverLogin, listOf(4, 5))
+    suspend fun deliveryHistory(
+        driverLogin: String,
+        pageSize: Int,
+        page: Int
+    ): ListPaginatedResult<Delivery> = fetchDeliveries(
+        driverLogin = driverLogin,
+        statusIds = listOf(4, 5),
+        pageSize = pageSize,
+        page = page
+    )
 
     private suspend fun validateAndGetAssignmentId(
         deliveryId: Int,
@@ -358,7 +377,12 @@ class DeliveryRepository {
         requestData[AssignmentTable.id].value
     }
 
-    private suspend fun fetchDeliveries(driverLogin: String, statusIds: List<Int>): List<Delivery> = loggedTransaction {
+    private suspend fun fetchDeliveries(
+        driverLogin: String,
+        statusIds: List<Int>,
+        page: Int,
+        pageSize: Int
+    ): ListPaginatedResult<Delivery> = loggedTransaction {
         val driverId = UserTable.select(UserTable.id).where {
             UserTable.login eq driverLogin
         }.first()[UserTable.id].value
@@ -386,13 +410,33 @@ class DeliveryRepository {
             RequestTable.updatedAt
         )
 
-        joinQuery
+        val offset = (page - 1L) * pageSize
+
+        val deliveriesRaw = joinQuery
             .select(selectCols)
             .where {
                 (AssignmentTable.driverId eq driverId) and
                         (RequestTable.statusId inList statusIds)
             }
-            .orderBy(Coalesce(RequestTable.updatedAt, RequestTable.createdAt), SortOrder.DESC_NULLS_LAST)
+            .orderBy(
+                Coalesce(
+                    RequestTable.updatedAt,
+                    RequestTable.createdAt
+                ),
+                SortOrder.DESC_NULLS_LAST
+            )
+            .limit(pageSize + 1)
+            .offset(offset)
             .map { mapDeliveryRow(it) }
+        val hasMore = deliveriesRaw.size > pageSize
+        val deliveries = if (hasMore) {
+            deliveriesRaw.dropLast(1)
+        } else {
+            deliveriesRaw
+        }
+        ListPaginatedResult(
+            items = deliveries,
+            hasMore = hasMore
+        )
     }
 }

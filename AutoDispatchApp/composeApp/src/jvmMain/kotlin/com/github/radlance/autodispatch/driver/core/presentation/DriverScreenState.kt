@@ -2,14 +2,14 @@ package com.github.radlance.autodispatch.driver.core.presentation
 
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.driver.core.domain.Driver
-import com.github.radlance.autodispatch.request.core.domain.PaginatedResult
+import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
 
 data class DriverScreenState(
-    val driversResultState: FetchResultUiState<PaginatedResult<Driver>, String> = FetchResultUiState.Loading,
+    val driversResultState: FetchResultUiState<TablePaginatedResult<Driver>, String> = FetchResultUiState.Loading,
     val query: String = "",
     val pageIndex: Int = 0,
     val pageSize: Int = 15,
-    val lastSuccessfulRequests: PaginatedResult<Driver>? = null,
+    val lastSuccessfulRequests: TablePaginatedResult<Driver>? = null,
     val lastAttemptedRequest: LastDriverRequestParams? = null
 )
 

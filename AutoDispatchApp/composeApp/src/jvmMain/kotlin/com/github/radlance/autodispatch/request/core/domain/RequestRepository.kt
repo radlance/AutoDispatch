@@ -17,5 +17,5 @@ interface RequestRepository {
         statusIds: List<Int> = emptyList(),
         driverIds: List<Int> = emptyList(),
         vehicleIds: List<Int> = emptyList()
-    ): FetchResult<PaginatedResult<Request>, String>
+    ): FetchResult<TablePaginatedResult<Request>, String>
 }

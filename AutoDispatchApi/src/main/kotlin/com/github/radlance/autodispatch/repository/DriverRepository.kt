@@ -7,9 +7,9 @@ import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.Status
+import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.driver.Driver
 import com.github.radlance.autodispatch.domain.driver.DriverStats
-import com.github.radlance.autodispatch.domain.request.PaginatedResult
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.Case
@@ -33,7 +33,7 @@ class DriverRepository {
         page: Int,
         pageSize: Int,
         searchQuery: String?
-    ): PaginatedResult<Driver> = loggedTransaction {
+    ): TablePaginatedResult<Driver> = loggedTransaction {
         val query = DriverTable
             .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
@@ -113,7 +113,7 @@ class DriverRepository {
                 )
             }
 
-        PaginatedResult(items = items, totalCount = total)
+        TablePaginatedResult(items = items, totalCount = total)
     }
 
     suspend fun driverStats(): List<DriverStats> = loggedTransaction {

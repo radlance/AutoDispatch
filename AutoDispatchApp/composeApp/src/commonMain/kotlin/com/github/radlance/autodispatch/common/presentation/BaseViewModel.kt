@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 abstract class BaseViewModel : ViewModel() {
 
-    protected fun <T> handle(background: suspend () -> T, ui: (T) -> Unit): Job {
+    protected fun <T> handle(background: suspend () -> T, ui: suspend (T) -> Unit): Job {
         return viewModelScope.launch(Dispatchers.IO) {
             val result = background.invoke()
             ui.invoke(result)
