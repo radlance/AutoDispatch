@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import kotlinx.serialization.json.jsonPrimitive
 import org.koin.compose.viewmodel.koinViewModel

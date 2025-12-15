@@ -31,7 +31,7 @@ import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
+import com.github.radlance.autodispatch.request.core.domain.Request
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth

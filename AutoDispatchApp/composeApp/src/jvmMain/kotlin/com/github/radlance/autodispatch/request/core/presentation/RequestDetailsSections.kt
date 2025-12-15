@@ -62,7 +62,7 @@ import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
+import com.github.radlance.autodispatch.request.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

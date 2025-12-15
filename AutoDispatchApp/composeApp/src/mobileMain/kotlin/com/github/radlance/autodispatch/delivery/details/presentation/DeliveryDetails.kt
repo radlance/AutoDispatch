@@ -96,9 +96,9 @@ import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
-import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Cargo
+import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.ConversionPathIcon
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon

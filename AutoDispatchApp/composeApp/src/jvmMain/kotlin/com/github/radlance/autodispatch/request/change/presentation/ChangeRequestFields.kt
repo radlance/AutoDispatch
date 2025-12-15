@@ -56,10 +56,10 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.volume_label
 import autodispatch.composeapp.generated.resources.weight_label
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.request.core.domain.Customer
 import com.github.radlance.autodispatch.request.core.presentation.PhoneVisualTransformation
-import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.WeightIcon
 import org.jetbrains.compose.resources.stringResource

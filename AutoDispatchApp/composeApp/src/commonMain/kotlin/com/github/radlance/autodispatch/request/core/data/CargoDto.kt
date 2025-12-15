@@ -1,10 +1,10 @@
-package com.github.radlance.autodispatch.reuqest.core.domain
+package com.github.radlance.autodispatch.request.core.data
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Cargo(
-    val type: CargoType,
+data class CargoDto(
+    val type: CargoTypeDto,
     val weight: Double,
     val volume: Double?,
     val description: String?

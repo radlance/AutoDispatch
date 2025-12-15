@@ -59,7 +59,7 @@ import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
 import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.domain.Filters
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
+import com.github.radlance.autodispatch.request.core.domain.Request
 import com.seanproctor.datatable.DataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

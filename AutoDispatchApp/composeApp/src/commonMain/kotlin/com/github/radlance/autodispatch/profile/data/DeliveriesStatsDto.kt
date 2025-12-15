@@ -1,9 +1,9 @@
-package com.github.radlance.autodispatch.domain.profile
+package com.github.radlance.autodispatch.profile.data
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DeliveriesStats(
+data class DeliveriesStatsDto(
     val totalCount: Int,
     val activeCount: Int,
     val completedCount: Int,

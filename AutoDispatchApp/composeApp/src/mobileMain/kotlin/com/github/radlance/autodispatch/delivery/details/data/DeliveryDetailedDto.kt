@@ -1,11 +1,11 @@
 package com.github.radlance.autodispatch.delivery.details.data
 
-import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
-import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
-import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.common.data.StatusDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
-import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
+import com.github.radlance.autodispatch.request.core.data.CargoDto
+import com.github.radlance.autodispatch.request.core.data.CustomerDto
+import com.github.radlance.autodispatch.request.core.data.DeliveryDocumentDto
+import com.github.radlance.autodispatch.request.core.data.PointDto
+import com.github.radlance.autodispatch.request.core.data.VehicleDto
 import kotlinx.serialization.Serializable
 
 @Serializable

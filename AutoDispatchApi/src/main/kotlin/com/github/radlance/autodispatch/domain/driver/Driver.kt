@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.domain.driver
 
 import com.github.radlance.autodispatch.domain.common.Status
+import com.github.radlance.autodispatch.domain.profile.DeliveriesStats
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import kotlinx.serialization.Serializable
 
@@ -11,5 +12,5 @@ data class Driver(
     val phoneNumber: String,
     val status: Status,
     val vehicle: Vehicle?,
-    val deliveryCount: Int
+    val deliveriesStats: DeliveriesStats
 )

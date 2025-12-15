@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.driver.assignment.domain.VehicleAssignmentRepository
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

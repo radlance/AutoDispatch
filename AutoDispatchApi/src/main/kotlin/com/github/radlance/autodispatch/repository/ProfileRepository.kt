@@ -62,6 +62,7 @@ class ProfileRepository {
         }
 
         val deliveriesStats = DeliveriesStats(
+            totalCount = statsMap.values.sum(),
             activeCount = (statsMap["Назначена"] ?: 0) + (statsMap["В пути"] ?: 0),
             completedCount = statsMap["Завершена"] ?: 0,
             canceledCount = statsMap["Отменена"] ?: 0,

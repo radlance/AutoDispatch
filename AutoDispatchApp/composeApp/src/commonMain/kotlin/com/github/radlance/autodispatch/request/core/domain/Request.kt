@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.reuqest.core.domain
+package com.github.radlance.autodispatch.request.core.domain
 
 import com.github.radlance.autodispatch.common.domain.Status
 import kotlinx.datetime.LocalDateTime

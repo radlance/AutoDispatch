@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.driver
 import com.github.radlance.autodispatch.request.change.presentation.CustomDropDownMenu
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

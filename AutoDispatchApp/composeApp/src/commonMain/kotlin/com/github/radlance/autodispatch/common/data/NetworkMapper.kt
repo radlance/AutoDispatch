@@ -2,24 +2,26 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.auth.data.LoginResponseDto
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
-import com.github.radlance.autodispatch.di.CurrentIp
-import com.github.radlance.autodispatch.profile.data.UserDto
-import com.github.radlance.autodispatch.profile.domain.User
-import com.github.radlance.autodispatch.reuqest.core.data.CargoDto
-import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
-import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
-import com.github.radlance.autodispatch.reuqest.core.data.DeliveryDocumentDto
-import com.github.radlance.autodispatch.reuqest.core.data.PointDto
-import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
-import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
-import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
 import com.github.radlance.autodispatch.common.domain.Status
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.di.CurrentIp
+import com.github.radlance.autodispatch.profile.data.DeliveriesStatsDto
+import com.github.radlance.autodispatch.profile.data.UserDto
+import com.github.radlance.autodispatch.profile.domain.DeliveriesStats
+import com.github.radlance.autodispatch.profile.domain.User
+import com.github.radlance.autodispatch.request.core.data.CargoDto
+import com.github.radlance.autodispatch.request.core.data.CargoTypeDto
+import com.github.radlance.autodispatch.request.core.data.CustomerDto
+import com.github.radlance.autodispatch.request.core.data.DeliveryDocumentDto
+import com.github.radlance.autodispatch.request.core.data.PointDto
+import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.core.data.VehicleDto
+import com.github.radlance.autodispatch.request.core.domain.Cargo
+import com.github.radlance.autodispatch.request.core.domain.CargoType
+import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.DeliveryDocument
+import com.github.radlance.autodispatch.request.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -123,5 +125,16 @@ fun DeliveryDocumentDto.toDeliveryDocument(): DeliveryDocument {
         id = id,
         imageUrl = "http://$CurrentIp/$imageUrl",
         uploadedAt = uploadedAt.toLocalDateTimeFromUtc()
+    )
+}
+
+fun DeliveriesStatsDto.toDeliveriesStats(): DeliveriesStats {
+    return DeliveriesStats(
+        totalCount = totalCount,
+        activeCount = activeCount,
+        completedCount = completedCount,
+        canceledCount = canceledCount,
+        onCheckCount = onCheckCount,
+        rejectedCount = rejectedCount
     )
 }

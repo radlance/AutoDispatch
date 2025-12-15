@@ -8,10 +8,10 @@ import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
+import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.Point
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

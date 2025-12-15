@@ -1,11 +1,11 @@
 package com.github.radlance.autodispatch.delivery.details.domain
 
-import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.DeliveryDocument
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.common.domain.Status
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Cargo
+import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.DeliveryDocument
+import com.github.radlance.autodispatch.request.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 

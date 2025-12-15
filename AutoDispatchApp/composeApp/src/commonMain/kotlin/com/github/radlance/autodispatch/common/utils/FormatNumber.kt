@@ -1,6 +1,6 @@
 package com.github.radlance.autodispatch.common.utils
 
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Point
 
 fun Double.formatNumberNoTrailingZeros(): String {
     return if (this % 1.0 == 0.0) {

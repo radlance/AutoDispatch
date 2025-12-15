@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.delivery.core.data
 
-import com.github.radlance.autodispatch.reuqest.core.data.PointDto
 import com.github.radlance.autodispatch.common.data.StatusDto
+import com.github.radlance.autodispatch.request.core.data.PointDto
 import kotlinx.serialization.Serializable
 
 @Serializable

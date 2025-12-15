@@ -36,15 +36,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
-import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
-import com.github.radlance.autodispatch.reuqest.core.domain.CargoType
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
-import com.github.radlance.autodispatch.common.domain.Status
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Cargo
+import com.github.radlance.autodispatch.request.core.domain.CargoType
+import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 

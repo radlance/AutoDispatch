@@ -1,6 +1,6 @@
 package com.github.radlance.autodispatch.profile.data
 
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
+import com.github.radlance.autodispatch.request.core.data.VehicleDto
 import kotlinx.serialization.Serializable
 
 @Serializable

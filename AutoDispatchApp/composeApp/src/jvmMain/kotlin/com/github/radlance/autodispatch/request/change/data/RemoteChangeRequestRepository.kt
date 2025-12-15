@@ -7,7 +7,7 @@ import com.github.radlance.autodispatch.common.data.toCustomer
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.Customer
 
 class RemoteChangeRequestRepository(
     private val apiService: ApiServiceJvm,

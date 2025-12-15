@@ -1,8 +1,6 @@
 package com.github.radlance.autodispatch.request.core.data
 
-import com.github.radlance.autodispatch.reuqest.core.data.CargoTypeDto
 import com.github.radlance.autodispatch.common.data.StatusDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
 import kotlinx.serialization.Serializable
 
 @Serializable

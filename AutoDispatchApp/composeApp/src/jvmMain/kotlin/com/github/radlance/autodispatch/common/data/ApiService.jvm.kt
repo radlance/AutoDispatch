@@ -7,11 +7,11 @@ import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDto
 import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
+import com.github.radlance.autodispatch.request.core.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
+import com.github.radlance.autodispatch.request.core.data.RequestDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
-import com.github.radlance.autodispatch.reuqest.core.data.CustomerDto
-import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
-import com.github.radlance.autodispatch.reuqest.core.data.VehicleDto
+import com.github.radlance.autodispatch.request.core.data.VehicleDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

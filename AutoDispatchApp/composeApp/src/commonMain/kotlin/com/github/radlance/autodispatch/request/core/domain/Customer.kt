@@ -1,9 +1,9 @@
-package com.github.radlance.autodispatch.reuqest.core.data
+package com.github.radlance.autodispatch.request.core.domain
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CustomerDto(
+data class Customer(
     val id: Int,
     val organizationName: String,
     val email: String,

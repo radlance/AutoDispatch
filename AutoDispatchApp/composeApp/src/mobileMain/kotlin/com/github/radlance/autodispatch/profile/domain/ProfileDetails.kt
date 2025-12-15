@@ -1,6 +1,6 @@
 package com.github.radlance.autodispatch.profile.domain
 
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 
 data class ProfileDetails(
     val fullName: String,

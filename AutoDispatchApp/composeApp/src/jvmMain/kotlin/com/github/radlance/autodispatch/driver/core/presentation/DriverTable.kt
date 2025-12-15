@@ -116,7 +116,7 @@ fun DriverTable(
                 }
                 cell {
                     Text(
-                        text = item.deliveryCount.toString(),
+                        text = item.deliveriesStats.totalCount.toString(),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

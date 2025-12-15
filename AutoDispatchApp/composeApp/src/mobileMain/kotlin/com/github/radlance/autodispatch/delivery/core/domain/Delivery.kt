@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.delivery.core.domain
 
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
 import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.request.core.domain.Point
 import kotlinx.datetime.LocalDateTime
 
 data class Delivery(

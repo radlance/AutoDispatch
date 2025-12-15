@@ -60,9 +60,9 @@ import com.github.radlance.autodispatch.platform.createLocationPermissionControl
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
 import com.github.radlance.autodispatch.platform.openDialer
-import com.github.radlance.autodispatch.reuqest.core.domain.Cargo
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
-import com.github.radlance.autodispatch.reuqest.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Cargo
+import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
 import org.koin.compose.viewmodel.koinViewModel

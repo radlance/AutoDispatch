@@ -12,14 +12,14 @@ import com.github.radlance.autodispatch.request.change.domain.Coords
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.core.data.CityDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
+import com.github.radlance.autodispatch.request.core.data.RequestDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Filters
+import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
-import com.github.radlance.autodispatch.reuqest.core.data.RequestDto
-import com.github.radlance.autodispatch.reuqest.core.domain.Request
 
 fun TablePaginatedResultDto<RequestDto>.toPaginatedResultRequest(): TablePaginatedResult<Request> {
     return TablePaginatedResult(
@@ -120,6 +120,6 @@ private fun DriverDto.toDriver(): Driver {
         phoneNumber = phoneNumber,
         status = status.toStatus(),
         vehicle = vehicle?.toVehicle(),
-        deliveryCount = deliveryCount
+        deliveriesStats = deliveriesStats.toDeliveriesStats()
     )
 }

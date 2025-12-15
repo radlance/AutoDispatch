@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.driver.core.presentation
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -121,21 +122,42 @@ fun DriverDetailsSections(
         HorizontalDivider(
             modifier = Modifier.padding(top = SECTION_GAP, bottom = SECTION_GAP, end = 6.dp)
         )
-        Section(header = "Статистика") {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Всего доставок: ${driver.deliveryCount}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        Section(header = "Статистика доставок") {
+            val stats = driver.deliveriesStats
+
+            StatsRow("Всего", stats.totalCount)
+            StatsRow("Активные", stats.activeCount)
+            StatsRow("На проверке", stats.onCheckCount)
+            StatsRow("Завершённые", stats.completedCount)
+            StatsRow("Отменённые", stats.canceledCount)
+            StatsRow("Отклонённые", stats.rejectedCount)
         }
         Spacer(modifier = Modifier.height(SECTION_GAP))
-
         Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth().padding(end = 6.dp)) {
             Icon(imageVector = Icons.Outlined.History, contentDescription = null)
             Spacer(Modifier.width(12.dp))
             Text(text = "История доставок")
         }
     }
+
+}
+
+@Composable
+fun StatsRow(label: String, value: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(end = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label, style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Text(
+            text = value.toString(),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+    Spacer(modifier = Modifier.height(ITEM_GAP))
 }

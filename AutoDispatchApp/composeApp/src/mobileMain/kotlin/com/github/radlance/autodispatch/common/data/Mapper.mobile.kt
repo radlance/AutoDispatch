@@ -5,9 +5,7 @@ import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
-import com.github.radlance.autodispatch.profile.data.DeliveriesStatsDto
 import com.github.radlance.autodispatch.profile.data.ProfileDetailsDto
-import com.github.radlance.autodispatch.profile.domain.DeliveriesStats
 import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 
 fun DeliveryDto.toDelivery(): Delivery {
@@ -60,14 +58,5 @@ fun ListPaginatedResultDto<DeliveryDto>.toDeliveryListPaginatedResult(): ListPag
     return ListPaginatedResult(
         items = items.map { it.toDelivery() },
         hasMore = hasMore
-    )
-}
-private fun DeliveriesStatsDto.toDeliveriesStats(): DeliveriesStats {
-    return DeliveriesStats(
-        activeCount = activeCount,
-        completedCount = completedCount,
-        canceledCount = canceledCount,
-        onCheckCount = onCheckCount,
-        rejectedCount = rejectedCount
     )
 }

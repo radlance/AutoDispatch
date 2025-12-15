@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.toVehicle
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.driver.assignment.domain.VehicleAssignmentRepository
-import com.github.radlance.autodispatch.reuqest.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 
 class RemoteVehicleAssignmentRepository(
     private val apiService: ApiServiceJvm,

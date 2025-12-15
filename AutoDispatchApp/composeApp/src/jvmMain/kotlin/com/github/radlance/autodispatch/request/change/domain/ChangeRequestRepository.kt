@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.request.change.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
-import com.github.radlance.autodispatch.reuqest.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.Customer
 
 interface ChangeRequestRepository {
 
