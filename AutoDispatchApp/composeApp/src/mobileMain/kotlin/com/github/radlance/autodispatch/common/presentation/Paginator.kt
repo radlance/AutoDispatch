@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.history.presentation
+package com.github.radlance.autodispatch.common.presentation
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
 

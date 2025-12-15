@@ -6,15 +6,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,7 +42,9 @@ import autodispatch.composeapp.generated.resources.no_deliveries_yet
 import autodispatch.composeapp.generated.resources.when_deliveries_appear
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.PaginationErrorItem
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -50,7 +57,7 @@ fun DeliveryScreen(
     deliveryViewModel: DeliveryViewModel = koinViewModel(),
     deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
-    val deliveriesState by deliveryViewModel.deliveriesState.collectAsStateWithLifecycle()
+    val deliveriesState by deliveryViewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -66,10 +73,10 @@ fun DeliveryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
-            isRefreshing = deliveriesState is FetchResultUiState.Loading,
-            onRefresh = deliveryViewModel::fetchDeliveries
+            isRefreshing = deliveriesState.itemsState is FetchResultUiState.Loading,
+            onRefresh = deliveryViewModel::refresh
         ) {
-            deliveriesState.Reduce(
+            deliveriesState.itemsState.Reduce(
                 onLoading = {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -81,16 +88,31 @@ fun DeliveryScreen(
                         }
                     }
                 },
-                onSuccess = { requests ->
-                    if (requests.items.isNotEmpty()) {
+                onSuccess = { deliveries ->
+                    if (deliveries.isNotEmpty()) {
+                        val lazyListState = rememberLazyListState()
+                        val deliveriesItems =
+                            (deliveriesState.itemsState as? FetchResultUiState.Success)?.data.orEmpty()
+
+                        LaunchedEffect(lazyListState, deliveriesItems.size) {
+                            if (deliveriesItems.isEmpty()) return@LaunchedEffect
+                            snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                                .distinctUntilChanged()
+                                .collect { lastVisibleIndex ->
+                                    if (lastVisibleIndex == deliveriesItems.lastIndex && deliveriesState.error == null) {
+                                        deliveryViewModel.loadNextItems()
+                                    }
+                                }
+                        }
                         LazyColumn(
+                            state = lazyListState,
                             verticalArrangement = Arrangement.spacedBy(24.dp),
                             contentPadding = PaddingValues(bottom = 24.dp),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 18.dp)
                         ) {
-                            items(items = requests.items, key = { it.id }) { delivery ->
+                            items(items = deliveries, key = { it.id }) { delivery ->
                                 DeliveryCard(
                                     navigateToDeliveryDetails = {
                                         navigateToDeliveryDetails(
@@ -108,6 +130,25 @@ fun DeliveryScreen(
                                     },
                                     delivery = delivery
                                 )
+                            }
+                            if (deliveriesState.isLoadingMore) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+
+                            if (deliveriesState.error != null) {
+                                item {
+                                    PaginationErrorItem(
+                                        message = deliveriesState.error ?: "Ошибка загрузки",
+                                        onRetry = deliveryViewModel::loadNextItems
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -146,7 +187,7 @@ fun DeliveryScreen(
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        ErrorMessage(message = it, onRetry = deliveryViewModel::fetchDeliveries)
+                        ErrorMessage(message = it, onRetry = deliveryViewModel::loadNextItems)
                     }
                 }
             )

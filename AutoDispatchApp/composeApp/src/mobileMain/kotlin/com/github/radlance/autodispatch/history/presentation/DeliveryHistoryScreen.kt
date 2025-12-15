@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.PaginationErrorItem
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryCard
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryCardShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
@@ -53,7 +54,7 @@ fun DeliveryHistoryScreen(
     viewModel: DeliveryHistoryViewModel = koinViewModel(),
     deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
-    val historyState by viewModel.historyState.collectAsStateWithLifecycle()
+    val historyState by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -70,7 +71,7 @@ fun DeliveryHistoryScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
             isRefreshing = historyState.itemsState is FetchResultUiState.Loading,
-            onRefresh = viewModel::refreshHistory
+            onRefresh = viewModel::refresh
         ) {
             historyState.itemsState.Reduce(
                 onLoading = {
@@ -186,32 +187,6 @@ fun DeliveryHistoryScreen(
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun PaginationErrorItem(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        androidx.compose.material3.Button(onClick = onRetry) {
-            Text("Повторить")
         }
     }
 }

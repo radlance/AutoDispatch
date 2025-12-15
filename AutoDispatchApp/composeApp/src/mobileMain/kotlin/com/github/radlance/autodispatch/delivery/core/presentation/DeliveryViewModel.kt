@@ -1,30 +1,24 @@
 package com.github.radlance.autodispatch.delivery.core.presentation
 
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
-import com.github.radlance.autodispatch.common.presentation.BaseViewModel
-import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.common.presentation.toUiState
+import com.github.radlance.autodispatch.common.presentation.PaginatedViewModel
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.delivery.core.domain.DeliveryRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.onStart
 
 class DeliveryViewModel(
     private val repository: DeliveryRepository
-) : BaseViewModel() {
+) : PaginatedViewModel<Delivery, ListPaginatedResult<Delivery>>(
+    pageSize = 5
+) {
 
-    private val deliveriesStateMutable =
-        MutableStateFlow<FetchResultUiState<ListPaginatedResult<Delivery>, String>>(
-            FetchResultUiState.Idle
-        )
-    val deliveriesState = deliveriesStateMutable.onStart {
-        fetchDeliveries()
-    }.stateInViewModel(initialValue = deliveriesStateMutable.value)
+    override suspend fun request(
+        page: Int,
+        pageSize: Int
+    ) = repository.deliveries(page, pageSize)
 
-    fun fetchDeliveries() {
-        deliveriesStateMutable.value = FetchResultUiState.Loading
-        handle(background = { repository.deliveries(1, 5) }) {
-            deliveriesStateMutable.value = it.toUiState()
-        }
-    }
+    override fun getItems(result: ListPaginatedResult<Delivery>) =
+        result.items
+
+    override fun hasMore(result: ListPaginatedResult<Delivery>) =
+        result.hasMore
 }
