@@ -10,6 +10,7 @@ import com.github.radlance.autodispatch.di.commonModule
 import com.github.radlance.autodispatch.di.controlPanelModule
 import com.github.radlance.autodispatch.di.dataStoreModule
 import com.github.radlance.autodispatch.di.driverAssignmentModule
+import com.github.radlance.autodispatch.di.driverHistoryModule
 import com.github.radlance.autodispatch.di.driverModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.pointSelectionModule
@@ -33,7 +34,8 @@ fun main() = application {
             driverAssignmentModule,
             pointSelectionModule,
             driverModule,
-            vehicleAssignmentModule
+            vehicleAssignmentModule,
+            driverHistoryModule
         )
     }
     Window(

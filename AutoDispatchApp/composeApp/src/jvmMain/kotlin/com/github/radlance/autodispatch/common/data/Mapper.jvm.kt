@@ -1,12 +1,15 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.core.domain.Driver
+import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
+import com.github.radlance.autodispatch.driver.history.domain.DriverHistory
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CoordsDto
-import com.github.radlance.autodispatch.request.change.data.PointDto
+import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.Coords
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
@@ -79,7 +82,7 @@ fun CoordsDto.toCoords(): Coords {
     )
 }
 
-fun PointDto.toPoint(): PointDetailed {
+fun PointDetailedDto.toPointDetailed(): PointDetailed {
     return PointDetailed(
         placeId = placeId,
         lat = lat.toDouble(),
@@ -96,6 +99,27 @@ fun TablePaginatedResultDto<DriverDto>.toPaginatedResultDriver(): TablePaginated
     return TablePaginatedResult(
         items = items.map { it.toDriver() },
         totalCount = totalCount
+    )
+}
+
+fun ListPaginatedResultDto<DriverHistoryDto>.toDriverHistoryListPaginatedResult(): ListPaginatedResult<DriverHistory> {
+    return ListPaginatedResult(
+        items = items.map { it.toDriverHistory() },
+        hasMore = hasMore
+    )
+}
+
+fun DriverHistoryDto.toDriverHistory(): DriverHistory {
+    return DriverHistory(
+        id = id,
+        status = status.toStatus(),
+        vehicle = vehicle.toVehicle(),
+        loadingPoint = loadingPoint.toPoint(),
+        unloadingPoint = unloadingPoint.toPoint(),
+        cargoTypeName = cargoTypeName,
+        assignedAt = assignedAt.toLocalDateTimeFromUtc(),
+        completedAt = completedAt.toLocalDateTimeFromUtc(),
+        requestNumber = requestNumber
     )
 }
 

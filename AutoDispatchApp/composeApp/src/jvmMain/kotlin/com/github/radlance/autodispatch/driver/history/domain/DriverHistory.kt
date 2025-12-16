@@ -1,17 +1,18 @@
-package com.github.radlance.autodispatch.delivery.core.domain
+package com.github.radlance.autodispatch.driver.history.domain
 
 import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.request.core.domain.Point
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 
-data class Delivery(
+data class DriverHistory(
     val id: Int,
     val status: Status,
+    val vehicle: Vehicle,
     val loadingPoint: Point,
     val unloadingPoint: Point,
-    val cargoWeight: Double,
     val cargoTypeName: String,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime?,
+    val assignedAt: LocalDateTime,
+    val completedAt: LocalDateTime,
     val requestNumber: String
 )

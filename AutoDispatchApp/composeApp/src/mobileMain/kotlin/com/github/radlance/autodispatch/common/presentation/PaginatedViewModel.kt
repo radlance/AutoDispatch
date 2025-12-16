@@ -31,7 +31,6 @@ abstract class PaginatedViewModel<T, R>(
 
     private val paginator = Paginator(
         initialKey = 1,
-
         onInitialLoad = { isLoading ->
             if (isLoading) {
                 stateMutable.update {
@@ -42,19 +41,15 @@ abstract class PaginatedViewModel<T, R>(
                 }
             }
         },
-
         onLoadMore = { isLoading ->
             stateMutable.update {
                 it.copy(isLoadingMore = isLoading, error = null)
             }
         },
-
         onRequest = { page ->
             request(page, pageSize)
         },
-
         getNextKey = { page, _ -> page + 1 },
-
         onError = { message ->
             stateMutable.update { current ->
                 if (current.itemsState is FetchResultUiState.Loading) {
@@ -70,7 +65,6 @@ abstract class PaginatedViewModel<T, R>(
                 }
             }
         },
-
         onSuccess = { result, _ ->
             val items = getItems(result)
 
@@ -85,7 +79,6 @@ abstract class PaginatedViewModel<T, R>(
                 current.copy(itemsState = updated, error = null)
             }
         },
-
         endReached = { _, result ->
             !hasMore(result)
         }

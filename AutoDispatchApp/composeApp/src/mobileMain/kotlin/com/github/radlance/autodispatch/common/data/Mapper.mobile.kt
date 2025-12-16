@@ -15,7 +15,6 @@ fun DeliveryDto.toDelivery(): Delivery {
         loadingPoint = loadingPoint.toPoint(),
         unloadingPoint = unloadingPoint.toPoint(),
         cargoWeight = cargoWeight,
-        cargoVolume = cargoVolume,
         cargoTypeName = cargoTypeName,
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),

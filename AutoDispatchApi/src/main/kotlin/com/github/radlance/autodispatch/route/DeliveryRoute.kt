@@ -82,7 +82,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
                 }
             }
 
-            get("/history") {
+            get("/history/my") {
                 val login = call.claimByNameOrUnauthorized<String>("login")
                 val queryParams = call.request.queryParameters
                 val page = queryParams["page"]?.toIntOrNull() ?: 1
@@ -92,6 +92,22 @@ fun Route.deliveries(repository: DeliveryRepository) {
                     driverLogin = login,
                     page = page,
                     pageSize = pageSize
+                )
+
+                call.respond(HttpStatusCode.OK, paginatedResult)
+            }
+
+            get("/history/{driverId}") {
+                val id = call.parameters["driverId"]?.toIntOrNull()
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid driver ID")
+                val queryParams = call.request.queryParameters
+                val page = queryParams["page"]?.toIntOrNull() ?: 1
+                val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 5
+
+                val paginatedResult = repository.driverDeliveryHistory(
+                    driverId = id,
+                    pageSize = pageSize,
+                    page = page
                 )
 
                 call.respond(HttpStatusCode.OK, paginatedResult)

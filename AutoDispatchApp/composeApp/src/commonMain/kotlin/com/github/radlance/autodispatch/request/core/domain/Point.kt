@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class Point(
     val address: String?,
     val lat: Double,
-    val lon: Double,
+    val lon: Double
 )

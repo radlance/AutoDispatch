@@ -14,6 +14,7 @@ import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
+import com.github.radlance.autodispatch.domain.history.DriverHistory
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.Customer
@@ -35,32 +36,9 @@ import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.update
+import kotlin.collections.dropLast
 
 class DeliveryRepository {
-
-    private fun mapDeliveryRow(row: ResultRow): Delivery = Delivery(
-        id = row[RequestTable.id].value,
-        requestNumber = row[RequestTable.requestNumber],
-        status = Status(
-            id = row[RequestStatusTable.id].value,
-            name = row[RequestStatusTable.name]
-        ),
-        loadingPoint = Point(
-            address = row[RequestTable.loadingAddress],
-            lat = row[RequestTable.loadingLat],
-            lon = row[RequestTable.loadingLon]
-        ),
-        unloadingPoint = Point(
-            address = row[RequestTable.unloadingAddress],
-            lat = row[RequestTable.unloadingLat],
-            lon = row[RequestTable.unloadingLon]
-        ),
-        cargoWeight = row[RequestTable.cargoWeight],
-        cargoVolume = row[RequestTable.cargoVolume],
-        cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
-        createdAt = row[RequestTable.createdAt]?.toString(),
-        updatedAt = row[RequestTable.updatedAt]?.toString()
-    )
 
     suspend fun deliveries(
         driverLogin: String,
@@ -333,6 +311,17 @@ class DeliveryRepository {
         page = page
     )
 
+    suspend fun driverDeliveryHistory(
+        driverId: Int,
+        pageSize: Int,
+        page: Int
+    ): ListPaginatedResult<DriverHistory> = fetchDriverDeliveries(
+        driverId = driverId,
+        statusIds = listOf(4, 5),
+        pageSize = pageSize,
+        page = page
+    )
+
     private suspend fun validateAndGetAssignmentId(
         deliveryId: Int,
         driverLogin: String,
@@ -377,6 +366,98 @@ class DeliveryRepository {
         requestData[AssignmentTable.id].value
     }
 
+    private suspend fun fetchDriverDeliveries(
+        driverId: Int,
+        statusIds: List<Int>,
+        page: Int,
+        pageSize: Int
+    ): ListPaginatedResult<DriverHistory> = loggedTransaction {
+
+        val cargoTypeNameAlias = CargoTypeTable.name.alias("cargo_type_name")
+
+        val joinQuery = AssignmentTable
+            .join(RequestTable, JoinType.INNER, AssignmentTable.requestId, RequestTable.id)
+            .join(RequestStatusTable, JoinType.INNER, RequestTable.statusId, RequestStatusTable.id)
+            .join(VehicleTable, JoinType.INNER, AssignmentTable.vehicleId, VehicleTable.id)
+            .join(CargoTypeTable, JoinType.LEFT, RequestTable.cargoTypeId, CargoTypeTable.id)
+
+        val selectCols = listOf(
+            RequestTable.id,
+            RequestTable.requestNumber,
+            RequestStatusTable.id,
+            RequestStatusTable.name,
+            RequestTable.loadingAddress,
+            RequestTable.loadingLat,
+            RequestTable.loadingLon,
+            RequestTable.unloadingAddress,
+            RequestTable.unloadingLat,
+            RequestTable.unloadingLon,
+            VehicleTable.id,
+            VehicleTable.model,
+            VehicleTable.licensePlate,
+            VehicleTable.payloadCapacity,
+            AssignmentTable.assignedAt,
+            AssignmentTable.completedAt,
+            cargoTypeNameAlias
+        )
+
+        val offset = (page - 1L) * pageSize
+
+        val historyRaw = joinQuery
+            .select(selectCols)
+            .where {
+                (AssignmentTable.driverId eq driverId) and
+                        (RequestTable.statusId inList statusIds)
+            }
+            .orderBy(
+                Coalesce(AssignmentTable.completedAt, AssignmentTable.assignedAt),
+                SortOrder.DESC_NULLS_LAST
+            )
+            .limit(pageSize + 1)
+            .offset(offset)
+            .map { row ->
+                DriverHistory(
+                    id = row[RequestTable.id].value,
+                    requestNumber = row[RequestTable.requestNumber] ?: "",
+                    status = Status(
+                        id = row[RequestStatusTable.id].value,
+                        name = row[RequestStatusTable.name]
+                    ),
+                    vehicle = Vehicle(
+                        id = row[VehicleTable.id].value,
+                        model = row[VehicleTable.model],
+                        licensePlate = row[VehicleTable.licensePlate],
+                        payloadCapacity = row[VehicleTable.payloadCapacity]
+                    ),
+                    loadingPoint = Point(
+                        address = row[RequestTable.loadingAddress],
+                        lat = row[RequestTable.loadingLat],
+                        lon = row[RequestTable.loadingLon]
+                    ),
+                    unloadingPoint = Point(
+                        address = row[RequestTable.unloadingAddress],
+                        lat = row[RequestTable.unloadingLat],
+                        lon = row[RequestTable.unloadingLon]
+                    ),
+                    cargoTypeName = row[cargoTypeNameAlias] ?: "Не указан",
+                    assignedAt = row[AssignmentTable.assignedAt]?.toString() ?: "",
+                    completedAt = row[AssignmentTable.completedAt]?.toString() ?: ""
+                )
+            }
+
+        val hasMore = historyRaw.size > pageSize
+        val historyItems = if (hasMore) {
+            historyRaw.dropLast(1)
+        } else {
+            historyRaw
+        }
+
+        ListPaginatedResult(
+            items = historyItems,
+            hasMore = hasMore
+        )
+    }
+
     private suspend fun fetchDeliveries(
         driverLogin: String,
         statusIds: List<Int>,
@@ -404,7 +485,6 @@ class DeliveryRepository {
             RequestTable.unloadingLat,
             RequestTable.unloadingLon,
             RequestTable.cargoWeight,
-            RequestTable.cargoVolume,
             CargoTypeTable.name.alias("cargo_type_name"),
             RequestTable.createdAt,
             RequestTable.updatedAt
@@ -427,7 +507,30 @@ class DeliveryRepository {
             )
             .limit(pageSize + 1)
             .offset(offset)
-            .map { mapDeliveryRow(it) }
+            .map { row ->
+                Delivery(
+                    id = row[RequestTable.id].value,
+                    requestNumber = row[RequestTable.requestNumber],
+                    status = Status(
+                        id = row[RequestStatusTable.id].value,
+                        name = row[RequestStatusTable.name]
+                    ),
+                    loadingPoint = Point(
+                        address = row[RequestTable.loadingAddress],
+                        lat = row[RequestTable.loadingLat],
+                        lon = row[RequestTable.loadingLon]
+                    ),
+                    unloadingPoint = Point(
+                        address = row[RequestTable.unloadingAddress],
+                        lat = row[RequestTable.unloadingLat],
+                        lon = row[RequestTable.unloadingLon]
+                    ),
+                    cargoWeight = row[RequestTable.cargoWeight],
+                    cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
+                    createdAt = row[RequestTable.createdAt]?.toString(),
+                    updatedAt = row[RequestTable.updatedAt]?.toString()
+                )
+            }
         val hasMore = deliveriesRaw.size > pageSize
         val deliveries = if (hasMore) {
             deliveriesRaw.dropLast(1)

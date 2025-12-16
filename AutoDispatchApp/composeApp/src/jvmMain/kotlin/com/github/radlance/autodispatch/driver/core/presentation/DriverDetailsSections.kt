@@ -25,6 +25,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +41,7 @@ import com.github.radlance.autodispatch.common.presentation.LabeledValue
 import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
 import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.driver.core.domain.Driver
+import com.github.radlance.autodispatch.driver.history.presentation.DriverHistoryDialog
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 
 @Composable
@@ -46,6 +51,15 @@ fun DriverDetailsSections(
     onShowVehicleAssignmentDialog: (reassign: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDriverHistoryDialog by remember { mutableStateOf(false) }
+
+    if (showDriverHistoryDialog) {
+        DriverHistoryDialog(
+            driver = driver,
+            onDismiss = { showDriverHistoryDialog = false }
+        )
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth().verticalScroll(scrollState)
@@ -133,7 +147,10 @@ fun DriverDetailsSections(
             StatsRow("Отклонённые", stats.rejectedCount)
         }
         Spacer(modifier = Modifier.height(SECTION_GAP))
-        Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth().padding(end = 6.dp)) {
+        Button(
+            onClick = { showDriverHistoryDialog = true },
+            modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
+        ) {
             Icon(imageVector = Icons.Outlined.History, contentDescription = null)
             Spacer(Modifier.width(12.dp))
             Text(text = "История доставок")

@@ -84,7 +84,7 @@ internal class KtorApiServiceMobile(
         pageSize: Int
     ): ListPaginatedResultDto<DeliveryDto> {
 
-        return httpClient.get("deliveries/history") {
+        return httpClient.get("deliveries/history/my") {
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
         }.body()

@@ -1,11 +1,12 @@
 package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
+import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CoordsDto
-import com.github.radlance.autodispatch.request.change.data.PointDto
+import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
 import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
 import com.github.radlance.autodispatch.request.core.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
@@ -56,7 +57,7 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun coords(): CoordsDto
 
-    suspend fun points(query: String): List<PointDto>
+    suspend fun points(query: String): List<PointDetailedDto>
 
     suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto)
 
@@ -71,6 +72,12 @@ interface ApiServiceJvm : ApiService {
     suspend fun vehicleAssignments(): List<VehicleDto>
 
     suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int)
+
+    suspend fun driverHistory(
+        driverId: Int,
+        page: Int,
+        pageSize: Int
+    ): ListPaginatedResultDto<DriverHistoryDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -171,7 +178,7 @@ internal class KtorApiServiceJvm(
         }.body()
     }
 
-    override suspend fun points(query: String): List<PointDto> {
+    override suspend fun points(query: String): List<PointDetailedDto> {
         return httpClient.get {
             url("https://nominatim.openstreetmap.org/search")
             header("User-Agent", "AutoDispatch")
@@ -216,5 +223,16 @@ internal class KtorApiServiceJvm(
         httpClient.put("vehicles/${vehicleId}/assign") {
             setBody(AssignRequestDto(driverId))
         }
+    }
+
+    override suspend fun driverHistory(
+        driverId: Int,
+        page: Int,
+        pageSize: Int
+    ): ListPaginatedResultDto<DriverHistoryDto> {
+        return httpClient.get("deliveries/history/${driverId}") {
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+        }.body()
     }
 }

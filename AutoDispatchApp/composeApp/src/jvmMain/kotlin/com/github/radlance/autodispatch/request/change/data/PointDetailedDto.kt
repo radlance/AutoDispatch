@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-data class PointDto(
+data class PointDetailedDto(
     @SerialName("place_id") val placeId: Long,
     val lat: String,
     val lon: String,
