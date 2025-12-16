@@ -114,6 +114,8 @@ fun DriverHistoryDto.toDriverHistory(): DriverHistory {
         id = id,
         status = status.toStatus(),
         vehicle = vehicle.toVehicle(),
+        originCity = originCity,
+        destinationCity = destinationCity,
         loadingPoint = loadingPoint.toPoint(),
         unloadingPoint = unloadingPoint.toPoint(),
         cargoTypeName = cargoTypeName,

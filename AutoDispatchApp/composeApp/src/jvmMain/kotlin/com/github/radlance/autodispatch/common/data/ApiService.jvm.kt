@@ -47,8 +47,6 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun cancelRequest(requestId: Int)
 
-    suspend fun cancelAssignment(requestId: Int)
-
     suspend fun driverAssignments(): List<DriverStatsDto>
 
     suspend fun assignDriverToRequest(requestId: Int, driverId: Int)
@@ -149,10 +147,6 @@ internal class KtorApiServiceJvm(
 
     override suspend fun cancelRequest(requestId: Int) {
         httpClient.put("requests/${requestId}/cancel")
-    }
-
-    override suspend fun cancelAssignment(requestId: Int) {
-        httpClient.put("requests/${requestId}/assignment/cancel")
     }
 
     override suspend fun driverAssignments(): List<DriverStatsDto> {

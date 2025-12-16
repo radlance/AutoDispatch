@@ -97,9 +97,7 @@ class DriverHistoryViewModel(
         }
     )
 
-    fun open(driverId: Int) {
-
-        paginator.reset()
+    fun loadNextItems(driverId: Int) {
         driverHistoryStateMutable.update {
             it.copy(selectedDriverId = driverId)
         }
@@ -109,13 +107,10 @@ class DriverHistoryViewModel(
         }
     }
 
-    fun loadNextItems(driverId: Int) {
+    fun resetState() {
         driverHistoryStateMutable.update {
-            it.copy(selectedDriverId = driverId)
+            it.copy(paginatorState = it.paginatorState.copy(itemsState = FetchResultUiState.Loading))
         }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            paginator.loadNextItems()
-        }
+        paginator.reset()
     }
 }

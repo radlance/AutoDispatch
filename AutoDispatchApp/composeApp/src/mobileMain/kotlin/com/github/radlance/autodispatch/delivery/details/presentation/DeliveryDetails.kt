@@ -89,6 +89,7 @@ import com.github.radlance.autodispatch.common.presentation.SectionHeader
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.deliveryStatusColors
@@ -269,14 +270,9 @@ fun DeliveryDetails(
                             .padding(horizontal = 18.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        val createdAt = delivery.createdAt
                         StatusCard(
                             status = delivery.status.name,
-                            createdAt = "${createdAt.date}, ${
-                                createdAt.hour.toString().padStart(2, '0')
-                            }:${
-                                createdAt.minute.toString().padStart(2, '0')
-                            }:${createdAt.second.toString().padStart(2, '0')}",
+                            createdAt = delivery.createdAt.toSimpleDateWithTimeString(),
                             backgroundColor = backgroundColor,
                             contentColor = contentColor,
                             modifier = Modifier.fillMaxWidth()

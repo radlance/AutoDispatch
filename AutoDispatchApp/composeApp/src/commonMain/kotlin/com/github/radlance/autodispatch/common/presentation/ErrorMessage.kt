@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.Button
@@ -27,22 +28,24 @@ fun ErrorMessage(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Row {
-                Icon(
-                    imageVector = Icons.Outlined.ErrorOutline,
-                    tint = MaterialTheme.colorScheme.error,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(text = message, color = MaterialTheme.colorScheme.error)
-            }
-            Spacer(Modifier.height(12.dp))
-            Button(
-                onClick = onRetry
-            ) {
-                Text(text = stringResource(Res.string.retry), textAlign = TextAlign.Center)
+    DisableSelection {
+        Box(contentAlignment = Alignment.Center, modifier = modifier) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row {
+                    Icon(
+                        imageVector = Icons.Outlined.ErrorOutline,
+                        tint = MaterialTheme.colorScheme.error,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = message, color = MaterialTheme.colorScheme.error)
+                }
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = onRetry
+                ) {
+                    Text(text = stringResource(Res.string.retry), textAlign = TextAlign.Center)
+                }
             }
         }
     }

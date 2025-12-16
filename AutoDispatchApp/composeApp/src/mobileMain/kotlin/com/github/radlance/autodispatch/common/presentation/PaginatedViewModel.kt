@@ -14,7 +14,9 @@ abstract class PaginatedViewModel<T, R>(
 ) : BaseViewModel() {
 
     protected val stateMutable =
-        MutableStateFlow<PaginatorState<T, String>>(PaginatorState())
+        MutableStateFlow<PaginatorState<T, String>>(
+            PaginatorState(itemsState = FetchResultUiState.Idle)
+        )
 
     val state = stateMutable
         .onStart { loadNextItems() }
@@ -72,6 +74,7 @@ abstract class PaginatedViewModel<T, R>(
                 val updated = when (val s = current.itemsState) {
                     is FetchResultUiState.Success ->
                         FetchResultUiState.Success(s.data + items)
+
                     else ->
                         FetchResultUiState.Success(items)
                 }

@@ -334,10 +334,6 @@ class RequestRepository {
         }
     }
 
-    suspend fun cancelRequest(requestId: Int) = loggedTransaction {
-        RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 5 }
-    }
-
     suspend fun cancelAssignment(requestId: Int) = loggedTransaction {
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 5 }
         AssignmentTable.update({ AssignmentTable.requestId eq requestId }) {

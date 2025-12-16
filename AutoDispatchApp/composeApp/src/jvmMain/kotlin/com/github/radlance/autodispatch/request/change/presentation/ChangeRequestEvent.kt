@@ -119,13 +119,6 @@ interface ChangeRequestEvent : Event {
         }
     }
 
-    class ClickCancelAssignment(private val requestId: Int): ChangeRequestEvent {
-
-        override fun apply(action: CreateRequestAction) {
-            action.cancelAssignment(requestId)
-        }
-    }
-
     class ClickRejectDocument(
         private val requestId: Int,
         private val rejectReason: String
@@ -224,8 +217,6 @@ interface CreateRequestAction {
     )
 
     fun cancelRequest(requestId: Int)
-
-    fun cancelAssignment(requestId: Int)
 
     fun rejectDocument(requestId: Int, rejectReason: String)
 

@@ -15,13 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,7 +52,12 @@ fun DriverHistoryDialog(
     val historyState by viewModel.driverHistoryState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.open(driverId = driver.id)
+        viewModel.loadNextItems(driverId = driver.id)
+    }
+
+    val onDismiss = {
+        onDismiss()
+        viewModel.resetState()
     }
     AlertDialog(
         modifier = modifier,
@@ -65,7 +68,7 @@ fun DriverHistoryDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "История заявок водителя",
+                    text = "История доставок водителя",
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(
@@ -107,14 +110,16 @@ fun DriverHistoryDialog(
                             contentPadding = PaddingValues(bottom = 24.dp),
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 18.dp)
                         ) {
-                            items(items = history, key = { it.id }) { delivery ->
-                                DriverHistoryMockItem(
-                                    id = delivery.id.toString(),
-                                    index = history.indexOf(delivery),
-                                    modifier = Modifier.padding(horizontal = 4.dp)
+                            items(items = history, key = { it.id }) { historyItem ->
+                                DriverHistoryCard(
+                                    driverHistory = historyItem
                                 )
+//                                DriverHistoryMockItem(
+//                                    id = historyItem.id.toString(),
+//                                    index = history.indexOf(historyItem),
+//                                    modifier = Modifier.padding(horizontal = 4.dp)
+//                                )
                             }
                             if (historyState.paginatorState.isLoadingMore) {
                                 item {
@@ -186,42 +191,3 @@ fun DriverHistoryDialog(
         dismissButton = {},
     )
 }
-
-@Composable
-private fun DriverHistoryMockItem(
-    id: String,
-    index: Int,
-    modifier: Modifier = Modifier
-) {
-    DisableSelection {
-        Card(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(96.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Заявка #$index",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "ID: $id",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.alpha(0.6f)
-                    )
-                }
-
-                Text("Завершена")
-            }
-        }
-    }
-}
-

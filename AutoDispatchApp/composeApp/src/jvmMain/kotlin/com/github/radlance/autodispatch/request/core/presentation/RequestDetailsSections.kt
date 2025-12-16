@@ -61,6 +61,7 @@ import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.request.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
@@ -98,7 +99,7 @@ fun RequestDetailsSections(
             InfoRow(
                 icon = Icons.Outlined.LocationOn,
                 iconDesc = stringResource(Res.string.route),
-                text = routeText(request)
+                text = routeText(request.origin, request.destination)
             )
         }
 
@@ -107,15 +108,10 @@ fun RequestDetailsSections(
         )
 
         Section(header = stringResource(Res.string.request_creation_date)) {
-            val createdAt = request.createdAt
             InfoRow(
                 icon = Icons.Outlined.CalendarToday,
                 iconDesc = stringResource(Res.string.creation_date),
-                text = "${createdAt.date}, ${
-                    createdAt.hour.toString().padStart(2, '0')
-                }:${
-                    createdAt.minute.toString().padStart(2, '0')
-                }:${createdAt.second.toString().padStart(2, '0')}"
+                text = request.createdAt.toSimpleDateWithTimeString()
             )
         }
 
@@ -304,8 +300,8 @@ fun RequestDetailsSections(
     }
 }
 
-private fun routeText(request: Request): String =
-    listOf(request.origin, request.destination)
+fun routeText(origin: String, destination: String): String =
+    listOf(origin, destination)
         .filter { it.isNotBlank() }
         .takeIf { it.isNotEmpty() }
         ?.joinToString(" → ")

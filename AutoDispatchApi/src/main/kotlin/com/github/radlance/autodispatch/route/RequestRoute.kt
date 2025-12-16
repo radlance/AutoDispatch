@@ -89,13 +89,6 @@ fun Route.requests(repository: RequestRepository) {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
 
-                repository.cancelRequest(requestId = id)
-                call.respond(HttpStatusCode.OK)
-            }
-
-            put("/{id}/assignment/cancel") {
-                val id = call.parameters["id"]?.toIntOrNull()
-                    ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
                 repository.cancelAssignment(requestId = id)
                 call.respond(HttpStatusCode.OK)
             }

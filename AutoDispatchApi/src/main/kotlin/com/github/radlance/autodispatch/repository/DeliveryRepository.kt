@@ -1,42 +1,21 @@
 package com.github.radlance.autodispatch.repository
 
-import com.github.radlance.autodispatch.database.table.AssignmentTable
-import com.github.radlance.autodispatch.database.table.CargoTypeTable
-import com.github.radlance.autodispatch.database.table.CityTable
-import com.github.radlance.autodispatch.database.table.CustomerTable
-import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
-import com.github.radlance.autodispatch.database.table.RequestStatusTable
-import com.github.radlance.autodispatch.database.table.RequestTable
-import com.github.radlance.autodispatch.database.table.UserTable
-import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.database.table.*
 import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import com.github.radlance.autodispatch.domain.history.DriverHistory
-import com.github.radlance.autodispatch.domain.request.Cargo
-import com.github.radlance.autodispatch.domain.request.CargoType
-import com.github.radlance.autodispatch.domain.request.Customer
-import com.github.radlance.autodispatch.domain.request.Point
-import com.github.radlance.autodispatch.domain.request.Vehicle
+import com.github.radlance.autodispatch.domain.request.*
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
 import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.util.loggedTransaction
-import org.jetbrains.exposed.sql.Coalesce
-import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.alias
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
-import org.jetbrains.exposed.sql.update
-import kotlin.collections.dropLast
 
 class DeliveryRepository {
 
@@ -374,9 +353,13 @@ class DeliveryRepository {
     ): ListPaginatedResult<DriverHistory> = loggedTransaction {
 
         val cargoTypeNameAlias = CargoTypeTable.name.alias("cargo_type_name")
+        val originCity = CityTable.alias("origin_city")
+        val destCity = CityTable.alias("dest_city")
 
         val joinQuery = AssignmentTable
             .join(RequestTable, JoinType.INNER, AssignmentTable.requestId, RequestTable.id)
+            .join(originCity, JoinType.INNER, RequestTable.originId, originCity[CityTable.id])
+            .join(destCity, JoinType.INNER, RequestTable.destinationId, destCity[CityTable.id])
             .join(RequestStatusTable, JoinType.INNER, RequestTable.statusId, RequestStatusTable.id)
             .join(VehicleTable, JoinType.INNER, AssignmentTable.vehicleId, VehicleTable.id)
             .join(CargoTypeTable, JoinType.LEFT, RequestTable.cargoTypeId, CargoTypeTable.id)
@@ -392,13 +375,16 @@ class DeliveryRepository {
             RequestTable.unloadingAddress,
             RequestTable.unloadingLat,
             RequestTable.unloadingLon,
+            RequestTable.updatedAt,
             VehicleTable.id,
             VehicleTable.model,
             VehicleTable.licensePlate,
             VehicleTable.payloadCapacity,
             AssignmentTable.assignedAt,
             AssignmentTable.completedAt,
-            cargoTypeNameAlias
+            cargoTypeNameAlias,
+            originCity[CityTable.name].alias("origin_city_name"),
+            destCity[CityTable.name].alias("dest_city_name")
         )
 
         val offset = (page - 1L) * pageSize
@@ -416,6 +402,9 @@ class DeliveryRepository {
             .limit(pageSize + 1)
             .offset(offset)
             .map { row ->
+                val originCityName = row[originCity[CityTable.name].alias("origin_city_name")]
+                val destCityName = row[destCity[CityTable.name].alias("dest_city_name")]
+
                 DriverHistory(
                     id = row[RequestTable.id].value,
                     requestNumber = row[RequestTable.requestNumber] ?: "",
@@ -429,6 +418,8 @@ class DeliveryRepository {
                         licensePlate = row[VehicleTable.licensePlate],
                         payloadCapacity = row[VehicleTable.payloadCapacity]
                     ),
+                    originCity = originCityName,
+                    destinationCity = destCityName,
                     loadingPoint = Point(
                         address = row[RequestTable.loadingAddress],
                         lat = row[RequestTable.loadingLat],
@@ -439,9 +430,9 @@ class DeliveryRepository {
                         lat = row[RequestTable.unloadingLat],
                         lon = row[RequestTable.unloadingLon]
                     ),
-                    cargoTypeName = row[cargoTypeNameAlias] ?: "Не указан",
-                    assignedAt = row[AssignmentTable.assignedAt]?.toString() ?: "",
-                    completedAt = row[AssignmentTable.completedAt]?.toString() ?: ""
+                    cargoTypeName = row[cargoTypeNameAlias],
+                    assignedAt = row[AssignmentTable.assignedAt]!!.toString(),
+                    completedAt = row[AssignmentTable.completedAt]!!.toString()
                 )
             }
 

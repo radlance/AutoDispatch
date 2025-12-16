@@ -185,7 +185,7 @@ fun RequestDetailsPanel(
         CancelDialog(
             onDismissDialog = onDismissCancelDialog,
             onConfirm = {
-                viewModel.reduce(ChangeRequestEvent.ClickCancelAssignment(request.id))
+                viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(request.id))
             },
             cancelState = cancelRequestState,
             requestNumber = request.requestNumber

@@ -278,16 +278,6 @@ class ChangeRequestViewModel(
                 }
             }
 
-            override fun cancelAssignment(requestId: Int) {
-                cancelRequestStateMutable.value = FetchResultUiState.Loading
-
-                handle(
-                    background = { repository.cancelAssignment(requestId) }
-                ) {
-                    cancelRequestStateMutable.value = it.toUiState()
-                }
-            }
-
             override fun rejectDocument(requestId: Int, rejectReason: String) {
                 rejectDocumentsStateMutable.value = FetchResultUiState.Loading
                 handle(background = { repository.rejectDocument(requestId, rejectReason) }) {

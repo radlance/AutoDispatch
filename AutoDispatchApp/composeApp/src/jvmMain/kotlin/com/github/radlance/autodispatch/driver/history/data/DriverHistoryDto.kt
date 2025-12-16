@@ -10,6 +10,8 @@ data class DriverHistoryDto(
     val id: Int,
     val status: StatusDto,
     val vehicle: VehicleDto,
+    val originCity: String,
+    val destinationCity: String,
     val loadingPoint: PointDto,
     val unloadingPoint: PointDto,
     val cargoTypeName: String,

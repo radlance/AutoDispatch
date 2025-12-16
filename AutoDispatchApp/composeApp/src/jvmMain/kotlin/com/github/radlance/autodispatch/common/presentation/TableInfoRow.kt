@@ -2,7 +2,6 @@ package com.github.radlance.autodispatch.common.presentation
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -21,7 +20,7 @@ fun InfoRow(
     iconDesc: String?,
     text: String
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = iconDesc,
@@ -32,8 +31,7 @@ fun InfoRow(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            fontSize = 14.sp,
-            modifier = Modifier.fillMaxWidth()
+            fontSize = 14.sp
         )
     }
 }
