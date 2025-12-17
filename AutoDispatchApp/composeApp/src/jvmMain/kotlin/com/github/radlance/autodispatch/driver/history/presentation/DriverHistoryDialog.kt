@@ -1,17 +1,20 @@
 package com.github.radlance.autodispatch.driver.history.presentation
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -133,39 +136,47 @@ fun DriverHistoryDialog(
                                     }
                             }
 
-                            LazyColumn(
-                                state = lazyListState,
-                                verticalArrangement = Arrangement.spacedBy(24.dp),
-                                contentPadding = PaddingValues(bottom = 24.dp),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                items(items = history, key = { it.id }) { historyItem ->
-                                    DriverHistoryCard(
-                                        driverHistory = historyItem
-                                    )
-                                }
-                                if (historyState.paginatorState.isLoadingMore) {
-                                    item {
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            CircularProgressIndicator()
+                            Box(modifier = Modifier.weight(1f)) {
+                                LazyColumn(
+                                    state = lazyListState,
+                                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    items(items = history, key = { it.id }) { historyItem ->
+                                        DriverHistoryCard(
+                                            driverHistory = historyItem
+                                        )
+                                    }
+                                    if (historyState.paginatorState.isLoadingMore) {
+                                        item {
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator()
+                                            }
+                                        }
+                                    }
+
+                                    if (historyState.paginatorState.error != null) {
+                                        item {
+                                            ErrorMessage(
+                                                message = historyState.paginatorState.error
+                                                    ?: "Ошибка загрузки",
+                                                onRetry = { viewModel.loadNextItems(driverId = driver.id) }
+
+                                            )
                                         }
                                     }
                                 }
-
-                                if (historyState.paginatorState.error != null) {
-                                    item {
-                                        ErrorMessage(
-                                            message = historyState.paginatorState.error
-                                                ?: "Ошибка загрузки",
-                                            onRetry = { viewModel.loadNextItems(driverId = driver.id) }
-
-                                        )
-                                    }
-                                }
+                                VerticalScrollbar(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .fillMaxHeight()
+                                        .offset(x = 8.dp),
+                                    adapter = rememberScrollbarAdapter(scrollState = lazyListState)
+                                )
                             }
                         } else {
                             if (historyState.isEmptyHistory) {
