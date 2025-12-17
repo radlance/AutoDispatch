@@ -109,14 +109,21 @@ fun DriverDetailsSections(
                 LabeledValue(label = "Гос. номер", value = vehicle.licensePlate)
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 LabeledValue(label = "Грузоподъёмность", value = "${vehicle.payloadCapacity} кг")
-                if (driver.status.id == 1) {
-                    Spacer(modifier = Modifier.height(ITEM_GAP))
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+                if (driver.deliveriesStats.activeCount + driver.deliveriesStats.onCheckCount + driver.deliveriesStats.rejectedCount == 0) {
                     OutlinedButton(
                         onClick = { onShowVehicleAssignmentDialog(true) },
                         modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
                     ) {
                         Text(text = "Переназначить автомобиль")
                     }
+                } else {
+                    Text(
+                        text = "Переназначение автомобиля недоступно, пока у водителя есть незавершенные заявки (активные, на проверке, отклонённые)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 }
             } ?: run {
                 Text(

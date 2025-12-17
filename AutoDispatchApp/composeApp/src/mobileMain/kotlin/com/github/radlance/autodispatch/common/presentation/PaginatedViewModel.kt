@@ -94,26 +94,24 @@ abstract class PaginatedViewModel<T, R>(
         onSuccess = { result, _ ->
             val items = getItems(result)
 
+            val isEmptyHistory =
+                items.isEmpty() && queryFlow.value.isBlank()
+
             stateMutable.update { current ->
                 val updated = when (val s = current.itemsState) {
-                    is FetchResultUiState.Success -> FetchResultUiState.Success(s.data + items)
-                    else -> FetchResultUiState.Success(items)
-                }
-
-                val historyIsActuallyPresent = items.isNotEmpty() && queryFlow.value.isBlank()
-
-                val newEmptyHistoryValue = if (current.isEmptyHistory) {
-                    !historyIsActuallyPresent
-                } else {
-                    false
+                    is FetchResultUiState.Success ->
+                        FetchResultUiState.Success(s.data + items)
+                    else ->
+                        FetchResultUiState.Success(items)
                 }
 
                 current.copy(
                     itemsState = updated,
                     error = null,
-                    isEmptyHistory = newEmptyHistoryValue
+                    isEmptyHistory = isEmptyHistory
                 )
             }
+
         },
         endReached = { _, result ->
             !hasMore(result)

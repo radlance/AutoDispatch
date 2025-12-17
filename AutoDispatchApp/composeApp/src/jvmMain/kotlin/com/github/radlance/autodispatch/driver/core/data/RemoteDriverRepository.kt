@@ -12,7 +12,7 @@ class RemoteDriverRepository(
     private val apiService: ApiServiceJvm,
     private val handleRequest: HandleRequest
 ) : DriverRepository {
-    override suspend fun requests(
+    override suspend fun drivers(
         page: Int,
         pageSize: Int,
         searchQuery: String?

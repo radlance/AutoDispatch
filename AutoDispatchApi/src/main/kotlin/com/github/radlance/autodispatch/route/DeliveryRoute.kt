@@ -35,7 +35,7 @@ fun Route.deliveries(repository: DeliveryRepository) {
 
                 val paginatedResult = repository.deliveries(
                     driverLogin = login,
-                    searchQuery = searchQuery,  
+                    searchQuery = searchQuery,
                     page = page,
                     pageSie = pageSize
                 )

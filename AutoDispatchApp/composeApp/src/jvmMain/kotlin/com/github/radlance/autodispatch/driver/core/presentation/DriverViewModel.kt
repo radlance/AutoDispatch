@@ -59,7 +59,7 @@ class DriverViewModel(
         }
         handle(
             background = {
-                repository.requests(
+                repository.drivers(
                     page = page,
                     pageSize = pageSize,
                     searchQuery = searchQuery
