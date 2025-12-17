@@ -14,11 +14,13 @@ class RemoteDriverHistoryRepository(
 ) : DriverHistoryRepository {
     override suspend fun history(
         driverId: Int,
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): FetchResult<ListPaginatedResult<DriverHistory>, String> = handleRequest.handle {
         apiService.driverHistory(
             driverId = driverId,
+            searchQuery = searchQuery,
             page = page,
             pageSize = pageSize
         ).toDriverHistoryListPaginatedResult()

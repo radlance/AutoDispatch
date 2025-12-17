@@ -15,6 +15,8 @@ import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 
 class DeliveryRepository {
@@ -292,10 +294,12 @@ class DeliveryRepository {
 
     suspend fun driverDeliveryHistory(
         driverId: Int,
+        searchQuery: String?,
         pageSize: Int,
         page: Int
     ): ListPaginatedResult<DriverHistory> = fetchDriverDeliveries(
         driverId = driverId,
+        searchQuery = searchQuery,
         statusIds = listOf(4, 5),
         pageSize = pageSize,
         page = page
@@ -347,6 +351,7 @@ class DeliveryRepository {
 
     private suspend fun fetchDriverDeliveries(
         driverId: Int,
+        searchQuery: String?,
         statusIds: List<Int>,
         page: Int,
         pageSize: Int
@@ -387,14 +392,33 @@ class DeliveryRepository {
             destCity[CityTable.name].alias("dest_city_name")
         )
 
+        val conditions = mutableListOf<Op<Boolean>>()
+
+        conditions += AssignmentTable.driverId eq driverId
+        conditions += RequestTable.statusId inList statusIds
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions += OrOp(
+                listOf(
+                    RequestTable.requestNumber.lowerCase() like pattern,
+                    RequestStatusTable.name.lowerCase() like pattern,
+                    originCity[CityTable.name].lowerCase() like pattern,
+                    destCity[CityTable.name].lowerCase() like pattern,
+                    CargoTypeTable.name.lowerCase() like pattern,
+                    RequestTable.loadingAddress.lowerCase() like pattern,
+                    RequestTable.unloadingAddress.lowerCase() like pattern,
+                    VehicleTable.model.lowerCase() like pattern,
+                    VehicleTable.licensePlate.lowerCase() like pattern
+                )
+            )
+        }
+
         val offset = (page - 1L) * pageSize
 
         val historyRaw = joinQuery
             .select(selectCols)
-            .where {
-                (AssignmentTable.driverId eq driverId) and
-                        (RequestTable.statusId inList statusIds)
-            }
+            .where(AndOp(conditions))
             .orderBy(
                 Coalesce(AssignmentTable.completedAt, AssignmentTable.assignedAt),
                 SortOrder.DESC_NULLS_LAST

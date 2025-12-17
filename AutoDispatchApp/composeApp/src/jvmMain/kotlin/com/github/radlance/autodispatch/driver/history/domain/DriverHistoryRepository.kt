@@ -7,6 +7,7 @@ interface DriverHistoryRepository {
 
     suspend fun history(
         driverId: Int,
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ):  FetchResult<ListPaginatedResult<DriverHistory>, String>

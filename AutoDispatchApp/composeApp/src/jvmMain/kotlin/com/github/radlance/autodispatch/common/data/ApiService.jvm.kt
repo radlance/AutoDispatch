@@ -73,6 +73,7 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun driverHistory(
         driverId: Int,
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DriverHistoryDto>
@@ -99,30 +100,28 @@ internal class KtorApiServiceJvm(
         vehicleIds: List<Int>
     ): TablePaginatedResultDto<RequestDto> {
         return httpClient.get("requests") {
-            url {
-                parameters.append("page", page.toString())
-                parameters.append("pageSize", pageSize.toString())
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
 
-                searchQuery?.let { parameters.append("search", it) }
+            searchQuery?.let { parameter("search", it) }
 
-                if (originCityIds.isNotEmpty()) {
-                    parameters.append("originCityIds", originCityIds.joinToString(","))
-                }
-                if (destinationCityIds.isNotEmpty()) {
-                    parameters.append("destinationCityIds", destinationCityIds.joinToString(","))
-                }
-                if (cargoTypeIds.isNotEmpty()) {
-                    parameters.append("cargoTypeIds", cargoTypeIds.joinToString(","))
-                }
-                if (statusIds.isNotEmpty()) {
-                    parameters.append("statusIds", statusIds.joinToString(","))
-                }
-                if (driverIds.isNotEmpty()) {
-                    parameters.append("driverIds", driverIds.joinToString(","))
-                }
-                if (vehicleIds.isNotEmpty()) {
-                    parameters.append("vehicleIds", vehicleIds.joinToString(","))
-                }
+            if (originCityIds.isNotEmpty()) {
+                parameter("originCityIds", originCityIds.joinToString(","))
+            }
+            if (destinationCityIds.isNotEmpty()) {
+                parameter("destinationCityIds", destinationCityIds.joinToString(","))
+            }
+            if (cargoTypeIds.isNotEmpty()) {
+                parameter("cargoTypeIds", cargoTypeIds.joinToString(","))
+            }
+            if (statusIds.isNotEmpty()) {
+                parameter("statusIds", statusIds.joinToString(","))
+            }
+            if (driverIds.isNotEmpty()) {
+                parameter("driverIds", driverIds.joinToString(","))
+            }
+            if (vehicleIds.isNotEmpty()) {
+                parameter("vehicleIds", vehicleIds.joinToString(","))
             }
         }.body()
     }
@@ -221,10 +220,12 @@ internal class KtorApiServiceJvm(
 
     override suspend fun driverHistory(
         driverId: Int,
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DriverHistoryDto> {
         return httpClient.get("deliveries/history/${driverId}") {
+            searchQuery?.let { parameter("search", it) }
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
         }.body()

@@ -103,9 +103,11 @@ fun Route.deliveries(repository: DeliveryRepository) {
                 val queryParams = call.request.queryParameters
                 val page = queryParams["page"]?.toIntOrNull() ?: 1
                 val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 5
+                val searchQuery = queryParams["search"]
 
                 val paginatedResult = repository.driverDeliveryHistory(
                     driverId = id,
+                    searchQuery = searchQuery,
                     pageSize = pageSize,
                     page = page
                 )
