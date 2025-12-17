@@ -7,6 +7,7 @@ import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 interface DeliveryHistoryRepository {
 
     suspend fun history(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): FetchResult<ListPaginatedResult<Delivery>, String>

@@ -23,10 +23,12 @@ class DeliveryRepository {
 
     suspend fun deliveries(
         driverLogin: String,
+        searchQuery: String?,
         page: Int,
         pageSie: Int
     ): ListPaginatedResult<Delivery> = fetchDeliveries(
         driverLogin = driverLogin,
+        searchQuery = searchQuery,
         statusIds = listOf(2, 3, 6, 7),
         pageSize = pageSie,
         page = page
@@ -283,10 +285,12 @@ class DeliveryRepository {
 
     suspend fun deliveryHistory(
         driverLogin: String,
+        searchQuery: String?,
         pageSize: Int,
         page: Int
     ): ListPaginatedResult<Delivery> = fetchDeliveries(
         driverLogin = driverLogin,
+        searchQuery = searchQuery,
         statusIds = listOf(4, 5),
         pageSize = pageSize,
         page = page
@@ -475,6 +479,7 @@ class DeliveryRepository {
 
     private suspend fun fetchDeliveries(
         driverLogin: String,
+        searchQuery: String?,
         statusIds: List<Int>,
         page: Int,
         pageSize: Int
@@ -505,14 +510,29 @@ class DeliveryRepository {
             RequestTable.updatedAt
         )
 
+        val conditions = mutableListOf<Op<Boolean>>()
+
+        conditions += AssignmentTable.driverId eq driverId
+        conditions += RequestTable.statusId inList statusIds
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions += OrOp(
+                listOf(
+                    RequestTable.requestNumber.lowerCase() like pattern,
+                    RequestStatusTable.name.lowerCase() like pattern,
+                    CargoTypeTable.name.lowerCase() like pattern,
+                    RequestTable.loadingAddress.lowerCase() like pattern,
+                    RequestTable.unloadingAddress.lowerCase() like pattern
+                )
+            )
+        }
+
         val offset = (page - 1L) * pageSize
 
         val deliveriesRaw = joinQuery
             .select(selectCols)
-            .where {
-                (AssignmentTable.driverId eq driverId) and
-                        (RequestTable.statusId inList statusIds)
-            }
+            .where(AndOp(conditions))
             .orderBy(
                 Coalesce(
                     RequestTable.updatedAt,

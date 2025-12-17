@@ -21,12 +21,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,14 +48,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create
-import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.search_by_requests
+import com.github.radlance.autodispatch.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
-import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.seanproctor.datatable.DataTableState
@@ -197,7 +195,8 @@ fun RequestsScreen(
                         onSuccess = { request ->
                             val requestsToShow = request.items
                             selectedRequest?.let { selected ->
-                                val foundRequest = requestsToShow.find { r -> r.requestNumber == selected.requestNumber }
+                                val foundRequest =
+                                    requestsToShow.find { r -> r.requestNumber == selected.requestNumber }
 
                                 if (foundRequest == null) {
                                     selectedRequest = null
@@ -208,25 +207,11 @@ fun RequestsScreen(
                             }
 
                             if (requestsToShow.isEmpty()) {
-                                Box(
+                                EmptySearchPlaceholder(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Icon(
-                                            imageVector = Icons.Default.SearchOff,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(48.dp)
-                                        )
-                                        Text(
-                                            stringResource(Res.string.no_results_generic),
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
+                                )
                             } else {
                                 Column(modifier = Modifier.fillMaxSize()) {
                                     Box(modifier = Modifier.weight(1f)) {

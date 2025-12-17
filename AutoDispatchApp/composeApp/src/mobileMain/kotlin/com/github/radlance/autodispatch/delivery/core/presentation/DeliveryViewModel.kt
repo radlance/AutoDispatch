@@ -12,9 +12,10 @@ class DeliveryViewModel(
 ) {
 
     override suspend fun request(
+        query: String?,
         page: Int,
         pageSize: Int
-    ) = repository.deliveries(page, pageSize)
+    ) = repository.deliveries(query, page, pageSize)
 
     override fun getItems(result: ListPaginatedResult<Delivery>) =
         result.items

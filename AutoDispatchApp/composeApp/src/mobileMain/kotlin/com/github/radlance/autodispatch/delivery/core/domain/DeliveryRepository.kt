@@ -6,6 +6,7 @@ import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 interface DeliveryRepository {
 
     suspend fun deliveries(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): FetchResult<ListPaginatedResult<Delivery>, String>

@@ -42,10 +42,10 @@ import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.retry
+import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.profile.domain.User
-import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.presentation.BottomPagingBar
 import com.github.radlance.autodispatch.request.core.presentation.rememberDataTableScrollbarAdapter
 import com.seanproctor.datatable.DataTableState
@@ -63,7 +63,7 @@ fun DriverScreen(
 ) {
     var selectedDriver by rememberSaveable { mutableStateOf<Driver?>(null) }
     var showDriverDetailsPanel by rememberSaveable { mutableStateOf(false) }
-    
+
     val driverUiState by viewModel.driverScreenState.collectAsState()
     val pageIndex = driverUiState.pageIndex
     val pageSize = driverUiState.pageSize

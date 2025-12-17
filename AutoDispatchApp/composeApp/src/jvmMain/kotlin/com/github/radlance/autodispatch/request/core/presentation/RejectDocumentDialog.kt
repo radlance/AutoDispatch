@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
+import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)

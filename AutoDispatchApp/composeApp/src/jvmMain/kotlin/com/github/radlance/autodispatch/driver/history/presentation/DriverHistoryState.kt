@@ -9,5 +9,6 @@ data class DriverHistoryState(
     val query: String = "",
     val paginatorState: PaginatorState<DriverHistory, String> = PaginatorState(
         FetchResultUiState.Loading
-    )
+    ),
+    val isEmptyHistory: Boolean = true
 )

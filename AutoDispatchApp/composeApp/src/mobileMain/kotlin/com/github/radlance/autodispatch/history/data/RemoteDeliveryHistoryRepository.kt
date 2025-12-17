@@ -14,9 +14,10 @@ class RemoteDeliveryHistoryRepository(
 ) : DeliveryHistoryRepository {
 
     override suspend fun history(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): FetchResult<ListPaginatedResult<Delivery>, String> = handleRequest.handle {
-            apiService.history(page, pageSize).toDeliveryListPaginatedResult()
+        apiService.history(searchQuery, page, pageSize).toDeliveryListPaginatedResult()
     }
 }

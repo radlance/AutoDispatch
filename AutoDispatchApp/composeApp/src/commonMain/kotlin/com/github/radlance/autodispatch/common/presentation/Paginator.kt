@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.common.presentation
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import kotlinx.coroutines.coroutineScope
 
 class Paginator<Key, Item, Error>(
     private val initialKey: Key,
@@ -17,8 +18,8 @@ class Paginator<Key, Item, Error>(
     private var isMakingRequest = false
     private var isEndReached = false
 
-    suspend fun loadNextItems() {
-        if (isMakingRequest || isEndReached) return
+    suspend fun loadNextItems() = coroutineScope {
+        if (isMakingRequest || isEndReached) return@coroutineScope
 
         isMakingRequest = true
         val isInitial = currentKey == initialKey

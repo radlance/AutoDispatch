@@ -3,15 +3,26 @@ package com.github.radlance.autodispatch.common.presentation
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 abstract class PaginatedViewModel<T, R>(
     private val pageSize: Int = 20
 ) : BaseViewModel() {
+
+    private val queryFlowMutable = MutableStateFlow("")
+    val queryFlow = queryFlowMutable.asStateFlow()
 
     protected val stateMutable =
         MutableStateFlow<PaginatorState<T, String>>(
@@ -22,7 +33,19 @@ abstract class PaginatedViewModel<T, R>(
         .onStart { loadNextItems() }
         .stateInViewModel(initialValue = stateMutable.value)
 
+    init {
+        queryFlowMutable
+            .drop(1)
+            .debounce(500)
+            .distinctUntilChanged()
+            .onEach {
+                paginator.refresh()
+            }
+            .launchIn(viewModelScope)
+    }
+
     protected abstract suspend fun request(
+        query: String?,
         page: Int,
         pageSize: Int
     ): FetchResult<R, String>
@@ -49,7 +72,8 @@ abstract class PaginatedViewModel<T, R>(
             }
         },
         onRequest = { page ->
-            request(page, pageSize)
+            val searchQuery = queryFlow.value.takeIf { it.isNotBlank() }
+            request(searchQuery, page, pageSize)
         },
         getNextKey = { page, _ -> page + 1 },
         onError = { message ->
@@ -72,14 +96,23 @@ abstract class PaginatedViewModel<T, R>(
 
             stateMutable.update { current ->
                 val updated = when (val s = current.itemsState) {
-                    is FetchResultUiState.Success ->
-                        FetchResultUiState.Success(s.data + items)
-
-                    else ->
-                        FetchResultUiState.Success(items)
+                    is FetchResultUiState.Success -> FetchResultUiState.Success(s.data + items)
+                    else -> FetchResultUiState.Success(items)
                 }
 
-                current.copy(itemsState = updated, error = null)
+                val historyIsActuallyPresent = items.isNotEmpty() && queryFlow.value.isBlank()
+
+                val newEmptyHistoryValue = if (current.isEmptyHistory) {
+                    !historyIsActuallyPresent
+                } else {
+                    false
+                }
+
+                current.copy(
+                    itemsState = updated,
+                    error = null,
+                    isEmptyHistory = newEmptyHistoryValue
+                )
             }
         },
         endReached = { _, result ->
@@ -100,5 +133,10 @@ abstract class PaginatedViewModel<T, R>(
             }
             paginator.refresh()
         }
+    }
+
+    fun onQueryChange(query: String) {
+        stateMutable.update { it.copy(query = query) }
+        queryFlowMutable.value = query
     }
 }

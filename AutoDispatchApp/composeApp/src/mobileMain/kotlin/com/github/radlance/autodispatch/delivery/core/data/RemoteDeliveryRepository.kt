@@ -13,9 +13,10 @@ class RemoteDeliveryRepository(
     private val handleRequest: HandleRequest
 ) : DeliveryRepository {
     override suspend fun deliveries(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): FetchResult<ListPaginatedResult<Delivery>, String> = handleRequest.handle {
-        apiService.deliveries(page, pageSize).toDeliveryListPaginatedResult()
+        apiService.deliveries(searchQuery, page, pageSize).toDeliveryListPaginatedResult()
     }
 }

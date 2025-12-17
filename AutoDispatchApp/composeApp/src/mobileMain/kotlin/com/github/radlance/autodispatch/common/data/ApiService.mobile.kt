@@ -14,6 +14,7 @@ import io.ktor.http.content.PartData
 interface ApiServiceMobile : ApiService {
 
     suspend fun deliveries(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DeliveryDto>
@@ -27,6 +28,7 @@ interface ApiServiceMobile : ApiService {
     suspend fun retakeDocument(deliveryId: Int, formData: List<PartData>)
 
     suspend fun history(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DeliveryDto>
@@ -40,11 +42,13 @@ internal class KtorApiServiceMobile(
 ) : ApiServiceMobile, ApiService by apiService {
 
     override suspend fun deliveries(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DeliveryDto> {
 
         return httpClient.get("deliveries") {
+            searchQuery?.let { parameter("search", it) }
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
         }.body()
@@ -80,11 +84,13 @@ internal class KtorApiServiceMobile(
     }
 
     override suspend fun history(
+        searchQuery: String?,
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DeliveryDto> {
 
         return httpClient.get("deliveries/history/my") {
+            searchQuery?.let { parameter("search", it) }
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
         }.body()

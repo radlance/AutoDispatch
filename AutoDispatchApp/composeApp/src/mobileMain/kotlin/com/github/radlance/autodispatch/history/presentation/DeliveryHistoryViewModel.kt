@@ -12,9 +12,10 @@ class DeliveryHistoryViewModel(
 ) {
 
     override suspend fun request(
+        query: String?,
         page: Int,
         pageSize: Int
-    ) = repository.history(page, pageSize)
+    ) = repository.history(query, page, pageSize)
 
     override fun getItems(result: ListPaginatedResult<Delivery>) =
         result.items

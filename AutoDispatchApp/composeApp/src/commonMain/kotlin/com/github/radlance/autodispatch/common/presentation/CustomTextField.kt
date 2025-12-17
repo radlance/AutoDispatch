@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.common.presentation
+package com.github.radlance.autodispatch.common.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState

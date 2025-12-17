@@ -55,7 +55,7 @@ import autodispatch.composeapp.generated.resources.to
 import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.volume_label
 import autodispatch.composeapp.generated.resources.weight_label
-import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Customer

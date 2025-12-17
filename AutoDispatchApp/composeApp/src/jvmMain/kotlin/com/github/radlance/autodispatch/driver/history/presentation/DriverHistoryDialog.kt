@@ -9,17 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
@@ -27,25 +22,25 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.common.presentation.EmptyHistoryPlaceholder
+import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.driver.core.domain.Driver
-import com.github.radlance.autodispatch.request.common.presentation.CustomTextField
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -58,10 +53,17 @@ fun DriverHistoryDialog(
     viewModel: DriverHistoryViewModel = koinViewModel()
 ) {
     val historyState by viewModel.driverHistoryState.collectAsStateWithLifecycle()
+    val isSearchVisible by remember {
+        derivedStateOf {
+            !historyState.isEmptyHistory
+        }
+    }
+    val isLoading = historyState.paginatorState.itemsState is FetchResultUiState.Loading
 
     LaunchedEffect(Unit) {
         viewModel.loadNextItems(driverId = driver.id)
     }
+
 
     val onDismiss = {
         onDismiss()
@@ -69,7 +71,7 @@ fun DriverHistoryDialog(
     }
     AlertDialog(
         modifier = modifier,
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!isLoading) onDismiss() },
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -80,6 +82,7 @@ fun DriverHistoryDialog(
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(
+                    enabled = !isLoading,
                     onClick = onDismiss
                 ) {
                     Icon(
@@ -91,19 +94,21 @@ fun DriverHistoryDialog(
         },
         text = {
             Column {
-                DisableSelection {
-                    CustomTextField(
-                        value = historyState.query,
-                        onValueChange = { viewModel.onQueryChanged(it) },
-                        placeholder = "Поиск по доставкам",
-                        leadingIcon = Icons.Default.Search,
-                        labelText = null,
-                        height = TextFieldDefaults.MinHeight,
-                        searchBarColors = SearchBarDefaults.colors(containerColor = CardDefaults.cardColors().containerColor),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.height(8.dp))
+                if (isSearchVisible) {
+                    DisableSelection {
+                        CustomTextField(
+                            value = historyState.query,
+                            onValueChange = { viewModel.onQueryChange(it) },
+                            placeholder = "Поиск по доставкам",
+                            leadingIcon = Icons.Default.Search,
+                            labelText = null,
+                            height = TextFieldDefaults.MinHeight,
+                            searchBarColors = SearchBarDefaults.colors(containerColor = CardDefaults.cardColors().containerColor),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(8.dp))
 
+                    }
                 }
                 historyState.paginatorState.itemsState.Reduce(
                     onLoading = {
@@ -163,30 +168,18 @@ fun DriverHistoryDialog(
                                 }
                             }
                         } else {
-                            Box(
-                                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                                    .padding(horizontal = 18.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.History,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(64.dp).alpha(0.7f)
-                                    )
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "Доставок не найдено",
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        modifier = Modifier.alpha(0.7f)
-                                    )
-                                }
+                            if (historyState.isEmptyHistory) {
+                                EmptyHistoryPlaceholder(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth(),
+                                )
+                            } else {
+                                EmptySearchPlaceholder(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                )
                             }
                         }
                     },
