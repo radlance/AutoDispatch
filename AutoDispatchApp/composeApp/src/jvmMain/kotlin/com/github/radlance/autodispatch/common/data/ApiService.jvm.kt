@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
+import com.github.radlance.autodispatch.driver.request.data.DriverRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
@@ -77,6 +78,12 @@ interface ApiServiceJvm : ApiService {
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DriverHistoryDto>
+
+    suspend fun availableRequests(
+        searchQuery: String?,
+        page: Int,
+        pageSize: Int
+    ): ListPaginatedResultDto<DriverRequestDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -225,6 +232,18 @@ internal class KtorApiServiceJvm(
         pageSize: Int
     ): ListPaginatedResultDto<DriverHistoryDto> {
         return httpClient.get("deliveries/history/${driverId}") {
+            searchQuery?.let { parameter("search", it) }
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+        }.body()
+    }
+
+    override suspend fun availableRequests(
+        searchQuery: String?,
+        page: Int,
+        pageSize: Int
+    ): ListPaginatedResultDto<DriverRequestDto> {
+        return httpClient.get("requests/available") {
             searchQuery?.let { parameter("search", it) }
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())

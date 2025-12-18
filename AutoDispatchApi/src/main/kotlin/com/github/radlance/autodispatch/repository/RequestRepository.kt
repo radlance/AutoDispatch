@@ -14,6 +14,7 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
@@ -21,6 +22,7 @@ import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.DriverRequest
 import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
@@ -40,6 +42,7 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
@@ -389,6 +392,109 @@ class RequestRepository {
             it[this.vehicleId] = currentVehicleId
         }
         RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 2 }
+    }
+
+    suspend fun availableRequests(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?,
+    ): ListPaginatedResult<DriverRequest> = loggedTransaction {
+
+        val query = RequestTable
+            .join(CustomerTable, JoinType.INNER, RequestTable.customerId, CustomerTable.id)
+            .join(CargoTypeTable, JoinType.INNER, RequestTable.cargoTypeId, CargoTypeTable.id)
+
+        val conditions = mutableListOf<Op<Boolean>>()
+
+        conditions += RequestTable.statusId eq 1
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions += OrOp(
+                listOf(
+                    RequestTable.requestNumber.lowerCase() like pattern,
+                    RequestTable.loadingAddress.lowerCase() like pattern,
+                    RequestTable.unloadingAddress.lowerCase() like pattern,
+                    CargoTypeTable.name.lowerCase() like pattern,
+                    CustomerTable.organizationName.lowerCase() like pattern
+                )
+            )
+        }
+
+        val offset = (page - 1L) * pageSize
+        val limit = pageSize + 1
+
+        val resultRows = query
+            .select(
+                RequestTable.id,
+                RequestTable.requestNumber,
+                RequestTable.createdAt,
+                RequestTable.updatedAt,
+                CustomerTable.id,
+                CustomerTable.organizationName,
+                CustomerTable.email,
+                CustomerTable.phoneNumber,
+                CargoTypeTable.id,
+                CargoTypeTable.name,
+                RequestTable.cargoWeight,
+                RequestTable.cargoVolume,
+                RequestTable.cargoDescription,
+                RequestTable.loadingAddress,
+                RequestTable.loadingLat,
+                RequestTable.loadingLon,
+                RequestTable.unloadingAddress,
+                RequestTable.unloadingLat,
+                RequestTable.unloadingLon
+            )
+            .where(AndOp(conditions))
+            .orderBy(RequestTable.createdAt, SortOrder.DESC)
+            .limit(limit)
+            .offset(offset)
+            .map { row ->
+                DriverRequest(
+                    id = row[RequestTable.id].value,
+                    requestNumber = row[RequestTable.requestNumber]!!,
+                    customer = Customer(
+                        id = row[CustomerTable.id].value,
+                        organizationName = row[CustomerTable.organizationName],
+                        email = row[CustomerTable.email],
+                        phoneNumber = row[CustomerTable.phoneNumber]
+                    ),
+                    loadingPoint = Point(
+                        address = row[RequestTable.loadingAddress],
+                        lat = row[RequestTable.loadingLat],
+                        lon = row[RequestTable.loadingLon]
+                    ),
+                    unloadingPoint = Point(
+                        address = row[RequestTable.unloadingAddress],
+                        lat = row[RequestTable.unloadingLat],
+                        lon = row[RequestTable.unloadingLon]
+                    ),
+                    cargo = Cargo(
+                        type = CargoType(
+                            id = row[CargoTypeTable.id].value,
+                            name = row[CargoTypeTable.name]
+                        ),
+                        weight = row[RequestTable.cargoWeight],
+                        volume = row[RequestTable.cargoVolume],
+                        description = row[RequestTable.cargoDescription]
+                    ),
+                    createdAt = row[RequestTable.createdAt]!!.toString(),
+                    updatedAt = row[RequestTable.updatedAt]?.toString()
+                )
+            }
+
+        val hasMore = resultRows.size > pageSize
+        val items = if (hasMore) {
+            resultRows.dropLast(1)
+        } else {
+            resultRows
+        }
+
+        ListPaginatedResult(
+            items = items,
+            hasMore = hasMore
+        )
     }
 
     private fun <T : Any> setRequestFields(

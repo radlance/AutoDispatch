@@ -22,6 +22,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import com.github.radlance.autodispatch.driver.assignment.presentation.VehicleAssignmentDialog
 import com.github.radlance.autodispatch.driver.core.domain.Driver
+import com.github.radlance.autodispatch.driver.request.presentation.DriverRequestAssignmentDialog
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,6 +34,7 @@ fun DriverDetailsPanel(
 ) {
     val scrollState = rememberScrollState()
     var showVehicleAssignmentDialog by remember { mutableStateOf(false) }
+    var showDriverRequestAssignmentDialog by remember { mutableStateOf(false) }
     var isReassign by remember { mutableStateOf(driver.vehicle != null) }
     val scope = rememberCoroutineScope()
 
@@ -48,6 +50,13 @@ fun DriverDetailsPanel(
             },
             isReassign = isReassign,
             assignedVehicleId = driver.vehicle?.id
+        )
+    }
+
+    if (showDriverRequestAssignmentDialog) {
+        DriverRequestAssignmentDialog(
+            onDismiss = { showDriverRequestAssignmentDialog = false },
+            driver = driver
         )
     }
 
@@ -68,6 +77,9 @@ fun DriverDetailsPanel(
                         isReassign = it
                         showVehicleAssignmentDialog = true
                     },
+                    onShowDriverRequestAssignmentDialog = {
+                        showDriverRequestAssignmentDialog = true
+                    }
                 )
                 VerticalScrollbar(
                     modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().offset(x = 3.dp),

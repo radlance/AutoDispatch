@@ -250,6 +250,7 @@ class ChangeRequestViewModel(
                 }
 
                 changeRequestStateMutable.value = FetchResultUiState.Idle
+                customersStateMutable.value = emptyList()
             }
 
             override fun resetRemoveState() {

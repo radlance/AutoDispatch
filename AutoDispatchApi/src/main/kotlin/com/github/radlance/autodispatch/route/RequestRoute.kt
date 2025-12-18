@@ -18,7 +18,6 @@ fun Route.requests(repository: RequestRepository) {
 
                 val page = queryParams["page"]?.toIntOrNull() ?: 1
                 val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 20
-
                 val searchQuery = queryParams["search"]
 
                 fun parseIds(paramName: String): List<Int> {
@@ -119,6 +118,22 @@ fun Route.requests(repository: RequestRepository) {
                 )
 
                 call.respond(HttpStatusCode.OK)
+            }
+
+            get("/available") {
+                val queryParams = call.request.queryParameters
+
+                val page = queryParams["page"]?.toIntOrNull() ?: 1
+                val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 3
+                val searchQuery = queryParams["search"]
+
+                val paginatedResult = repository.availableRequests(
+                    page = page,
+                    pageSize = pageSize,
+                    searchQuery = searchQuery
+                )
+
+                call.respond(HttpStatusCode.OK, paginatedResult)
             }
         }
     }

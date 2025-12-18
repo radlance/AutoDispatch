@@ -49,6 +49,7 @@ fun DriverDetailsSections(
     scrollState: ScrollState,
     driver: Driver,
     onShowVehicleAssignmentDialog: (reassign: Boolean) -> Unit,
+    onShowDriverRequestAssignmentDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDriverHistoryDialog by remember { mutableStateOf(false) }
@@ -153,14 +154,25 @@ fun DriverDetailsSections(
             StatsRow("Отменённые", stats.canceledCount)
             StatsRow("Отклонённые", stats.rejectedCount)
         }
-        Spacer(modifier = Modifier.height(SECTION_GAP))
-        Button(
+        HorizontalDivider(
+            modifier = Modifier.padding(top = SECTION_GAP, bottom = SECTION_GAP, end = 6.dp)
+        )
+        OutlinedButton(
             onClick = { showDriverHistoryDialog = true },
             modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
         ) {
             Icon(imageVector = Icons.Outlined.History, contentDescription = null)
             Spacer(Modifier.width(12.dp))
             Text(text = "История доставок")
+        }
+        driver.vehicle?.let {
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(
+                onClick = onShowDriverRequestAssignmentDialog,
+                modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
+            ) {
+                Text(text = "Назначить рейс")
+            }
         }
     }
 

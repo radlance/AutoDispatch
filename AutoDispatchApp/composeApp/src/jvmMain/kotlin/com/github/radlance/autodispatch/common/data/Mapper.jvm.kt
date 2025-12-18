@@ -5,6 +5,8 @@ import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
 import com.github.radlance.autodispatch.driver.history.domain.DriverHistory
+import com.github.radlance.autodispatch.driver.request.data.DriverRequestDto
+import com.github.radlance.autodispatch.driver.request.domain.DriverRequest
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
@@ -125,6 +127,13 @@ fun DriverHistoryDto.toDriverHistory(): DriverHistory {
     )
 }
 
+fun ListPaginatedResultDto<DriverRequestDto>.toDriverRequestListPaginatedResult(): ListPaginatedResult<DriverRequest> {
+    return ListPaginatedResult(
+        items = items.map { it.toDriverRequest() },
+        hasMore = hasMore
+    )
+}
+
 private fun CityDto.toCity(): City {
     return City(
         id = id,
@@ -147,5 +156,18 @@ private fun DriverDto.toDriver(): Driver {
         status = status.toStatus(),
         vehicle = vehicle?.toVehicle(),
         deliveriesStats = deliveriesStats.toDeliveriesStats()
+    )
+}
+
+private fun DriverRequestDto.toDriverRequest(): DriverRequest {
+    return DriverRequest(
+        id = id,
+        requestNumber = requestNumber,
+        customer = customer.toCustomer(),
+        loadingPoint = loadingPoint.toPoint(),
+        unloadingPoint = unloadingPoint.toPoint(),
+        cargo = cargo.toCargo(),
+        createdAt = createdAt.toLocalDateTimeFromUtc(),
+        updatedAt = updatedAt?.toLocalDateTimeFromUtc()
     )
 }

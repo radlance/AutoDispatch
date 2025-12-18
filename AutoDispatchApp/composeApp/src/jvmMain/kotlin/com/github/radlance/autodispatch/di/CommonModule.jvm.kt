@@ -14,6 +14,9 @@ import com.github.radlance.autodispatch.driver.core.presentation.DriverViewModel
 import com.github.radlance.autodispatch.driver.history.data.RemoteDriverHistoryRepository
 import com.github.radlance.autodispatch.driver.history.domain.DriverHistoryRepository
 import com.github.radlance.autodispatch.driver.history.presentation.DriverHistoryViewModel
+import com.github.radlance.autodispatch.driver.request.data.RemoteDriverRequestRepository
+import com.github.radlance.autodispatch.driver.request.domain.DriverRequestRepository
+import com.github.radlance.autodispatch.driver.request.presentation.DriverRequestAssignmentViewModel
 import com.github.radlance.autodispatch.request.assignment.data.RemoteDriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentViewModel
@@ -81,4 +84,10 @@ val driverHistoryModule
     get() = module {
         singleOf(::RemoteDriverHistoryRepository).bind<DriverHistoryRepository>()
         viewModelOf(::DriverHistoryViewModel)
+    }
+
+val driveRequestModule
+    get() = module {
+        singleOf(::RemoteDriverRequestRepository).bind<DriverRequestRepository>()
+        viewModelOf(::DriverRequestAssignmentViewModel)
     }
