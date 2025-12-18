@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,14 +37,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
@@ -76,11 +83,12 @@ fun DriverRequestAssignmentDialog(
         viewModel.loadNextItems()
     }
 
-
     val onDismiss = {
         onDismiss()
         viewModel.resetState()
     }
+
+    var selectedRequestId by remember { mutableStateOf<Int?>(null) }
 
     AlertDialog(
         modifier = modifier,
@@ -102,8 +110,7 @@ fun DriverRequestAssignmentDialog(
                             searchBarColors = SearchBarDefaults.colors(containerColor = CardDefaults.cardColors().containerColor),
                             modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(Modifier.height(8.dp))
-
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
                 historyState.paginatorState.itemsState.Reduce(
@@ -112,8 +119,8 @@ fun DriverRequestAssignmentDialog(
                             CircularProgressIndicator()
                         }
                     },
-                    onSuccess = { history ->
-                        if (history.isNotEmpty()) {
+                    onSuccess = { requests ->
+                        if (requests.isNotEmpty()) {
                             val lazyListState = rememberLazyListState()
                             val historyItems =
                                 (historyState.paginatorState.itemsState as? FetchResultUiState.Success)?.data.orEmpty()
@@ -128,6 +135,16 @@ fun DriverRequestAssignmentDialog(
                                         }
                                     }
                             }
+                            Text(
+                                text = buildAnnotatedString {
+                                    append("Выберите заявку")
+                                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                                        append(" *")
+                                    }
+                                },
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
 
                             Box(modifier = Modifier.weight(1f)) {
                                 LazyColumn(
@@ -136,8 +153,12 @@ fun DriverRequestAssignmentDialog(
                                     modifier = Modifier
                                         .fillMaxSize()
                                 ) {
-                                    items(items = history, key = { it.id }) { historyItem ->
-
+                                    items(items = requests, key = { it.id }) { request ->
+                                        DriverRequestCard(
+                                            selected = request.id == selectedRequestId,
+                                            onSelect = { selectedRequestId = it },
+                                            driverRequest = request
+                                        )
                                     }
                                     if (historyState.paginatorState.isLoadingMore) {
                                         item {
@@ -225,9 +246,8 @@ fun DriverRequestAssignmentDialog(
                     Text(text = stringResource(Res.string.cancel))
                 }
                 Spacer(Modifier.width(12.dp))
-                // TODO handle enabled state
                 Button(
-                    enabled = !isLoading,
+                    enabled = !isLoading && selectedRequestId != null,
                     onClick = { /*TODO*/ }
                 ) {
                     Text(text = "Назначить")

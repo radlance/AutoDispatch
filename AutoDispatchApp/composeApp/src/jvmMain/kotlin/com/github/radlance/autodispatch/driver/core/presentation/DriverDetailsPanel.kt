@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,9 +16,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelectionContainer
 import com.github.radlance.autodispatch.driver.assignment.presentation.VehicleAssignmentDialog
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.request.presentation.DriverRequestAssignmentDialog
@@ -60,12 +58,7 @@ fun DriverDetailsPanel(
         )
     }
 
-    SelectionContainer(
-        modifier = Modifier.pointerHoverIcon(
-            PointerIcon.Default,
-            overrideDescendants = true
-        )
-    ) {
+    DefaultPointerSelectionContainer {
         Column(modifier = modifier.padding(8.dp)) {
             DriverPanelHeader(onClose = onClosePanel)
 

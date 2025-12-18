@@ -1,46 +1,34 @@
 package com.github.radlance.autodispatch.driver.history.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelectionContainer
 import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
+import com.github.radlance.autodispatch.driver.common.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.driver.history.domain.DriverHistory
 import com.github.radlance.autodispatch.request.core.presentation.routeText
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
@@ -59,13 +47,7 @@ fun DriverHistoryCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-
-                        SelectionContainer(
-                            modifier = Modifier.pointerHoverIcon(
-                                PointerIcon.Default,
-                                overrideDescendants = true
-                            )
-                        ) {
+                        DefaultPointerSelectionContainer {
                             Text(
                                 text = buildAnnotatedString {
                                     append("Доставка ")
@@ -77,13 +59,7 @@ fun DriverHistoryCard(
                             )
                         }
                         Spacer(Modifier.height(8.dp))
-                        SelectionContainer(
-                            modifier = Modifier.pointerHoverIcon(
-                                PointerIcon.Default,
-                                overrideDescendants = true
-                            )
-                        ) {
-
+                        DefaultPointerSelectionContainer {
                             InfoRow(
                                 icon = Icons.Outlined.LocationOn,
                                 iconDesc = null,
@@ -97,12 +73,7 @@ fun DriverHistoryCard(
                     StatusWithColor(status = driverHistory.status.name)
                 }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                SelectionContainer(
-                    modifier = Modifier.pointerHoverIcon(
-                        PointerIcon.Default,
-                        overrideDescendants = true
-                    )
-                ) {
+                DefaultPointerSelectionContainer {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -147,83 +118,10 @@ fun DriverHistoryCard(
                 }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-                SelectionContainer(
-                    modifier = Modifier.pointerHoverIcon(
-                        PointerIcon.Default,
-                        overrideDescendants = true
-                    )
-                ) {
-                    Row(
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .width(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Circle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .width(2.dp)
-                                    .background(MaterialTheme.colorScheme.primary)
-                            )
-
-                            Icon(
-                                imageVector = Icons.Default.Place,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Погрузка",
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.alpha(0.7f)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = driverHistory.loadingPoint.toStringAddress(),
-                                    fontSize = 14.sp,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            Column {
-                                Text(
-                                    text = "Разгрузка",
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.alpha(0.7f)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = driverHistory.unloadingPoint.toStringAddress(),
-                                    fontSize = 14.sp,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    }
-                }
+                DeliveryRoute(
+                    loadingPoint = driverHistory.loadingPoint.toStringAddress(),
+                    unloadingPoint = driverHistory.unloadingPoint.toStringAddress()
+                )
             }
         }
     }

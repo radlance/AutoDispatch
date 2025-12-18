@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
@@ -27,9 +26,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelectionContainer
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatNumberNoTrailingZeros
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
@@ -249,12 +247,7 @@ fun RequestDetailsPanel(
         )
     }
 
-    SelectionContainer(
-        modifier = Modifier.pointerHoverIcon(
-            PointerIcon.Default,
-            overrideDescendants = true
-        )
-    ) {
+    DefaultPointerSelectionContainer {
         Column(modifier = modifier.padding(8.dp)) {
             RequestPanelHeader(
                 requestNumber = request.requestNumber,

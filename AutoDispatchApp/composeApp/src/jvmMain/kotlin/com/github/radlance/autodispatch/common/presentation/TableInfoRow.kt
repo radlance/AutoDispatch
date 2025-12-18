@@ -18,9 +18,10 @@ import androidx.compose.ui.unit.sp
 fun InfoRow(
     icon: ImageVector,
     iconDesc: String?,
-    text: String
+    text: String,
+    modifier: Modifier = Modifier
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = iconDesc,

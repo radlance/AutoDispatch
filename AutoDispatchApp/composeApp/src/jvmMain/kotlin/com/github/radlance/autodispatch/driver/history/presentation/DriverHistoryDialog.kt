@@ -67,7 +67,6 @@ fun DriverHistoryDialog(
         viewModel.loadNextItems(driverId = driver.id)
     }
 
-
     val onDismiss = {
         onDismiss()
         viewModel.resetState()
