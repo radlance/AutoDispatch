@@ -1,13 +1,13 @@
-package com.github.radlance.autodispatch.driver.core.domain
+package com.github.radlance.autodispatch.vehicle.core.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 
-interface DriverRepository {
+interface VehicleRepository {
 
-    suspend fun drivers(
+    suspend fun vehicles(
         page: Int = 1,
         pageSize: Int = 10,
         searchQuery: String? = null
-    ): FetchResult<TablePaginatedResult<Driver>, String>
+    ): FetchResult<TablePaginatedResult<VehicleDetailed>, String>
 }

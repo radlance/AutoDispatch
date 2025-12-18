@@ -6,7 +6,7 @@ import com.github.radlance.autodispatch.common.data.toPaginatedResultDriver
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.core.domain.DriverRepository
-import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
+import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 
 class RemoteDriverRepository(
     private val apiService: ApiServiceJvm,

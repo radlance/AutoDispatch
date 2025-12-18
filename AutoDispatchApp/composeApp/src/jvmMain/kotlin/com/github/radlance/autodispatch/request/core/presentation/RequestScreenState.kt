@@ -3,7 +3,7 @@ package com.github.radlance.autodispatch.request.core.presentation
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
+import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 
 data class RequestScreenState(
     val filters: FetchResultUiState<Filters, String> = FetchResultUiState.Loading,

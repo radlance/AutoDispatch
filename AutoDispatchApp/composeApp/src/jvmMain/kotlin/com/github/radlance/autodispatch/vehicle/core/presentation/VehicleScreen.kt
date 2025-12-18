@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.driver.core.presentation
+package com.github.radlance.autodispatch.vehicle.core.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
@@ -43,10 +43,10 @@ import autodispatch.composeapp.generated.resources.retry
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.core.presentation.BottomPagingBar
 import com.github.radlance.autodispatch.request.core.presentation.rememberDataTableScrollbarAdapter
+import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 import com.seanproctor.datatable.DataTableState
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -54,26 +54,27 @@ import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun DriverScreen(
+fun VehicleScreen(
     loadProfileUiState: FetchResultUiState<User, String>,
     onReloadProfile: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DriverViewModel = koinViewModel()
+    viewModel: VehicleViewModel = koinViewModel()
 ) {
-    var selectedDriver by rememberSaveable { mutableStateOf<Driver?>(null) }
-    var showDriverDetailsPanel by rememberSaveable { mutableStateOf(false) }
-
-    val driverUiState by viewModel.driverScreenState.collectAsState()
-    val pageIndex = driverUiState.pageIndex
-    val pageSize = driverUiState.pageSize
-    val query = driverUiState.query
+    var selectedVehicle by rememberSaveable { mutableStateOf<VehicleDetailed?>(null) }
+    var showVehicleDetailsPanel by rememberSaveable { mutableStateOf(false) }
+    val vehicleUiState by viewModel.vehicleScreenState.collectAsState()
+    val pageIndex = vehicleUiState.pageIndex
+    val pageSize = vehicleUiState.pageSize
+    val query = vehicleUiState.query
 
     val dataTableState = remember { DataTableState() }
+
     BackHandler {
-        if (showDriverDetailsPanel) {
-            showDriverDetailsPanel = false
+        if (showVehicleDetailsPanel) {
+            showVehicleDetailsPanel = false
         }
     }
+
     Row(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(1f)) {
             Row(
@@ -85,44 +86,43 @@ fun DriverScreen(
                 CustomTextField(
                     value = query,
                     onValueChange = viewModel::onQueryChanged,
-                    placeholder = "Поиск по водителям…",
+                    placeholder = "Поиск по автомобилям…",
                     leadingIcon = Icons.Default.Search,
                     labelText = null,
                     height = TextFieldDefaults.MinHeight,
                     modifier = Modifier.weight(1f)
                 )
             }
-            driverUiState.driversResultState.Reduce(
-                onSuccess = { result ->
-                    val driversToShow = result.items
-                    selectedDriver?.let { selected ->
-                        val foundDriver =
-                            driversToShow.find { d -> d.id == selected.id }
 
-                        if (foundDriver == null) {
-                            selectedDriver = null
-                            showDriverDetailsPanel = false
-                        } else if (foundDriver != selected) {
-                            selectedDriver = foundDriver
+            vehicleUiState.vehicleResultState.Reduce(
+                onSuccess = { result ->
+                    val vehiclesToShow = result.items
+                    selectedVehicle?.let { selected ->
+                        val foundVehicle = vehiclesToShow.find { v -> v.id == selected.id }
+
+                        if (foundVehicle == null) {
+                            selectedVehicle = null
+                            showVehicleDetailsPanel = false
+                        } else if (foundVehicle != selected) {
+                            selectedVehicle = foundVehicle
                         }
                     }
-                    if (driversToShow.isEmpty()) {
-
+                    if (vehiclesToShow.isEmpty()) {
                         EmptySearchPlaceholder(modifier = Modifier.fillMaxWidth().weight(1f))
-
                     } else {
                         Column(modifier = Modifier.fillMaxSize()) {
                             Box(modifier = Modifier.weight(1f)) {
-                                DriverTable(
-                                    drivers = driversToShow,
-                                    selectedDriver = selectedDriver,
-                                    showPanel = showDriverDetailsPanel,
-                                    onDriverClick = { driver ->
-                                        showDriverDetailsPanel = if (driver == selectedDriver) {
-                                            !showDriverDetailsPanel
-                                        } else true
+                                VehicleTable(
+                                    vehicles = vehiclesToShow,
+                                    selectedVehicle = selectedVehicle,
+                                    showPanel = showVehicleDetailsPanel,
+                                    onVehicleClick = { vehicle ->
+                                        showVehicleDetailsPanel =
+                                            if (vehicle == selectedVehicle) {
+                                                !showVehicleDetailsPanel
+                                            } else true
 
-                                        selectedDriver = driver
+                                        selectedVehicle = vehicle
                                     },
                                     dataTableState = dataTableState,
                                     pageIndex = pageIndex,
@@ -154,7 +154,7 @@ fun DriverScreen(
                                 onPrev = { viewModel.onPageIndexChanged(pageIndex - 1) },
                                 onNext = { viewModel.onPageIndexChanged(pageIndex + 1) },
                                 onLast = { viewModel.onPageIndexChanged(pageCount - 1) },
-                                onRefresh = { viewModel.triggerDriverLoad() },
+                                onRefresh = { viewModel.triggerVehicleLoad() },
                                 pageSize = pageSize,
                                 pageSizeOptions = listOf(5, 10, 15, 20, 25),
                                 onPageSizeChange = { viewModel.onPageSizeChanged(it) }
@@ -163,20 +163,18 @@ fun DriverScreen(
                     }
                 },
                 onLoading = {
-                    val previous = driverUiState.lastSuccessfulRequest
-                    val driversToShow = previous?.items ?: emptyList()
+                    val previous = vehicleUiState.lastSuccessfulRequest
+                    val vehiclesToShow = previous?.items ?: emptyList()
                     Column(modifier = Modifier.fillMaxSize()) {
                         Box(modifier = Modifier.weight(1f)) {
-                            DriverTable(
-                                drivers = driversToShow,
-                                selectedDriver = selectedDriver,
-                                showPanel = showDriverDetailsPanel,
-                                onDriverClick = { driver ->
-                                    showDriverDetailsPanel = if (driver == selectedDriver) {
-                                        !showDriverDetailsPanel
+                            VehicleTable(
+                                vehicles = vehiclesToShow,
+                                selectedVehicle = selectedVehicle,
+                                showPanel = showVehicleDetailsPanel,
+                                onVehicleClick = { vehicle ->
+                                    showVehicleDetailsPanel = if (vehicle == selectedVehicle) {
+                                        !showVehicleDetailsPanel
                                     } else true
-
-                                    selectedDriver = driver
                                 },
                                 dataTableState = dataTableState,
                                 pageIndex = pageIndex,
@@ -254,23 +252,16 @@ fun DriverScreen(
                 }
             )
         }
-        val state = driverUiState.driversResultState
+        val state = vehicleUiState.vehicleResultState
         if (state is FetchResultUiState.Success || state is FetchResultUiState.Loading) {
             AnimatedVisibility(
-                visible = showDriverDetailsPanel,
+                visible = showVehicleDetailsPanel,
                 enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
                 exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
             ) {
-                val driver = selectedDriver
+                val driver = selectedVehicle
                 if (driver != null) {
-                    DriverDetailsPanel(
-                        driver = driver,
-                        onClosePanel = { showDriverDetailsPanel = false },
-                        onSuccessAssignDriver = viewModel::onDriverChanged,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(350.dp)
-                    )
+
                     Box(
                         Modifier
                             .fillMaxHeight()

@@ -31,6 +31,9 @@ import com.github.radlance.autodispatch.request.change.presentation.RequestValid
 import com.github.radlance.autodispatch.request.core.data.RemoteRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.request.core.presentation.RequestViewModel
+import com.github.radlance.autodispatch.vehicle.core.data.RemoteVehicleRepository
+import com.github.radlance.autodispatch.vehicle.core.domain.VehicleRepository
+import com.github.radlance.autodispatch.vehicle.core.presentation.VehicleViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -90,4 +93,10 @@ val driveRequestModule
     get() = module {
         singleOf(::RemoteDriverRequestRepository).bind<DriverRequestRepository>()
         viewModelOf(::DriverRequestAssignmentViewModel)
+    }
+
+val vehicleModule
+    get() = module {
+        singleOf(::RemoteVehicleRepository).bind<VehicleRepository>()
+        viewModelOf(::VehicleViewModel)
     }

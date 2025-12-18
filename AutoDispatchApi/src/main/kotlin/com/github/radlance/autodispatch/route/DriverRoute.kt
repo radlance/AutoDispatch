@@ -13,7 +13,6 @@ fun Route.driver(repository: DriverRepository) {
                 val queryParams = call.request.queryParameters
                 val page = queryParams["page"]?.toIntOrNull() ?: 1
                 val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 20
-
                 val searchQuery = queryParams["search"]
 
                 val paginatedRequests = repository.drivers(

@@ -43,7 +43,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
@@ -64,7 +66,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.min
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun RequestsScreen(
     loadProfileUiState: FetchResultUiState<User, String>,
@@ -90,6 +92,12 @@ fun RequestsScreen(
 
     val dataTableState = remember { DataTableState() }
     val scope = rememberCoroutineScope()
+
+    BackHandler {
+        if (showRequestDetailsPanel) {
+            showRequestDetailsPanel = false
+        }
+    }
 
     Row(modifier = modifier.fillMaxSize()) {
 

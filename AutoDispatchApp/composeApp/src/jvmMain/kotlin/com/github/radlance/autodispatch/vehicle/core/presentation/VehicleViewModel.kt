@@ -1,10 +1,10 @@
-package com.github.radlance.autodispatch.driver.core.presentation
+package com.github.radlance.autodispatch.vehicle.core.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
-import com.github.radlance.autodispatch.driver.core.domain.DriverRepository
+import com.github.radlance.autodispatch.vehicle.core.domain.VehicleRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,119 +13,121 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
-class DriverViewModel(
-    private val repository: DriverRepository
+class VehicleViewModel(
+    private val repository: VehicleRepository
 ) : BaseViewModel() {
-    private val driverScreenStateMutable = MutableStateFlow(DriverScreenState())
-    val driverScreenState = driverScreenStateMutable.asStateFlow()
+    private val vehicleScreenStateMutable = MutableStateFlow(VehicleScreenState())
+    val vehicleScreenState = vehicleScreenStateMutable.asStateFlow()
 
     private var searchJob: Job? = null
     private val debounceTime = 500L
 
     init {
-        triggerDriverLoad()
+        triggerVehicleLoad()
     }
 
-    fun onDriverChanged() {
-        if (driverScreenStateMutable.value.driversResultState is FetchResultUiState.Success) {
-            triggerDriverLoad()
+    fun onVehicleChanged() {
+        if (vehicleScreenStateMutable.value.vehicleResultState is FetchResultUiState.Success) {
+            triggerVehicleLoad()
         }
     }
-    fun triggerDriverLoad() {
-        val state = driverScreenStateMutable.value
+
+    fun triggerVehicleLoad() {
+        val state = vehicleScreenStateMutable.value
         val searchQuery = state.query.takeIf { it.isNotBlank() }
 
-        val params = LastDriverRequestParams(
+        val params = LastVehicleRequestParams(
             page = state.pageIndex,
             pageSize = state.pageSize,
             searchQuery = searchQuery
         )
-        driverScreenStateMutable.update { it.copy(lastAttemptedRequest = params) }
 
-        loadDrivers(
+        vehicleScreenStateMutable.update { it.copy(lastAttemptedRequest = params) }
+
+        loadVehicles(
             page = state.pageIndex + 1,
             pageSize = state.pageSize,
             searchQuery = searchQuery
         )
     }
 
-    private fun loadDrivers(
+    private fun loadVehicles(
         page: Int,
         pageSize: Int,
         searchQuery: String?
     ) {
-        driverScreenStateMutable.update { state ->
-            state.copy(driversResultState = FetchResultUiState.Loading)
+        vehicleScreenStateMutable.update { state ->
+            state.copy(vehicleResultState = FetchResultUiState.Loading)
         }
         handle(
             background = {
-                repository.drivers(
+                repository.vehicles(
                     page = page,
                     pageSize = pageSize,
                     searchQuery = searchQuery
                 )
             }
-        ) { drivers ->
-            driverScreenStateMutable.update { state ->
-                val uiState = drivers.toUiState()
+        ) { vehicles ->
+            vehicleScreenStateMutable.update { state ->
+                val uiState = vehicles.toUiState()
                 if (uiState is FetchResultUiState.Success) {
                     state.copy(
-                        driversResultState = uiState,
+                        vehicleResultState = uiState,
                         lastSuccessfulRequest = uiState.data
                     )
                 } else {
-                    state.copy(driversResultState = uiState)
+                    state.copy(vehicleResultState = uiState)
                 }
             }
         }
     }
 
     fun onQueryChanged(query: String) {
-        driverScreenStateMutable.update { it.copy(query = query, pageIndex = 0) }
+        vehicleScreenStateMutable.update { it.copy(query = query, pageIndex = 0) }
 
         searchJob?.cancel()
 
         searchJob = viewModelScope.launch {
             delay(debounceTime)
-            triggerDriverLoad()
+            triggerVehicleLoad()
         }
     }
 
     fun retryLoadRequests() {
-        val lastParams = driverScreenStateMutable.value.lastAttemptedRequest
+        val lastParams = vehicleScreenStateMutable.value.lastAttemptedRequest
         if (lastParams != null) {
-            loadDrivers(
+            loadVehicles(
                 page = lastParams.page + 1,
                 pageSize = lastParams.pageSize,
                 searchQuery = lastParams.searchQuery
             )
         } else {
-            triggerDriverLoad()
+            triggerVehicleLoad()
         }
     }
 
     fun onPageIndexChanged(pageIndex: Int) {
         val safeIndex = max(0, pageIndex)
-        driverScreenStateMutable.update {
+        vehicleScreenStateMutable.update {
             it.copy(pageIndex = safeIndex)
         }
-        triggerDriverLoad()
+        triggerVehicleLoad()
     }
 
     fun onPageSizeChanged(newPageSize: Int) {
-        val state = driverScreenStateMutable.value
+        val state = vehicleScreenStateMutable.value
         val oldPageSize = state.pageSize
         val oldPageIndex = state.pageIndex
         val absoluteOffset = oldPageIndex * oldPageSize
         val newPageIndex = absoluteOffset / newPageSize
 
-        driverScreenStateMutable.update {
+        vehicleScreenStateMutable.update {
             it.copy(
                 pageSize = newPageSize,
                 pageIndex = newPageIndex
             )
         }
 
-        triggerDriverLoad()
+        triggerVehicleLoad()
     }
 }

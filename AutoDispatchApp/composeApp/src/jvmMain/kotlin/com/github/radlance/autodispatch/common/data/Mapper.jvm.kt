@@ -23,8 +23,10 @@ import com.github.radlance.autodispatch.request.core.data.UserFilterDto
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.request.core.domain.TablePaginatedResult
+import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
+import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
+import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 
 fun TablePaginatedResultDto<RequestDto>.toPaginatedResultRequest(): TablePaginatedResult<Request> {
     return TablePaginatedResult(
@@ -134,6 +136,13 @@ fun ListPaginatedResultDto<DriverRequestDto>.toDriverRequestListPaginatedResult(
     )
 }
 
+fun TablePaginatedResultDto<VehicleDetailedDto>.toPaginatedResultVehicleDetails(): TablePaginatedResult<VehicleDetailed> {
+    return TablePaginatedResult(
+        items = items.map { it.toVehicleDetailed() },
+        totalCount = totalCount
+    )
+}
+
 private fun CityDto.toCity(): City {
     return City(
         id = id,
@@ -169,5 +178,15 @@ private fun DriverRequestDto.toDriverRequest(): DriverRequest {
         cargo = cargo.toCargo(),
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc()
+    )
+}
+
+private fun VehicleDetailedDto.toVehicleDetailed(): VehicleDetailed {
+    return VehicleDetailed(
+        id = id,
+        model = model,
+        licensePlate = licensePlate,
+        payloadCapacity = payloadCapacity,
+        driverFullName = driverFullName
     )
 }
