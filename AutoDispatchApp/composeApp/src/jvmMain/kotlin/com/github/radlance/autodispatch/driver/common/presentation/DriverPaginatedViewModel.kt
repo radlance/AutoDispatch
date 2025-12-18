@@ -129,7 +129,7 @@ abstract class DriverPaginatedViewModel<T, R>(
         }
     )
 
-    fun resetState() {
+    open fun resetState() {
         stateMutable.update {
             it.copy(
                 paginatorState = it.paginatorState.copy(itemsState = FetchResultUiState.Loading),

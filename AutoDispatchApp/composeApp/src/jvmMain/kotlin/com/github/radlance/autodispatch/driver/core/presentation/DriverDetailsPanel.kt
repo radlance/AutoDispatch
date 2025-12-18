@@ -8,6 +8,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +39,43 @@ fun DriverDetailsPanel(
     val scrollState = rememberScrollState()
     var showVehicleAssignmentDialog by remember { mutableStateOf(false) }
     var showDriverRequestAssignmentDialog by remember { mutableStateOf(false) }
-    var isReassign by remember { mutableStateOf(driver.vehicle != null) }
     val scope = rememberCoroutineScope()
+    var isReassign by remember { mutableStateOf(driver.vehicle != null) }
+    var showReassignErrorDialog by remember { mutableStateOf(false) }
+    var reassignErrorMessage by remember { mutableStateOf("") }
+
+    if (showReassignErrorDialog) {
+        val onDismiss: () -> Unit = {
+            showReassignErrorDialog = false
+            onSuccessAssignDriver()
+            scope.launch {
+                scrollState.animateScrollTo(0)
+            }
+        }
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.WarningAmber,
+                    contentDescription = null
+                )
+            },
+            title = {
+                Text(text = "Ошибка")
+            },
+            text = {
+                Text(text = reassignErrorMessage)
+            },
+            dismissButton = {},
+            confirmButton = {
+                Button(
+                    onClick = onDismiss
+                ) {
+                    Text(text = "ОК")
+                }
+            }
+        )
+    }
 
     if (showVehicleAssignmentDialog) {
         VehicleAssignmentDialog(
@@ -54,6 +95,17 @@ fun DriverDetailsPanel(
     if (showDriverRequestAssignmentDialog) {
         DriverRequestAssignmentDialog(
             onDismiss = { showDriverRequestAssignmentDialog = false },
+            onSuccessAssignDriver = {
+                onSuccessAssignDriver()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+            },
+            onStateReassignError = {
+                showDriverRequestAssignmentDialog = false
+                showReassignErrorDialog = true
+                reassignErrorMessage = it
+            },
             driver = driver
         )
     }

@@ -64,7 +64,7 @@ fun DriverAssignmentDialog(
     assignedDriverId: Int?,
     viewModel: DriverAssignmentViewModel = koinViewModel()
 ) {
-    val requestAssignmentState by viewModel.driverAssignmentsState.collectAsState()
+    val driverAssignmentsState by viewModel.driverAssignmentsState.collectAsState()
     val assignRequestState by viewModel.assignRequestState.collectAsState()
     val fieldsState by viewModel.driverAssignmentFieldsState.collectAsState()
     val isLoading = assignRequestState is FetchResultUiState.Loading
@@ -138,7 +138,7 @@ fun DriverAssignmentDialog(
                     }
                     Spacer(Modifier.height(24.dp))
 
-                    requestAssignmentState.Reduce(
+                    driverAssignmentsState.Reduce(
                         onLoading = {
                             Box(
                                 modifier = Modifier.fillMaxWidth().height(86.dp),
