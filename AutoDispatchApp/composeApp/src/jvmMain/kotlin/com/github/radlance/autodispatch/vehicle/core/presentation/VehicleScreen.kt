@@ -259,9 +259,15 @@ fun VehicleScreen(
                 enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
                 exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
             ) {
-                val driver = selectedVehicle
-                if (driver != null) {
-
+                val vehicle = selectedVehicle
+                if (vehicle != null) {
+                    VehicleDetailsPanel(
+                        vehicle = vehicle,
+                        onClosePanel = { showVehicleDetailsPanel = false },
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(350.dp)
+                    )
                     Box(
                         Modifier
                             .fillMaxHeight()

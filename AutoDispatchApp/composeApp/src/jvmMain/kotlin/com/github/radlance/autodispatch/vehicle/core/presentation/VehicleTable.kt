@@ -121,8 +121,8 @@ fun VehicleTable(
     }
 }
 @Composable
-private fun VehicleStatusWithColor(isAvailable: Boolean, fontSize: TextUnit = TextUnit.Unspecified) {
-    val (bgColor, textColor) = if (!isAvailable) MaterialTheme.colorScheme.tertiaryContainer to
+fun VehicleStatusWithColor(isAvailable: Boolean, fontSize: TextUnit = TextUnit.Unspecified) {
+    val (bgColor, textColor) = if (isAvailable) MaterialTheme.colorScheme.tertiaryContainer to
             MaterialTheme.colorScheme.onTertiaryContainer
     else MaterialTheme.colorScheme.primaryContainer to
             MaterialTheme.colorScheme.onPrimaryContainer
