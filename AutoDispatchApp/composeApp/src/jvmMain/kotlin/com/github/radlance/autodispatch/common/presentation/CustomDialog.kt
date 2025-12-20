@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,37 +34,32 @@ fun CustomDialog(
             onDismissRequest = onDismissRequest,
             properties = properties
         ) {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            Surface(
+                modifier = modifier
+                    .fillMaxHeight(0.9f)
+                    .widthIn(min = 280.dp, max = 560.dp),
+                shape = AlertDialogDefaults.shape,
+                color = AlertDialogDefaults.containerColor,
+                tonalElevation = AlertDialogDefaults.TonalElevation
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxHeight(0.9f)
-                        .widthIn(min = 280.dp, max = 560.dp),
-                    shape = AlertDialogDefaults.shape,
-                    color = AlertDialogDefaults.containerColor,
-                    tonalElevation = AlertDialogDefaults.TonalElevation
+                Column(
+                    modifier = Modifier.padding(24.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp)
+                    title()
+                    Spacer(Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
                     ) {
-                        title()
-                        Spacer(Modifier.height(16.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        ) {
-                            content()
-                        }
-                        Spacer(Modifier.height(24.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            content = buttons
-                        )
+                        content()
                     }
+                    Spacer(Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = buttons
+                    )
                 }
             }
         }
