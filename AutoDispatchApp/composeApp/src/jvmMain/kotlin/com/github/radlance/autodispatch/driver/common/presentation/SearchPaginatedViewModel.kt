@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.driver.common.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.Paginator
@@ -16,7 +17,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
 @OptIn(FlowPreview::class)
-abstract class DriverPaginatedViewModel<T, R>(
+abstract class SearchPaginatedViewModel<T>(
     private val pageSize: Int = 10
 ) : BaseViewModel() {
 
@@ -42,11 +43,7 @@ abstract class DriverPaginatedViewModel<T, R>(
         query: String?,
         page: Int,
         pageSize: Int
-    ): FetchResult<R, String>
-
-    protected abstract fun getItems(result: R): List<T>
-
-    protected abstract fun hasMore(result: R): Boolean
+    ): FetchResult<ListPaginatedResult<T>, String>
 
     protected val paginator = Paginator(
         initialKey = 1,
@@ -100,7 +97,7 @@ abstract class DriverPaginatedViewModel<T, R>(
             }
         },
         onSuccess = { result, _ ->
-            val items = getItems(result)
+            val items = result.items
 
             stateMutable.update { current ->
                 val updated = when (val s = current.paginatorState.itemsState) {
@@ -125,7 +122,7 @@ abstract class DriverPaginatedViewModel<T, R>(
             }
         },
         endReached = { _, result ->
-            !hasMore(result)
+            !result.hasMore
         }
     )
 

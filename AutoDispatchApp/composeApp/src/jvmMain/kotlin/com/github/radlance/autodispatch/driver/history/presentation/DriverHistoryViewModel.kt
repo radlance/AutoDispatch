@@ -3,7 +3,7 @@ package com.github.radlance.autodispatch.driver.history.presentation
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
-import com.github.radlance.autodispatch.driver.common.presentation.DriverPaginatedViewModel
+import com.github.radlance.autodispatch.driver.common.presentation.SearchPaginatedViewModel
 import com.github.radlance.autodispatch.driver.history.domain.DriverHistory
 import com.github.radlance.autodispatch.driver.history.domain.DriverHistoryRepository
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 @OptIn(FlowPreview::class)
 class DriverHistoryViewModel(
     private val repository: DriverHistoryRepository
-) : DriverPaginatedViewModel<DriverHistory, ListPaginatedResult<DriverHistory>>(pageSize = 3) {
+) : SearchPaginatedViewModel<DriverHistory>(pageSize = 3) {
     override suspend fun request(
         query: String?,
         page: Int,
@@ -25,14 +25,6 @@ class DriverHistoryViewModel(
         page = page,
         pageSize = pageSize
     )
-
-    override fun getItems(result: ListPaginatedResult<DriverHistory>): List<DriverHistory> {
-        return result.items
-    }
-
-    override fun hasMore(result: ListPaginatedResult<DriverHistory>): Boolean {
-        return result.hasMore
-    }
 
     fun loadNextItems(driverId: Int) {
         stateMutable.update {

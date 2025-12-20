@@ -6,7 +6,7 @@ import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
-import com.github.radlance.autodispatch.driver.common.presentation.DriverPaginatedViewModel
+import com.github.radlance.autodispatch.driver.common.presentation.SearchPaginatedViewModel
 import com.github.radlance.autodispatch.request.assignment.domain.DriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class DriverAssignmentViewModel(
     private val repository: DriverAssignmentRepository
-) : DriverPaginatedViewModel<DriverStats, ListPaginatedResult<DriverStats>>(
+) : SearchPaginatedViewModel<DriverStats>(
     pageSize = 3
 ) {
 
@@ -49,14 +49,6 @@ class DriverAssignmentViewModel(
             pageSize = pageSize,
             searchQuery = query
         )
-    }
-
-    override fun getItems(result: ListPaginatedResult<DriverStats>): List<DriverStats> {
-        return result.items
-    }
-
-    override fun hasMore(result: ListPaginatedResult<DriverStats>): Boolean {
-        return result.hasMore
     }
 
     override fun resetState() {
