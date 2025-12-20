@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Call
@@ -33,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
@@ -42,7 +45,6 @@ import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
 import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.history.presentation.DriverHistoryDialog
-import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 
 @Composable
 fun DriverDetailsSections(
@@ -196,4 +198,42 @@ fun StatsRow(label: String, value: Int) {
         )
     }
     Spacer(modifier = Modifier.height(ITEM_GAP))
+}
+
+
+@Composable
+fun DriverStatusWithColor(status: String?, fontSize: TextUnit = TextUnit.Unspecified) {
+    val (bgColor, textColor) = when (status) {
+
+        "Свободен" ->
+            MaterialTheme.colorScheme.primaryContainer to
+                    MaterialTheme.colorScheme.onPrimaryContainer
+
+        "В рейсе" ->
+            MaterialTheme.colorScheme.secondaryContainer to
+                    MaterialTheme.colorScheme.onSecondaryContainer
+
+        "Не на смене" ->
+            MaterialTheme.colorScheme.surfaceVariant to
+                    MaterialTheme.colorScheme.onSurfaceVariant
+
+        else ->
+            MaterialTheme.colorScheme.surface to
+                    MaterialTheme.colorScheme.onSurface
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(bgColor)
+    ) {
+        Text(
+            text = status ?: "-",
+            maxLines = 1,
+            color = textColor,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = fontSize,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
 }

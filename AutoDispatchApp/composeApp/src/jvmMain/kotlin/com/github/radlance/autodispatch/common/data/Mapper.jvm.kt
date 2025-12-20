@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
+import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
@@ -20,11 +21,12 @@ import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
+import com.github.radlance.autodispatch.request.core.data.VehicleDto
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
-import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
+import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 
@@ -66,7 +68,7 @@ fun ChangeRequest.toCreateRequestDto(): ChangeRequestDto {
     )
 }
 
-fun DriverStatsDto.toDriverStats(): DriverStats {
+private fun DriverStatsDto.toDriverStats(): DriverStats {
     return DriverStats(
         driverId = driverId,
         driverName = driverName,
@@ -76,6 +78,13 @@ fun DriverStatsDto.toDriverStats(): DriverStats {
         vehicleLicensePlate = vehicleLicensePlate,
         vehiclePayloadCapacity = vehiclePayloadCapacity,
         totalAssignedRequests = totalAssignedRequests
+    )
+}
+
+fun ListPaginatedResultDto<DriverStatsDto>.toDriverStatsListPaginatedResult(): ListPaginatedResult<DriverStats> {
+    return ListPaginatedResult(
+        items = items.map { it.toDriverStats() },
+        hasMore = hasMore
     )
 }
 
@@ -140,6 +149,13 @@ fun TablePaginatedResultDto<VehicleDetailedDto>.toPaginatedResultVehicleDetails(
     return TablePaginatedResult(
         items = items.map { it.toVehicleDetailed() },
         totalCount = totalCount
+    )
+}
+
+fun ListPaginatedResultDto<VehicleDto>.toVehicleListPaginatedResult(): ListPaginatedResult<Vehicle> {
+    return ListPaginatedResult(
+        items = items.map { it.toVehicle() },
+        hasMore = hasMore
     )
 }
 

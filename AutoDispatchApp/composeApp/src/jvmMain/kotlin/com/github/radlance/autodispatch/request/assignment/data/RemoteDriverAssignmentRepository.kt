@@ -2,8 +2,9 @@ package com.github.radlance.autodispatch.request.assignment.data
 
 import com.github.radlance.autodispatch.common.data.ApiServiceJvm
 import com.github.radlance.autodispatch.common.data.HandleRequest
-import com.github.radlance.autodispatch.common.data.toDriverStats
+import com.github.radlance.autodispatch.common.data.toDriverStatsListPaginatedResult
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.request.assignment.domain.DriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
@@ -18,9 +19,17 @@ class RemoteDriverAssignmentRepository(
     private val handleRequest: HandleRequest
 ) : DriverAssignmentRepository {
 
-    override suspend fun driverAssignments(): FetchResult<List<DriverStats>, String> =
+    override suspend fun driverAssignments(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): FetchResult<ListPaginatedResult<DriverStats>, String> =
         handleRequest.handle {
-            apiService.driverAssignments().map { it.toDriverStats() }
+            apiService.driverAssignments(
+                page = page,
+                pageSize = pageSize,
+                searchQuery = searchQuery
+            ).toDriverStatsListPaginatedResult()
         }
 
     override suspend fun assignDriverToRequest(

@@ -19,12 +19,12 @@ import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptyHistoryPlaceholder
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
@@ -71,7 +72,7 @@ fun DriverHistoryDialog(
         onDismiss()
         viewModel.resetState()
     }
-    AlertDialog(
+    CustomDialog(
         modifier = modifier,
         onDismissRequest = { if (!isLoading) onDismiss() },
         title = {
@@ -81,7 +82,8 @@ fun DriverHistoryDialog(
             ) {
                 Text(
                     text = "История доставок водителя",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleLarge,
                 )
                 IconButton(
                     enabled = !isLoading,
@@ -94,7 +96,7 @@ fun DriverHistoryDialog(
                 }
             }
         },
-        text = {
+        content = {
             Column {
                 if (isSearchVisible) {
                     DisableSelection {
@@ -121,15 +123,12 @@ fun DriverHistoryDialog(
                     onSuccess = { history ->
                         if (history.isNotEmpty()) {
                             val lazyListState = rememberLazyListState()
-                            val historyItems =
-                                (historyState.paginatorState.itemsState as? FetchResultUiState.Success)?.data.orEmpty()
 
-                            LaunchedEffect(lazyListState, historyItems.size) {
-                                if (historyItems.isEmpty()) return@LaunchedEffect
+                            LaunchedEffect(lazyListState, history.size) {
                                 snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
                                     .distinctUntilChanged()
                                     .collect { lastVisibleIndex ->
-                                        if (lastVisibleIndex == historyItems.lastIndex && historyState.paginatorState.error == null) {
+                                        if (lastVisibleIndex == history.lastIndex && historyState.paginatorState.error == null) {
                                             viewModel.loadNextItems(driverId = driver.id)
                                         }
                                     }
@@ -204,7 +203,6 @@ fun DriverHistoryDialog(
                 )
             }
         },
-        confirmButton = {},
-        dismissButton = {},
+        buttons = {}
     )
 }

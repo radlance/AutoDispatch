@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
@@ -45,6 +43,7 @@ import autodispatch.composeapp.generated.resources.done
 import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.search
 import autodispatch.composeapp.generated.resources.select_all
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -107,7 +106,7 @@ private fun SelectionDialog(
     val screenHeight = LocalWindowInfo.current.containerSize.height
     val maxDialogHeight = screenHeight * 0.6f
 
-    AlertDialog(
+    CustomDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -116,7 +115,7 @@ private fun SelectionDialog(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
         },
-        text = {
+        content = {
             Box(modifier = Modifier.fillMaxWidth().heightIn(max = maxDialogHeight.dp)) {
                 Column {
                     TextField(
@@ -237,19 +236,18 @@ private fun SelectionDialog(
                 }
             }
         },
-        confirmButton = {
+        buttons = {
+            Spacer(Modifier.weight(1f))
             TextButton(
                 onClick = { onConfirm(tempSelection) },
                 enabled = tempSelection.isNotEmpty()
             ) {
                 Text(stringResource(Res.string.done), style = MaterialTheme.typography.labelLarge)
             }
-        },
-        dismissButton = {
+            Spacer(Modifier.width(12.dp))
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.cancel), style = MaterialTheme.typography.labelLarge)
             }
-        },
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }

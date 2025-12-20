@@ -1,37 +1,52 @@
 package com.github.radlance.autodispatch.request.assignment.presentation
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.PersonOff
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,16 +58,20 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.assign
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.driver_assignment
-import autodispatch.composeapp.generated.resources.loading_error
 import autodispatch.composeapp.generated.resources.reassign
-import autodispatch.composeapp.generated.resources.retry
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
+import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.request.core.domain.Request
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DriverAssignmentDialog(
     onDismiss: () -> Unit,
@@ -64,19 +83,24 @@ fun DriverAssignmentDialog(
     assignedDriverId: Int?,
     viewModel: DriverAssignmentViewModel = koinViewModel()
 ) {
-    val driverAssignmentsState by viewModel.driverAssignmentsState.collectAsState()
+    val driverAssignmentsState by viewModel.state.collectAsState()
     val assignRequestState by viewModel.assignRequestState.collectAsState()
-    val fieldsState by viewModel.driverAssignmentFieldsState.collectAsState()
     val isLoading = assignRequestState is FetchResultUiState.Loading
     val error = (assignRequestState as? FetchResultUiState.Error<DeliveryError>)?.error
+    val isSearchVisible by remember {
+        derivedStateOf {
+            !driverAssignmentsState.isEmptyResult
+        }
+    }
+    var selectedDriverId by remember { mutableStateOf<Int?>(null) }
 
     val onDismissAction = {
         onDismiss()
-        viewModel.reduce(DriverAssignmentEvent.ResetStates)
+        viewModel.resetState()
     }
 
     LaunchedEffect(Unit) {
-        viewModel.loadDriverAssignments()
+        viewModel.loadNextItems()
     }
 
     LaunchedEffect(assignRequestState) {
@@ -86,152 +110,214 @@ fun DriverAssignmentDialog(
         }
     }
 
-    AlertDialog(
-        onDismissRequest = {
-            if (!isLoading) onDismissAction()
-        },
+    CustomDialog(
+        onDismissRequest = { if (!isLoading) onDismissAction() },
         title = {
-            Text(text = stringResource(Res.string.driver_assignment))
+            Text(
+                text = stringResource(Res.string.driver_assignment),
+                style = MaterialTheme.typography.headlineSmall
+            )
         },
-        text = {
-            Box(Modifier.fillMaxWidth()) {
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    error?.let {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Warning,
-                                contentDescription = "Error",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                            if (error is DeliveryError.BaseError) {
-                                Text(
-                                    text = error.message,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    textAlign = TextAlign.Center
-                                )
-                            } else {
-                                viewModel.reduce(DriverAssignmentEvent.ResetStates)
-                                onStateReassignError(error.message)
-                            }
-                        }
-                    }
-                    Card {
-                        Column(modifier = Modifier.fillMaxWidth().padding(18.dp)) {
-                            Text("Заявка ${request.requestNumber}", modifier = Modifier.alpha(0.7f))
-                            Spacer(Modifier.height(12.dp))
-                            Text("${request.origin} → ${request.destination}", fontSize = 16.sp)
-                            Spacer(Modifier.height(12.dp))
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                error?.let {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Warning,
+                            contentDescription = "Error",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        if (error is DeliveryError.BaseError) {
                             Text(
-                                "${request.cargo.type.name} • ${request.cargo.weight.formatKg()} • ${request.createdAt.date}",
-                                modifier = Modifier.alpha(0.7f)
+                                text = error.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
                             )
+                        } else {
+                            viewModel.resetState()
+                            onStateReassignError(error.message)
                         }
                     }
-                    Spacer(Modifier.height(24.dp))
-
-                    driverAssignmentsState.Reduce(
-                        onLoading = {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().height(86.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
+                }
+                Card {
+                    Column(modifier = Modifier.fillMaxWidth().padding(18.dp)) {
+                        Text("Заявка ${request.requestNumber}", modifier = Modifier.alpha(0.7f))
+                        Spacer(Modifier.height(12.dp))
+                        Text("${request.origin} → ${request.destination}", fontSize = 16.sp)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            "${request.cargo.type.name} • ${request.cargo.weight.formatKg()} • ${request.createdAt.date}",
+                            modifier = Modifier.alpha(0.7f)
+                        )
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.padding(top = 18.dp, bottom = 10.dp))
+                if (isSearchVisible) {
+                    DisableSelection {
+                        CustomTextField(
+                            value = driverAssignmentsState.query,
+                            onValueChange = { viewModel.onQueryChange(it) },
+                            placeholder = "Поиск по водителям",
+                            leadingIcon = Icons.Default.Search,
+                            labelText = null,
+                            height = TextFieldDefaults.MinHeight,
+                            searchBarColors = SearchBarDefaults.colors(containerColor = CardDefaults.cardColors().containerColor),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+                driverAssignmentsState.paginatorState.itemsState.Reduce(
+                    onLoading = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    },
+                    onSuccess = { stats ->
+                        if (stats.isNotEmpty()) {
+                            val lazyListState = rememberLazyListState()
+                            LaunchedEffect(lazyListState, stats.size) {
+                                snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                                    .distinctUntilChanged()
+                                    .collect { lastVisibleIndex ->
+                                        if (lastVisibleIndex == stats.lastIndex && driverAssignmentsState.paginatorState.error == null) {
+                                            viewModel.loadNextItems()
+                                        }
+                                    }
                             }
-                        },
-                        onSuccess = { stats ->
-                            LaunchedEffect(assignedDriverId) {
-                                if (isReassign) {
-                                    viewModel.reduce(
-                                        DriverAssignmentEvent.ChangeDriverStats(
-                                            stats.first {
-                                                it.driverId == assignedDriverId!!
-                                            }
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                LazyColumn(
+                                    state = lazyListState,
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(items = stats, key = { it.driverId }) { driverStats ->
+                                        DriverAssignmentCard(
+                                            selected = driverStats.driverId == selectedDriverId,
+                                            onSelect = { selectedDriverId = it },
+                                            driverStats = driverStats
                                         )
-                                    )
+                                    }
+                                    if (driverAssignmentsState.paginatorState.isLoadingMore) {
+                                        item {
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator()
+                                            }
+                                        }
+                                    }
+
+                                    if (driverAssignmentsState.paginatorState.error != null) {
+                                        item {
+                                            ErrorMessage(
+                                                message = driverAssignmentsState.paginatorState.error
+                                                    ?: "Ошибка загрузки",
+                                                onRetry = viewModel::loadNextItems
+
+                                            )
+                                        }
+                                    }
                                 }
+                                VerticalScrollbar(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .fillMaxHeight()
+                                        .offset(x = 8.dp),
+                                    adapter = rememberScrollbarAdapter(scrollState = lazyListState)
+                                )
                             }
-                            DriverAssignmentFields(
-                                driversStats = stats,
-                                fieldsState = fieldsState,
-                                onEvent = viewModel::reduce
-                            )
-                        },
-                        onError = { error ->
-                            OutlinedCard(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                                colors = CardDefaults.outlinedCardColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                        } else {
+                            if (driverAssignmentsState.isEmptyResult) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Info,
+                                        imageVector = Icons.Outlined.PersonOff,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(64.dp).alpha(0.7f)
                                     )
-                                    Spacer(Modifier.width(16.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = stringResource(Res.string.loading_error),
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                        Text(text = error, style = MaterialTheme.typography.bodyMedium)
-                                    }
-                                    Spacer(Modifier.width(8.dp))
-                                    Button(
-                                        onClick = viewModel::loadDriverAssignments,
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                                    ) {
-                                        Text(stringResource(Res.string.retry))
-                                    }
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = "Нет доступных водителей",
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        modifier = Modifier.alpha(0.7f)
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Здесь появятся водители, готовые принять заявки",
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.alpha(0.5f)
+                                    )
                                 }
+                            } else {
+                                EmptySearchPlaceholder(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                )
                             }
                         }
-                    )
-                }
-
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(AlertDialogDefaults.containerColor)
-                            .align(Alignment.Center),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                        LaunchedEffect(assignedDriverId) {
+                            if (isReassign) {
+                                selectedDriverId = stats.find {
+                                    it.driverId == assignedDriverId
+                                }?.driverId
+                            }
+                        }
+                    },
+                    onError = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            ErrorMessage(
+                                message = it,
+                                onRetry = viewModel::loadNextItems
+                            )
+                        }
                     }
+                )
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(AlertDialogDefaults.containerColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
         },
-        dismissButton = {
-            val isDriverSelected = fieldsState.selectedDriverStats != null
-            val hasDriverChanged = fieldsState.selectedDriverStats?.driverId != assignedDriverId
-            val vehicleCapacity = fieldsState.selectedDriverStats?.vehiclePayloadCapacity
+        buttons = {
+            val stats =
+                (driverAssignmentsState.paginatorState.itemsState as? FetchResultUiState.Success)?.data?.find { it.driverId == selectedDriverId }
+            val isDriverSelected = stats != null
+            val hasDriverChanged = stats?.driverId != assignedDriverId
+            val vehicleCapacity = stats?.vehiclePayloadCapacity
             val isOverweight = vehicleCapacity != null &&
                     request.cargo.weight > vehicleCapacity
             val isButtonEnabled =
-                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && fieldsState.selectedDriverStats?.vehicleModel != null && vehicleCapacity != null && !isOverweight
+                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && stats.vehicleModel != null && vehicleCapacity != null && !isOverweight
 
-
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                fieldsState.selectedDriverStats?.vehiclePayloadCapacity?.let {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                stats?.vehiclePayloadCapacity?.let {
                     if (request.cargo.weight > it) {
                         Icon(
                             imageVector = Icons.Outlined.WarningAmber,
@@ -253,12 +339,10 @@ fun DriverAssignmentDialog(
                 Spacer(Modifier.width(12.dp))
                 Button(
                     onClick = {
-                        viewModel.reduce(
-                            DriverAssignmentEvent.AssignRequestClick(
-                                requestId = request.id,
-                                driverId = fieldsState.selectedDriverStats!!.driverId,
-                                isReassign = isReassign
-                            )
+                        viewModel.assignRequest(
+                            requestId = request.id,
+                            driverId = stats!!.driverId,
+                            isReassign = isReassign
                         )
                     },
                     enabled = isButtonEnabled
@@ -270,7 +354,6 @@ fun DriverAssignmentDialog(
                 }
             }
         },
-        confirmButton = {},
         modifier = modifier
     )
 }

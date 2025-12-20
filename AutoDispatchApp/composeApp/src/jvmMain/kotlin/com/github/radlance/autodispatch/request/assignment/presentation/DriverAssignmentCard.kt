@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.request.assignment.presentation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,98 +13,89 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.DisableSelection
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.choice_driver
-import autodispatch.composeapp.generated.resources.driver
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
-import com.github.radlance.autodispatch.request.change.presentation.CustomDropDownMenu
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun DriverAssignmentFields(
-    driversStats: List<DriverStats>,
-    fieldsState: DriverAssignmentFieldsState,
-    onEvent: (DriverAssignmentEvent) -> Unit,
+fun DriverAssignmentCard(
+    selected: Boolean,
+    onSelect: (Int) -> Unit,
+    driverStats: DriverStats,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        CustomDropDownMenu(
-            label = stringResource(Res.string.driver),
-            selectedOption = fieldsState.selectedDriverStats?.driverName,
-            filterOptions = driversStats.map { it.driverName },
-            onOptionSelected = { option ->
-                onEvent(
-                    DriverAssignmentEvent.ChangeDriverStats(driversStats.first { option == it.driverName })
-                )
-            },
-            hint = stringResource(Res.string.choice_driver),
-            modifier = Modifier.fillMaxWidth(),
-            isRequired = true,
-            itemHeight = 95.dp
-        ) { optionLabel ->
-            val currentOption = driversStats.first {
-                it.driverName == optionLabel
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Column(modifier = Modifier.weight(3f)) {
-                    Text(
-                        text = currentOption.driverName,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = currentOption.phoneNumber.toString(),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 12.sp,
-                        modifier = Modifier.alpha(0.7f)
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = currentOption.vehicleModel?.let { "${currentOption.vehicleModel} • ${currentOption.vehicleLicensePlate} • г/п: ${currentOption.vehiclePayloadCapacity} кг" }
-                            ?: "Нет автомобиля",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 12.sp,
-                        modifier = Modifier.alpha(0.7f)
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(2f)) {
-                    RequestCountContainer(
-                        count = currentOption.totalAssignedRequests.toInt(),
-                        fontSize = 12.sp
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    currentOption.vehicleModel?.let {
-                        DriverStatusWithColor(status = currentOption.driverStatus, fontSize = 12.sp)
-                    } ?: Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.errorContainer)
-                    ) {
+    val borderColor by animateColorAsState(
+        if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
+    )
+    DisableSelection {
+        Card(
+            onClick = { onSelect(driverStats.driverId) },
+            modifier = modifier.fillMaxWidth(),
+            border = BorderStroke(width = 1.dp, color = borderColor)
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
                         Text(
-                            text = "Без авто",
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            text = driverStats.driverName,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = driverStats.phoneNumber.toString(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 12.sp,
+                            modifier = Modifier.alpha(0.7f)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = driverStats.vehicleModel?.let { "${driverStats.vehicleModel} • ${driverStats.vehicleLicensePlate} • г/п: ${driverStats.vehiclePayloadCapacity} кг" }
+                                ?: "Нет автомобиля",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 12.sp,
+                            modifier = Modifier.alpha(0.7f)
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RequestCountContainer(
+                            count = driverStats.totalAssignedRequests.toInt(),
+                            fontSize = 12.sp
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        driverStats.vehicleModel?.let {
+                            DriverStatusWithColor(
+                                status = driverStats.driverStatus,
+                                fontSize = 12.sp
+                            )
+                        } ?: Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                        ) {
+                            Text(
+                                text = "Без авто",
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -18,7 +18,9 @@ import kotlinx.coroutines.launch
 class DriverRequestAssignmentViewModel(
     private val driverRequestRepository: DriverRequestRepository,
     private val driverAssignmentRepository: DriverAssignmentRepository
-) : DriverPaginatedViewModel<DriverRequest, ListPaginatedResult<DriverRequest>>() {
+) : DriverPaginatedViewModel<DriverRequest, ListPaginatedResult<DriverRequest>>(
+    pageSize = 3
+) {
     override suspend fun request(
         query: String?,
         page: Int,

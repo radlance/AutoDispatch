@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
@@ -124,13 +124,16 @@ fun DriverRequestAssignmentDialog(
             !isOverload
 
 
-    AlertDialog(
+    CustomDialog(
         modifier = modifier,
         onDismissRequest = { if (!isRequestsLoading) onDismiss() },
         title = {
-            Text(text = "Назначение рейса водителю")
+            Text(
+                text = "Назначение рейса водителю",
+                style = MaterialTheme.typography.titleLarge,
+            )
         },
-        text = {
+        content = {
             Box(Modifier.fillMaxWidth()) {
                 Column {
                     assignError?.let {
@@ -181,15 +184,12 @@ fun DriverRequestAssignmentDialog(
                         onSuccess = { requests ->
                             if (requests.isNotEmpty()) {
                                 val lazyListState = rememberLazyListState()
-                                val historyItems =
-                                    (historyState.paginatorState.itemsState as? FetchResultUiState.Success)?.data.orEmpty()
 
-                                LaunchedEffect(lazyListState, historyItems.size) {
-                                    if (historyItems.isEmpty()) return@LaunchedEffect
+                                LaunchedEffect(lazyListState, requests.size) {
                                     snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
                                         .distinctUntilChanged()
                                         .collect { lastVisibleIndex ->
-                                            if (lastVisibleIndex == historyItems.lastIndex && historyState.paginatorState.error == null) {
+                                            if (lastVisibleIndex == requests.lastIndex && historyState.paginatorState.error == null) {
                                                 viewModel.loadNextItems()
                                             }
                                         }
@@ -310,7 +310,7 @@ fun DriverRequestAssignmentDialog(
                 }
             }
         },
-        dismissButton = {
+        buttons = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (selectedRequestId != null && (!hasVehicle || isOverload)) {
                     Icon(
@@ -338,7 +338,6 @@ fun DriverRequestAssignmentDialog(
                     Text(text = "Назначить")
                 }
             }
-        },
-        confirmButton = {}
+        }
     )
 }

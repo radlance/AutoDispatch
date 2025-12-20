@@ -49,7 +49,11 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun cancelRequest(requestId: Int)
 
-    suspend fun driverAssignments(): List<DriverStatsDto>
+    suspend fun driverAssignments(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResultDto<DriverStatsDto>
 
     suspend fun assignDriverToRequest(requestId: Int, driverId: Int)
 
@@ -69,7 +73,11 @@ interface ApiServiceJvm : ApiService {
         searchQuery: String?
     ): TablePaginatedResultDto<DriverDto>
 
-    suspend fun vehicleAssignments(): List<VehicleDto>
+    suspend fun vehicleAssignments(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResultDto<VehicleDto>
 
     suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int)
 
@@ -162,8 +170,16 @@ internal class KtorApiServiceJvm(
         httpClient.put("requests/${requestId}/cancel")
     }
 
-    override suspend fun driverAssignments(): List<DriverStatsDto> {
-        return httpClient.get("drivers/assignments").body()
+    override suspend fun driverAssignments(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResultDto<DriverStatsDto> {
+        return httpClient.get("drivers/assignments") {
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+            searchQuery?.let { parameter("search", it) }
+        }.body()
     }
 
     override suspend fun assignDriverToRequest(requestId: Int, driverId: Int) {
@@ -213,17 +229,22 @@ internal class KtorApiServiceJvm(
         searchQuery: String?
     ): TablePaginatedResultDto<DriverDto> {
         return httpClient.get("drivers") {
-
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
-
             searchQuery?.let { parameter("search", it) }
-
         }.body()
     }
 
-    override suspend fun vehicleAssignments(): List<VehicleDto> {
-        return httpClient.get("vehicles/unassigned").body()
+    override suspend fun vehicleAssignments(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResultDto<VehicleDto> {
+        return httpClient.get("vehicles/unassigned") {
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+            searchQuery?.let { parameter("search", it) }
+        }.body()
     }
 
     override suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int) {
@@ -239,9 +260,9 @@ internal class KtorApiServiceJvm(
         pageSize: Int
     ): ListPaginatedResultDto<DriverHistoryDto> {
         return httpClient.get("deliveries/history/${driverId}") {
-            searchQuery?.let { parameter("search", it) }
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
+            searchQuery?.let { parameter("search", it) }
         }.body()
     }
 
@@ -251,9 +272,9 @@ internal class KtorApiServiceJvm(
         pageSize: Int
     ): ListPaginatedResultDto<DriverRequestDto> {
         return httpClient.get("requests/available") {
-            searchQuery?.let { parameter("search", it) }
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
+            searchQuery?.let { parameter("search", it) }
         }.body()
     }
 
@@ -263,12 +284,9 @@ internal class KtorApiServiceJvm(
         searchQuery: String?
     ): TablePaginatedResultDto<VehicleDetailedDto> {
         return httpClient.get("vehicles") {
-
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
-
             searchQuery?.let { parameter("search", it) }
-
         }.body()
     }
 }

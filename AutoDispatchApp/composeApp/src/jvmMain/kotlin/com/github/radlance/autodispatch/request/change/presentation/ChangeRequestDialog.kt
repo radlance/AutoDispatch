@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,6 +51,7 @@ import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.creating_new_request
 import autodispatch.composeapp.generated.resources.edit
 import autodispatch.composeapp.generated.resources.request_editing
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
@@ -126,7 +125,7 @@ fun ChangeRequestDialog(
     val isLoadingChange = changeRequestState is FetchResultUiState.Loading
     val errorChange = (changeRequestState as? FetchResultUiState.Error<String>)?.error
 
-    AlertDialog(
+    CustomDialog(
         modifier = modifier,
         onDismissRequest = {
             if (!isLoadingChange) {
@@ -151,7 +150,7 @@ fun ChangeRequestDialog(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
         },
-        text = {
+        content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 AnimatedVisibility(visible = errorChange != null) {
                     Column(
@@ -209,8 +208,7 @@ fun ChangeRequestDialog(
                 }
             }
         },
-        confirmButton = {},
-        dismissButton = {
+        buttons = {
             Row {
                 if (isEditRequest) {
                     OutlinedButton(
@@ -283,7 +281,6 @@ fun ChangeRequestDialog(
                     Text(text = stringResource(buttonLabelRes))
                 }
             }
-        },
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }

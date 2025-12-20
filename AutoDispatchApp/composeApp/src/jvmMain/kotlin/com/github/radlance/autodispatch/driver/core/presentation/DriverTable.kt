@@ -14,7 +14,6 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.controlpanel.presentation.abbreviateName
 import com.github.radlance.autodispatch.driver.core.domain.Driver
-import com.github.radlance.autodispatch.request.assignment.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState

@@ -7,6 +7,7 @@ import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.driver.Driver
@@ -14,6 +15,7 @@ import com.github.radlance.autodispatch.domain.driver.DriverStats
 import com.github.radlance.autodispatch.domain.profile.DeliveriesStats
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.util.loggedTransaction
+import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
@@ -150,7 +152,12 @@ class DriverRepository {
     }
 
 
-    suspend fun driverStats(): List<DriverStats> = loggedTransaction {
+    suspend fun driverStats(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResult<DriverStats> = loggedTransaction {
+
         val requestCount = Case()
             .When(RequestTable.statusId inList listOf(1, 2, 3), longLiteral(1))
             .Else(longLiteral(0))
@@ -162,12 +169,31 @@ class DriverRepository {
             .When(DriverStatusTable.id eq 3, intLiteral(3))
             .Else(intLiteral(4))
 
-        DriverTable
+        val joinQuery = DriverTable
             .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
             .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
+
+        val conditions = mutableListOf<Op<Boolean>>()
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions += OrOp(
+                listOf(
+                    UserTable.fullName.lowerCase() like pattern,
+                    UserTable.phoneNumber.lowerCase() like pattern,
+                    DriverStatusTable.name.lowerCase() like pattern,
+                    VehicleTable.model.lowerCase() like pattern,
+                    VehicleTable.licensePlate.lowerCase() like pattern
+                )
+            )
+        }
+
+        val offset = (page - 1L) * pageSize
+
+        val rawStats = joinQuery
             .select(
                 UserTable.id,
                 UserTable.fullName,
@@ -178,6 +204,9 @@ class DriverRepository {
                 VehicleTable.licensePlate,
                 VehicleTable.payloadCapacity,
                 requestCount
+            )
+            .where(
+                if (conditions.isEmpty()) Op.TRUE else AndOp(conditions)
             )
             .groupBy(
                 UserTable.id,
@@ -191,6 +220,8 @@ class DriverRepository {
             )
             .orderBy(statusOrder, SortOrder.ASC)
             .orderBy(UserTable.fullName, SortOrder.ASC)
+            .limit(pageSize + 1)
+            .offset(offset)
             .map { row ->
                 DriverStats(
                     driverId = row[UserTable.id].value,
@@ -203,5 +234,13 @@ class DriverRepository {
                     totalAssignedRequests = row[requestCount] ?: 0L
                 )
             }
+
+        val hasMore = rawStats.size > pageSize
+        val stats = if (hasMore) rawStats.dropLast(1) else rawStats
+
+        ListPaginatedResult(
+            items = stats,
+            hasMore = hasMore
+        )
     }
 }

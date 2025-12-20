@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.repository
 import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.domain.vehicle.VehicleDetailed
@@ -10,6 +11,7 @@ import com.github.radlance.autodispatch.exception.DeliveryStateException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import io.ktor.server.plugins.*
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
@@ -23,17 +25,42 @@ import org.jetbrains.exposed.sql.update
 
 class VehicleRepository {
 
-    suspend fun unassignedVehicles(): List<Vehicle> = loggedTransaction {
-        VehicleTable
+    suspend fun unassignedVehicles(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResult<Vehicle> = loggedTransaction {
+
+        val query = VehicleTable
             .join(DriverTable, JoinType.LEFT, VehicleTable.id, DriverTable.vehicleId)
+
+        val conditions = mutableListOf<Op<Boolean>>()
+
+        conditions += DriverTable.vehicleId.isNull()
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions += OrOp(
+                listOf(
+                    VehicleTable.model.lowerCase() like pattern,
+                    VehicleTable.licensePlate.lowerCase() like pattern
+                )
+            )
+        }
+
+        val offset = (page - 1L) * pageSize
+
+        val rawVehicles = query
             .select(
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
                 VehicleTable.payloadCapacity
             )
-            .where(DriverTable.vehicleId.isNull())
+            .where(AndOp(conditions))
             .orderBy(VehicleTable.model, SortOrder.ASC)
+            .limit(pageSize + 1)
+            .offset(offset)
             .map { row ->
                 Vehicle(
                     id = row[VehicleTable.id].value,
@@ -42,6 +69,14 @@ class VehicleRepository {
                     payloadCapacity = row[VehicleTable.payloadCapacity]
                 )
             }
+
+        val hasMore = rawVehicles.size > pageSize
+        val vehicles = if (hasMore) rawVehicles.dropLast(1) else rawVehicles
+
+        ListPaginatedResult(
+            items = vehicles,
+            hasMore = hasMore
+        )
     }
 
     suspend fun setDriverVehicle(driverId: Int, vehicleId: Int) = loggedTransaction {
