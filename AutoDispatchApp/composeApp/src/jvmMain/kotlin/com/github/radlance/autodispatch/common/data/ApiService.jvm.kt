@@ -18,6 +18,7 @@ import com.github.radlance.autodispatch.vehicle.assignment.data.DriverWithoutVeh
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -109,6 +110,8 @@ interface ApiServiceJvm : ApiService {
         pageSize: Int,
         searchQuery: String?
     ): ListPaginatedResultDto<DriverWithoutVehicleDto>
+
+    suspend fun unassignVehicle(driverId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -316,5 +319,9 @@ internal class KtorApiServiceJvm(
             parameter("pageSize", pageSize.toString())
             searchQuery?.let { parameter("search", it) }
         }.body()
+    }
+
+    override suspend fun unassignVehicle(driverId: Int) {
+        httpClient.delete("vehicles/assignment/$driverId")
     }
 }

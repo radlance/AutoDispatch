@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.core
 
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.radlance.autodispatch.di.authModule
@@ -20,6 +20,7 @@ import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
 import com.github.radlance.autodispatch.di.vehicleAssignmentModule
 import com.github.radlance.autodispatch.di.vehicleModule
+import com.github.radlance.autodispatch.di.vehicleUnassignmentModule
 import org.koin.core.context.startKoin
 import java.awt.Dimension
 
@@ -41,15 +42,13 @@ fun main() = application {
             driverHistoryModule,
             driveRequestModule,
             vehicleModule,
-            driverVehicleModule
+            driverVehicleModule,
+            vehicleUnassignmentModule
         )
     }
-    val windowState = rememberWindowState(
-        placement = WindowPlacement.Maximized
-    )
     Window(
         onCloseRequest = ::exitApplication,
-        state = windowState,
+        state = rememberWindowState(width = 1100.dp, height = 750.dp),
         title = "АвтоЗаявка"
     ) {
         window.minimumSize = Dimension(1100, 750)

@@ -52,6 +52,7 @@ fun DriverDetailsSections(
     driver: Driver,
     onShowVehicleAssignmentDialog: (reassign: Boolean) -> Unit,
     onShowDriverRequestAssignmentDialog: () -> Unit,
+    onShowVehicleUnassignmentDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDriverHistoryDialog by remember { mutableStateOf(false) }
@@ -114,11 +115,19 @@ fun DriverDetailsSections(
                 LabeledValue(label = "Грузоподъёмность", value = "${vehicle.payloadCapacity} кг")
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 if (driver.deliveriesStats.activeCount + driver.deliveriesStats.onCheckCount + driver.deliveriesStats.rejectedCount == 0) {
-                    OutlinedButton(
-                        onClick = { onShowVehicleAssignmentDialog(true) },
-                        modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
-                    ) {
-                        Text(text = "Переназначить автомобиль")
+                    Row {
+                        OutlinedButton(
+                            onClick = onShowVehicleUnassignmentDialog,
+                            modifier = Modifier.weight(1f).padding(end = 6.dp)
+                        ) {
+                            Text(text = "Открепить")
+                        }
+                        OutlinedButton(
+                            onClick = { onShowVehicleAssignmentDialog(true) },
+                            modifier = Modifier.weight(1f).padding(end = 6.dp)
+                        ) {
+                            Text(text = "Переназначить")
+                        }
                     }
                 } else {
                     Text(

@@ -1,14 +1,21 @@
 package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import io.ktor.client.call.body
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import kotlinx.io.IOException
 
 interface HandleRequest {
 
     suspend fun <D : Any> handle(action: suspend () -> D): FetchResult<D, String>
+
+    suspend fun<D: Any> handleAssignment(
+        action: suspend () -> D
+    ): FetchResult<D, DeliveryError>
 }
 
 internal class BaseHandleRequest : HandleRequest {
@@ -18,12 +25,41 @@ internal class BaseHandleRequest : HandleRequest {
             FetchResult.Success(action.invoke())
         } catch (e: ClientRequestException) {
             FetchResult.Error(e.response.bodyAsText())
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             FetchResult.Error("Таймаут соединения")
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             FetchResult.Error("Ошибка подключения")
         } catch (e: Exception) {
             FetchResult.Error(e.message ?: "Неизвестная ошибка")
         }
+    }
+
+    override suspend fun <D: Any> handleAssignment(
+        action: suspend () -> D
+    ): FetchResult<D, DeliveryError> = try {
+        FetchResult.Success(action.invoke())
+    } catch (e: ClientRequestException) {
+        val message = e.response.bodyAsText()
+        if (e.response.status == HttpStatusCode.Conflict) {
+            try {
+                val errorResponse = e.response.body<ErrorResponse>()
+                FetchResult.Error(
+                    when (errorResponse.errorCode) {
+                        "DRIVER_BUSY" -> DeliveryError.DriverBusyError(errorResponse.message)
+                        else -> DeliveryError.GenericStateError(errorResponse.message)
+                    }
+                )
+            } catch (_: Exception) {
+                FetchResult.Error(DeliveryError.BaseError(message))
+            }
+        } else {
+            FetchResult.Error(DeliveryError.BaseError(message))
+        }
+    } catch (_: SocketTimeoutException) {
+        FetchResult.Error(DeliveryError.BaseError("Таймаут соединения"))
+    } catch (_: IOException) {
+        FetchResult.Error(DeliveryError.BaseError("Ошибка подключения"))
+    } catch (e: Exception) {
+        FetchResult.Error(DeliveryError.BaseError(e.message ?: "Неизвестная ошибка"))
     }
 }

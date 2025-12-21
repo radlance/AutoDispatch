@@ -36,6 +36,7 @@ import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelect
 import com.github.radlance.autodispatch.driver.assignment.presentation.VehicleAssignmentDialog
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.request.presentation.DriverRequestAssignmentDialog
+import com.github.radlance.autodispatch.driver.unassignment.presentation.VehicleUnassignmentDialog
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -53,6 +54,7 @@ fun DriverDetailsPanel(
     var isReassign by remember { mutableStateOf(driver.vehicle != null) }
     var showReassignErrorDialog by remember { mutableStateOf(false) }
     var reassignErrorMessage by remember { mutableStateOf("") }
+    var showVehicleUnassignmentDialog by remember { mutableStateOf(false) }
 
     if (showReassignErrorDialog) {
         val onDismiss: () -> Unit = {
@@ -125,6 +127,24 @@ fun DriverDetailsPanel(
         )
     }
 
+    if (showVehicleUnassignmentDialog) {
+        VehicleUnassignmentDialog(
+            onDismiss = { showVehicleUnassignmentDialog = false },
+            driver = driver,
+            onSuccessUnassignVehicle = {
+                onSuccessAssignDriver()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+            },
+            onStateError = {
+                showVehicleAssignmentDialog = false
+                showReassignErrorDialog = true
+                reassignErrorMessage = it
+            }
+        )
+    }
+
     DefaultPointerSelectionContainer {
         Column(modifier = modifier.padding(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -151,6 +171,9 @@ fun DriverDetailsPanel(
                     },
                     onShowDriverRequestAssignmentDialog = {
                         showDriverRequestAssignmentDialog = true
+                    },
+                    onShowVehicleUnassignmentDialog = {
+                        showVehicleUnassignmentDialog = true
                     }
                 )
                 VerticalScrollbar(

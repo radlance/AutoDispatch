@@ -143,7 +143,12 @@ class VehicleRepository {
             .join(RequestTable, JoinType.INNER, AssignmentTable.requestId, RequestTable.id)
             .join(RequestStatusTable, JoinType.INNER, RequestTable.statusId, RequestStatusTable.id)
             .select(AssignmentTable.driverId)
-            .where { (AssignmentTable.driverId eq driverId) and (RequestStatusTable.name notInList listOf("Завершена", "Отменена")) }
+            .where {
+                (AssignmentTable.driverId eq driverId) and (RequestStatusTable.name notInList listOf(
+                    "Завершена",
+                    "Отменена"
+                ))
+            }
             .any()
         if (hasNonCompletedDeliveries) {
             throw DriverBusyException("Нельзя назначить автомобиль водителю с незавершенными доставками (назначенные, в пути, на проверке или отклоненные)")
@@ -151,6 +156,39 @@ class VehicleRepository {
 
         val updatedRows = DriverTable.update({ DriverTable.userId eq driverId }) {
             it[this.vehicleId] = EntityID(vehicleId, VehicleTable)
+        }
+        if (updatedRows == 0) {
+            throw NotFoundException("Водитель с ID $driverId не найден")
+        }
+    }
+
+    suspend fun unassignDriverVehicle(driverId: Int) = loggedTransaction {
+        val currentDriver = DriverTable
+            .select(DriverTable.vehicleId)
+            .where { DriverTable.userId eq driverId }
+            .firstOrNull()
+        if (currentDriver == null) {
+            throw NotFoundException("Водитель с ID $driverId не найден")
+        }
+        currentDriver.getOrNull(DriverTable.vehicleId)
+            ?: throw DriverBusyException("У водителя нет назначенного автомобиля")
+        val hasNonCompletedDeliveries = AssignmentTable
+            .join(RequestTable, JoinType.INNER, AssignmentTable.requestId, RequestTable.id)
+            .join(RequestStatusTable, JoinType.INNER, RequestTable.statusId, RequestStatusTable.id)
+            .select(AssignmentTable.id)
+            .where {
+                (AssignmentTable.driverId eq driverId) and
+                        (RequestStatusTable.name notInList listOf("Завершена", "Отменена"))
+            }
+            .limit(1)
+            .any()
+        if (hasNonCompletedDeliveries) {
+            throw DriverBusyException(
+                "Нельзя открепить автомобиль от водителя с незавершенными доставками (назначенные, в пути, на проверке или отклоненные)"
+            )
+        }
+        val updatedRows = DriverTable.update({ DriverTable.userId eq driverId }) {
+            it[this.vehicleId] = null
         }
         if (updatedRows == 0) {
             throw NotFoundException("Водитель с ID $driverId не найден")

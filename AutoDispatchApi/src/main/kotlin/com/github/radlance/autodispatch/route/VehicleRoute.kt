@@ -67,6 +67,13 @@ fun Route.vehicle(repository: VehicleRepository) {
 
                 call.respond(HttpStatusCode.OK)
             }
+
+            delete("/assignment/{driverId}") {
+                val driverId = call.parameters["driverId"]?.toIntOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid driver ID")
+                repository.unassignDriverVehicle(driverId)
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

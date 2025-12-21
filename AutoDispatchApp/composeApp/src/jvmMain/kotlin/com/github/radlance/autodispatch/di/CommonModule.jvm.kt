@@ -17,6 +17,9 @@ import com.github.radlance.autodispatch.driver.history.presentation.DriverHistor
 import com.github.radlance.autodispatch.driver.request.data.RemoteDriverRequestRepository
 import com.github.radlance.autodispatch.driver.request.domain.DriverRequestRepository
 import com.github.radlance.autodispatch.driver.request.presentation.DriverRequestAssignmentViewModel
+import com.github.radlance.autodispatch.driver.unassignment.data.RemoteVehicleUnassignmentRepository
+import com.github.radlance.autodispatch.driver.unassignment.domain.VehicleUnassignmentRepository
+import com.github.radlance.autodispatch.driver.unassignment.presentation.VehicleUnassignmentViewModel
 import com.github.radlance.autodispatch.request.assignment.data.RemoteDriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.domain.DriverAssignmentRepository
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentViewModel
@@ -108,4 +111,10 @@ val driverVehicleModule
     get() = module {
         singleOf(::RemoteDriverVehicleAssignmentRepository).bind<DriverVehicleAssignmentRepository>()
         viewModelOf(::DriverVehicleAssignmentViewModel)
+    }
+
+val vehicleUnassignmentModule
+    get() = module {
+        singleOf(::RemoteVehicleUnassignmentRepository).bind<VehicleUnassignmentRepository>()
+        viewModelOf(::VehicleUnassignmentViewModel)
     }
