@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +42,7 @@ actual fun MapPoint(address: String, onDismiss: () -> Unit) {
         when (apps.size) {
             0 -> {
                 runCatching {
-                    val uri = Uri.parse("geo:0,0?q=${Uri.encode(address)}")
+                    val uri = "geo:0,0?q=${Uri.encode(address)}".toUri()
                     context.startActivity(Intent(Intent.ACTION_VIEW, uri))
                 }
                 onDismiss()
@@ -104,7 +105,7 @@ private fun findMapApps(context: Context, address: String): List<AndroidMapApp> 
 
     val google = Intent(
         Intent.ACTION_VIEW,
-        Uri.parse("geo:0,0?q=$encoded")
+        "geo:0,0?q=$encoded".toUri()
     ).apply { setPackage("com.google.android.apps.maps") }
 
     if (google.resolveActivity(pm) != null) {
@@ -119,7 +120,7 @@ private fun findMapApps(context: Context, address: String): List<AndroidMapApp> 
 
     val yandex = Intent(
         Intent.ACTION_VIEW,
-        Uri.parse("yandexmaps://maps.yandex.ru/?text=$encoded")
+        "yandexmaps://maps.yandex.ru/?text=$encoded".toUri()
     ).apply { setPackage("ru.yandex.yandexmaps") }
 
     if (yandex.resolveActivity(pm) != null) {
@@ -134,7 +135,7 @@ private fun findMapApps(context: Context, address: String): List<AndroidMapApp> 
 
     val dgis = Intent(
         Intent.ACTION_VIEW,
-        Uri.parse("dgis://2gis.ru/search/$encoded")
+        "dgis://2gis.ru/search/$encoded".toUri()
     ).apply { setPackage("ru.dublgis.dgismobile") }
 
     if (dgis.resolveActivity(pm) != null) {

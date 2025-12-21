@@ -2,7 +2,6 @@ package com.github.radlance.autodispatch.platform
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -28,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +45,7 @@ actual fun MapRouteDialog(
         when (apps.size) {
             0 -> {
                 runCatching {
-                    val uri = Uri.parse("geo:$lat,$lon?q=$lat,$lon")
+                    val uri = "geo:$lat,$lon?q=$lat,$lon".toUri()
                     context.startActivity(Intent(Intent.ACTION_VIEW, uri))
                 }
                 onDismiss()
@@ -108,7 +108,7 @@ private fun findMapApps(context: Context, lat: Double, lon: Double): List<Androi
     val pm = context.packageManager
     val result = mutableListOf<AndroidMapApp>()
 
-    val googleUri = Uri.parse("google.navigation:q=$lat,$lon")
+    val googleUri = "google.navigation:q=$lat,$lon".toUri()
     val google = Intent(Intent.ACTION_VIEW, googleUri).apply {
         setPackage("com.google.android.apps.maps")
     }
@@ -122,9 +122,7 @@ private fun findMapApps(context: Context, lat: Double, lon: Double): List<Androi
         )
     }
 
-    val yandexUri = Uri.parse(
-        "yandexmaps://build_route_on_map?lat_to=$lat&lon_to=$lon&what=auto"
-    )
+    val yandexUri = "yandexmaps://build_route_on_map?lat_to=$lat&lon_to=$lon&what=auto".toUri()
     val yandex = Intent(Intent.ACTION_VIEW, yandexUri).apply {
         setPackage("ru.yandex.yandexmaps")
     }
@@ -138,7 +136,7 @@ private fun findMapApps(context: Context, lat: Double, lon: Double): List<Androi
         )
     }
 
-    val dgisUri = Uri.parse("dgis://2gis.ru/routeSearch/rsType/car/to/$lon,$lat")
+    val dgisUri = "dgis://2gis.ru/routeSearch/rsType/car/to/$lon,$lat".toUri()
     val dgis = Intent(Intent.ACTION_VIEW, dgisUri).apply {
         setPackage("ru.dublgis.dgismobile")
     }
