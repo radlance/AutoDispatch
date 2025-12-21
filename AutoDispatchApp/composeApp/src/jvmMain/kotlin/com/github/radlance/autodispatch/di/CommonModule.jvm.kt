@@ -31,6 +31,9 @@ import com.github.radlance.autodispatch.request.change.presentation.RequestValid
 import com.github.radlance.autodispatch.request.core.data.RemoteRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.request.core.presentation.RequestViewModel
+import com.github.radlance.autodispatch.vehicle.assignment.data.RemoteDriverVehicleAssignmentRepository
+import com.github.radlance.autodispatch.vehicle.assignment.domain.DriverVehicleAssignmentRepository
+import com.github.radlance.autodispatch.vehicle.assignment.presentation.DriverVehicleAssignmentViewModel
 import com.github.radlance.autodispatch.vehicle.core.data.RemoteVehicleRepository
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleRepository
 import com.github.radlance.autodispatch.vehicle.core.presentation.VehicleViewModel
@@ -99,4 +102,10 @@ val vehicleModule
     get() = module {
         singleOf(::RemoteVehicleRepository).bind<VehicleRepository>()
         viewModelOf(::VehicleViewModel)
+    }
+
+val driverVehicleModule
+    get() = module {
+        singleOf(::RemoteDriverVehicleAssignmentRepository).bind<DriverVehicleAssignmentRepository>()
+        viewModelOf(::DriverVehicleAssignmentViewModel)
     }

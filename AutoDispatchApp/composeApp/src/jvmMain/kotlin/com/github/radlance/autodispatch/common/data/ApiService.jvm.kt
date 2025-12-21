@@ -14,6 +14,7 @@ import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.VehicleDto
+import com.github.radlance.autodispatch.vehicle.assignment.data.DriverWithoutVehicleDto
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -99,6 +100,12 @@ interface ApiServiceJvm : ApiService {
         pageSize: Int,
         searchQuery: String?
     ): TablePaginatedResultDto<VehicleDetailedDto>
+
+    suspend fun driversWithoutVehicle(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResultDto<DriverWithoutVehicleDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -284,6 +291,18 @@ internal class KtorApiServiceJvm(
         searchQuery: String?
     ): TablePaginatedResultDto<VehicleDetailedDto> {
         return httpClient.get("vehicles") {
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+            searchQuery?.let { parameter("search", it) }
+        }.body()
+    }
+
+    override suspend fun driversWithoutVehicle(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResultDto<DriverWithoutVehicleDto> {
+        return httpClient.get("drivers/without-vehicle") {
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
             searchQuery?.let { parameter("search", it) }

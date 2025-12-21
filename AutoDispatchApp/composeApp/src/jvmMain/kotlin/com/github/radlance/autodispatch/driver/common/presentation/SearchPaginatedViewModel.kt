@@ -7,6 +7,7 @@ import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.Paginator
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -28,7 +29,7 @@ abstract class SearchPaginatedViewModel<T>(
 
     private val queryFlow = MutableStateFlow("")
 
-    init {
+    private fun setupQueryFlow() {
         queryFlow
             .drop(1)
             .debounce(500)
@@ -37,6 +38,10 @@ abstract class SearchPaginatedViewModel<T>(
                 paginator.refresh()
             }
             .launchIn(viewModelScope)
+    }
+
+    init {
+        setupQueryFlow()
     }
 
     protected abstract suspend fun request(
@@ -127,6 +132,8 @@ abstract class SearchPaginatedViewModel<T>(
     )
 
     open fun resetState() {
+        viewModelScope.coroutineContext.cancelChildren()
+        queryFlow.value = ""
         stateMutable.update {
             it.copy(
                 paginatorState = it.paginatorState.copy(itemsState = FetchResultUiState.Loading),
@@ -135,6 +142,7 @@ abstract class SearchPaginatedViewModel<T>(
             )
         }
         paginator.reset()
+        setupQueryFlow()
     }
 
     fun onQueryChange(query: String) {

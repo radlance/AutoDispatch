@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class DriverAssignmentViewModel(
     private val repository: DriverAssignmentRepository
 ) : SearchPaginatedViewModel<DriverStats>(
-    pageSize = 3
+    pageSize = 5
 ) {
 
     private val assignRequestStateMutable =

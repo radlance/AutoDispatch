@@ -73,8 +73,10 @@ fun DriverAssignmentCard(
                         )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        val count = driverStats.totalAssignedRequests.toInt()
                         RequestCountContainer(
-                            count = driverStats.totalAssignedRequests.toInt(),
+                            count = count,
+                            pluralizedLabel = pluralizeRequests(count),
                             fontSize = 12.sp
                         )
                         Spacer(Modifier.width(12.dp))
@@ -141,7 +143,7 @@ fun DriverStatusWithColor(status: String?, fontSize: TextUnit = TextUnit.Unspeci
 }
 
 @Composable
-fun RequestCountContainer(count: Int, fontSize: TextUnit = TextUnit.Unspecified) {
+fun RequestCountContainer(count: Int, pluralizedLabel: String, fontSize: TextUnit = TextUnit.Unspecified) {
 
     val (bgColor, textColor) = when (count) {
         0 ->
@@ -166,7 +168,7 @@ fun RequestCountContainer(count: Int, fontSize: TextUnit = TextUnit.Unspecified)
             .background(bgColor)
     ) {
         Text(
-            text = pluralizeRequests(count),
+            text = pluralizedLabel,
             maxLines = 1,
             color = textColor,
             overflow = TextOverflow.Ellipsis,
@@ -177,7 +179,7 @@ fun RequestCountContainer(count: Int, fontSize: TextUnit = TextUnit.Unspecified)
 }
 
 
-fun pluralizeRequests(count: Int): String {
+private fun pluralizeRequests(count: Int): String {
     val mod10 = count % 10
     val mod100 = count % 100
 

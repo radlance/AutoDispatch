@@ -36,6 +36,21 @@ fun Route.driver(repository: DriverRepository) {
                 )
                 call.respond(HttpStatusCode.OK, stats)
             }
+
+            get("/without-vehicle") {
+                val queryParams = call.request.queryParameters
+                val page = queryParams["page"]?.toIntOrNull() ?: 1
+                val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 20
+                val searchQuery = queryParams["search"]
+
+                val paginatedRequests = repository.driversWithoutCar(
+                    page = page,
+                    pageSize = pageSize,
+                    searchQuery = searchQuery
+                )
+
+                call.respond(HttpStatusCode.OK, paginatedRequests)
+            }
         }
     }
 }

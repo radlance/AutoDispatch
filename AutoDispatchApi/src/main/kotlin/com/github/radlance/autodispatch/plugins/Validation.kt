@@ -31,7 +31,7 @@ fun Application.configureValidation() {
         validate<RegisterUser> { user ->
             when {
                 user.login.trim().isBlank() -> {
-                    ValidationResult.Invalid("Invalid lgoin format")
+                    ValidationResult.Invalid("Invalid login format")
                 }
 
                 user.fullName.trim().isBlank() -> {
@@ -72,7 +72,7 @@ fun Application.configureValidation() {
 
         exception<DeliveryCanceledException> { call, cause ->
             val error = ErrorResponse(
-                message = cause.message ?: "Доставка отменена",
+                message = cause.message,
                 errorCode = "DELIVERY_CANCELED"
             )
             call.respond(HttpStatusCode.Conflict, error)

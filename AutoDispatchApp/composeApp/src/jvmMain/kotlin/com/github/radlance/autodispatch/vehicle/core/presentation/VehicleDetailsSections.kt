@@ -28,6 +28,7 @@ import org.jetbrains.compose.resources.stringResource
 fun VehicleDetailsSections(
     scrollState: ScrollState,
     vehicle: VehicleDetailed,
+    onShowDriverAssignmentDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -61,7 +62,7 @@ fun VehicleDetailsSections(
 
         if (vehicle.driverFullName == null) {
             Button(
-                onClick = { /*TODO*/ },
+                onClick = onShowDriverAssignmentDialog,
                 modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
             ) {
                 Text(text = "Назначить водителя")

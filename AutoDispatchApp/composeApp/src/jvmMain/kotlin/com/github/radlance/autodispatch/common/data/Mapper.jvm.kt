@@ -27,6 +27,8 @@ import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
+import com.github.radlance.autodispatch.vehicle.assignment.data.DriverWithoutVehicleDto
+import com.github.radlance.autodispatch.vehicle.assignment.domain.DriverWithoutVehicle
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 
@@ -159,6 +161,13 @@ fun ListPaginatedResultDto<VehicleDto>.toVehicleListPaginatedResult(): ListPagin
     )
 }
 
+fun ListPaginatedResultDto<DriverWithoutVehicleDto>.toDriverWithoutVehicleListPaginatedResult(): ListPaginatedResult<DriverWithoutVehicle> {
+    return ListPaginatedResult(
+        items = items.map { it.toDriverWithoutCar() },
+        hasMore = hasMore
+    )
+}
+
 private fun CityDto.toCity(): City {
     return City(
         id = id,
@@ -204,5 +213,14 @@ private fun VehicleDetailedDto.toVehicleDetailed(): VehicleDetailed {
         licensePlate = licensePlate,
         payloadCapacity = payloadCapacity,
         driverFullName = driverFullName
+    )
+}
+
+private fun DriverWithoutVehicleDto.toDriverWithoutCar(): DriverWithoutVehicle {
+    return DriverWithoutVehicle(
+        id = id,
+        fullName = fullName,
+        phoneNumber = phoneNumber,
+        totalDeliveries = totalDeliveries
     )
 }

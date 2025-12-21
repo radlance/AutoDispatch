@@ -12,6 +12,7 @@ import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.driver.Driver
 import com.github.radlance.autodispatch.domain.driver.DriverStats
+import com.github.radlance.autodispatch.domain.driver.DriverWithoutCar
 import com.github.radlance.autodispatch.domain.profile.DeliveriesStats
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.util.loggedTransaction
@@ -23,6 +24,7 @@ import org.jetbrains.exposed.sql.OrOp
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.countDistinct
@@ -240,6 +242,70 @@ class DriverRepository {
 
         ListPaginatedResult(
             items = stats,
+            hasMore = hasMore
+        )
+    }
+
+    suspend fun driversWithoutCar(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?
+    ): ListPaginatedResult<DriverWithoutCar> = loggedTransaction {
+
+        val baseQuery = DriverTable
+            .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
+            .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
+
+        val conditions = mutableListOf<Op<Boolean>>()
+
+        conditions.add(DriverTable.vehicleId.isNull())
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions.add(
+                OrOp(
+                    listOf(
+                        UserTable.fullName.lowerCase() like pattern,
+                        UserTable.phoneNumber.lowerCase() like pattern
+                    )
+                )
+            )
+        }
+
+        val finalCondition = if (conditions.isEmpty()) Op.TRUE else AndOp(conditions)
+        val deliveriesCount = AssignmentTable.id.count()
+        val offset = (page - 1L) * pageSize
+
+        val rows = baseQuery
+            .select(
+                UserTable.id,
+                UserTable.fullName,
+                UserTable.phoneNumber,
+                deliveriesCount
+            )
+            .where(finalCondition)
+            .groupBy(
+                UserTable.id,
+                UserTable.fullName,
+                UserTable.phoneNumber
+            )
+            .orderBy(UserTable.fullName, SortOrder.ASC)
+            .limit(pageSize + 1)
+            .offset(offset)
+            .map { row ->
+                DriverWithoutCar(
+                    id = row[UserTable.id].value,
+                    fullName = row[UserTable.fullName],
+                    phoneNumber = row[UserTable.phoneNumber],
+                    totalDeliveries = row[deliveriesCount].toInt()
+                )
+            }
+
+        val hasMore = rows.size > pageSize
+        val items = if (hasMore) rows.dropLast(1) else rows
+
+        ListPaginatedResult(
+            items = items,
             hasMore = hasMore
         )
     }

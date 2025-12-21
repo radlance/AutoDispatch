@@ -264,6 +264,7 @@ fun VehicleScreen(
                     VehicleDetailsPanel(
                         vehicle = vehicle,
                         onClosePanel = { showVehicleDetailsPanel = false },
+                        onSuccessAssignVehicle = viewModel::onVehicleChanged,
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(350.dp)

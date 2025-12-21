@@ -13,6 +13,7 @@ import com.github.radlance.autodispatch.di.driveRequestModule
 import com.github.radlance.autodispatch.di.driverAssignmentModule
 import com.github.radlance.autodispatch.di.driverHistoryModule
 import com.github.radlance.autodispatch.di.driverModule
+import com.github.radlance.autodispatch.di.driverVehicleModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.pointSelectionModule
 import com.github.radlance.autodispatch.di.profileModule
@@ -39,7 +40,8 @@ fun main() = application {
             vehicleAssignmentModule,
             driverHistoryModule,
             driveRequestModule,
-            vehicleModule
+            vehicleModule,
+            driverVehicleModule
         )
     }
     val windowState = rememberWindowState(
