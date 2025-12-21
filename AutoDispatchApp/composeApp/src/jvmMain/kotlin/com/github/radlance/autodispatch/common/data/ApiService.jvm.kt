@@ -21,6 +21,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -81,6 +82,8 @@ interface ApiServiceJvm : ApiService {
     ): ListPaginatedResultDto<VehicleDto>
 
     suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int)
+
+    suspend fun reassignVehicleToDriver(vehicleId: Int, driverId: Int)
 
     suspend fun driverHistory(
         driverId: Int,
@@ -255,7 +258,13 @@ internal class KtorApiServiceJvm(
     }
 
     override suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int) {
-        httpClient.put("vehicles/${vehicleId}/assign") {
+        httpClient.post("vehicles/${vehicleId}/assignment") {
+            setBody(AssignRequestDto(driverId))
+        }
+    }
+
+    override suspend fun reassignVehicleToDriver(vehicleId: Int, driverId: Int) {
+        httpClient.patch("vehicles/${vehicleId}/assignment") {
             setBody(AssignRequestDto(driverId))
         }
     }

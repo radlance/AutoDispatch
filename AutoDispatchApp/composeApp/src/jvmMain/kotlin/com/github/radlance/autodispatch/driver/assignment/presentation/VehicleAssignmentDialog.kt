@@ -61,6 +61,7 @@ import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.compose.resources.stringResource
@@ -72,6 +73,7 @@ fun VehicleAssignmentDialog(
     onDismiss: () -> Unit,
     driver: Driver,
     onSuccessAssignDriver: () -> Unit,
+    onStateError: (String) -> Unit,
     modifier: Modifier = Modifier,
     isReassign: Boolean,
     assignedVehicleId: Int?,
@@ -81,7 +83,7 @@ fun VehicleAssignmentDialog(
     val assignDriverState by viewModel.assignDriverState.collectAsState()
     val assignRequestState by viewModel.assignDriverState.collectAsState()
     val isLoading = assignRequestState is FetchResultUiState.Loading
-    val error = (assignRequestState as? FetchResultUiState.Error<String>)?.error
+    val error = (assignRequestState as? FetchResultUiState.Error)?.error
     val isSearchVisible by remember {
         derivedStateOf {
             !vehicleAssignmentsState.isEmptyResult
@@ -140,12 +142,17 @@ fun VehicleAssignmentDialog(
                             tint = MaterialTheme.colorScheme.error
                         )
 
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
+                        if (error is DeliveryError.BaseError) {
+                            Text(
+                                text = error.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            viewModel.resetState()
+                            onStateError(error.message)
+                        }
                     }
                 }
                 Card {
@@ -314,6 +321,7 @@ fun VehicleAssignmentDialog(
                     viewModel.assignVehicle(
                         driverId = driver.id,
                         vehicleId = selectedVehicleId!!,
+                        reassign = isReassign
                     )
                 },
                 enabled = isButtonEnabled

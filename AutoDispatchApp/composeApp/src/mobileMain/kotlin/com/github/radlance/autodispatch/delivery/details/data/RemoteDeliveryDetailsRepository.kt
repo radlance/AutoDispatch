@@ -29,9 +29,9 @@ class RemoteDeliveryDetailsRepository(
             } else {
                 FetchResult.Error(DeliveryError.BaseError(message))
             }
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             FetchResult.Error(DeliveryError.BaseError("Таймаут соединения"))
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             FetchResult.Error(DeliveryError.BaseError("Ошибка подключения"))
         } catch (e: Exception) {
             FetchResult.Error(DeliveryError.BaseError(e.message ?: "Неизвестная ошибка"))
@@ -64,7 +64,7 @@ class RemoteDeliveryDetailsRepository(
                                 DeliveryError.GenericStateError(errorResponse.message)
                             )
                         }
-                    } catch (parseException: Exception) {
+                    } catch (_: Exception) {
                         FetchResult.Error(DeliveryError.BaseError(message))
                     }
                 }
@@ -73,9 +73,9 @@ class RemoteDeliveryDetailsRepository(
                     FetchResult.Error(DeliveryError.BaseError(message))
                 }
             }
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             FetchResult.Error(DeliveryError.BaseError("Таймаут соединения"))
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             FetchResult.Error(DeliveryError.BaseError("Ошибка подключения"))
         } catch (e: Exception) {
             FetchResult.Error(DeliveryError.BaseError(e.message ?: "Неизвестная ошибка"))

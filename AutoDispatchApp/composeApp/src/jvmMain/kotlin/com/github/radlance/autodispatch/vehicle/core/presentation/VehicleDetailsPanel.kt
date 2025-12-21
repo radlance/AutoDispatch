@@ -13,6 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +48,41 @@ fun VehicleDetailsPanel(
     val scrollState = rememberScrollState()
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var showStateErrorDialog by remember { mutableStateOf(false) }
+    var stateErrorMessage by remember { mutableStateOf("") }
+
+    if (showStateErrorDialog) {
+        val onDismiss: () -> Unit = {
+            showStateErrorDialog = false
+            onSuccessAssignVehicle()
+            scope.launch {
+                scrollState.animateScrollTo(0)
+            }
+        }
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.WarningAmber,
+                    contentDescription = null
+                )
+            },
+            title = {
+                Text(text = "Ошибка")
+            },
+            text = {
+                Text(text = stateErrorMessage)
+            },
+            dismissButton = {},
+            confirmButton = {
+                Button(
+                    onClick = onDismiss
+                ) {
+                    Text(text = "ОК")
+                }
+            }
+        )
+    }
 
     if (showDriverAssignmentDialog) {
         DriverVehicleAssignmentDialog(
@@ -55,6 +93,11 @@ fun VehicleDetailsPanel(
                 scope.launch {
                     scrollState.animateScrollTo(0)
                 }
+            },
+            onStateError = {
+                showDriverAssignmentDialog = false
+                showStateErrorDialog = true
+                stateErrorMessage = it
             }
         )
     }

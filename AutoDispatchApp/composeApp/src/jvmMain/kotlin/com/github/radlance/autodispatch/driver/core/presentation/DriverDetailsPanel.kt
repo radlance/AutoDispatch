@@ -97,6 +97,11 @@ fun DriverDetailsPanel(
                     scrollState.animateScrollTo(0)
                 }
             },
+            onStateError = {
+                showVehicleAssignmentDialog = false
+                showReassignErrorDialog = true
+                reassignErrorMessage = it
+            },
             isReassign = isReassign,
             assignedVehicleId = driver.vehicle?.id
         )

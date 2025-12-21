@@ -58,6 +58,7 @@ import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.uikit.vector.PersonCheckIcon
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -70,6 +71,7 @@ fun DriverVehicleAssignmentDialog(
     onDismiss: () -> Unit,
     vehicle: VehicleDetailed,
     onSuccessAssignVehicle: () -> Unit,
+    onStateError: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DriverVehicleAssignmentViewModel = koinViewModel()
 ) {
@@ -128,12 +130,17 @@ fun DriverVehicleAssignmentDialog(
                             tint = MaterialTheme.colorScheme.error
                         )
 
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
+                        if (error is DeliveryError.BaseError) {
+                            Text(
+                                text = error.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            viewModel.resetState()
+                            onStateError(error.message)
+                        }
                     }
                 }
                 Card {

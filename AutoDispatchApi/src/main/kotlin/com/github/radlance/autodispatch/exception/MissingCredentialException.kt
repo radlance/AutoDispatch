@@ -8,6 +8,8 @@ data class DeliveryForbiddenException(override val message: String = "Delivery a
 
 data class DeliveryStateException(override val message: String = "Illegal delivery state") : RuntimeException()
 
-class DriverBusyException : RuntimeException("Вы уже выполняете другую доставку. Завершите ее, прежде чем начинать новую.")
+data class DriverBusyException(override val message: String) : RuntimeException(message)
 
 class DeliveryCanceledException(override val message: String) : RuntimeException()
+
+data class VehicleStateException(override val message: String = "Illegal vehicle state") : RuntimeException()

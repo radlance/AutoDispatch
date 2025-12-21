@@ -1,13 +1,16 @@
 package com.github.radlance.autodispatch.repository
 
+import com.github.radlance.autodispatch.database.table.AssignmentTable
 import com.github.radlance.autodispatch.database.table.DriverTable
+import com.github.radlance.autodispatch.database.table.RequestStatusTable
+import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.domain.vehicle.VehicleDetailed
-import com.github.radlance.autodispatch.exception.DeliveryStateException
+import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import io.ktor.server.plugins.*
 import org.jetbrains.exposed.dao.id.EntityID
@@ -79,22 +82,76 @@ class VehicleRepository {
         )
     }
 
-    suspend fun setDriverVehicle(driverId: Int, vehicleId: Int) = loggedTransaction {
+    suspend fun assignDriverVehicle(driverId: Int, vehicleId: Int) = loggedTransaction {
+        val driverWithVehicle = DriverTable
+            .select(DriverTable.vehicleId)
+            .where { DriverTable.userId eq driverId }
+            .firstOrNull()
+
+        if (driverWithVehicle?.get(DriverTable.vehicleId) != null) {
+            throw DriverBusyException("У водителя уже назначен автомобиль")
+        }
+
         val isVehicleTaken = DriverTable
             .select(DriverTable.userId)
             .where {
                 (DriverTable.vehicleId eq vehicleId) and (DriverTable.userId neq driverId)
             }
             .any()
-
         if (isVehicleTaken) {
-            throw DeliveryStateException("Выбранный автомобиль уже занят другим водителем")
+            throw DriverBusyException("Выбранный автомобиль уже занят другим водителем")
+        }
+
+        val hasNonCompletedDeliveries = AssignmentTable
+            .join(RequestTable, JoinType.INNER, AssignmentTable.requestId, RequestTable.id)
+            .join(RequestStatusTable, JoinType.INNER, RequestTable.statusId, RequestStatusTable.id)
+            .select(AssignmentTable.id)
+            .where {
+                (AssignmentTable.driverId eq driverId) and
+                        (RequestStatusTable.name notInList listOf("Завершена", "Отменена"))
+            }
+            .limit(1)
+            .any()
+
+        if (hasNonCompletedDeliveries) {
+            throw DriverBusyException(
+                "Нельзя назначить автомобиль водителю с незавершенными доставками (назначенные, в пути, на проверке или отклоненные)"
+            )
         }
 
         val updatedRows = DriverTable.update({ DriverTable.userId eq driverId }) {
             it[this.vehicleId] = EntityID(vehicleId, VehicleTable)
         }
+        if (updatedRows == 0) {
+            throw NotFoundException("Водитель с ID $driverId не найден")
+        }
+    }
 
+
+    suspend fun reassignDriverVehicle(driverId: Int, vehicleId: Int) = loggedTransaction {
+        val isVehicleTaken = DriverTable
+            .select(DriverTable.userId)
+            .where {
+                (DriverTable.vehicleId eq vehicleId) and (DriverTable.userId neq driverId)
+            }
+            .any()
+        if (isVehicleTaken) {
+            throw DriverBusyException("Выбранный автомобиль уже занят другим водителем")
+        }
+
+        val hasNonCompletedDeliveries = AssignmentTable
+            .join(RequestTable, JoinType.INNER, AssignmentTable.requestId, RequestTable.id)
+            .join(RequestStatusTable, JoinType.INNER, RequestTable.statusId, RequestStatusTable.id)
+            .select(AssignmentTable.driverId)
+            .where { (AssignmentTable.driverId eq driverId) and (RequestStatusTable.name notInList listOf("Завершена", "Отменена")) }
+            .any()
+        if (hasNonCompletedDeliveries) {
+            throw DriverBusyException("Нельзя назначить автомобиль водителю с незавершенными доставками (назначенные, в пути, на проверке или отклоненные)")
+        }
+
+        val updatedRows = DriverTable.update({ DriverTable.userId eq driverId }) {
+            it[this.vehicleId] = EntityID(vehicleId, VehicleTable)
+        }
         if (updatedRows == 0) {
             throw NotFoundException("Водитель с ID $driverId не найден")
         }

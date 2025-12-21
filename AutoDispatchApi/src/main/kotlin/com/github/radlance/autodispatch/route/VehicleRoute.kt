@@ -40,13 +40,27 @@ fun Route.vehicle(repository: VehicleRepository) {
                 call.respond(HttpStatusCode.OK, stats)
             }
 
-            put("/{id}/assign") {
+            post("/{id}/assignment") {
                 val id = call.parameters["id"]?.toIntOrNull()
-                    ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid vehicle ID")
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid vehicle ID")
 
                 val body = call.receive<AssignRequest>()
 
-                repository.setDriverVehicle(
+                repository.assignDriverVehicle(
+                    vehicleId = id,
+                    driverId = body.driverId
+                )
+
+                call.respond(HttpStatusCode.OK)
+            }
+
+            patch("/{id}/assignment") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid vehicle ID")
+
+                val body = call.receive<AssignRequest>()
+
+                repository.reassignDriverVehicle(
                     vehicleId = id,
                     driverId = body.driverId
                 )

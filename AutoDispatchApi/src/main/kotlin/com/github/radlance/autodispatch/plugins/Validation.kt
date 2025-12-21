@@ -64,7 +64,7 @@ fun Application.configureValidation() {
     install(StatusPages) {
         exception<DriverBusyException> { call, cause ->
             val error = ErrorResponse(
-                message = cause.message ?: "Водитель занят",
+                message = cause.message,
                 errorCode = "DRIVER_BUSY"
             )
             call.respond(HttpStatusCode.Conflict, error)

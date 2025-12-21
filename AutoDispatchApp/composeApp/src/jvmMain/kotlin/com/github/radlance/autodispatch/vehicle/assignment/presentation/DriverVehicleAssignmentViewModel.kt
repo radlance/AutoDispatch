@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.driver.assignment.domain.VehicleAssignmentRepository
 import com.github.radlance.autodispatch.driver.common.presentation.SearchPaginatedViewModel
 import com.github.radlance.autodispatch.vehicle.assignment.domain.DriverVehicleAssignmentRepository
@@ -19,7 +20,7 @@ class DriverVehicleAssignmentViewModel(
     private val vehicleRepository: VehicleAssignmentRepository
 ) : SearchPaginatedViewModel<DriverWithoutVehicle>(pageSize = 8) {
     private val assignVehicleStateMutable =
-        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<Unit, DeliveryError>>(FetchResultUiState.Idle)
     val assignVehicleState = assignVehicleStateMutable.asStateFlow()
 
     fun assignVehicle(

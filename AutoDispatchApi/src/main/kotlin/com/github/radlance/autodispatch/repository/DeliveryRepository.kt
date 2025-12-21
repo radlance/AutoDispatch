@@ -189,7 +189,7 @@ class DeliveryRepository {
             .count()
 
         if (activeAssignmentsCount > 0) {
-            throw DriverBusyException()
+            throw DriverBusyException("Вы уже выполняете другую доставку. Завершите ее, прежде чем начинать новую.")
         }
 
         val requestData = RequestTable

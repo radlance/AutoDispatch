@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
+import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.driver.assignment.domain.VehicleAssignmentRepository
 import com.github.radlance.autodispatch.driver.common.presentation.SearchPaginatedViewModel
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
@@ -19,17 +20,22 @@ class VehicleAssignmentViewModel(
     pageSize = 5
 ) {
     private val assignDriverStateMutable =
-        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<Unit, DeliveryError>>(FetchResultUiState.Idle)
     val assignDriverState = assignDriverStateMutable.asStateFlow()
 
     fun assignVehicle(
         vehicleId: Int,
-        driverId: Int
+        driverId: Int,
+        reassign: Boolean
     ) {
         assignDriverStateMutable.value = FetchResultUiState.Loading
         handle(
             background = {
-                repository.assignVehicleToDriver(vehicleId, driverId)
+                if (reassign) {
+                    repository.reassignVehicleToDriver(vehicleId, driverId)
+                } else {
+                    repository.assignVehicleToDriver(vehicleId, driverId)
+                }
             }
         ) {
             assignDriverStateMutable.value = it.toUiState()
