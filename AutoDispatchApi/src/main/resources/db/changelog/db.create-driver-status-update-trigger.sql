@@ -25,7 +25,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION trg_assignment_changed()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 BEGIN
     IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
         PERFORM proc_update_driver_status(NEW.driver_id);
@@ -45,6 +46,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER assignment_changes_trigger
-    AFTER INSERT OR UPDATE OR DELETE ON assignment
+    AFTER INSERT OR UPDATE OR DELETE
+    ON assignment
     FOR EACH ROW
 EXECUTE FUNCTION trg_assignment_changed();

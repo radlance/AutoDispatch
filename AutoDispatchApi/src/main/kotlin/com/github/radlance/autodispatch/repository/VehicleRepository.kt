@@ -15,6 +15,7 @@ import com.github.radlance.autodispatch.util.loggedTransaction
 import io.ktor.server.plugins.*
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.AndOp
+import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
@@ -234,7 +235,12 @@ class VehicleRepository {
                 UserTable.fullName
             )
             .where(condition)
-            .orderBy(VehicleTable.model, SortOrder.ASC)
+            .orderBy(
+                Coalesce(
+                    DriverTable.updatedAt,
+                    DriverTable.createdAt
+                ), SortOrder.DESC_NULLS_LAST
+            )
             .limit(pageSize)
             .offset(offset)
             .map { row ->
@@ -252,4 +258,5 @@ class VehicleRepository {
             totalCount = total
         )
     }
+
 }

@@ -18,6 +18,7 @@ import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
+import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
@@ -69,8 +70,8 @@ class DriverRepository {
             .where(condition)
             .single()[UserTable.id.countDistinct()]
 
-        val countExpression = AssignmentTable.id.count()
         val offset = (page - 1L) * pageSize
+        val countExpression = AssignmentTable.id.count()
 
         val rows = baseQuery
             .select(
@@ -97,9 +98,16 @@ class DriverRepository {
                 VehicleTable.model,
                 VehicleTable.licensePlate,
                 VehicleTable.payloadCapacity,
-                RequestStatusTable.name
+                RequestStatusTable.name,
+                DriverTable.updatedAt,
+                DriverTable.createdAt
             )
-            .orderBy(UserTable.fullName, SortOrder.ASC)
+            .orderBy(
+                Coalesce(
+                    DriverTable.updatedAt,
+                    DriverTable.createdAt
+                ), SortOrder.DESC_NULLS_LAST
+            )
             .limit(pageSize)
             .offset(offset)
             .toList()
