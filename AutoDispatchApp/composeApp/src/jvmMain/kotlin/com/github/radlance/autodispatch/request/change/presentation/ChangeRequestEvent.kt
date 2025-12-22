@@ -137,8 +137,16 @@ interface ChangeRequestEvent : Event {
     }
 
     class ClickApproveDocument(private val requestId: Int): ChangeRequestEvent {
+
         override fun apply(action: CreateRequestAction) {
             action.approveDocument(requestId)
+        }
+    }
+
+    class ClickUnassignDriver(private val requestId: Int): ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) {
+          action.unassignDriver(requestId)
         }
     }
 
@@ -173,6 +181,13 @@ interface ChangeRequestEvent : Event {
 
         override fun apply(action: CreateRequestAction) {
             action.resetApproveState()
+        }
+    }
+
+    object ResetDriverUnassignmentState : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) {
+            action.resetDriverUnassignmentState()
         }
     }
 
@@ -238,6 +253,8 @@ interface CreateRequestAction {
 
     fun approveDocument(requestId: Int)
 
+    fun unassignDriver(requestId: Int)
+
     fun resetChangeState()
 
     fun resetCancelState()
@@ -247,6 +264,8 @@ interface CreateRequestAction {
     fun resetRejectState()
 
     fun resetApproveState()
+
+    fun resetDriverUnassignmentState()
 
     fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState)
 }

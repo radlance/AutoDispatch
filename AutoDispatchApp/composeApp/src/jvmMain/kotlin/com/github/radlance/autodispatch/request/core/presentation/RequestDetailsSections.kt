@@ -76,9 +76,10 @@ fun RequestDetailsSections(
     onSelectImageUrl: (String) -> Unit,
     isReassign: Boolean,
     onChangeReassign: (Boolean) -> Unit,
-    onShowDriverAssignmentDialog: (Boolean) -> Unit,
-    onShowRejectDocumentsDialog: (Boolean) -> Unit,
-    onShowApproveDocumentsDialog: (Boolean) -> Unit,
+    showDriverAssignmentDialog: () -> Unit,
+    showRejectDocumentsDialog: () -> Unit,
+    showApproveDocumentsDialog: () -> Unit,
+    showDriverUnassignmentDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.verticalScroll(scrollState)) {
@@ -262,7 +263,7 @@ fun RequestDetailsSections(
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(
-                            onClick = { onShowRejectDocumentsDialog(true) },
+                            onClick = showRejectDocumentsDialog,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
@@ -271,7 +272,7 @@ fun RequestDetailsSections(
                         }
                         Spacer(Modifier.width(12.dp))
                         Button(
-                            onClick = { onShowApproveDocumentsDialog(true) },
+                            onClick = showApproveDocumentsDialog,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(imageVector = Icons.Outlined.Done, contentDescription = null)
@@ -286,14 +287,25 @@ fun RequestDetailsSections(
         Spacer(modifier = Modifier.height(12.dp))
         if (request.status.id == 1 || request.status.id == 2) {
             onChangeReassign(request.status.id == 2)
-            Button(
-                onClick = { onShowDriverAssignmentDialog(true) },
-                modifier = Modifier.fillMaxWidth().padding(end = 6.dp)
-            ) {
-                val text = if (isReassign) {
-                    "Переназначить водителя"
-                } else "Назначить водителя"
-                Text(text = text)
+            Row {
+                Button(
+                    onClick = showDriverAssignmentDialog,
+                    modifier = Modifier.weight(1f).padding(end = 6.dp)
+                ) {
+                    val text = if (isReassign) {
+                        "Переназначить"
+                    } else "Назначить"
+                    Text(text = text)
+                }
+
+                if (isReassign) {
+                    Button(
+                        onClick = showDriverUnassignmentDialog,
+                        modifier = Modifier.weight(1f).padding(end = 6.dp)
+                    ) {
+                        Text(text = "Снять с заявки")
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
         }

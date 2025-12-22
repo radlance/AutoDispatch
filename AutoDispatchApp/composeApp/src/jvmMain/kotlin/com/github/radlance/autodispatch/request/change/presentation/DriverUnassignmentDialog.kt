@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.core.presentation
+package com.github.radlance.autodispatch.request.change.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,18 +20,19 @@ import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApproveDocumentDialog(
+fun DriverUnassignmentDialog(
     onDismissRequest: () -> Unit,
-    onApprove: () -> Unit,
-    approveState: FetchResultUiState<Unit, String>,
+    onConfirm: () -> Unit,
+    onStateError: (String) -> Unit,
+    unassignmentState: FetchResultUiState<Unit, RequestError>,
     modifier: Modifier = Modifier
 ) {
-    val isLoading = approveState is FetchResultUiState.Loading
-    val error = (approveState as? FetchResultUiState.Error<String>)?.error
+    val isLoading = unassignmentState is FetchResultUiState.Loading
+    val error = (unassignmentState as? FetchResultUiState.Error)?.error
 
     AlertDialog(
         modifier = modifier,
@@ -41,7 +42,7 @@ fun ApproveDocumentDialog(
             }
         },
         title = {
-            Text(text = "Одобрить документы")
+            Text(text = "Снятие водителя с заявки")
         },
         text = {
             Column {
@@ -56,15 +57,19 @@ fun ApproveDocumentDialog(
                             contentDescription = "Error",
                             tint = MaterialTheme.colorScheme.error
                         )
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
+                        if (error is RequestError.BaseError) {
+                            Text(
+                                text = error.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            onStateError(error.message)
+                        }
                     }
                 }
-                Text(text = "Вы уверены, что хотите одобрить документы по этой заявке? После одобрения заявка будет завершена.")
+                Text(text = "Вы уверены, что хотите снять водителя с этой заявки?")
             }
         },
         dismissButton = {
@@ -73,12 +78,13 @@ fun ApproveDocumentDialog(
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = onApprove,
+            Button(
+                onClick = onConfirm,
                 enabled = !isLoading
             ) {
-                Text(text = "Одобрить")
+                Text(text = "Снять")
             }
         }
     )
+
 }

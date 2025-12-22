@@ -56,6 +56,12 @@ class ChangeRequestViewModel(
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
     val approveDocumentsState get() = approveDocumentsStateMutable.asStateFlow()
 
+    private val driverUnassignmentStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, RequestError>>(
+            FetchResultUiState.Idle
+        )
+    val driverUnassignmentState = driverUnassignmentStateMutable.asStateFlow()
+
     override fun reduce(event: ChangeRequestEvent) {
         val action = object : CreateRequestAction {
             override fun changeDepartureCity(city: City) {
@@ -278,6 +284,10 @@ class ChangeRequestViewModel(
                 approveDocumentsStateMutable.value = FetchResultUiState.Idle
             }
 
+            override fun resetDriverUnassignmentState() {
+                driverUnassignmentStateMutable.value = FetchResultUiState.Idle
+            }
+
             override fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState) {
                 fieldsUiStateMutable.value = fieldsUiState
             }
@@ -313,6 +323,13 @@ class ChangeRequestViewModel(
                 approveDocumentsStateMutable.value = FetchResultUiState.Loading
                 handle(background = { repository.approveDocument(requestId) }) {
                     approveDocumentsStateMutable.value = it.toUiState()
+                }
+            }
+
+            override fun unassignDriver(requestId: Int) {
+                driverUnassignmentStateMutable.value = FetchResultUiState.Loading
+                handle(background = { repository.unassignDriver(requestId) }) {
+                    driverUnassignmentStateMutable.value = it.toUiState()
                 }
             }
         }

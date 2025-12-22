@@ -114,6 +114,8 @@ interface ApiServiceJvm : ApiService {
     ): ListPaginatedResultDto<DriverWithoutVehicleDto>
 
     suspend fun unassignVehicle(driverId: Int)
+
+    suspend fun unassignDriver(requestId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -176,17 +178,17 @@ internal class KtorApiServiceJvm(
     }
 
     override suspend fun editRequest(requestId: Int, changeRequestDto: ChangeRequestDto) {
-        httpClient.put("requests/${requestId}") {
+        httpClient.put("requests/$requestId") {
             setBody(changeRequestDto)
         }
     }
 
     override suspend fun cancelRequest(requestId: Int) {
-        httpClient.put("requests/${requestId}/cancel")
+        httpClient.put("requests/$requestId/cancel")
     }
 
     override suspend fun removeRequest(requestId: Int) {
-        httpClient.delete("requests/${requestId}")
+        httpClient.delete("requests/$requestId")
     }
 
     override suspend fun driverAssignments(
@@ -202,13 +204,13 @@ internal class KtorApiServiceJvm(
     }
 
     override suspend fun assignDriverToRequest(requestId: Int, driverId: Int) {
-        httpClient.post("requests/${requestId}/assign") {
+        httpClient.post("requests/$requestId/assign") {
             setBody(AssignRequestDto(driverId))
         }
     }
 
     override suspend fun reassignDriverToRequest(requestId: Int, driverId: Int) {
-        httpClient.put("requests/${requestId}/assign") {
+        httpClient.put("requests/$requestId/assign") {
             setBody(AssignRequestDto(driverId))
         }
     }
@@ -233,13 +235,13 @@ internal class KtorApiServiceJvm(
     }
 
     override suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto) {
-        httpClient.post("documents/${requestId}/reject") {
+        httpClient.post("documents/$requestId/reject") {
             setBody(rejectDocumentDto)
         }
     }
 
     override suspend fun approveDocument(requestId: Int) {
-        httpClient.post("documents/${requestId}/approve")
+        httpClient.post("documents/$requestId/approve")
     }
 
     override suspend fun drivers(
@@ -267,13 +269,13 @@ internal class KtorApiServiceJvm(
     }
 
     override suspend fun assignVehicleToDriver(vehicleId: Int, driverId: Int) {
-        httpClient.post("vehicles/${vehicleId}/assignment") {
+        httpClient.post("vehicles/$vehicleId/assignment") {
             setBody(AssignRequestDto(driverId))
         }
     }
 
     override suspend fun reassignVehicleToDriver(vehicleId: Int, driverId: Int) {
-        httpClient.patch("vehicles/${vehicleId}/assignment") {
+        httpClient.patch("vehicles/$vehicleId/assignment") {
             setBody(AssignRequestDto(driverId))
         }
     }
@@ -284,7 +286,7 @@ internal class KtorApiServiceJvm(
         page: Int,
         pageSize: Int
     ): ListPaginatedResultDto<DriverHistoryDto> {
-        return httpClient.get("deliveries/history/${driverId}") {
+        return httpClient.get("deliveries/history/$driverId") {
             parameter("page", page.toString())
             parameter("pageSize", pageSize.toString())
             searchQuery?.let { parameter("search", it) }
@@ -329,5 +331,9 @@ internal class KtorApiServiceJvm(
 
     override suspend fun unassignVehicle(driverId: Int) {
         httpClient.delete("vehicles/assignment/$driverId")
+    }
+
+    override suspend fun unassignDriver(requestId: Int) {
+        httpClient.delete("requests/$requestId/assign")
     }
 }

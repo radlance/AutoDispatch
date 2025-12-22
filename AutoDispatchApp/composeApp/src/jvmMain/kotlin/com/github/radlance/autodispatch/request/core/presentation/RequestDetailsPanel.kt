@@ -36,6 +36,7 @@ import com.github.radlance.autodispatch.request.change.presentation.ChangeReques
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestEvent
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
+import com.github.radlance.autodispatch.request.change.presentation.DriverUnassignmentDialog
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
@@ -56,6 +57,7 @@ fun RequestDetailsPanel(
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
     val rejectDocumentsState by viewModel.rejectDocumentsState.collectAsState()
     val approveDocumentsState by viewModel.approveDocumentsState.collectAsState()
+    val driverUnassignmentState by viewModel.driverUnassignmentState.collectAsState()
 
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -66,6 +68,7 @@ fun RequestDetailsPanel(
     var stateErrorMessage by remember { mutableStateOf("") }
     var showRejectDocumentsDialog by remember { mutableStateOf(false) }
     var showApproveDocumentsDialog by remember { mutableStateOf(false) }
+    var showDriverUnassignmentDialog by remember { mutableStateOf(false) }
     var lastImageRetryAttempt by remember { mutableStateOf(0L) }
 
     val lazyRowState = rememberLazyListState()
@@ -214,6 +217,7 @@ fun RequestDetailsPanel(
                 }
             }
         }
+
         RejectDocumentDialog(
             onDismissRequest = onDismissRejectDialog,
             onReject = {
@@ -256,6 +260,36 @@ fun RequestDetailsPanel(
         )
     }
 
+    if (showDriverUnassignmentDialog) {
+        val onDismissUnassignmentDialog = {
+            showDriverUnassignmentDialog = false
+            viewModel.reduce(ChangeRequestEvent.ResetDriverUnassignmentState)
+        }
+
+        LaunchedEffect(driverUnassignmentState) {
+            if (driverUnassignmentState is FetchResultUiState.Success) {
+                onSuccessCreateRequest()
+                onDismissUnassignmentDialog()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+            }
+        }
+        DriverUnassignmentDialog(
+            onDismissRequest = { showDriverUnassignmentDialog = false },
+            onConfirm = {
+                viewModel.reduce(ChangeRequestEvent.ClickUnassignDriver(request.id))
+
+            },
+            onStateError = {
+                onDismissUnassignmentDialog()
+                showStateErrorDialog = true
+                stateErrorMessage = it
+            },
+            unassignmentState = driverUnassignmentState
+        )
+    }
+
     DefaultPointerSelectionContainer {
         Column(modifier = modifier.padding(8.dp)) {
             RequestPanelHeader(
@@ -276,9 +310,10 @@ fun RequestDetailsPanel(
                     onSelectImageUrl = { selectedImageUrl = it },
                     isReassign = isReassign,
                     onChangeReassign = { isReassign = it },
-                    onShowDriverAssignmentDialog = { showDriverAssignmentDialog = it },
-                    onShowRejectDocumentsDialog = { showRejectDocumentsDialog = it },
-                    onShowApproveDocumentsDialog = { showApproveDocumentsDialog = it }
+                    showDriverAssignmentDialog = { showDriverAssignmentDialog = true },
+                    showRejectDocumentsDialog = { showRejectDocumentsDialog = true },
+                    showApproveDocumentsDialog = { showApproveDocumentsDialog = true },
+                    showDriverUnassignmentDialog = { showDriverUnassignmentDialog = true }
                 )
 
                 VerticalScrollbar(

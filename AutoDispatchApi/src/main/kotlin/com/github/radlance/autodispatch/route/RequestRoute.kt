@@ -143,6 +143,14 @@ fun Route.requests(repository: RequestRepository) {
 
                 call.respond(HttpStatusCode.OK, paginatedResult)
             }
+
+            delete("/{id}/assign") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                repository.unassignDriver(id)
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

@@ -364,7 +364,6 @@ class RequestRepository {
 
         RequestTable.update({ RequestTable.id eq requestId }) {
             it[statusId] = 5
-            it[updatedAt] = CurrentTimestampWithTimeZone
         }
 
         AssignmentTable.update({ AssignmentTable.requestId eq requestId }) {
@@ -538,6 +537,24 @@ class RequestRepository {
             items = items,
             hasMore = hasMore
         )
+    }
+
+    suspend fun unassignDriver(requestId: Int) = loggedTransaction {
+        val currentStatus = RequestTable.select(RequestTable.statusId)
+            .where { RequestTable.id eq requestId }
+            .singleOrNull()
+            ?.get(RequestTable.statusId)?.value
+            ?: throw StateConflictException("Заявка не найдена")
+
+        if (currentStatus !in 2..3) {
+            throw StateConflictException("Нет активного назначения для отмены")
+        }
+
+        RequestTable.update({ RequestTable.id eq requestId }) {
+            it[statusId] = 1
+        }
+
+        AssignmentTable.deleteWhere { AssignmentTable.requestId eq requestId }
     }
 
     private fun <T : Any> setRequestFields(
