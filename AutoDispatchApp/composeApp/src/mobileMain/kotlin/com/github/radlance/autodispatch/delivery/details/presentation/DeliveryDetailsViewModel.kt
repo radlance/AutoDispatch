@@ -3,9 +3,9 @@ package com.github.radlance.autodispatch.delivery.details.presentation
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,11 +14,11 @@ class DeliveryDetailsViewModel(
     private val repository: DeliveryDetailsRepository
 ) : BaseViewModel() {
     private val deliveryStateMutable =
-        MutableStateFlow<FetchResultUiState<DeliveryDetailed, DeliveryError>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<DeliveryDetailed, RequestError>>(FetchResultUiState.Idle)
     val deliveryState = deliveryStateMutable.asStateFlow()
 
     private val acceptDeliveryStateMutable =
-        MutableStateFlow<FetchResultUiState<Unit, DeliveryError>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<Unit, RequestError>>(FetchResultUiState.Idle)
     val acceptDeliveryState = acceptDeliveryStateMutable.asStateFlow()
 
     private var deliveryJob: Job? = null

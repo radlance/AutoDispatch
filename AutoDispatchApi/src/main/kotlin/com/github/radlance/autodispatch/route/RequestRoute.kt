@@ -92,6 +92,14 @@ fun Route.requests(repository: RequestRepository) {
                 call.respond(HttpStatusCode.OK)
             }
 
+            delete("/{id}") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                repository.removeRequest(requestId = id)
+                call.respond(HttpStatusCode.OK)
+            }
+
             post("/{id}/assign") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid request ID")

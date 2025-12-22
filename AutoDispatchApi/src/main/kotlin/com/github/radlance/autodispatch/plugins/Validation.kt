@@ -6,7 +6,7 @@ import com.github.radlance.autodispatch.domain.auth.RegisterUser
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
-import com.github.radlance.autodispatch.exception.DeliveryStateException
+import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.exception.NoAccessException
@@ -78,8 +78,12 @@ fun Application.configureValidation() {
             call.respond(HttpStatusCode.Conflict, error)
         }
 
-        exception<DeliveryStateException> { call, cause ->
-            call.respondText(status = HttpStatusCode.Conflict, text = cause.message)
+        exception<StateConflictException> { call, cause ->
+            val error = ErrorResponse(
+                message = cause.message,
+                errorCode = "STATE_CONFLICT"
+            )
+            call.respond(HttpStatusCode.Conflict, error)
         }
 
         exception<DeliveryNotFoundException> { call, cause ->

@@ -32,7 +32,7 @@ import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -121,7 +121,7 @@ fun DeliveryRouteScreen(
                     )
                 },
                 onError = {
-                    if (it is DeliveryError.BaseError) {
+                    if (it is RequestError.BaseError) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             ErrorMessage(
                                 message = it.message,

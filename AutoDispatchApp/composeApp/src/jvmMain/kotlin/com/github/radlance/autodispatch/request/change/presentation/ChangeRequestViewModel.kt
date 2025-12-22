@@ -6,6 +6,7 @@ import com.github.radlance.autodispatch.common.presentation.EventViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.common.utils.toStringAddress
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequestRepository
 import com.github.radlance.autodispatch.request.core.domain.CargoType
@@ -13,6 +14,7 @@ import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Customer
 import com.github.radlance.autodispatch.request.core.domain.Point
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,12 +35,18 @@ class ChangeRequestViewModel(
     private val debounceTime = 300L
 
     private val changeRequestStateMutable =
-        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<Unit, RequestError>>(FetchResultUiState.Idle)
     val changeRequestState = changeRequestStateMutable.asStateFlow()
 
     private val cancelRequestStateMutable =
-        MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
+        MutableStateFlow<FetchResultUiState<Unit, RequestError>>(FetchResultUiState.Idle)
     val cancelRequestState = cancelRequestStateMutable.asStateFlow()
+
+    private val removeRequestStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, RequestError>>(
+            FetchResultUiState.Idle
+        )
+    val removeRequestState = removeRequestStateMutable.asStateFlow()
 
     private val rejectDocumentsStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, String>>(FetchResultUiState.Idle)
@@ -251,10 +259,15 @@ class ChangeRequestViewModel(
 
                 changeRequestStateMutable.value = FetchResultUiState.Idle
                 customersStateMutable.value = emptyList()
+                viewModelScope.coroutineContext.cancelChildren()
+            }
+
+            override fun resetCancelState() {
+                cancelRequestStateMutable.value = FetchResultUiState.Idle
             }
 
             override fun resetRemoveState() {
-                cancelRequestStateMutable.value = FetchResultUiState.Idle
+                removeRequestStateMutable.value = FetchResultUiState.Idle
             }
 
             override fun resetRejectState() {
@@ -276,6 +289,16 @@ class ChangeRequestViewModel(
                     background = { repository.cancelRequest(requestId) }
                 ) {
                     cancelRequestStateMutable.value = it.toUiState()
+                }
+            }
+
+            override fun removeRequest(requestId: Int) {
+                removeRequestStateMutable.value = FetchResultUiState.Idle
+
+                handle(
+                    background = { repository.removeRequest(requestId) }
+                ) {
+                    removeRequestStateMutable.value = it.toUiState()
                 }
             }
 

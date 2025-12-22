@@ -63,7 +63,7 @@ import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.compose.resources.stringResource
@@ -89,7 +89,7 @@ fun DriverRequestAssignmentDialog(
     val isRequestsLoading = historyState.paginatorState.itemsState is FetchResultUiState.Loading
 
     val isAssignLoading = assignRequestState is FetchResultUiState.Loading
-    val assignError = (assignRequestState as? FetchResultUiState.Error<DeliveryError>)?.error
+    val assignError = (assignRequestState as? FetchResultUiState.Error<RequestError>)?.error
 
     val onDismiss = {
         onDismiss()
@@ -147,7 +147,7 @@ fun DriverRequestAssignmentDialog(
                                 contentDescription = "Error",
                                 tint = MaterialTheme.colorScheme.error
                             )
-                            if (assignError is DeliveryError.BaseError) {
+                            if (assignError is RequestError.BaseError) {
                                 Text(
                                     text = assignError.message,
                                     color = MaterialTheme.colorScheme.error,

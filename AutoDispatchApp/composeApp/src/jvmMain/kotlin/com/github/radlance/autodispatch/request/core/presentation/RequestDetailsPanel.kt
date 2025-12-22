@@ -31,7 +31,7 @@ import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelect
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatNumberNoTrailingZeros
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
-import com.github.radlance.autodispatch.request.change.presentation.CancelDialog
+import com.github.radlance.autodispatch.request.change.presentation.CancelRequestDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestEvent
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
@@ -62,8 +62,8 @@ fun RequestDetailsPanel(
     var showDriverAssignmentDialog by remember { mutableStateOf(false) }
     var isReassign by remember { mutableStateOf(request.driverId != null) }
     var showCancelAssignmentDialog by remember { mutableStateOf(false) }
-    var showReassignErrorDialog by remember { mutableStateOf(false) }
-    var reassignErrorMessage by remember { mutableStateOf("") }
+    var showStateErrorDialog by remember { mutableStateOf(false) }
+    var stateErrorMessage by remember { mutableStateOf("") }
     var showRejectDocumentsDialog by remember { mutableStateOf(false) }
     var showApproveDocumentsDialog by remember { mutableStateOf(false) }
     var lastImageRetryAttempt by remember { mutableStateOf(0L) }
@@ -81,9 +81,9 @@ fun RequestDetailsPanel(
         )
     }
 
-    if (showReassignErrorDialog) {
+    if (showStateErrorDialog) {
         val onDismiss: () -> Unit = {
-            showReassignErrorDialog = false
+            showStateErrorDialog = false
             onSuccessCreateRequest()
             scope.launch {
                 scrollState.animateScrollTo(0)
@@ -101,7 +101,7 @@ fun RequestDetailsPanel(
                 Text(text = "Ошибка")
             },
             text = {
-                Text(text = reassignErrorMessage)
+                Text(text = stateErrorMessage)
             },
             dismissButton = {},
             confirmButton = {
@@ -121,7 +121,11 @@ fun RequestDetailsPanel(
                 cargoTypes = cargoTypes,
                 onDismiss = { showEditDialog = false },
                 onSuccessCreateRequest = onSuccessCreateRequest,
-                isEditRequest = true,
+                onStateError = {
+                    showStateErrorDialog = true
+                    stateErrorMessage = it
+                },
+                requestStatusId = request.status.id,
                 currentFieldsUiState = ChangeRequestFieldsUiState(
                     departureCity = cities.first { it.name == request.origin },
                     destinationCity = cities.first { it.name == request.destination },
@@ -160,8 +164,8 @@ fun RequestDetailsPanel(
             assignedDriverId = request.driverId,
             onStateReassignError = {
                 showDriverAssignmentDialog = false
-                showReassignErrorDialog = true
-                reassignErrorMessage = it
+                showStateErrorDialog = true
+                stateErrorMessage = it
             }
         )
     }
@@ -180,10 +184,15 @@ fun RequestDetailsPanel(
             }
         }
 
-        CancelDialog(
+        CancelRequestDialog(
             onDismissDialog = onDismissCancelDialog,
             onConfirm = {
                 viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(request.id))
+            },
+            onStateError = {
+                onDismissCancelDialog()
+                showStateErrorDialog = true
+                stateErrorMessage = it
             },
             cancelState = cancelRequestState,
             requestNumber = request.requestNumber

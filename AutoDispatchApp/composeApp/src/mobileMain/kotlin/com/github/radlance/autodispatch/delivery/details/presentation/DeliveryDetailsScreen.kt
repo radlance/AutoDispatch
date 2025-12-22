@@ -29,7 +29,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -103,7 +103,7 @@ fun DeliveryDetailsScreen(
                     )
                 },
                 onError = {
-                    if (it is DeliveryError.BaseError) {
+                    if (it is RequestError.BaseError) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             ErrorMessage(
                                 message = it.message,

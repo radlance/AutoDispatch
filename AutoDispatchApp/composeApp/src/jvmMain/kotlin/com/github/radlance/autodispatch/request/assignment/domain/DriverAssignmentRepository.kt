@@ -2,7 +2,7 @@ package com.github.radlance.autodispatch.request.assignment.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 
 interface DriverAssignmentRepository {
 
@@ -15,10 +15,10 @@ interface DriverAssignmentRepository {
     suspend fun assignDriverToRequest(
         requestId: Int,
         driverId: Int
-    ): FetchResult<Unit, DeliveryError>
+    ): FetchResult<Unit, RequestError>
 
     suspend fun reassignDriverToRequest(
         requestId: Int,
         driverId: Int
-    ): FetchResult<Unit, DeliveryError>
+    ): FetchResult<Unit, RequestError>
 }

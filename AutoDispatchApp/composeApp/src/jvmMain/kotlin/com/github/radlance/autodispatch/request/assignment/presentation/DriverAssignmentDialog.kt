@@ -65,7 +65,7 @@ import com.github.radlance.autodispatch.common.presentation.EmptySearchPlacehold
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.core.domain.Request
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.compose.resources.stringResource
@@ -135,7 +135,7 @@ fun DriverAssignmentDialog(
                             contentDescription = "Error",
                             tint = MaterialTheme.colorScheme.error
                         )
-                        if (error is DeliveryError.BaseError) {
+                        if (error is RequestError.BaseError) {
                             Text(
                                 text = error.message,
                                 color = MaterialTheme.colorScheme.error,

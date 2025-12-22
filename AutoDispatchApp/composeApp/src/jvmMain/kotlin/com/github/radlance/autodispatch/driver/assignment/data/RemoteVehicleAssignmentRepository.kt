@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.toVehicleListPaginatedResult
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.driver.assignment.domain.VehicleAssignmentRepository
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
 
@@ -30,14 +30,14 @@ class RemoteVehicleAssignmentRepository(
     override suspend fun assignVehicleToDriver(
         vehicleId: Int,
         driverId: Int
-    ): FetchResult<Unit, DeliveryError> = handleRequest.handleAssignment {
+    ): FetchResult<Unit, RequestError> = handleRequest.handleClassified {
         apiService.assignVehicleToDriver(vehicleId, driverId)
     }
 
     override suspend fun reassignVehicleToDriver(
         vehicleId: Int,
         driverId: Int
-    ): FetchResult<Unit, DeliveryError> = handleRequest.handleAssignment {
+    ): FetchResult<Unit, RequestError> = handleRequest.handleClassified {
         apiService.reassignVehicleToDriver(vehicleId, driverId)
     }
 }

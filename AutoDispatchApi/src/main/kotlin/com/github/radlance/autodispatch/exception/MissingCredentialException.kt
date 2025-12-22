@@ -6,10 +6,8 @@ data class DeliveryNotFoundException(override val message: String = "This delive
 
 data class DeliveryForbiddenException(override val message: String = "Delivery access denied") : RuntimeException()
 
-data class DeliveryStateException(override val message: String = "Illegal delivery state") : RuntimeException()
+data class StateConflictException(override val message: String = "Illegal delivery state") : RuntimeException()
 
 data class DriverBusyException(override val message: String) : RuntimeException(message)
 
 class DeliveryCanceledException(override val message: String) : RuntimeException()
-
-data class VehicleStateException(override val message: String = "Illegal vehicle state") : RuntimeException()

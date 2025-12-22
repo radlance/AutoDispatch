@@ -52,6 +52,8 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun cancelRequest(requestId: Int)
 
+    suspend fun removeRequest(requestId: Int)
+
     suspend fun driverAssignments(
         page: Int,
         pageSize: Int,
@@ -181,6 +183,10 @@ internal class KtorApiServiceJvm(
 
     override suspend fun cancelRequest(requestId: Int) {
         httpClient.put("requests/${requestId}/cancel")
+    }
+
+    override suspend fun removeRequest(requestId: Int) {
+        httpClient.delete("requests/${requestId}")
     }
 
     override suspend fun driverAssignments(

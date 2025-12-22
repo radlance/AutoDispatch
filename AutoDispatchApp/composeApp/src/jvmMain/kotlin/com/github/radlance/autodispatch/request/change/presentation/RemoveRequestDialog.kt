@@ -23,22 +23,21 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
-import autodispatch.composeapp.generated.resources.cancel_variant
-import autodispatch.composeapp.generated.resources.request_cancellation
-import autodispatch.composeapp.generated.resources.you_want_to_cancel_request
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun CancelDialog(
+fun RemoveRequestDialog(
     onDismissDialog: () -> Unit,
     onConfirm: () -> Unit,
-    cancelState: FetchResultUiState<Unit, String>,
+    onStateError: (String) -> Unit,
+    removeState: FetchResultUiState<Unit, RequestError>,
     requestNumber: String,
     modifier: Modifier = Modifier
 ) {
-    val isLoading = cancelState is FetchResultUiState.Loading
-    val error = (cancelState as? FetchResultUiState.Error<String>)?.error
+    val isLoading = removeState is FetchResultUiState.Loading
+    val error = (removeState as? FetchResultUiState.Error)?.error
 
     AlertDialog(
         modifier = modifier,
@@ -48,7 +47,7 @@ fun CancelDialog(
             }
         },
         title = {
-            Text(text = stringResource(Res.string.request_cancellation))
+            Text(text = "Удаление заявки")
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -63,18 +62,22 @@ fun CancelDialog(
                             contentDescription = "Error",
                             tint = MaterialTheme.colorScheme.error
                         )
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
+                        if (error is RequestError.BaseError) {
+                            Text(
+                                text = error.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            onStateError(error.message)
+                        }
                     }
                 }
 
                 Text(
                     buildAnnotatedString {
-                        append("${stringResource(Res.string.you_want_to_cancel_request)} ")
+                        append("Вы уверены что хотите удалить заявку ")
                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                             append(requestNumber)
                         }
@@ -93,7 +96,7 @@ fun CancelDialog(
                 onClick = onConfirm,
                 enabled = !isLoading
             ) {
-                Text(text = stringResource(Res.string.cancel_variant))
+                Text(text = "Удалить")
             }
         }
     )

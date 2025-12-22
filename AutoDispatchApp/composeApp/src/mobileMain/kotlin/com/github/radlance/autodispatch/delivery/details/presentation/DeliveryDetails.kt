@@ -94,7 +94,7 @@ import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryRoute
 import com.github.radlance.autodispatch.delivery.core.presentation.deliveryStatusColors
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.request.core.domain.Cargo
@@ -123,7 +123,7 @@ fun DeliveryDetails(
     onCloseError: () -> Unit,
     navigateUp: () -> Unit,
     fetchDeliveryDetails: () -> Unit,
-    acceptDeliveryState: FetchResultUiState<Unit, DeliveryError>,
+    acceptDeliveryState: FetchResultUiState<Unit, RequestError>,
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
@@ -166,25 +166,25 @@ fun DeliveryDetails(
     error?.let {
         val onDismiss: () -> Unit = {
             when (it) {
-                is DeliveryError.BaseError -> {
+                is RequestError.BaseError -> {
                     onCloseError()
                 }
 
-                is DeliveryError.DeliveryCanceledError -> {
-                    onCloseError()
-                    fetchDeliveryDetails()
-                }
-
-                is DeliveryError.DriverBusyError -> {
-                    onCloseError()
-                }
-
-                is DeliveryError.GenericStateError -> {
+                is RequestError.DeliveryCanceledError -> {
                     onCloseError()
                     fetchDeliveryDetails()
                 }
 
-                is DeliveryError.InternalError -> {
+                is RequestError.DriverBusyError -> {
+                    onCloseError()
+                }
+
+                is RequestError.GenericStateError -> {
+                    onCloseError()
+                    fetchDeliveryDetails()
+                }
+
+                is RequestError.InternalError -> {
                     onCloseError()
                     navigateUp()
                 }

@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.delivery.domain.DeliveryError
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -81,7 +81,7 @@ fun VehicleUnassignmentDialog(
                             tint = MaterialTheme.colorScheme.error
                         )
 
-                        if (error is DeliveryError.BaseError) {
+                        if (error is RequestError.BaseError) {
                             Text(
                                 text = error.message,
                                 color = MaterialTheme.colorScheme.error,

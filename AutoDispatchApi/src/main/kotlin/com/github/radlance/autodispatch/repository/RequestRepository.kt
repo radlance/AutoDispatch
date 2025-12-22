@@ -28,8 +28,7 @@ import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
 import com.github.radlance.autodispatch.domain.request.UserFilter
 import com.github.radlance.autodispatch.domain.request.Vehicle
-import com.github.radlance.autodispatch.exception.DeliveryStateException
-import com.github.radlance.autodispatch.exception.MissingCredentialException
+import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Alias
@@ -47,6 +46,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.lowerCase
@@ -327,21 +327,64 @@ class RequestRepository {
     }
 
     suspend fun editRequest(createdByLogin: String, requestId: Int, req: CreateRequest) = loggedTransaction {
+        val requestData = RequestTable
+            .select(RequestTable.statusId)
+            .where { RequestTable.id eq requestId }
+            .singleOrNull() ?: throw StateConflictException("Заявка не найдена")
+
+        val currentStatus = requestData[RequestTable.statusId].value
+
+        if (currentStatus !in 1..2) {
+            throw StateConflictException("Редактирование запрещено в текущем статусе")
+        }
+
         val userId = UserTable
             .select(UserTable.id)
             .where { UserTable.login eq createdByLogin }
-            .first()[UserTable.id].value
+            .firstOrNull()?.get(UserTable.id)?.value
+            ?: throw StateConflictException("Пользователь не найден")
 
         RequestTable.update({ RequestTable.id eq requestId }) { row ->
             setRequestFields(row, req, userId)
+            row[updatedAt] = CurrentTimestampWithTimeZone
         }
     }
 
     suspend fun cancelAssignment(requestId: Int) = loggedTransaction {
-        RequestTable.update({ RequestTable.id eq requestId }) { it[statusId] = 5 }
+        val currentStatus = RequestTable.select(RequestTable.statusId)
+            .where { RequestTable.id eq requestId }
+            .singleOrNull()
+            ?.get(RequestTable.statusId)?.value
+            ?: throw StateConflictException("Заявка не найдена")
+
+        when (currentStatus) {
+            5 -> return@loggedTransaction
+            !in 1..3 -> throw StateConflictException("Статус заявки не позволяет отмену")
+        }
+
+        RequestTable.update({ RequestTable.id eq requestId }) {
+            it[statusId] = 5
+            it[updatedAt] = CurrentTimestampWithTimeZone
+        }
+
         AssignmentTable.update({ AssignmentTable.requestId eq requestId }) {
             it[completedAt] = CurrentTimestampWithTimeZone
         }
+    }
+
+    suspend fun removeRequest(requestId: Int) = loggedTransaction {
+        val currentStatus = RequestTable.select(RequestTable.statusId)
+            .where { RequestTable.id eq requestId }
+            .singleOrNull()
+            ?.get(RequestTable.statusId)?.value
+            ?: throw StateConflictException("Заявка не найдена")
+
+        if (currentStatus != 1) {
+            throw StateConflictException("Удаление возможно только в статусе 'Ожидает'")
+        }
+
+        AssignmentTable.deleteWhere { AssignmentTable.requestId eq requestId }
+        RequestTable.deleteWhere { RequestTable.id eq requestId }
     }
 
     suspend fun assignRequestToDriver(requestId: Int, driverId: Int) = loggedTransaction {
@@ -350,14 +393,14 @@ class RequestRepository {
             .where { AssignmentTable.requestId eq requestId }
             .firstOrNull()
 
-        if (exists != null) throw MissingCredentialException("Заявка уже назначена водителю")
+        if (exists != null) throw StateConflictException("Заявка уже назначена водителю")
 
         val currentVehicleId = DriverTable
             .select(DriverTable.vehicleId)
             .where { DriverTable.userId eq driverId }
             .singleOrNull()
             ?.get(DriverTable.vehicleId)
-            ?: throw DeliveryStateException("У водителя не выбран автомобиль, назначение невозможно")
+            ?: throw StateConflictException("У водителя не выбран автомобиль, назначение невозможно")
 
         AssignmentTable.insert {
             it[this.requestId] = EntityID(requestId, RequestTable)
@@ -374,7 +417,7 @@ class RequestRepository {
             .where { RequestTable.id eq requestId }
             .first()
         if (row[RequestTable.statusId].value != 2) {
-            throw DeliveryStateException(
+            throw StateConflictException(
                 "Невозможно назначить заявку ${row[RequestTable.requestNumber]}. " +
                         "Она уже находится в пути, завершена или отменена."
             )
@@ -384,7 +427,7 @@ class RequestRepository {
             .where { DriverTable.userId eq driverId }
             .singleOrNull()
             ?.get(DriverTable.vehicleId)
-            ?: throw DeliveryStateException("У водителя не выбран автомобиль")
+            ?: throw StateConflictException("У водителя не выбран автомобиль")
 
         AssignmentTable.upsert(AssignmentTable.requestId) {
             it[this.requestId] = EntityID(requestId, RequestTable)

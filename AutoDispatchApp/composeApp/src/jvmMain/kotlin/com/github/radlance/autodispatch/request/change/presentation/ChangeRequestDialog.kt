@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.request.change.presentation
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +24,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -53,6 +51,7 @@ import autodispatch.composeapp.generated.resources.edit
 import autodispatch.composeapp.generated.resources.request_editing
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import org.jetbrains.compose.resources.stringResource
@@ -65,19 +64,23 @@ fun ChangeRequestDialog(
     onDismiss: () -> Unit,
     onSuccessCreateRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    isEditRequest: Boolean = false,
+    onStateError: (String) -> Unit = {},
+    requestStatusId: Int? = null,
     currentFieldsUiState: ChangeRequestFieldsUiState = ChangeRequestFieldsUiState(),
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
+    val isEditRequest = requestStatusId == 1 || requestStatusId == 2
     val onDismiss = {
         onDismiss()
         viewModel.reduce(event = ChangeRequestEvent.ResetChangeState)
     }
     var showCancelDialog by remember { mutableStateOf(false) }
+    var showRemoveDialog by remember { mutableStateOf(false) }
     val fieldsUiState by viewModel.fieldsUiState.collectAsState()
     val customers by viewModel.customersState.collectAsState()
     val changeRequestState by viewModel.changeRequestState.collectAsState()
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
+    val removeRequestState by viewModel.removeRequestState.collectAsState()
 
     val scrollState = rememberScrollState()
     val screenHeight = LocalWindowInfo.current.containerSize.height
@@ -98,12 +101,45 @@ fun ChangeRequestDialog(
             }
         }
 
-        CancelDialog(
+        CancelRequestDialog(
             onDismissDialog = onDismissCancelDialog,
             onConfirm = {
                 viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(fieldsUiState.requestId!!))
             },
+            onStateError = {
+                onDismissCancelDialog()
+                onDismiss()
+                onStateError(it)
+            },
             cancelState = cancelRequestState,
+            requestNumber = fieldsUiState.requestNumber
+        )
+    }
+
+    if (showRemoveDialog) {
+        val onDismissRemoveDialog = {
+            showRemoveDialog = false
+            viewModel.reduce(ChangeRequestEvent.ResetRemoveState)
+        }
+
+        LaunchedEffect(removeRequestState) {
+            if (removeRequestState is FetchResultUiState.Success) {
+                onSuccessCreateRequest()
+                viewModel.reduce(ChangeRequestEvent.ResetChangeState)
+                onDismissRemoveDialog()
+                onDismiss()
+            }
+        }
+
+        RemoveRequestDialog(
+            onDismissDialog = onDismissRemoveDialog,
+            onConfirm = { viewModel.reduce(ChangeRequestEvent.ClickRemoveRequest(fieldsUiState.requestId!!)) },
+            onStateError = {
+                onDismissRemoveDialog()
+                onDismiss()
+                onStateError(it)
+            },
+            removeState = removeRequestState,
             requestNumber = fieldsUiState.requestNumber
         )
     }
@@ -123,7 +159,7 @@ fun ChangeRequestDialog(
     }
 
     val isLoadingChange = changeRequestState is FetchResultUiState.Loading
-    val errorChange = (changeRequestState as? FetchResultUiState.Error<String>)?.error
+    val errorChange = (changeRequestState as? FetchResultUiState.Error)?.error
 
     CustomDialog(
         modifier = modifier,
@@ -152,7 +188,7 @@ fun ChangeRequestDialog(
         },
         content = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                AnimatedVisibility(visible = errorChange != null) {
+                errorChange?.let {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -163,12 +199,17 @@ fun ChangeRequestDialog(
                             contentDescription = "Error",
                             tint = MaterialTheme.colorScheme.error
                         )
-                        Text(
-                            text = errorChange ?: "",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
+                        if (errorChange is RequestError.BaseError) {
+                            Text(
+                                text = errorChange.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            onDismiss()
+                            onStateError(errorChange.message)
+                        }
                     }
                 }
                 Box(modifier = Modifier.fillMaxWidth().heightIn(max = maxDialogHeight.dp)) {
@@ -211,12 +252,29 @@ fun ChangeRequestDialog(
         buttons = {
             Row {
                 if (isEditRequest) {
-                    OutlinedButton(
-                        onClick = { showCancelDialog = true },
-                        enabled = !isLoadingChange
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(text = stringResource(Res.string.cancel_variant))
+                        TextButton(
+                            onClick = { showCancelDialog = true },
+                            enabled = !isLoadingChange
+                        ) {
+                            Text(stringResource(Res.string.cancel_variant))
+                        }
+
+                        if (requestStatusId == 1) {
+                            TextButton(
+                                onClick = { showRemoveDialog = true },
+                                enabled = !isLoadingChange
+                            ) {
+                                Text(
+                                    "Удалить",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
                     }
+
                 }
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = onDismiss, enabled = !isLoadingChange) {
