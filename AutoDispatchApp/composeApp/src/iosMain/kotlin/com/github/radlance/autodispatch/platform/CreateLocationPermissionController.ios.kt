@@ -2,23 +2,12 @@ package com.github.radlance.autodispatch.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import platform.AVFoundation.AVAuthorizationStatusAuthorized
-import platform.AVFoundation.AVAuthorizationStatusNotDetermined
-import platform.AVFoundation.AVCaptureDevice
-import platform.AVFoundation.AVMediaTypeVideo
-import platform.AVFoundation.authorizationStatusForMediaType
-import platform.AVFoundation.requestAccessForMediaType
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
-import platform.Foundation.NSURL
-import platform.UIKit.UIApplication
-import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.darwin.NSObject
-import platform.darwin.dispatch_async
-import platform.darwin.dispatch_get_main_queue
 
 @Composable
 actual fun createLocationPermissionController(
@@ -63,49 +52,5 @@ private class IosLocationPermissionController(
                     status == kCLAuthorizationStatusAuthorizedAlways
             onAuthChanged(granted)
         }
-    }
-}
-
-actual fun openAppSettings(context: Any?) {
-    val url = NSURL(string = UIApplicationOpenSettingsURLString)
-    if (UIApplication.sharedApplication.canOpenURL(url)) {
-        UIApplication.sharedApplication.openUrlSimple(url)
-    }
-}
-
-@Composable
-actual fun createCameraPermissionController(onPermissionResult: (Boolean) -> Unit): PermissionController {
-    return remember { IosCameraPermissionController(onPermissionResult) }
-}
-
-private class IosCameraPermissionController(
-    private val onResult: (Boolean) -> Unit
-) : PermissionController {
-
-    override fun askPermission() {
-        val status = AVCaptureDevice.authorizationStatusForMediaType(AVMediaTypeVideo)
-
-        when (status) {
-            AVAuthorizationStatusNotDetermined -> {
-                AVCaptureDevice.requestAccessForMediaType(AVMediaTypeVideo) { granted ->
-                    dispatch_async(dispatch_get_main_queue()) {
-                        onResult(granted)
-                    }
-                }
-            }
-
-            AVAuthorizationStatusAuthorized -> {
-                onResult(true)
-            }
-
-            else -> {
-                onResult(false)
-            }
-        }
-    }
-
-    override fun hasPermission(): Boolean {
-        val status = AVCaptureDevice.authorizationStatusForMediaType(AVMediaTypeVideo)
-        return status == AVAuthorizationStatusAuthorized
     }
 }
