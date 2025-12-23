@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +61,9 @@ fun DriverScreen(
     modifier: Modifier = Modifier,
     viewModel: DriverViewModel = koinViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.triggerDriverLoad()
+    }
     var selectedDriver by rememberSaveable { mutableStateOf<Driver?>(null) }
     var showDriverDetailsPanel by rememberSaveable { mutableStateOf(false) }
 

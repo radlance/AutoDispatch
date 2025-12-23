@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +61,9 @@ fun VehicleScreen(
     modifier: Modifier = Modifier,
     viewModel: VehicleViewModel = koinViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.triggerVehicleLoad()
+    }
     var selectedVehicle by rememberSaveable { mutableStateOf<VehicleDetailed?>(null) }
     var showVehicleDetailsPanel by rememberSaveable { mutableStateOf(false) }
     val vehicleUiState by viewModel.vehicleScreenState.collectAsState()

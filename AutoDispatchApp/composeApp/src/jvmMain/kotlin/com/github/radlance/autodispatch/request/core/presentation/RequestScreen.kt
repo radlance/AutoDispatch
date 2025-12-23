@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +75,9 @@ fun RequestsScreen(
     modifier: Modifier = Modifier,
     viewModel: RequestViewModel = koinViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.triggerRequestLoad()
+    }
     var showCreationDialog by rememberSaveable { mutableStateOf(false) }
     var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
