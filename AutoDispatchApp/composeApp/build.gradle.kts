@@ -40,6 +40,7 @@ kotlin {
         iosMain.get().dependsOn(mobileMain)
 
         androidMain.dependencies {
+            implementation(libs.androidx.exifinterface)
             implementation(libs.play.services.location)
             implementation(libs.ktor.client.okhttp)
             implementation(compose.preview)

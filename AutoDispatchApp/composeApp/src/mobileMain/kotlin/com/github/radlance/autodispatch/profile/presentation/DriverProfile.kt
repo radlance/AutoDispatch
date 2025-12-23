@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.profile.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,7 @@ import com.github.radlance.autodispatch.uikit.vector.WeightIcon
 @Composable
 fun DriverProfile(
     profileDetails: ProfileDetails,
+    onProfilePictureClick: () -> Unit,
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -61,6 +63,7 @@ fun DriverProfile(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(60.dp).clip(CircleShape)
                         .background(MaterialTheme.colorScheme.tertiaryContainer)
+                        .clickable { onProfilePictureClick() }
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Person,

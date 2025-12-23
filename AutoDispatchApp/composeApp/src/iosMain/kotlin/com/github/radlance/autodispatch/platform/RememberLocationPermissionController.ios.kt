@@ -10,7 +10,7 @@ import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.darwin.NSObject
 
 @Composable
-actual fun createLocationPermissionController(
+actual fun rememberLocationPermissionController(
     onPermissionResult: (Boolean) -> Unit
 ): PermissionController {
     return remember { IosLocationPermissionController(onPermissionResult) }

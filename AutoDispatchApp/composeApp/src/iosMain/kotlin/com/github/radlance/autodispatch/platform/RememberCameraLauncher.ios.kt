@@ -80,7 +80,7 @@ private class IosCameraLauncher(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-private fun NSData.toByteArray(): ByteArray {
+fun NSData.toByteArray(): ByteArray {
     return ByteArray(this.length.toInt()).apply {
         usePinned { pinned ->
             memcpy(pinned.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)

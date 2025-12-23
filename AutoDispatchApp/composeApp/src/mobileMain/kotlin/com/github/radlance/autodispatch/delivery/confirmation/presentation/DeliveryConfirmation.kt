@@ -37,10 +37,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Videocam
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
@@ -175,13 +175,18 @@ fun DeliveryConfirmation(
             onDismissRequest = { hasPermission = null },
             icon = {
                 Icon(
-                    Icons.Default.PhotoCamera,
+                    Icons.Outlined.Videocam,
                     null,
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
             title = { Text("Доступ к камере") },
-            text = { Text("Разрешите доступ к камере для корректной работы приложения.") },
+            text = {
+                Text(
+                    "Разрешите доступ к камере для корректной работы приложения.",
+                    textAlign = TextAlign.Center
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     openAppSettings(context)

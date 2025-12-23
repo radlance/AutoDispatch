@@ -8,28 +8,43 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 @Composable
 actual fun rememberCameraLauncher(onResult: (ByteArray?) -> Unit): CameraLauncher {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
-        if (success && tempPhotoUri != null) {
-            try {
-                val inputStream = context.contentResolver.openInputStream(tempPhotoUri!!)
-                val bytes = inputStream?.use { it.readBytes() }
-                onResult(bytes)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                onResult(null)
+        val uri = tempPhotoUri
+
+        if (success && uri != null) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val bytes = inputStream?.use { it.readBytes() }
+
+                    withContext(Dispatchers.Main) {
+                        onResult(bytes)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        onResult(null)
+                    }
+                }
             }
         } else {
             onResult(null)
@@ -51,7 +66,7 @@ private fun createTempPictureUri(context: Context): Uri {
     val tempFile = File.createTempFile(
         "picture_${System.currentTimeMillis()}",
         ".jpg",
-        File(context.cacheDir, "images").apply { mkdirs() } // Создаем папку images в кэше, если нет
+        File(context.cacheDir, "images").apply { mkdirs() }
     )
 
     return FileProvider.getUriForFile(

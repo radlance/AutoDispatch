@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.platform
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -16,32 +17,36 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
 @Composable
-actual fun createLocationPermissionController(
+actual fun rememberPhotoPermissionController(
     onPermissionResult: (Boolean) -> Unit
 ): PermissionController {
 
     val context = LocalContext.current
     val activity = context as Activity
 
+    val permissions = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+    }
+
     var firstRequestDone by rememberSaveable { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-
         val granted = result.values.any { it }
-
         if (granted) {
             onPermissionResult(true)
             return@rememberLauncherForActivityResult
         }
 
         if (firstRequestDone) {
-            val permanentlyDenied = !ActivityCompat.shouldShowRequestPermissionRationale(
-                activity,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-
+            val permanentlyDenied = permissions.all { permission ->
+                !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+            }
             if (permanentlyDenied) {
                 onPermissionResult(false)
                 return@rememberLauncherForActivityResult
@@ -55,37 +60,29 @@ actual fun createLocationPermissionController(
         object : PermissionController {
 
             override fun askPermission() {
-                val isGranted =
+                val isGranted = permissions.any { permission ->
                     ContextCompat.checkSelfPermission(
                         context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) ==
-                            PackageManager.PERMISSION_GRANTED
+                        permission
+                    ) == PackageManager.PERMISSION_GRANTED
+                }
 
                 if (isGranted) {
                     onPermissionResult(true)
                     return
                 }
 
-                launcher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-
+                launcher.launch(permissions)
                 firstRequestDone = true
             }
 
             override fun hasPermission(): Boolean {
-                val isGranted =
+                return permissions.any { permission ->
                     ContextCompat.checkSelfPermission(
                         context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) ==
-                            PackageManager.PERMISSION_GRANTED
-
-                return isGranted
+                        permission
+                    ) == PackageManager.PERMISSION_GRANTED
+                }
             }
         }
     }

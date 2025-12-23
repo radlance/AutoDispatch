@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.profile.presentation
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: DriverProfileRepository) : BaseViewModel() {
 
+    val avatar = mutableStateOf<ByteArray?>(null)
     private val profileStateMutable =
         MutableStateFlow<FetchResultUiState<ProfileDetails, String>>(FetchResultUiState.Idle)
     val profileState = profileStateMutable.onStart {

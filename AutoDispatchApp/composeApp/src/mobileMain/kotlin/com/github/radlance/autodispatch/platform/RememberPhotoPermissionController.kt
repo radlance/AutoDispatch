@@ -3,6 +3,6 @@ package com.github.radlance.autodispatch.platform
 import androidx.compose.runtime.Composable
 
 @Composable
-expect fun createLocationPermissionController(
+expect fun rememberPhotoPermissionController(
     onPermissionResult: (Boolean) -> Unit
 ): PermissionController

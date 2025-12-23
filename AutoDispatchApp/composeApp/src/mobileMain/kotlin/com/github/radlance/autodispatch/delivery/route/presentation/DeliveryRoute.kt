@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.LocationOn
@@ -47,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,10 +56,10 @@ import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapRouteDialog
-import com.github.radlance.autodispatch.platform.createLocationPermissionController
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
 import com.github.radlance.autodispatch.platform.openDialer
+import com.github.radlance.autodispatch.platform.rememberLocationPermissionController
 import com.github.radlance.autodispatch.request.core.domain.Cargo
 import com.github.radlance.autodispatch.request.core.domain.Customer
 import com.github.radlance.autodispatch.request.core.domain.Point
@@ -83,8 +83,7 @@ fun DeliveryRoute(
 ) {
     var selectedPoint by remember { mutableStateOf<Point?>(null) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
-
-    val controller = createLocationPermissionController {
+    val controller = rememberLocationPermissionController {
         hasPermission = it
     }
     val context = getPlatformContext()
@@ -134,13 +133,18 @@ fun DeliveryRoute(
             onDismissRequest = { hasPermission = null },
             icon = {
                 Icon(
-                    Icons.Default.LocationOn,
+                    Icons.Outlined.LocationOn,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
             title = { Text("Доступ к локации") },
-            text = { Text("Разрешите доступ к геолокации для корректной работы приложения.") },
+            text = {
+                Text(
+                    "Разрешите доступ к геолокации для корректной работы приложения.",
+                    textAlign = TextAlign.Center
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {

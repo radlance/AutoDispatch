@@ -22,6 +22,8 @@
         <key>NSLocationWhenInUseUsageDescription</key>
         <string>Приложению нужен доступ к вашей геолокации для корректной работы.</string>
         <key>NSCameraUsageDescription</key>
-        <string>Приложению нужен доступ к камере для съемки отчетов.</string>
+        <string>Приложению нужен доступ к камере для корректной работы.</string>
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>Приложению нужен доступ к фото для для корректной работы.</string>
     </dict>
 </plist>
