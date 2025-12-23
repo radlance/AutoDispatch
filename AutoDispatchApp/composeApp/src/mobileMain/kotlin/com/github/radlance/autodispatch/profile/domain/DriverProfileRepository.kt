@@ -6,5 +6,7 @@ interface DriverProfileRepository {
 
     suspend fun profileDetails(): FetchResult<ProfileDetails, String>
 
+    suspend fun uploadProfileImage(image: ByteArray): FetchResult<Unit, String>
+
     suspend fun logout()
 }

@@ -5,6 +5,7 @@ CREATE TABLE users
     login         VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255)       NOT NULL,
     salt          VARCHAR(255)       NOT NULL,
+    avatar_url    VARCHAR(512),
     phone_number  VARCHAR(20),
     role_id       INT REFERENCES role (id),
     created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

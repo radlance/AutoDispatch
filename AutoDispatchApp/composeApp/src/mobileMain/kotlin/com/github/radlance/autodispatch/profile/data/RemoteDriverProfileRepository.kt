@@ -2,6 +2,7 @@ package com.github.radlance.autodispatch.profile.data
 
 import com.github.radlance.autodispatch.common.data.ApiServiceMobile
 import com.github.radlance.autodispatch.common.data.HandleRequest
+import com.github.radlance.autodispatch.common.data.createImageFormData
 import com.github.radlance.autodispatch.common.data.toProfileDetails
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.profile.domain.DriverProfileRepository
@@ -17,5 +18,10 @@ class RemoteDriverProfileRepository(
     override suspend fun profileDetails(): FetchResult<ProfileDetails, String> =
         handleRequest.handle {
             apiService.profileDetails().toProfileDetails()
+        }
+
+    override suspend fun uploadProfileImage(image: ByteArray): FetchResult<Unit, String> =
+        handleRequest.handle {
+            apiService.uploadProfileImage(image.createImageFormData())
         }
 }

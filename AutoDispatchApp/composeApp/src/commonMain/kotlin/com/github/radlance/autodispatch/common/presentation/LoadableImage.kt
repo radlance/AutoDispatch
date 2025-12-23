@@ -42,7 +42,7 @@ fun LoadableImage(
 
         ImageRequest.Builder(context)
             .data(uniqueDataUrl)
-            .memoryCachePolicy(CachePolicy.DISABLED)
+            .memoryCachePolicy(CachePolicy.ENABLED)
             .diskCachePolicy(CachePolicy.DISABLED)
             .size(Size.ORIGINAL)
             .crossfade(true)

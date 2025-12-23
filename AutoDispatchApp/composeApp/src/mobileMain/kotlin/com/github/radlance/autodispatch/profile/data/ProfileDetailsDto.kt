@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProfileDetailsDto(
     val fullName: String,
+    val avatarUrl: String?,
     val deliveriesStats: DeliveriesStatsDto,
     val phoneNumber: String,
     val vehicle: VehicleDto?

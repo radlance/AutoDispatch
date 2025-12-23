@@ -47,6 +47,7 @@ fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
 fun ProfileDetailsDto.toProfileDetails(): ProfileDetails {
     return ProfileDetails(
         fullName = fullName,
+        avatarUrl = avatarUrl?.asImageUrl(),
         deliveriesStats = deliveriesStats.toDeliveriesStats(),
         phoneNumber = phoneNumber,
         vehicle = vehicle?.toVehicle()

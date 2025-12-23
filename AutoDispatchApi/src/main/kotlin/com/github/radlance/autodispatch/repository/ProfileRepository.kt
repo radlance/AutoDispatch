@@ -6,14 +6,20 @@ import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
 import com.github.radlance.autodispatch.database.table.UserTable
+import com.github.radlance.autodispatch.database.table.UserTable.avatarUrl
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.auth.User
 import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.domain.profile.DeliveriesStats
 import com.github.radlance.autodispatch.domain.profile.ProfileDetails
+import com.github.radlance.autodispatch.exception.MissingCredentialException
+import com.github.radlance.autodispatch.util.fileUploadDir
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.count
+import org.jetbrains.exposed.sql.update
+import java.io.File
 
 class ProfileRepository {
     suspend fun profile(login: String): User = loggedTransaction {
@@ -32,6 +38,7 @@ class ProfileRepository {
             .select(
                 UserTable.id,
                 UserTable.fullName,
+                UserTable.avatarUrl,
                 UserTable.phoneNumber,
                 VehicleTable.id,
                 VehicleTable.model,
@@ -44,6 +51,7 @@ class ProfileRepository {
             .groupBy(
                 UserTable.id,
                 UserTable.fullName,
+                UserTable.avatarUrl,
                 UserTable.phoneNumber,
                 VehicleTable.id,
                 VehicleTable.model,
@@ -81,9 +89,46 @@ class ProfileRepository {
 
         ProfileDetails(
             fullName = first[UserTable.fullName],
+            avatarUrl = first[avatarUrl],
             phoneNumber = first[UserTable.phoneNumber],
             deliveriesStats = deliveriesStats,
             vehicle = vehicle
         )
+    }
+
+    suspend fun uploadAvatar(
+        driverLogin: String,
+        imageUrl: String
+    ) = loggedTransaction {
+
+        val userRow = UserTable
+            .join(DriverTable, JoinType.INNER, UserTable.id, DriverTable.userId)
+            .select(
+                UserTable.id,
+                UserTable.avatarUrl
+            )
+            .where { UserTable.login eq driverLogin }
+            .limit(1)
+            .singleOrNull()
+            ?: throw MissingCredentialException("User is not a driver")
+
+        val oldAvatarUrl = userRow[UserTable.avatarUrl]
+
+        UserTable.update({ UserTable.login eq driverLogin }) {
+            it[avatarUrl] = imageUrl
+        }
+
+        deleteAvatarFromStorage(oldAvatarUrl)
+    }
+
+    private fun deleteAvatarFromStorage(avatarUrl: String?) {
+        if (avatarUrl.isNullOrBlank()) return
+
+        val fileName = avatarUrl.substringAfter("/static/")
+        val file = File(fileUploadDir, fileName)
+
+        if (file.exists()) {
+            file.delete()
+        }
     }
 }

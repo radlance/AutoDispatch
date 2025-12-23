@@ -34,6 +34,8 @@ interface ApiServiceMobile : ApiService {
     ): ListPaginatedResultDto<DeliveryDto>
 
     suspend fun profileDetails(): ProfileDetailsDto
+
+    suspend fun uploadProfileImage(formData: List<PartData>)
 }
 
 internal class KtorApiServiceMobile(
@@ -98,5 +100,12 @@ internal class KtorApiServiceMobile(
 
     override suspend fun profileDetails(): ProfileDetailsDto {
         return httpClient.get("profile/details").body()
+    }
+
+    override suspend fun uploadProfileImage(formData: List<PartData>) {
+        httpClient.submitFormWithBinaryData(
+            url = "profile/avatar",
+            formData = formData
+        )
     }
 }

@@ -22,11 +22,50 @@ import com.github.radlance.autodispatch.request.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.request.core.domain.Point
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
+import io.ktor.client.request.forms.formData
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.content.PartData
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+fun List<ByteArray>.createImageFormData(): List<PartData> = formData {
+    this@createImageFormData.forEachIndexed { index, bytes ->
+        append(
+            "file$index",
+            bytes,
+            Headers.build {
+                append(HttpHeaders.ContentType, "image/jpeg")
+                append(
+                    HttpHeaders.ContentDisposition,
+                    "form-data; name=\"file$index\"; filename=\"photo_$index.jpg\""
+                )
+            }
+        )
+    }
+}
+
+fun ByteArray.createImageFormData(
+    fieldName: String = "file",
+    fileName: String = "photo.jpg",
+    contentType: String = "image/jpeg"
+): List<PartData> = formData {
+    append(
+        fieldName,
+        this@createImageFormData,
+        Headers.build {
+            append(HttpHeaders.ContentType, contentType)
+            append(
+                HttpHeaders.ContentDisposition,
+                "form-data; name=\"$fieldName\"; filename=\"$fileName\""
+            )
+        }
+    )
+}
+
 
 internal fun UserDto.toUser(): User {
     return User(
@@ -123,9 +162,13 @@ fun PointDto.toPoint(): Point {
 fun DeliveryDocumentDto.toDeliveryDocument(): DeliveryDocument {
     return DeliveryDocument(
         id = id,
-        imageUrl = "http://$CurrentIp/$imageUrl",
+        imageUrl = imageUrl.asImageUrl(),
         uploadedAt = uploadedAt.toLocalDateTimeFromUtc()
     )
+}
+
+fun String.asImageUrl(): String {
+    return "http://$CurrentIp/$this"
 }
 
 fun DeliveriesStatsDto.toDeliveriesStats(): DeliveriesStats {

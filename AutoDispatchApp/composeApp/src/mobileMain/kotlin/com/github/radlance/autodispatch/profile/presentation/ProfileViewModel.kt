@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.profile.presentation
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
@@ -15,7 +16,8 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: DriverProfileRepository) : BaseViewModel() {
 
-    val avatar = mutableStateOf<ByteArray?>(null)
+    private val _avatar = mutableStateOf<ByteArray?>(null)
+    val avatar: State<ByteArray?> = _avatar
     private val profileStateMutable =
         MutableStateFlow<FetchResultUiState<ProfileDetails, String>>(FetchResultUiState.Idle)
     val profileState = profileStateMutable.onStart {
@@ -29,9 +31,27 @@ class ProfileViewModel(private val repository: DriverProfileRepository) : BaseVi
         }
     }
 
+    fun uploadProfileImage(newImage: ByteArray) {
+        val previousAvatar = _avatar.value
+
+        _avatar.value = newImage
+
+        handle(background = { repository.uploadProfileImage(newImage) }) { result ->
+            val uiState = result.toUiState()
+
+            if (uiState is FetchResultUiState.Error) {
+                _avatar.value = previousAvatar
+            }
+        }
+    }
+
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.logout()
         }
+    }
+
+    fun clearTemporaryAvatar() {
+        _avatar.value = null
     }
 }

@@ -2,12 +2,18 @@ package com.github.radlance.autodispatch.route
 
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
+import com.github.radlance.autodispatch.util.fileUploadDir
+import com.github.radlance.autodispatch.util.processImagesUpload
+import com.github.radlance.autodispatch.util.processSingleImageUpload
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.profile(repository: ProfileRepository) {
+    val uploadDir = fileUploadDir
+    if (!uploadDir.exists()) uploadDir.mkdirs()
+
     authenticate {
         route("/profile") {
             get {
@@ -22,6 +28,14 @@ fun Route.profile(repository: ProfileRepository) {
 
                 val details = repository.profileDetails(userLogin)
                 call.respond(HttpStatusCode.OK, details)
+            }
+
+            post("/avatar") {
+                val login = call.claimByNameOrUnauthorized<String>("login")
+
+                call.processSingleImageUpload(fileUploadDir) { imageUrl ->
+                    repository.uploadAvatar(login, imageUrl)
+                }
             }
         }
     }

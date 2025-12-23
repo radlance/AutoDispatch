@@ -1,8 +1,6 @@
 package com.github.radlance.autodispatch.profile.presentation
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,12 +20,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.decodeToImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import autodispatch.composeapp.generated.resources.Res
@@ -42,22 +39,30 @@ import com.github.radlance.autodispatch.platform.rememberGalleryLauncher
 import com.github.radlance.autodispatch.platform.rememberPhotoPermissionController
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun ProfileScreen(
     navigateToSignInScreen: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
+    var lastImageRetryAttempt by rememberSaveable { mutableStateOf(0L) }
     val profileState by viewModel.profileState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
-    var avatar by viewModel.avatar
+    val avatar by viewModel.avatar
     val controller = rememberPhotoPermissionController {
         hasPermission = it
     }
-    val galleryLauncher = rememberGalleryLauncher { picture -> picture?.let { avatar = it } }
+    val galleryLauncher = rememberGalleryLauncher { picture ->
+        picture?.let {
+            viewModel.uploadProfileImage(it)
+        }
+    }
+
     val context = getPlatformContext()
 
     if (hasPermission == false) {
@@ -150,32 +155,27 @@ fun ProfileScreen(
                     DriverProfileShimmer()
                 },
                 onSuccess = { profileDetails ->
-                    // TODO refactor test data
-                    Column {
-                        val bmp = remember(avatar) {
-                            avatar?.decodeToImageBitmap()
-                        }
-                        bmp?.let {
-                            val bmpPainter = remember(bmp) { BitmapPainter(bmp) }
-
-                            Image(
-                                painter = bmpPainter,
-                                contentDescription = null,
-                                contentScale = ContentScale.Fit,
-                            )
-
-                        }
-                        DriverProfile(
-                            profileDetails = profileDetails,
-                            onProfilePictureClick = {
-                                if (controller.hasPermission()) {
-                                    galleryLauncher.pick()
-                                } else controller.askPermission()
-                            },
-                            onLogoutClick = { showLogoutDialog = true }
-                        )
-
+                    LaunchedEffect(profileDetails.avatarUrl) {
+                        viewModel.clearTemporaryAvatar()
                     }
+                    val bmp = remember(avatar) {
+                        avatar?.decodeToImageBitmap()
+                    }
+
+                    DriverProfile(
+                        profileDetails = profileDetails,
+                        lastImageRetryAttempt = lastImageRetryAttempt,
+                        onRetry = {
+                            lastImageRetryAttempt = Clock.System.now().toEpochMilliseconds()
+                        },
+                        bmp = bmp,
+                        onProfilePictureClick = {
+                            if (controller.hasPermission()) {
+                                galleryLauncher.pick()
+                            } else controller.askPermission()
+                        },
+                        onLogoutClick = { showLogoutDialog = true }
+                    )
                 },
                 onError = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
