@@ -24,4 +24,8 @@ class RemoteDriverProfileRepository(
         handleRequest.handle {
             apiService.uploadProfileImage(image.createImageFormData())
         }
+
+    override suspend fun deleteProfileImage(): FetchResult<Unit, String> = handleRequest.handle {
+        apiService.removeProfileImage()
+    }
 }

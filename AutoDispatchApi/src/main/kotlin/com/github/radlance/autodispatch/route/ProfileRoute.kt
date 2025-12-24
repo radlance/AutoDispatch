@@ -3,7 +3,6 @@ package com.github.radlance.autodispatch.route
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.util.claimByNameOrUnauthorized
 import com.github.radlance.autodispatch.util.fileUploadDir
-import com.github.radlance.autodispatch.util.processImagesUpload
 import com.github.radlance.autodispatch.util.processSingleImageUpload
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -36,6 +35,13 @@ fun Route.profile(repository: ProfileRepository) {
                 call.processSingleImageUpload(fileUploadDir) { imageUrl ->
                     repository.uploadAvatar(login, imageUrl)
                 }
+            }
+
+            delete("/avatar") {
+                val userLogin = call.claimByNameOrUnauthorized<String>(name = "login")
+
+                repository.deleteAvatar(userLogin)
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

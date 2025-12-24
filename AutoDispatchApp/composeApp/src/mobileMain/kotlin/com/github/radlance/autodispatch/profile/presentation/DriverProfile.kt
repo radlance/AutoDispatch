@@ -24,7 +24,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -99,12 +98,7 @@ fun DriverProfile(
                             modifier = Modifier.size(60.dp).clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.tertiaryContainer)
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Person,
-                                contentDescription = null,
-                                modifier = Modifier.size(30.dp),
-                                tint = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
+                            Text(text = avatarInitials(profileDetails.fullName))
                         }
                     }
                 }

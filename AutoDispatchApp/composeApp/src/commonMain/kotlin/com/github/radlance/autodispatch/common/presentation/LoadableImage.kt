@@ -27,7 +27,7 @@ import coil3.size.Size
 fun LoadableImage(
     documentUrl: String,
     onRetry: () -> Unit,
-    onImageSelected: (String) -> Unit,
+    onImageSelected: ((String) -> Unit)? = null,
     lastRetryAttempt: Long,
     modifier: Modifier = Modifier,
     showLoading: Boolean = true
@@ -75,7 +75,11 @@ fun LoadableImage(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .clickable { onImageSelected(documentUrl) }
+                    .then(
+                        onImageSelected?.let {
+                            Modifier.clickable { onImageSelected(documentUrl) }
+                        } ?: Modifier
+                    )
             ) {
                 this@SubcomposeAsyncImage.SubcomposeAsyncImageContent()
             }

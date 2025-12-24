@@ -37,6 +37,7 @@ import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
 import com.github.radlance.autodispatch.platform.rememberGalleryLauncher
 import com.github.radlance.autodispatch.platform.rememberPhotoPermissionController
+import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
@@ -53,6 +54,7 @@ fun ProfileScreen(
     val profileState by viewModel.profileState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
+    var showAvatarChangeDialog by remember { mutableStateOf(false) }
     val avatar by viewModel.avatar
     val controller = rememberPhotoPermissionController {
         hasPermission = it
@@ -64,6 +66,29 @@ fun ProfileScreen(
     }
 
     val context = getPlatformContext()
+    val bmp = remember(avatar) {
+        avatar?.decodeToImageBitmap()
+    }
+
+    if (showAvatarChangeDialog && profileState is FetchResultUiState.Success) {
+        val profileDetails = (profileState as FetchResultUiState.Success<ProfileDetails>).data
+        AvatarChangeDialog(
+            onDismissRequest = { showAvatarChangeDialog = false },
+            driverFullName = profileDetails.fullName,
+            onUploadImageClick = {
+                if (controller.hasPermission()) {
+                    galleryLauncher.pick()
+                } else controller.askPermission()
+            },
+            onDeleteImageClick = {
+                viewModel.deleteProfileImage()
+            },
+            bmp = bmp,
+            avatarUrl = profileDetails.avatarUrl,
+            lastImageRetryAttempt = lastImageRetryAttempt,
+            onRetry = { lastImageRetryAttempt = Clock.System.now().toEpochMilliseconds() },
+        )
+    }
 
     if (hasPermission == false) {
         AlertDialog(
@@ -158,9 +183,6 @@ fun ProfileScreen(
                     LaunchedEffect(profileDetails.avatarUrl) {
                         viewModel.clearTemporaryAvatar()
                     }
-                    val bmp = remember(avatar) {
-                        avatar?.decodeToImageBitmap()
-                    }
 
                     DriverProfile(
                         profileDetails = profileDetails,
@@ -170,9 +192,8 @@ fun ProfileScreen(
                         },
                         bmp = bmp,
                         onProfilePictureClick = {
-                            if (controller.hasPermission()) {
-                                galleryLauncher.pick()
-                            } else controller.askPermission()
+                            showAvatarChangeDialog = true
+
                         },
                         onLogoutClick = { showLogoutDialog = true }
                     )

@@ -19,7 +19,7 @@ val fileUploadDir
         File("uploaded_files")
     }
 
-private suspend fun saveFilePart(
+private fun saveFilePart(
     part: PartData.FileItem,
     uploadDir: File
 ): String {

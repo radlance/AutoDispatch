@@ -38,7 +38,7 @@ class ProfileRepository {
             .select(
                 UserTable.id,
                 UserTable.fullName,
-                UserTable.avatarUrl,
+                avatarUrl,
                 UserTable.phoneNumber,
                 VehicleTable.id,
                 VehicleTable.model,
@@ -51,7 +51,7 @@ class ProfileRepository {
             .groupBy(
                 UserTable.id,
                 UserTable.fullName,
-                UserTable.avatarUrl,
+                avatarUrl,
                 UserTable.phoneNumber,
                 VehicleTable.id,
                 VehicleTable.model,
@@ -105,14 +105,14 @@ class ProfileRepository {
             .join(DriverTable, JoinType.INNER, UserTable.id, DriverTable.userId)
             .select(
                 UserTable.id,
-                UserTable.avatarUrl
+                avatarUrl
             )
             .where { UserTable.login eq driverLogin }
             .limit(1)
             .singleOrNull()
             ?: throw MissingCredentialException("User is not a driver")
 
-        val oldAvatarUrl = userRow[UserTable.avatarUrl]
+        val oldAvatarUrl = userRow[avatarUrl]
 
         UserTable.update({ UserTable.login eq driverLogin }) {
             it[avatarUrl] = imageUrl
@@ -131,4 +131,32 @@ class ProfileRepository {
             file.delete()
         }
     }
+
+    suspend fun deleteAvatar(driverLogin: String) = loggedTransaction {
+        val userRow = UserTable
+            .join(
+                DriverTable,
+                JoinType.INNER,
+                additionalConstraint = { UserTable.id eq DriverTable.userId }
+            )
+            .select(
+                UserTable.id,
+                avatarUrl
+            )
+            .where { UserTable.login eq driverLogin }
+            .limit(1)
+            .singleOrNull()
+            ?: throw MissingCredentialException("User is not a driver")
+
+        val oldAvatarUrl = userRow[avatarUrl]
+
+        if (oldAvatarUrl.isNullOrBlank()) return@loggedTransaction
+
+        UserTable.update({ UserTable.login eq driverLogin }) {
+            it[avatarUrl] = null
+        }
+
+        deleteAvatarFromStorage(oldAvatarUrl)
+    }
+
 }

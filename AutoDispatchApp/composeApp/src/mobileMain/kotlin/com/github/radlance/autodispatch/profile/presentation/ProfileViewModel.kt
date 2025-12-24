@@ -45,6 +45,19 @@ class ProfileViewModel(private val repository: DriverProfileRepository) : BaseVi
         }
     }
 
+    fun deleteProfileImage() {
+        val previousAvatar = _avatar.value
+        _avatar.value = null
+
+        handle(background = { repository.deleteProfileImage() }) { result ->
+            val uiState = result.toUiState()
+            if (uiState is FetchResultUiState.Error) {
+                _avatar.value = previousAvatar
+            }
+        }
+    }
+
+
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.logout()

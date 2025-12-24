@@ -8,5 +8,7 @@ interface DriverProfileRepository {
 
     suspend fun uploadProfileImage(image: ByteArray): FetchResult<Unit, String>
 
+    suspend fun deleteProfileImage(): FetchResult<Unit, String>
+
     suspend fun logout()
 }
