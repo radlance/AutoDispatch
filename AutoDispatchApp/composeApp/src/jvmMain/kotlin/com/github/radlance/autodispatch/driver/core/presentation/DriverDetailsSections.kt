@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,8 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,11 +43,17 @@ import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
 import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LabeledValue
+import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
 import com.github.radlance.autodispatch.common.presentation.Section
+import com.github.radlance.autodispatch.common.utils.avatarInitials
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.history.presentation.DriverHistoryDialog
+import com.github.radlance.autodispatch.request.core.presentation.FullScreenImageDialog
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun DriverDetailsSections(
     scrollState: ScrollState,
@@ -55,7 +63,17 @@ fun DriverDetailsSections(
     onShowVehicleUnassignmentDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var showDriverHistoryDialog by remember { mutableStateOf(false) }
+    var lastImageRetryAttempt by rememberSaveable { mutableStateOf(0L) }
+
+    selectedImageUrl?.let {
+        FullScreenImageDialog(
+            onDismissRequest = { selectedImageUrl = null },
+            selectedImageUrl = selectedImageUrl,
+            onChangeImageIconClick = { selectedImageUrl = it }
+        )
+    }
 
     if (showDriverHistoryDialog) {
         DriverHistoryDialog(
@@ -72,17 +90,26 @@ fun DriverDetailsSections(
 
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(60.dp)
+            modifier = Modifier.align(Alignment.CenterHorizontally).size(100.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.tertiaryContainer)
+                .background(CardDefaults.cardColors().containerColor)
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = null,
-                modifier = Modifier.size(30.dp),
-                tint = MaterialTheme.colorScheme.onTertiaryContainer
-            )
+            driver.avatarUrl?.let { avatarUrl ->
+                LoadableImage(
+                    documentUrl = avatarUrl,
+                    onRetry = { lastImageRetryAttempt = Clock.System.now().toEpochMilliseconds() },
+                    lastRetryAttempt = lastImageRetryAttempt,
+                    onImageSelected = { selectedImageUrl = it },
+                    modifier = Modifier.fillMaxSize(),
+                    showLoading = false
+                )
+            } ?: Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(100.dp).clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.tertiaryContainer)
+            ) {
+                Text(text = avatarInitials(driver.fullName), fontSize = 24.sp)
+            }
         }
 
         Text(

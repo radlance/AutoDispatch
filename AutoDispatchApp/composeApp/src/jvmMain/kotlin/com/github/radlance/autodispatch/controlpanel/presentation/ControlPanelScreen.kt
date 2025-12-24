@@ -54,6 +54,7 @@ import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.you_want_to_logout
 import com.github.radlance.autodispatch.auth.presentation.AppIconBox
 import com.github.radlance.autodispatch.common.presentation.shimmerBackground
+import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.navigation.core.DrawerNavGraph
 import com.github.radlance.autodispatch.navigation.core.Drivers
 import com.github.radlance.autodispatch.navigation.core.Requests
@@ -264,13 +265,4 @@ fun ControlPanelScreen(
             onReloadProfile = viewModel::loadProfile
         )
     }
-}
-
-fun abbreviateName(fullName: String): String {
-    val words = fullName.trim().split("\\s+".toRegex())
-    if (words.isEmpty()) return ""
-    val firstWord = words.first()
-    val initials =
-        words.drop(1).joinToString(" ") { it.firstOrNull()?.uppercaseChar()?.toString() + "." }
-    return if (initials.isEmpty()) firstWord else "$firstWord $initials"
 }

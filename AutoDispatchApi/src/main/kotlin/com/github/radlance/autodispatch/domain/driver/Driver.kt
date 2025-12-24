@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 data class Driver(
     val id: Int,
     val fullName: String,
+    val avatarUrl: String?,
     val phoneNumber: String,
     val status: Status,
     val vehicle: Vehicle?,

@@ -77,6 +77,7 @@ class DriverRepository {
             .select(
                 UserTable.id,
                 UserTable.fullName,
+                UserTable.avatarUrl,
                 UserTable.phoneNumber,
                 DriverStatusTable.id,
                 DriverStatusTable.name,
@@ -145,6 +146,7 @@ class DriverRepository {
                 Driver(
                     id = first[UserTable.id].value,
                     fullName = first[UserTable.fullName],
+                    avatarUrl = first[UserTable.avatarUrl],
                     phoneNumber = first[UserTable.phoneNumber],
                     status = Status(
                         id = first[DriverStatusTable.id].value,

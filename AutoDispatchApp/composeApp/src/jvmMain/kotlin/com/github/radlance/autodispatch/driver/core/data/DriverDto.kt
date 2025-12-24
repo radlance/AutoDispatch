@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 data class DriverDto(
     val id: Int,
     val fullName: String,
+    val avatarUrl: String?,
     val phoneNumber: String,
     val status: StatusDto,
     val vehicle: VehicleDto?,

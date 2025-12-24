@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
+import com.github.radlance.autodispatch.common.utils.avatarInitials
 
 @Composable
 fun AvatarChangeDialog(
@@ -133,21 +134,4 @@ fun AvatarChangeDialog(
             }
         }
     )
-}
-
-fun avatarInitials(input: String): String {
-    if (input.isBlank()) return "-"
-
-    val words = input
-        .trim()
-        .split(Regex("\\s+"))
-        .filter { it.isNotEmpty() }
-
-    if (words.isEmpty()) return "-"
-
-    return words
-        .take(2)
-        .mapNotNull { it.firstOrNull()?.uppercaseChar() }
-        .joinToString("")
-        .ifEmpty { "-" }
 }

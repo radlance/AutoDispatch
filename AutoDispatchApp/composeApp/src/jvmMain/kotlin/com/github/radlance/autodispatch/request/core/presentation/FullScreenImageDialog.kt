@@ -34,9 +34,9 @@ import net.engawapg.lib.zoomable.zoomable
 fun FullScreenImageDialog(
     onDismissRequest: () -> Unit,
     selectedImageUrl: String?,
-    documents: List<String>,
     onChangeImageIconClick: (document: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    documents: List<String>? = null
 ) {
     val context = LocalPlatformContext.current
     Dialog(
@@ -83,44 +83,44 @@ fun FullScreenImageDialog(
                         contentDescription = null
                     )
                 }
-
-                val indexOf = documents.indexOf(selectedImageUrl)
-                if (indexOf > 0) {
-                    IconButton(
-                        onClick = { onChangeImageIconClick(documents[indexOf - 1]) },
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(16.dp)
-                            .size(40.dp)
-                            .background(
-                                MaterialTheme.colorScheme.surface,
-                                CircleShape
+                documents?.let {
+                    val indexOf = documents.indexOf(selectedImageUrl)
+                    if (indexOf > 0) {
+                        IconButton(
+                            onClick = { onChangeImageIconClick(documents[indexOf - 1]) },
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(16.dp)
+                                .size(40.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Default.ArrowForwardIos,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(180f)
                             )
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(180f)
-                        )
+                        }
                     }
-                }
-
-                if (indexOf != documents.size - 1) {
-                    IconButton(
-                        onClick = { onChangeImageIconClick(documents[indexOf + 1]) },
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(16.dp)
-                            .size(40.dp)
-                            .background(
-                                MaterialTheme.colorScheme.surface,
-                                CircleShape
+                    if (indexOf != documents.size - 1) {
+                        IconButton(
+                            onClick = { onChangeImageIconClick(documents[indexOf + 1]) },
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(16.dp)
+                                .size(40.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Default.ArrowForwardIos,
+                                contentDescription = null
                             )
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Default.ArrowForwardIos,
-                            contentDescription = null
-                        )
+                        }
                     }
                 }
             }

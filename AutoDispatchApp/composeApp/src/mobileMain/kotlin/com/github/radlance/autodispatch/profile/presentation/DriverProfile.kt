@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.SectionHeader
+import com.github.radlance.autodispatch.common.utils.avatarInitials
 import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.DocumentIcon
@@ -84,9 +85,9 @@ fun DriverProfile(
                             modifier = Modifier.fillMaxSize()
                         )
                     } ?: run {
-                        profileDetails.avatarUrl?.let { documentUrl ->
+                        profileDetails.avatarUrl?.let { avatarUrl ->
                             LoadableImage(
-                                documentUrl = documentUrl,
+                                documentUrl = avatarUrl,
                                 onRetry = onRetry,
                                 lastRetryAttempt = lastImageRetryAttempt,
                                 onImageSelected = { onProfilePictureClick() },

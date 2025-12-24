@@ -186,6 +186,7 @@ private fun DriverDto.toDriver(): Driver {
     return Driver(
         id = id,
         fullName = fullName,
+        avatarUrl = avatarUrl?.asImageUrl(),
         phoneNumber = phoneNumber,
         status = status.toStatus(),
         vehicle = vehicle?.toVehicle(),
