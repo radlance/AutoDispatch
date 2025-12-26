@@ -6,9 +6,21 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -35,6 +47,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import kotlinx.coroutines.launch
@@ -120,75 +133,125 @@ fun AnimatedPieChart(
         }
     }
 
-    Box(
-        modifier = modifier
-            .onPointerEvent(PointerEventType.Move) { event ->
-                mousePosition = event.changes.first().position
-            }
-            .onPointerEvent(PointerEventType.Exit) {
-                mousePosition = Offset.Zero
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(
-            modifier = Modifier.fillMaxSize()
-                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    Column {
+        Box(
+            modifier = modifier
+                .onPointerEvent(PointerEventType.Move) { event ->
+                    mousePosition = event.changes.first().position
+                }
+                .onPointerEvent(PointerEventType.Exit) {
+                    mousePosition = Offset.Zero
+                },
+            contentAlignment = Alignment.Center
         ) {
-            chartCenter = center
-            val maxSliceScale = 1.1f
-            chartRadius = (minOf(size.width, size.height) / 2f) / maxSliceScale
-
-            var startAngle = -90f
-
-            data.forEachIndexed { index, slice ->
-                val sweepAngle = (slice.value / totalSum) * 360f * entryAnimation.value
-
-                val scale = scaleAnimatables[index].value
-                val currentRadius = chartRadius * scale
-
-                drawArc(
-                    color = slice.color,
-                    startAngle = startAngle,
-                    sweepAngle = sweepAngle,
-                    useCenter = true,
-                    topLeft = center - Offset(currentRadius, currentRadius),
-                    size = Size(currentRadius * 2, currentRadius * 2),
-                    style = Fill
-                )
-
-                startAngle += sweepAngle
-            }
-
-            if (innerRadiusRatio > 0f) {
-                drawCircle(
-                    color = Color.Black,
-                    radius = chartRadius * innerRadiusRatio,
-                    blendMode = BlendMode.Clear
-                )
-            }
-        }
-
-        if (hoveredIndex != null && hoveredIndex != -1) {
-            val item = data[hoveredIndex]
-            Popup(
-                offset = IntOffset(mousePosition.x.toInt() + 20, mousePosition.y.toInt() + 20),
-                properties = PopupProperties(focusable = false, dismissOnClickOutside = false)
+            Canvas(
+                modifier = Modifier.fillMaxSize()
+                    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
-                    tonalElevation = 8.dp,
-                    shadowElevation = 8.dp
-                ) {
-                    Text(
-                        text = "${item.label}: ${item.value.toInt()}",
-                        color = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.padding(8.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold
+                chartCenter = center
+                val maxSliceScale = 1.1f
+                chartRadius = (minOf(size.width, size.height) / 2f) / maxSliceScale
+
+                var startAngle = -90f
+
+                data.forEachIndexed { index, slice ->
+                    val sweepAngle = (slice.value / totalSum) * 360f * entryAnimation.value
+
+                    val scale = scaleAnimatables[index].value
+                    val currentRadius = chartRadius * scale
+
+                    drawArc(
+                        color = slice.color,
+                        startAngle = startAngle,
+                        sweepAngle = sweepAngle,
+                        useCenter = true,
+                        topLeft = center - Offset(currentRadius, currentRadius),
+                        size = Size(currentRadius * 2, currentRadius * 2),
+                        style = Fill
+                    )
+
+                    startAngle += sweepAngle
+                }
+
+                if (innerRadiusRatio > 0f) {
+                    drawCircle(
+                        color = Color.Black,
+                        radius = chartRadius * innerRadiusRatio,
+                        blendMode = BlendMode.Clear
                     )
                 }
             }
+
+            if (hoveredIndex != null && hoveredIndex != -1) {
+                val item = data[hoveredIndex]
+                Popup(
+                    offset = IntOffset(mousePosition.x.toInt() + 20, mousePosition.y.toInt() + 20),
+                    properties = PopupProperties(focusable = false, dismissOnClickOutside = false)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                        tonalElevation = 8.dp,
+                        shadowElevation = 8.dp
+                    ) {
+                        Text(
+                            text = "${item.label}: ${item.value.toInt()}",
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.padding(8.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+    PieChartLegend(data)
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun PieChartLegend(data: List<PieChartData>) {
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        maxItemsInEachRow = 2
+    ) {
+        data.forEach { item ->
+            LegendItem(item)
+        }
+    }
+}
+
+@Composable
+fun LegendItem(item: PieChartData) {
+    Surface(
+        color = item.color.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.widthIn(min = 160.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(item.color, CircleShape)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = "${item.label} : ${item.value.toInt()}",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            )
         }
     }
 }
