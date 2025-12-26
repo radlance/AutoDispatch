@@ -42,8 +42,10 @@ fun StatisticScreen(modifier: Modifier = Modifier) {
 
         val chartData = listOf(
             Pair("Android", 20f),
+            Pair("iOS", 15f),
             Pair("Windows", 45f),
             Pair("Linux", 35f),
+            Pair("macOS", 25f)
         ).mapIndexed { index, pair ->
             PieChartData(
                 pair.first,
@@ -80,6 +82,7 @@ fun StatisticScreen(modifier: Modifier = Modifier) {
             )
 
             GroupedRowChart(groups = data, modifier = Modifier.fillMaxSize())
+            GroupedColumnChart(groups = data, modifier = Modifier.fillMaxSize())
         }
     }
 }

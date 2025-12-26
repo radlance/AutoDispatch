@@ -57,23 +57,11 @@ import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-data class BarItem(
-    val name: String,
-    val value: Double,
-    val color: Color
-)
-
-data class ChartGroup(
-    val groupLabel: String,
-    val items: List<BarItem>
-)
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun GroupedRowChart(
+fun GroupedColumnChart(
     groups: List<ChartGroup>,
     modifier: Modifier = Modifier,
-    barThickness: Dp = 28.dp,
     itemSpacing: Dp = 8.dp,
     groupSpacing: Dp = 36.dp,
     axisColor: Color = Color.LightGray
@@ -85,37 +73,26 @@ fun GroupedRowChart(
     var mousePosition by remember { mutableStateOf(Offset.Zero) }
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
-    val verticalPadding = 20.dp
-    val labelPadding = 25f
-    val rightMargin = 60f
+    val topPadding = 20.dp
+    val bottomPadding = 40.dp
+    val leftPadding = 25f
+    val rightPadding = 20f
 
-    val labelStyle =
-        TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = onSurface)
-
-    val maxLabelWidth = remember(groups, textMeasurer) {
-        groups.maxOfOrNull { group ->
-            textMeasurer.measure(group.groupLabel, style = labelStyle).size.width
-        }?.toFloat() ?: 0f
-    }
-
-    val leftMargin = maxLabelWidth + labelPadding
+    val labelStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = onSurface)
 
     val rawMax = groups.flatMap { it.items }.maxOfOrNull { it.value }?.toFloat() ?: 1f
     val niceMax = remember(rawMax) { calculateNiceMax(rawMax) }
 
-    val chartContentHeightPx = remember(groups, density) {
-        with(density) {
-            var total = 0f
-            groups.forEachIndexed { gIndex, group ->
-                if (gIndex > 0) total += groupSpacing.toPx()
-                group.items.forEachIndexed { iIndex, _ ->
-                    if (iIndex > 0) total += itemSpacing.toPx()
-                    total += barThickness.toPx()
-                }
-            }
-            total + (verticalPadding.toPx() * 2)
-        }
+    val steps = 5
+    val yLabels = (0..steps).map { i ->
+        val yVal = (niceMax / steps) * i
+        if (yVal >= 1000) "${(yVal / 1000).roundToInt()}k" else yVal.roundToInt().toString()
     }
+    val maxYLabelWidth = remember(yLabels, textMeasurer) {
+        yLabels.maxOfOrNull { textMeasurer.measure(it, style = TextStyle(fontSize = 11.sp, color = onSurface)).size.width }?.toFloat() ?: 0f
+    }
+
+    val leftMargin = maxYLabelWidth + leftPadding
 
     LaunchedEffect(groups) {
         transitionProgress.animateTo(1f, animationSpec = tween(800, easing = FastOutSlowInEasing))
@@ -134,109 +111,97 @@ fun GroupedRowChart(
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(with(density) { chartContentHeightPx.toDp() + 40.dp })
+                    .height(300.dp + bottomPadding)
                     .onSizeChanged { chartSize = it }
             ) {
-                val chartWidth = (size.width - leftMargin - rightMargin).coerceAtLeast(0f)
-                val topOffset = verticalPadding.toPx()
+                val chartWidth = (size.width - leftMargin - rightPadding).coerceAtLeast(0f)
+                val chartTopY = topPadding.toPx()
+                val chartBottomY = size.height - bottomPadding.toPx()
+                val chartHeight = chartBottomY - chartTopY
 
-                val steps = 5
+                val totalBars = groups.sumOf { it.items.size }
+                val totalItemSpacings = groups.sumOf { group -> ((group.items.size - 1).coerceAtLeast(0)).toDouble() * itemSpacing.toPx().toDouble() }.toFloat()
+                val totalGroupSpacings = ((groups.size - 1).coerceAtLeast(0)).toFloat() * groupSpacing.toPx()
+
+                val availableForBars = chartWidth - totalItemSpacings - totalGroupSpacings
+                val barPx = (availableForBars / totalBars).coerceAtLeast(4f) // min 4px to avoid too thin
+
                 for (i in 0..steps) {
-                    val xVal = (niceMax / steps) * i
-                    val xPos = leftMargin + (i * (chartWidth / steps))
+                    val yPos = chartBottomY - (i * (chartHeight / steps))
+                    drawLine(axisColor, Offset(leftMargin, yPos), Offset(leftMargin + chartWidth, yPos))
 
-                    drawLine(axisColor, Offset(xPos, 0f), Offset(xPos, chartContentHeightPx))
-
-                    val xLabel =
-                        if (xVal >= 1000) "${(xVal / 1000).roundToInt()}k" else xVal.roundToInt()
-                            .toString()
-                    val labelTopLeft = Offset(xPos - 10f, chartContentHeightPx + 10f)
-                    val availableWidth = size.width - labelTopLeft.x
-                    val availableHeight = size.height - labelTopLeft.y
-                    if (availableWidth > 0 && availableHeight > 0) {
-                        drawText(
-                            textMeasurer = textMeasurer,
-                            text = xLabel,
-                            topLeft = labelTopLeft,
-                            style = TextStyle(fontSize = 11.sp, color = onSurface),
-                            softWrap = false
-                        )
-                    }
+                    val yLabel = yLabels[i]
+                    val labelLayout = textMeasurer.measure(yLabel, style = TextStyle(fontSize = 11.sp, color = onSurface))
+                    drawText(
+                        labelLayout,
+                        topLeft = Offset(leftMargin - labelLayout.size.width - 10f, yPos - labelLayout.size.height / 2)
+                    )
                 }
 
-                var currentY = topOffset
+                var currentX = leftMargin
                 groups.forEachIndexed { gIndex, group ->
-                    if (gIndex > 0) currentY += groupSpacing.toPx()
-                    val groupStart = currentY
+                    if (gIndex > 0) currentX += groupSpacing.toPx()
+                    val groupStartX = currentX
                     group.items.forEachIndexed { iIndex, item ->
-                        if (iIndex > 0) currentY += itemSpacing.toPx()
-                        val barWidth =
-                            (item.value.toFloat() / niceMax) * chartWidth * transitionProgress.value
+                        if (iIndex > 0) currentX += itemSpacing.toPx()
+                        val barHeight = (item.value.toFloat() / niceMax) * chartHeight * transitionProgress.value
 
                         drawRoundRect(
                             color = item.color,
-                            topLeft = Offset(leftMargin, currentY),
-                            size = Size(barWidth, barThickness.toPx()),
+                            topLeft = Offset(currentX, chartBottomY - barHeight),
+                            size = Size(barPx, barHeight),
                             cornerRadius = CornerRadius(6f, 6f)
                         )
-                        currentY += barThickness.toPx()
+                        currentX += barPx
                     }
 
-                    val groupEnd = currentY
+                    val groupEndX = currentX
                     val labelLayout = textMeasurer.measure(
                         group.groupLabel,
                         style = labelStyle
                     )
                     drawText(
                         labelLayout,
-                        topLeft = Offset(
-                            leftMargin - labelLayout.size.width - labelPadding,
-                            groupStart + (groupEnd - groupStart) / 2 - labelLayout.size.height / 2
-                        )
+                        topLeft = Offset(groupStartX + (groupEndX - groupStartX) / 2 - labelLayout.size.width / 2, chartBottomY + 10f)
                     )
                 }
 
-                drawLine(
-                    axisColor,
-                    Offset(leftMargin, 0f),
-                    Offset(leftMargin, chartContentHeightPx),
-                    1.dp.toPx()
-                )
-                drawLine(
-                    axisColor, Offset(leftMargin, chartContentHeightPx), Offset(
-                        leftMargin + chartWidth,
-                        chartContentHeightPx
-                    ), 1.dp.toPx()
-                )
+                drawLine(axisColor, Offset(leftMargin, chartBottomY), Offset(leftMargin + chartWidth, chartBottomY), 1.dp.toPx())
+                drawLine(axisColor, Offset(leftMargin, chartBottomY), Offset(leftMargin, chartTopY), 1.dp.toPx())
             }
 
-            val hoveredData =
-                remember(mousePosition, chartSize, groups, transitionProgress.value, density) {
-                    if (chartSize == IntSize.Zero) return@remember null
+            val hoveredData = remember(mousePosition, chartSize, groups, transitionProgress.value, density) {
+                if (chartSize == IntSize.Zero) return@remember null
 
-                    val chartWidth =
-                        (chartSize.width.toFloat() - leftMargin - rightMargin).coerceAtLeast(0f)
-                    var currentY = with(density) { verticalPadding.toPx() }
+                with(density) {
+                    val chartWidth = (chartSize.width.toFloat() - leftMargin - rightPadding).coerceAtLeast(0f)
+                    val chartTopY = topPadding.toPx()
+                    val chartBottomY = chartSize.height.toFloat() - bottomPadding.toPx()
+                    val chartHeight = chartBottomY - chartTopY
 
+                    val totalBars = groups.sumOf { it.items.size }
+                    val totalItemSpacings = groups.sumOf { group -> ((group.items.size - 1).coerceAtLeast(0)).toDouble() * itemSpacing.toPx().toDouble() }.toFloat()
+                    val totalGroupSpacings = ((groups.size - 1).coerceAtLeast(0)).toFloat() * groupSpacing.toPx()
+
+                    val availableForBars = chartWidth - totalItemSpacings - totalGroupSpacings
+                    val barPx = (availableForBars / totalBars).coerceAtLeast(4f)
+
+                    var currentX = leftMargin
                     groups.forEachIndexed { gIndex, group ->
-                        if (gIndex > 0) currentY += with(density) { groupSpacing.toPx() }
+                        if (gIndex > 0) currentX += groupSpacing.toPx()
                         group.items.forEachIndexed { iIndex, item ->
-                            if (iIndex > 0) currentY += with(density) { itemSpacing.toPx() }
-                            val width =
-                                (item.value.toFloat() / niceMax) * chartWidth * transitionProgress.value
-                            val rect = Rect(
-                                leftMargin,
-                                currentY,
-                                leftMargin + width,
-                                currentY + with(density) { barThickness.toPx() })
+                            if (iIndex > 0) currentX += itemSpacing.toPx()
+                            val barHeight = (item.value.toFloat() / niceMax) * chartHeight * transitionProgress.value
+                            val rect = Rect(currentX, chartBottomY - barHeight, currentX + barPx, chartBottomY)
                             if (rect.contains(mousePosition)) {
                                 return@remember item to mousePosition
                             }
-                            currentY += with(density) { barThickness.toPx() }
+                            currentX += barPx
                         }
                     }
                     null
                 }
+            }
 
             hoveredData?.let { (item, pos) ->
                 HoverPopup(
@@ -304,10 +269,7 @@ private fun LegendLayout(workers: List<BarItem>) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         workers.forEach { worker ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp)
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 12.dp)) {
                 Box(modifier = Modifier.size(10.dp).background(worker.color, CircleShape))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = worker.name, fontSize = 12.sp, fontWeight = FontWeight.Medium)
