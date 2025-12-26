@@ -102,4 +102,5 @@
     <string name="when_deliveries_appear">Когда появятся новые доставки, они будут отображаться здесь</string>
     <string name="delivery">Доставка</string>
     <string name="attach">Закрепить</string>
+    <string name="statistics">Статистика</string>
 </resources>

@@ -1,11 +1,13 @@
 package com.github.radlance.autodispatch.navigation.core
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DataUsage
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.ui.graphics.vector.ImageVector
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.drivers
 import autodispatch.composeapp.generated.resources.requests
+import autodispatch.composeapp.generated.resources.statistics
 import autodispatch.composeapp.generated.resources.vehicles
 import com.github.radlance.autodispatch.uikit.vector.DeliveryBoltIcon
 import com.github.radlance.autodispatch.uikit.vector.DocumentIcon
@@ -33,4 +35,10 @@ object Vehicles : DrawerDestination {
 object Drivers : DrawerDestination {
     override val icon: ImageVector = Icons.Outlined.Group
     override val titleRes: StringResource = Res.string.drivers
+}
+
+@Serializable
+object Statistic : DrawerDestination {
+    override val icon: ImageVector = Icons.Outlined.DataUsage
+    override val titleRes: StringResource = Res.string.statistics
 }

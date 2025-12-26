@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.driver.core.presentation.DriverScreen
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.core.presentation.RequestsScreen
+import com.github.radlance.autodispatch.statistic.presentation.StatisticScreen
 import com.github.radlance.autodispatch.vehicle.core.presentation.VehicleScreen
 
 @Composable
@@ -54,6 +55,9 @@ fun DrawerNavGraph(
                 loadProfileUiState = loadProfileUiState,
                 onReloadProfile = onReloadProfile
             )
+        }
+        composable<Statistic> {
+            StatisticScreen()
         }
     }
 }

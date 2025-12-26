@@ -58,6 +58,7 @@ import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.navigation.core.DrawerNavGraph
 import com.github.radlance.autodispatch.navigation.core.Drivers
 import com.github.radlance.autodispatch.navigation.core.Requests
+import com.github.radlance.autodispatch.navigation.core.Statistic
 import com.github.radlance.autodispatch.navigation.core.Vehicles
 import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 import org.jetbrains.compose.resources.stringResource
@@ -77,7 +78,8 @@ fun ControlPanelScreen(
         listOf(
             Requests,
             Drivers,
-            Vehicles
+            Vehicles,
+            Statistic
         )
     val navHostController = rememberNavController()
     val navigationState = rememberNavigationState(navHostController)
