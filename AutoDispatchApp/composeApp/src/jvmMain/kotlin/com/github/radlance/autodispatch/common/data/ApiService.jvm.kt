@@ -14,6 +14,7 @@ import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.VehicleDto
+import com.github.radlance.autodispatch.statistics.data.DashboardStatisticsDto
 import com.github.radlance.autodispatch.vehicle.assignment.data.DriverWithoutVehicleDto
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
 import io.ktor.client.HttpClient
@@ -116,6 +117,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun unassignVehicle(driverId: Int)
 
     suspend fun unassignDriver(requestId: Int)
+
+    suspend fun statistics(): DashboardStatisticsDto
 }
 
 internal class KtorApiServiceJvm(
@@ -335,5 +338,9 @@ internal class KtorApiServiceJvm(
 
     override suspend fun unassignDriver(requestId: Int) {
         httpClient.delete("requests/$requestId/assign")
+    }
+
+    override suspend fun statistics(): DashboardStatisticsDto {
+        return httpClient.get("statistics").body()
     }
 }

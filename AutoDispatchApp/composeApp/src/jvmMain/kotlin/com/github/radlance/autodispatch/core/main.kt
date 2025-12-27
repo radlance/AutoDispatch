@@ -18,6 +18,7 @@ import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.pointSelectionModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
+import com.github.radlance.autodispatch.di.statisticsModule
 import com.github.radlance.autodispatch.di.vehicleAssignmentModule
 import com.github.radlance.autodispatch.di.vehicleModule
 import com.github.radlance.autodispatch.di.vehicleUnassignmentModule
@@ -43,7 +44,8 @@ fun main() = application {
             driveRequestModule,
             vehicleModule,
             driverVehicleModule,
-            vehicleUnassignmentModule
+            vehicleUnassignmentModule,
+            statisticsModule
         )
     }
     Window(

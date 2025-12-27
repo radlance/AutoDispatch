@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.statistic.presentation
+package com.github.radlance.autodispatch.statistics.presentation
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
