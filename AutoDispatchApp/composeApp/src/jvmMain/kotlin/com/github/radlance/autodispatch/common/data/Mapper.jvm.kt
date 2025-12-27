@@ -217,6 +217,7 @@ private fun PopularRouteStatDto.toPopularRouteStat(): PopularRouteStat {
 private fun TopDriverStatDto.toTopDriverStat(): TopDriverStat {
     return TopDriverStat(
         fullName = fullName,
+        avatarUrl = avatarUrl?.asImageUrl(),
         completedAssignments = completedAssignments,
         currentStatus = currentStatus
     )

@@ -56,8 +56,8 @@ class StatisticsRepository {
             .count()
 
         val vehiclesByStatus = listOf(
-            StatItem("С водителем", vehiclesWithDriverCount),
-            StatItem("Без водителя", totalVehicles - vehiclesWithDriverCount)
+            StatItem("Занят", vehiclesWithDriverCount),
+            StatItem("Свободен", totalVehicles - vehiclesWithDriverCount)
         )
 
         val topDrivers = AssignmentTable
@@ -66,15 +66,17 @@ class StatisticsRepository {
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
             .select(
                 UserTable.fullName,
+                UserTable.avatarUrl,
                 DriverStatusTable.name,
                 AssignmentTable.id.count()
             )
-            .groupBy(UserTable.fullName, DriverStatusTable.name)
+            .groupBy(UserTable.fullName, UserTable.avatarUrl, DriverStatusTable.name)
             .orderBy(AssignmentTable.id.count(), SortOrder.DESC)
             .limit(5)
             .map { row ->
                 TopDriverStat(
                     fullName = row[UserTable.fullName],
+                    avatarUrl = row[UserTable.avatarUrl],
                     completedAssignments = row[AssignmentTable.id.count()],
                     currentStatus = row[DriverStatusTable.name]
                 )

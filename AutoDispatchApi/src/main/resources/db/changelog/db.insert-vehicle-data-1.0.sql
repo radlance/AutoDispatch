@@ -1,10 +1,23 @@
 INSERT INTO vehicle (model, license_plate, payload_capacity)
-VALUES ('GAZelle NEXT', 'А123МВ', 1500),
-       ('Ford Transit', 'В456ЕК', 1700),
-       ('MAN TGL', 'Н901КР', 7500),
-
-       ('Hyundai HD78', 'М234ОР', 5000),
-       ('ISUZU NQR90', 'Т567РУ', 6000),
-
-       ('KAMAZ 65115', 'К890АМ', 14000),
-       ('VOLVO FM 6x4', 'Р345НЕ', 18000);
+VALUES
+    ('GAZelle NEXT', 'А123МВ', 1500),
+    ('Ford Transit', 'В456ЕК', 1700),
+    ('MAN TGL', 'Н901КР', 7500),
+    ('Hyundai HD78', 'М234ОР', 5000),
+    ('ISUZU NQR90', 'Т567РУ', 6000),
+    ('KAMAZ 65115', 'К890АМ', 14000),
+    ('VOLVO FM 6x4', 'Р345НЕ', 18000),
+    ('Mercedes-Benz Sprinter', 'Е777КХ', 2000),
+    ('Scania R450', 'О102РР', 20000),
+    ('Iveco Daily', 'К444ММ', 3500),
+    ('Renault T-Series', 'Х001АМ', 22000),
+    ('DAF XF 105', 'Т888ОК', 21000),
+    ('MAZ 5440', 'В112ЕЕ', 19000),
+    ('Volvo FH16', 'С333СС', 25000),
+    ('Hino 500', 'Р415ТА', 8000),
+    ('Mitsubishi Fuso Canter', 'М921ВА', 4500),
+    ('Foton Aumark', 'А672НН', 3000),
+    ('Kamaz 54901', 'Н007ХК', 20000),
+    ('Jac N120', 'Е881ОУ', 7000),
+    ('Lada Largus Cargo', 'К123МТ', 750),
+    ('Ural Next', 'Т090АР', 10000);

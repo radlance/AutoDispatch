@@ -1,20 +1,29 @@
 package com.github.radlance.autodispatch.statistics.presentation
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.retry
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -26,74 +35,52 @@ fun StatisticsScreen(
         viewModel.loadStatistics()
     }
     val statisticsState by viewModel.statisticsState.collectAsState()
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        val extendedMaterialPalette = listOf(
-            Color(0xFF5A9DE4),
-            Color(0xFF007BFF),
-            Color(0xFF00D2B4),
-            Color(0xFF6A5AE0),
-            Color(0xFFF9B89B),
-            Color(0xFFED6A8A),
-            Color(0xFF9B308F),
-            Color(0xFF2E5AAC),
-            Color(0xFF4CAF50),
-            Color(0xFFFF9800),
-            Color(0xFF00BCD4),
-            Color(0xFF9C27B0),
-            Color(0xFFFF5722),
-            Color(0xFF795548),
-            Color(0xFF607D8B),
-            Color(0xFFFFC107)
-        )
-
-        val chartData = listOf(
-            Pair("Android", 20f),
-            Pair("iOS", 15f),
-            Pair("Windows", 45f),
-            Pair("Linux", 35f),
-            Pair("macOS", 25f)
-        ).mapIndexed { index, pair ->
-            PieChartData(
-                pair.first,
-                pair.second,
-                extendedMaterialPalette.getOrElse(index) { Color.Gray })
-        }
-
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AnimatedPieChart(
-                modifier = Modifier.size(300.dp).padding(top = 24.dp),
-                data = chartData,
-                innerRadiusRatio = 0.6f
-            )
-
-            val data = listOf(
-                ChartGroup(
-                    "Электроника", listOf(
-                        BarItem("Количество заявок", 5.0, extendedMaterialPalette[0])
-                    )
-                ),
-                ChartGroup(
-                    "Стройматериалы", listOf(
-                        BarItem("Количество заявок", 4.0, extendedMaterialPalette[0])
-                    )
-                ),
-                ChartGroup(
-                    "Мебель", listOf(
-                        BarItem("Количество заявок", 3.0, extendedMaterialPalette[0])
+    statisticsState.Reduce(
+        onLoading = {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator()
+            }
+        },
+        onSuccess = { statistics ->
+            Box(modifier = modifier) {
+                val scrollState = rememberScrollState()
+                Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    StatisticsGrid(statistics = statistics)
+                    Spacer(Modifier.height(24.dp))
+                    StatisticsDiagrams(statistics = statistics)
+                    Spacer(Modifier.height(24.dp))
+                }
+                VerticalScrollbar(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp, top = 50.dp),
+                    adapter = rememberScrollbarAdapter(
+                        scrollState = scrollState
                     )
                 )
-            )
-
-            GroupedRowChart(groups = data, modifier = Modifier.fillMaxSize())
-            GroupedColumnChart(groups = data, modifier = Modifier.fillMaxSize())
+            }
+        },
+        onError = { errorMsg ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = errorMsg, textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = {
+                            viewModel.loadStatistics()
+                        }
+                    ) {
+                        Text(stringResource(Res.string.retry))
+                    }
+                }
+            }
         }
-    }
+    )
 }
