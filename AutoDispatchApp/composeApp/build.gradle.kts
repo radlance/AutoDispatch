@@ -141,6 +141,17 @@ compose.desktop {
         mainClass = "com.github.radlance.autodispatch.MainKt"
 
         nativeDistributions {
+            val iconsDir = project.file("src/jvmMain/resources/icons")
+
+            macOS {
+                iconFile.set(iconsDir.resolve("icon.icns"))
+            }
+            windows {
+                iconFile.set(iconsDir.resolve("icon.ico"))
+            }
+            linux {
+                iconFile.set(iconsDir.resolve("icon.png"))
+            }
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.github.radlance.autodispatch"
             packageVersion = "1.0.0"
