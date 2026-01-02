@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.statistic.presentation
+package com.github.radlance.autodispatch.statistics.presentation
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +65,7 @@ fun AnimatedPieChart(
     modifier: Modifier = Modifier,
     data: List<PieChartData>,
     innerRadiusRatio: Float = 0f,
+    maxItemsInEachRow: Int = 2
 ) {
     val totalSum = remember(data) { data.sumOf { it.value.toDouble() }.toFloat() }
 
@@ -206,21 +206,21 @@ fun AnimatedPieChart(
             }
         }
     }
-    PieChartLegend(data)
+    PieChartLegend(maxItemsInEachRow, data)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PieChartLegend(data: List<PieChartData>) {
+fun PieChartLegend(maxItemsInEachRow: Int, data: List<PieChartData>) {
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        maxItemsInEachRow = 2
+        maxItemsInEachRow = maxItemsInEachRow
     ) {
-        data.forEach { item ->
+        data.sortedByDescending { it.value }.forEach { item ->
             LegendItem(item)
         }
     }
@@ -230,8 +230,7 @@ fun PieChartLegend(data: List<PieChartData>) {
 fun LegendItem(item: PieChartData) {
     Surface(
         color = item.color.copy(alpha = 0.15f),
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.widthIn(min = 160.dp)
+        shape = RoundedCornerShape(24.dp)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),

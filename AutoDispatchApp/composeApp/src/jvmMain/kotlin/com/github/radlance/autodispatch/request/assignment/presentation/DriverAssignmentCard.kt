@@ -92,6 +92,7 @@ fun DriverAssignmentCard(
                         ) {
                             Text(
                                 text = "Без авто",
+                                fontSize = 12.sp,
                                 maxLines = 1,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 overflow = TextOverflow.Ellipsis,

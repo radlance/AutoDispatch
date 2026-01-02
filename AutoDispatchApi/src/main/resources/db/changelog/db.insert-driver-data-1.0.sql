@@ -1,10 +1,22 @@
 UPDATE driver
-SET vehicle_id = 1
-WHERE user_id = 1;
-
-UPDATE driver
-SET vehicle_id = 2
-WHERE user_id = 2;
+SET vehicle_id = v.new_vehicle_id
+FROM (VALUES
+          (1, 3),
+          (2, 4),
+          (5, 8),
+          (6, 9),
+          (7, 10),
+          (8, 11),
+          (9, 12),
+          (10, 13),
+          (11, 14),
+          (13, 16),
+          (12, 15),
+          (14, 17),
+          (15, 18),
+          (16, 19)
+     ) AS v(target_user_id, new_vehicle_id)
+WHERE driver.user_id = v.target_user_id;
 
 -- UPDATE driver
 -- SET vehicle_id = 3

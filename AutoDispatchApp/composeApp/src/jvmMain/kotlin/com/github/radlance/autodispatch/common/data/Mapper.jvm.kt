@@ -27,6 +27,16 @@ import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
+import com.github.radlance.autodispatch.statistics.data.DashboardStatisticsDto
+import com.github.radlance.autodispatch.statistics.data.GeneralStatsDto
+import com.github.radlance.autodispatch.statistics.data.PopularRouteStatDto
+import com.github.radlance.autodispatch.statistics.data.StatItemDto
+import com.github.radlance.autodispatch.statistics.data.TopDriverStatDto
+import com.github.radlance.autodispatch.statistics.domain.DashboardStatistics
+import com.github.radlance.autodispatch.statistics.domain.GeneralStats
+import com.github.radlance.autodispatch.statistics.domain.PopularRouteStat
+import com.github.radlance.autodispatch.statistics.domain.StatItem
+import com.github.radlance.autodispatch.statistics.domain.TopDriverStat
 import com.github.radlance.autodispatch.vehicle.assignment.data.DriverWithoutVehicleDto
 import com.github.radlance.autodispatch.vehicle.assignment.domain.DriverWithoutVehicle
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
@@ -165,6 +175,51 @@ fun ListPaginatedResultDto<DriverWithoutVehicleDto>.toDriverWithoutVehicleListPa
     return ListPaginatedResult(
         items = items.map { it.toDriverWithoutCar() },
         hasMore = hasMore
+    )
+}
+
+fun DashboardStatisticsDto.toDashboardStatistics(): DashboardStatistics {
+    return DashboardStatistics(
+        general = general.toGeneralStats(),
+        requestsByStatus = requestsByStatus.map { it.toStatItem() },
+        requestsByCargoType = requestsByCargoType.map { it.toStatItem() },
+        driversByStatus = driversByStatus.map { it.toStatItem() },
+        vehiclesByStatus = vehiclesByStatus.map { it.toStatItem() },
+        topDrivers = topDrivers.map { it.toTopDriverStat() },
+        popularRoutes = popularRoutes.map { it.toPopularRouteStat() }
+    )
+}
+
+private fun StatItemDto.toStatItem(): StatItem {
+    return StatItem(
+        label = label,
+        count = count
+    )
+}
+
+private fun GeneralStatsDto.toGeneralStats(): GeneralStats {
+    return GeneralStats(
+        totalRequests = totalRequests,
+        completedRequests = completedRequests,
+        totalVehicles = totalVehicles,
+        totalDrivers = totalDrivers
+    )
+}
+
+private fun PopularRouteStatDto.toPopularRouteStat(): PopularRouteStat {
+    return PopularRouteStat(
+        originCity = originCity,
+        destinationCity = destinationCity,
+        requestCount = requestCount
+    )
+}
+
+private fun TopDriverStatDto.toTopDriverStat(): TopDriverStat {
+    return TopDriverStat(
+        fullName = fullName,
+        avatarUrl = avatarUrl?.asImageUrl(),
+        completedAssignments = completedAssignments,
+        currentStatus = currentStatus
     )
 }
 

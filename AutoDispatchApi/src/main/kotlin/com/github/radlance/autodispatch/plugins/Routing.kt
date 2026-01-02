@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.repository.DocumentsRepository
 import com.github.radlance.autodispatch.repository.DriverRepository
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
+import com.github.radlance.autodispatch.repository.StatisticsRepository
 import com.github.radlance.autodispatch.repository.VehicleRepository
 import com.github.radlance.autodispatch.route.auth
 import com.github.radlance.autodispatch.route.deliveries
@@ -12,6 +13,7 @@ import com.github.radlance.autodispatch.route.document
 import com.github.radlance.autodispatch.route.driver
 import com.github.radlance.autodispatch.route.profile
 import com.github.radlance.autodispatch.route.requests
+import com.github.radlance.autodispatch.route.statistics
 import com.github.radlance.autodispatch.route.vehicle
 import com.github.radlance.autodispatch.service.AuthService
 import io.ktor.server.application.*
@@ -26,6 +28,7 @@ fun Application.configureRouting() {
     val documentRepository by inject<DocumentsRepository>()
     val driverRepository by inject<DriverRepository>()
     val vehicleRepository by inject<VehicleRepository>()
+    val statisticsRepository by inject<StatisticsRepository>()
 
     routing {
         route("/api") {
@@ -36,6 +39,7 @@ fun Application.configureRouting() {
             document(documentRepository)
             driver(driverRepository)
             vehicle(vehicleRepository)
+            statistics(statisticsRepository)
         }
     }
 }
