@@ -5,6 +5,7 @@ import com.github.radlance.autodispatch.common.data.KtorApiServiceMobile
 import com.github.radlance.autodispatch.delivery.confirmation.data.RemoteDeliveryConfirmationRepository
 import com.github.radlance.autodispatch.delivery.confirmation.domain.DeliveryConfirmationRepository
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationViewModel
+import com.github.radlance.autodispatch.delivery.core.data.DeliveryCache
 import com.github.radlance.autodispatch.delivery.core.data.RemoteDeliveryRepository
 import com.github.radlance.autodispatch.delivery.core.domain.DeliveryRepository
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryViewModel
@@ -30,6 +31,7 @@ val requestModule
 
 val deliveryModule
     get() = module {
+        singleOf(::DeliveryCache)
         singleOf(::RemoteDeliveryRepository).bind<DeliveryRepository>()
         viewModelOf(::DeliveryViewModel)
         singleOf(::RemoteDeliveryDetailsRepository).bind<DeliveryDetailsRepository>()

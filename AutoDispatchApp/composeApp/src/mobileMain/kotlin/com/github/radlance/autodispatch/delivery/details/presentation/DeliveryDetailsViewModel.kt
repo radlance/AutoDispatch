@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.delivery.details.presentation
 
+import com.github.radlance.autodispatch.common.domain.FetchResult
+import com.github.radlance.autodispatch.common.domain.Status
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
@@ -9,6 +11,10 @@ import com.github.radlance.autodispatch.delivery.domain.RequestError
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class DeliveryDetailsViewModel(
     private val repository: DeliveryDetailsRepository
@@ -31,12 +37,27 @@ class DeliveryDetailsViewModel(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun acceptDelivery(deliveryId: Int) {
         acceptDeliveryStateMutable.value = FetchResultUiState.Loading
-        handle(background = { repository.acceptDelivery(deliveryId) }) {
-            acceptDeliveryStateMutable.value = it.toUiState()
+        handle(background = { repository.acceptDelivery(deliveryId) }) { result ->
+            acceptDeliveryStateMutable.value = result.toUiState()
+
+            if (result is FetchResult.Success) {
+                val current = deliveryStateMutable.value
+                if (current is FetchResultUiState.Success) {
+                    val updatedDelivery = current.data.copy(
+                        status = Status(id = 3, name = "В пути"),
+                        updatedAt = Clock.System.now().toLocalDateTime(
+                            TimeZone.currentSystemDefault()
+                        )
+                    )
+                    deliveryStateMutable.value = FetchResultUiState.Success(updatedDelivery)
+                }
+            }
         }
     }
+
 
     fun resetAcceptState() {
         acceptDeliveryStateMutable.value = FetchResultUiState.Idle
