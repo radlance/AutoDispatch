@@ -1,14 +1,16 @@
 package com.github.radlance.autodispatch.navigation.core
 
+import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 
 class NavigationViewModel(
-    navigationRepository: NavigationRepository
+    private val navigationRepository: NavigationRepository
 ) : BaseViewModel() {
 
     val authorizedState: StateFlow<Boolean> =
@@ -20,4 +22,13 @@ class NavigationViewModel(
         navigationRepository.sessionExpired.flowOn(Dispatchers.IO).stateInViewModel(
         initialValue = false
     )
+
+    fun updateExpirationState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            navigationRepository.saveSessionExpired(expired = false)
+            launch {
+                navigationRepository.deleteToken()
+            }
+        }
+    }
 }

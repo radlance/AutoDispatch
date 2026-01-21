@@ -6,5 +6,9 @@ interface NavigationRepository {
 
     val authorized: Flow<Boolean>
 
+    suspend fun deleteToken()
+
     val sessionExpired: Flow<Boolean>
+
+    suspend fun saveSessionExpired(expired: Boolean)
 }

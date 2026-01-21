@@ -32,7 +32,7 @@ abstract class SearchPaginatedViewModel<T>(
     private fun setupQueryFlow() {
         queryFlow
             .drop(1)
-            .debounce(500)
+            .debounce(300)
             .distinctUntilChanged()
             .onEach {
                 paginator.refresh()

@@ -38,6 +38,7 @@ actual fun NavGraph(navController: NavHostController) {
 
         val onDismissRequest: () -> Unit = {
             showExpiredSessionDialog = false
+            navigationVieModel.updateExpirationState()
             navController.navigate(SignIn) {
                 popUpTo<ControlPanel> { inclusive = true }
             }

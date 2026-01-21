@@ -12,5 +12,5 @@ interface DeliveryRepository {
         pageSize: Int
     ): FetchResult<ListPaginatedResult<Delivery>, String>
 
-    fun deliveriesStream(): Flow<Map<Int, Delivery>>
+    fun deliveriesFlow(): Flow<Map<Int, Delivery>>
 }

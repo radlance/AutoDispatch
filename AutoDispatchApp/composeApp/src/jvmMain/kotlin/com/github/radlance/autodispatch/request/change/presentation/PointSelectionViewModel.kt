@@ -27,7 +27,7 @@ class PointSelectionViewModel(
     private val pointsMutable = MutableStateFlow<List<PointDetailed>>(emptyList())
     val points = pointsMutable.asStateFlow()
     private var searchJob: Job? = null
-    private val debounceTime = 600L
+    private val debounceTime = 300L
 
     fun fetchCoords() {
         fetchPointStateMutable.value = FetchResultUiState.Loading

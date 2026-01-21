@@ -29,6 +29,6 @@ class RemoteDeliveryRepository(
                 }
         }
 
-    override fun deliveriesStream(): Flow<Map<Int, Delivery>> =
+    override fun deliveriesFlow(): Flow<Map<Int, Delivery>> =
         cache.items
 }

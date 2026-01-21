@@ -20,7 +20,7 @@ class VehicleViewModel(
     val vehicleScreenState = vehicleScreenStateMutable.asStateFlow()
 
     private var searchJob: Job? = null
-    private val debounceTime = 500L
+    private val debounceTime = 300L
 
     init {
         triggerVehicleLoad()

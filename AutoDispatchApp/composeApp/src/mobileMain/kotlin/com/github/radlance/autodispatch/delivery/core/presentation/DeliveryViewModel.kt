@@ -18,7 +18,7 @@ class DeliveryViewModel(
 
     init {
         repository
-            .deliveriesStream()
+            .deliveriesFlow()
             .onEach { updated ->
                 stateMutable.update { current ->
                     val success =

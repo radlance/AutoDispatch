@@ -36,7 +36,7 @@ abstract class PaginatedViewModel<T, R>(
     init {
         queryFlowMutable
             .drop(1)
-            .debounce(500)
+            .debounce(300)
             .distinctUntilChanged()
             .onEach {
                 paginator.refresh()
