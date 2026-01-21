@@ -1,12 +1,12 @@
 package com.github.radlance.autodispatch.delivery.core.domain
 
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.Point
 import kotlinx.datetime.LocalDateTime
 
 data class Delivery(
     val id: Int,
-    val status: Status,
+    val status: RequestStatus,
     val loadingPoint: Point,
     val unloadingPoint: Point,
     val cargoWeight: Double,

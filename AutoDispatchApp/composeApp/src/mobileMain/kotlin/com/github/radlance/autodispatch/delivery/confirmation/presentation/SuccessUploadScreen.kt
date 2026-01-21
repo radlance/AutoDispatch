@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
@@ -183,10 +183,7 @@ private fun SuccessDeliveryScreenPreview() {
         SuccessUploadScreen(
             delivery = DeliveryDetailed(
                 id = 1,
-                status = Status(
-                    id = 4,
-                    name = "Завершена"
-                ),
+                status = RequestStatus.Completed,
                 origin = "Москва",
                 destination = "Калуга",
                 transportationDescription = "",

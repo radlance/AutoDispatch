@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.common.utils.avatarInitials
-import com.github.radlance.autodispatch.driver.core.presentation.DriverStatusWithColor
+import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.statistics.domain.TopDriverStat
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime

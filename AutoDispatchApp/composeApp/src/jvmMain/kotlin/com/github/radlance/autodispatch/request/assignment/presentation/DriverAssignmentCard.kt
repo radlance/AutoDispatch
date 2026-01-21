@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 
 @Composable
@@ -103,43 +104,6 @@ fun DriverAssignmentCard(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun DriverStatusWithColor(status: String?, fontSize: TextUnit = TextUnit.Unspecified) {
-    val (bgColor, textColor) = when (status) {
-
-        "Свободен" ->
-            MaterialTheme.colorScheme.primaryContainer to
-                    MaterialTheme.colorScheme.onPrimaryContainer
-
-        "В рейсе" ->
-            MaterialTheme.colorScheme.secondaryContainer to
-                    MaterialTheme.colorScheme.onSecondaryContainer
-
-        "Не на смене" ->
-            MaterialTheme.colorScheme.surfaceVariant to
-                    MaterialTheme.colorScheme.onSurfaceVariant
-
-        else ->
-            MaterialTheme.colorScheme.surface to
-                    MaterialTheme.colorScheme.onSurface
-    }
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(bgColor)
-    ) {
-        Text(
-            text = status ?: "-",
-            maxLines = 1,
-            color = textColor,
-            overflow = TextOverflow.Ellipsis,
-            fontSize = fontSize,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
     }
 }
 

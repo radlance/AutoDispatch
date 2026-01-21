@@ -87,7 +87,7 @@ fun RequestDetailsSections(
 
         Section(header = stringResource(Res.string.status)) {
             StatusWithColor(
-                status = request.status.name,
+                status = request.status,
                 fontSize = 14.sp
             )
         }

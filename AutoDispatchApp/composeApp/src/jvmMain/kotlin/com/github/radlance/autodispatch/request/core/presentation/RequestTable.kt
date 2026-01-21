@@ -145,7 +145,7 @@ fun RequestTable(
                     )
                 }
                 cell {
-                    StatusWithColor(status = item.status.name)
+                    StatusWithColor(status = item.status)
                 }
                 cell {
                     DocumentsStatusWithColor(status = item.status.name)

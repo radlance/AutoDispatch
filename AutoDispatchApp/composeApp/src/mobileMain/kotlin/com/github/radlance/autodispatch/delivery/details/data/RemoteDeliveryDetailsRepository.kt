@@ -4,7 +4,7 @@ import com.github.radlance.autodispatch.common.data.ApiServiceMobile
 import com.github.radlance.autodispatch.common.data.ErrorResponse
 import com.github.radlance.autodispatch.common.data.toDeliveryDetailed
 import com.github.radlance.autodispatch.common.domain.FetchResult
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryCache
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
@@ -51,8 +51,8 @@ class RemoteDeliveryDetailsRepository(
             apiService.startDelivery(deliveryId)
             cache.update(deliveryId) {
                 it.copy(
-                    status = Status(id = 3, name = "В пути"), updatedAt = Clock.System.now()
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                    status = RequestStatus.InProgress,
+                    updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 )
             }
             FetchResult.Success(Unit)

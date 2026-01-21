@@ -1,6 +1,6 @@
 package com.github.radlance.autodispatch.delivery.details.domain
 
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.Cargo
 import com.github.radlance.autodispatch.request.core.domain.Customer
 import com.github.radlance.autodispatch.request.core.domain.DeliveryDocument
@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeliveryDetailed(
     val id: Int,
-    val status: Status,
+    val status: RequestStatus,
     val origin: String,
     val destination: String,
     val transportationDescription: String?,

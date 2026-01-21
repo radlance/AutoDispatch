@@ -2,7 +2,7 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.auth.data.LoginResponseDto
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.toRequestStatus
 import com.github.radlance.autodispatch.di.CurrentIp
 import com.github.radlance.autodispatch.profile.data.DeliveriesStatsDto
 import com.github.radlance.autodispatch.profile.data.UserDto
@@ -87,7 +87,7 @@ fun RequestDto.toRequest(): Request {
     return Request(
         id = id,
         requestNumber = requestNumber,
-        status = status.toStatus(),
+        status = status.id.toRequestStatus(),
         origin = origin,
         destination = destination,
         cargo = cargo.toCargo(),
@@ -101,13 +101,6 @@ fun RequestDto.toRequest(): Request {
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
         documents = documents.map { it.toDeliveryDocument() }
-    )
-}
-
-fun StatusDto.toStatus(): Status {
-    return Status(
-        id = id,
-        name = name
     )
 }
 

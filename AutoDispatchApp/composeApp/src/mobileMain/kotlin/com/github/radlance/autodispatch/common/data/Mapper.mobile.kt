@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
+import com.github.radlance.autodispatch.common.domain.toRequestStatus
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
@@ -11,7 +12,7 @@ import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 fun DeliveryDto.toDelivery(): Delivery {
     return Delivery(
         id = id,
-        status = status.toStatus(),
+        status = status.id.toRequestStatus(),
         loadingPoint = loadingPoint.toPoint(),
         unloadingPoint = unloadingPoint.toPoint(),
         cargoWeight = cargoWeight,
@@ -25,7 +26,7 @@ fun DeliveryDto.toDelivery(): Delivery {
 fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
     return DeliveryDetailed(
         id = id,
-        status = status.toStatus(),
+        status = status.id.toRequestStatus(),
         origin = origin,
         destination = destination,
         transportationDescription = transportationDescription,

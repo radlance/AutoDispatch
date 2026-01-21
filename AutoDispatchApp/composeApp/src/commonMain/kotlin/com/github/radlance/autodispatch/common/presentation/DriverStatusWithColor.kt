@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.common.presentation
 
-import com.github.radlance.autodispatch.common.domain.RequestStatus
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -14,10 +13,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.github.radlance.autodispatch.common.domain.DriverStatus
 
 @Composable
-fun StatusWithColor(
-    status: RequestStatus?,
+fun DriverStatusWithColor(
+    status: DriverStatus?,
     fontSize: TextUnit = TextUnit.Unspecified,
     verticalPadding: Dp = 4.dp,
     modifier: Modifier = Modifier
@@ -46,27 +46,13 @@ fun StatusWithColor(
 }
 
 @Composable
-private fun RequestStatus.colors() =
+private fun DriverStatus.colors() =
     when (this) {
-        RequestStatus.Waiting ->
-            MaterialTheme.colorScheme.surfaceVariant to
-                    MaterialTheme.colorScheme.onSurfaceVariant
-
-        RequestStatus.Assigned ->
+        DriverStatus.Free ->
             MaterialTheme.colorScheme.primaryContainer to
                     MaterialTheme.colorScheme.onPrimaryContainer
 
-        RequestStatus.InProgress,
-        RequestStatus.OnCheck ->
+        DriverStatus.OnRoute ->
             MaterialTheme.colorScheme.secondaryContainer to
                     MaterialTheme.colorScheme.onSecondaryContainer
-
-        RequestStatus.Completed ->
-            MaterialTheme.colorScheme.tertiaryContainer to
-                    MaterialTheme.colorScheme.onTertiaryContainer
-
-        RequestStatus.Canceled,
-        RequestStatus.Rejected ->
-            MaterialTheme.colorScheme.errorContainer to
-                    MaterialTheme.colorScheme.onErrorContainer
     }

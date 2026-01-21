@@ -7,6 +7,7 @@ import com.github.radlance.autodispatch.common.presentation.PaginatedViewModel
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.delivery.core.domain.DeliveryRepository
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
@@ -19,17 +20,15 @@ class DeliveryViewModel(
     init {
         repository
             .deliveriesFlow()
-            .onEach { updatedList ->
+            .map { deliveries -> deliveries.associateBy { it.id } }
+            .onEach { updatedById ->
                 stateMutable.update { current ->
                     val success =
                         current.itemsState as? FetchResultUiState.Success
                             ?: return@update current
 
-                    val updatedById = updatedList.associateBy { it.id }
-
-                    val merged = success.data.map {
-                        updatedById[it.id] ?: it
-                    }
+                    val merged = success.data.map { updatedById[it.id] ?: it }
+                        .sortedByDescending { it.updatedAt ?: it.createdAt }
 
                     if (merged != success.data) {
                         current.copy(
@@ -40,6 +39,7 @@ class DeliveryViewModel(
             }
             .launchIn(viewModelScope)
     }
+
 
 
     override suspend fun request(

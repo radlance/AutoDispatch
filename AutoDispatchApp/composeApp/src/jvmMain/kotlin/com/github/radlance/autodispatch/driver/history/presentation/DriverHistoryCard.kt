@@ -70,7 +70,7 @@ fun DriverHistoryCard(
                             )
                         }
                     }
-                    StatusWithColor(status = driverHistory.status.name)
+                    StatusWithColor(status = driverHistory.status)
                 }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
                 DefaultPointerSelectionContainer {

@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.repository
 
 import com.github.radlance.autodispatch.database.table.*
+import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.statistics.DashboardStatistics
 import com.github.radlance.autodispatch.domain.statistics.GeneralStats
 import com.github.radlance.autodispatch.domain.statistics.PopularRouteStat
@@ -67,10 +68,11 @@ class StatisticsRepository {
             .select(
                 UserTable.fullName,
                 UserTable.avatarUrl,
+                DriverStatusTable.id,
                 DriverStatusTable.name,
                 AssignmentTable.id.count()
             )
-            .groupBy(UserTable.fullName, UserTable.avatarUrl, DriverStatusTable.name)
+            .groupBy(UserTable.fullName, UserTable.avatarUrl, DriverStatusTable.id, DriverStatusTable.name)
             .orderBy(AssignmentTable.id.count(), SortOrder.DESC)
             .limit(5)
             .map { row ->
@@ -78,7 +80,10 @@ class StatisticsRepository {
                     fullName = row[UserTable.fullName],
                     avatarUrl = row[UserTable.avatarUrl],
                     completedAssignments = row[AssignmentTable.id.count()],
-                    currentStatus = row[DriverStatusTable.name]
+                    currentStatus = Status(
+                        id = row[DriverStatusTable.id].value,
+                        name = row[DriverStatusTable.name]
+                    )
                 )
             }
 

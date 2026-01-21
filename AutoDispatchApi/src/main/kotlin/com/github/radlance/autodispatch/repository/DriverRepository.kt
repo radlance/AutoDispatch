@@ -239,7 +239,10 @@ class DriverRepository {
                     driverId = row[UserTable.id].value,
                     driverName = row[UserTable.fullName],
                     phoneNumber = row[UserTable.phoneNumber],
-                    driverStatus = row[DriverStatusTable.name],
+                    driverStatus = Status(
+                        id = row[DriverStatusTable.id].value,
+                        name = row[DriverStatusTable.name]
+                    ),
                     vehicleModel = row[VehicleTable.model],
                     vehicleLicensePlate = row[VehicleTable.licensePlate],
                     vehiclePayloadCapacity = row[VehicleTable.payloadCapacity],

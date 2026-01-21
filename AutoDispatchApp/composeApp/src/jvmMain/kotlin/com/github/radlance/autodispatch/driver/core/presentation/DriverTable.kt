@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.vehicle
+import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
@@ -104,7 +105,7 @@ fun DriverTable(
                     )
                 }
                 cell {
-                    DriverStatusWithColor(status = item.status.name)
+                    DriverStatusWithColor(status = item.status)
                 }
                 cell {
                     Text(

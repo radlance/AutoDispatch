@@ -125,7 +125,7 @@ fun DeliveryDetails(
     acceptDeliveryState: FetchResultUiState<Unit, RequestError>,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
+    val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status)
     val context = getPlatformContext()
     val coilContext = LocalPlatformContext.current
     val lazyRowState = rememberLazyListState()
@@ -265,7 +265,7 @@ fun DeliveryDetails(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         StatusCard(
-                            status = delivery.status.name,
+                            status = delivery.status.title,
                             createdAt = delivery.createdAt.toSimpleDateWithTimeString(),
                             backgroundColor = backgroundColor,
                             contentColor = contentColor,

@@ -1,13 +1,13 @@
 package com.github.radlance.autodispatch.driver.history.domain
 
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.Point
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import kotlinx.datetime.LocalDateTime
 
 data class DriverHistory(
     val id: Int,
-    val status: Status,
+    val status: RequestStatus,
     val vehicle: Vehicle,
     val originCity: String,
     val destinationCity: String,

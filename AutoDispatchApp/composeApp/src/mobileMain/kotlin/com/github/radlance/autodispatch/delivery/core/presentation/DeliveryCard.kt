@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
@@ -70,7 +71,7 @@ fun DeliveryCard(
     delivery: Delivery,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status.name)
+    val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status)
 
     val customTextSelectionColors = TextSelectionColors(
         handleColor = contentColor,
@@ -177,7 +178,7 @@ private fun DeliveryHeader(
                     )
             ) {
                 Text(
-                    text = delivery.status.name,
+                    text = delivery.status.title,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 13.sp,
@@ -385,14 +386,19 @@ private fun CardSection(title: String, subtitle: String, modifier: Modifier = Mo
 }
 
 @Composable
-fun deliveryStatusColors(status: String) =
+fun deliveryStatusColors(status: RequestStatus) =
     when (status) {
-        "Назначена" -> {
+        RequestStatus.Assigned -> {
             MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
         }
 
-        "Отменена", "Отклонена" -> {
+        RequestStatus.Canceled, RequestStatus.Rejected -> {
             MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        }
+
+        RequestStatus.OnCheck -> {
+            MaterialTheme.colorScheme.secondaryContainer to
+                    MaterialTheme.colorScheme.onSecondaryContainer
         }
 
         else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer

@@ -20,7 +20,7 @@ import autodispatch.composeapp.generated.resources.from
 import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.to
 import autodispatch.composeapp.generated.resources.vehicle
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
@@ -37,7 +37,7 @@ fun RequestFilters(
     selectedVehicles: List<String>,
     cities: List<City>,
     filterCargoTypes: List<CargoType>,
-    filterStatuses: List<Status>,
+    filterStatuses: List<RequestStatus>,
     filterDrivers: List<UserFilter>,
     filterVehicles: List<Vehicle>,
     onDepartureCitiesChanged: (List<String>) -> Unit,

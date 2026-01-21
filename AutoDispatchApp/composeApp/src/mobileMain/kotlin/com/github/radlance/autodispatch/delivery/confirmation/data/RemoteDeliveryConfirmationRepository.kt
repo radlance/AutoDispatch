@@ -4,15 +4,20 @@ import com.github.radlance.autodispatch.common.data.ApiServiceMobile
 import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.createImageFormData
 import com.github.radlance.autodispatch.common.domain.FetchResult
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.delivery.confirmation.domain.DeliveryConfirmationRepository
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryCache
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class RemoteDeliveryConfirmationRepository(
     private val apiService: ApiServiceMobile,
     private val handleRequest: HandleRequest,
     private val cache: DeliveryCache
 ) : DeliveryConfirmationRepository {
+    @OptIn(ExperimentalTime::class)
     override suspend fun completeDelivery(
         deliveryId: Int,
         documents: List<ByteArray>
@@ -23,13 +28,15 @@ class RemoteDeliveryConfirmationRepository(
             if (result is FetchResult.Success) {
                 cache.update(deliveryId) {
                     it.copy(
-                        status = Status(id = 6, name = "На проверке")
+                        status = RequestStatus.OnCheck,
+                        updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     )
                 }
             }
         }
 
 
+    @OptIn(ExperimentalTime::class)
     override suspend fun retakeDocument(
         deliveryId: Int,
         documents: List<ByteArray>
@@ -40,7 +47,8 @@ class RemoteDeliveryConfirmationRepository(
             if (result is FetchResult.Success) {
                 cache.update(deliveryId) {
                     it.copy(
-                        status = Status(id = 6, name = "На проверке")
+                        status = RequestStatus.OnCheck,
+                        updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     )
                 }
             }

@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.delivery.details.presentation
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
-import com.github.radlance.autodispatch.common.domain.Status
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.toUiState
@@ -47,7 +47,7 @@ class DeliveryDetailsViewModel(
                 val current = deliveryStateMutable.value
                 if (current is FetchResultUiState.Success) {
                     val updatedDelivery = current.data.copy(
-                        status = Status(id = 3, name = "В пути"),
+                        status = RequestStatus.InProgress,
                         updatedAt = Clock.System.now().toLocalDateTime(
                             TimeZone.currentSystemDefault()
                         )

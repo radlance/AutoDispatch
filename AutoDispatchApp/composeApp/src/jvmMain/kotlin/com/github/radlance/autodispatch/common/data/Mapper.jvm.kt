@@ -2,6 +2,8 @@ package com.github.radlance.autodispatch.common.data
 
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
+import com.github.radlance.autodispatch.common.domain.toDriverStatus
+import com.github.radlance.autodispatch.common.domain.toRequestStatus
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
@@ -53,7 +55,7 @@ fun FiltersDto.toFilters(): Filters {
     return Filters(
         cities = cities.map { it.toCity() },
         cargoTypes = cargoTypes.map { it.toCargoType() },
-        statuses = statuses.map { it.toStatus() },
+        statuses = statuses.map { it.id.toRequestStatus() },
         drivers = drivers.map { it.toUserFilter() },
         vehicles = vehicles.map { it.toVehicle() }
     )
@@ -85,7 +87,7 @@ private fun DriverStatsDto.toDriverStats(): DriverStats {
         driverId = driverId,
         driverName = driverName,
         phoneNumber = phoneNumber,
-        driverStatus = driverStatus,
+        driverStatus = driverStatus.id.toDriverStatus(),
         vehicleModel = vehicleModel,
         vehicleLicensePlate = vehicleLicensePlate,
         vehiclePayloadCapacity = vehiclePayloadCapacity,
@@ -137,7 +139,7 @@ fun ListPaginatedResultDto<DriverHistoryDto>.toDriverHistoryListPaginatedResult(
 fun DriverHistoryDto.toDriverHistory(): DriverHistory {
     return DriverHistory(
         id = id,
-        status = status.toStatus(),
+        status = status.id.toRequestStatus(),
         vehicle = vehicle.toVehicle(),
         originCity = originCity,
         destinationCity = destinationCity,
@@ -219,7 +221,7 @@ private fun TopDriverStatDto.toTopDriverStat(): TopDriverStat {
         fullName = fullName,
         avatarUrl = avatarUrl?.asImageUrl(),
         completedAssignments = completedAssignments,
-        currentStatus = currentStatus
+        currentStatus = currentStatus.id.toDriverStatus()
     )
 }
 
@@ -243,7 +245,7 @@ private fun DriverDto.toDriver(): Driver {
         fullName = fullName,
         avatarUrl = avatarUrl?.asImageUrl(),
         phoneNumber = phoneNumber,
-        status = status.toStatus(),
+        status = status.id.toDriverStatus(),
         vehicle = vehicle?.toVehicle(),
         deliveriesStats = deliveriesStats.toDeliveriesStats()
     )
