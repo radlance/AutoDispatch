@@ -8,6 +8,7 @@ import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.delivery.core.domain.DeliveryRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class RemoteDeliveryRepository(
     private val apiService: ApiServiceMobile,
@@ -29,6 +30,6 @@ class RemoteDeliveryRepository(
                 }
         }
 
-    override fun deliveriesFlow(): Flow<Map<Int, Delivery>> =
-        cache.items
+    override fun deliveriesFlow(): Flow<List<Delivery>> =
+        cache.items.map { it.values.toList() }
 }

@@ -11,7 +11,10 @@ import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: DriverProfileRepository) : BaseViewModel() {
@@ -23,6 +26,25 @@ class ProfileViewModel(private val repository: DriverProfileRepository) : BaseVi
     val profileState = profileStateMutable.onStart {
         loadProfile()
     }.stateInViewModel(initialValue = profileStateMutable.value)
+
+    init {
+        repository
+            .deliveriesStatsFlow()
+            .onEach { stats ->
+                profileStateMutable.update { current ->
+                    val success =
+                        current as? FetchResultUiState.Success
+                            ?: return@update current
+
+                    val updatedProfile =
+                        success.data.copy(deliveriesStats = stats)
+
+                    FetchResultUiState.Success(updatedProfile)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
 
     fun loadProfile() {
         profileStateMutable.value = FetchResultUiState.Loading

@@ -19,18 +19,22 @@ class DeliveryViewModel(
     init {
         repository
             .deliveriesFlow()
-            .onEach { updated ->
+            .onEach { updatedList ->
                 stateMutable.update { current ->
                     val success =
                         current.itemsState as? FetchResultUiState.Success
                             ?: return@update current
 
+                    val updatedById = updatedList.associateBy { it.id }
+
                     val merged = success.data.map {
-                        updated[it.id] ?: it
+                        updatedById[it.id] ?: it
                     }
 
                     if (merged != success.data) {
-                        current.copy(itemsState = FetchResultUiState.Success(merged))
+                        current.copy(
+                            itemsState = FetchResultUiState.Success(merged)
+                        )
                     } else current
                 }
             }
