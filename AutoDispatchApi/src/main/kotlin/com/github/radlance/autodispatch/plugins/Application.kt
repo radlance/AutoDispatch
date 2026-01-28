@@ -8,8 +8,8 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     configureDatabases(config = environment.config)
-    configureSockets()
-    configureFrameworks()
+    configureDi()
+    configureBroker()
     configureValidation()
     configureSerialization()
     configureHTTP()

@@ -11,7 +11,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 
 fun Application.configureDatabases(config: ApplicationConfig) {
-    val url = config.property("database.url").getString()
+    val url = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/auto_dispatch_api"
     log.info("Connecting to postgres database at $url")
     val user = config.property("database.user").getString()
     val password = config.property("database.password").getString()

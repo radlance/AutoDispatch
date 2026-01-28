@@ -11,6 +11,7 @@ class AuthRepository {
     suspend fun create(user: RegisterUser, salt: String): User = loggedTransaction {
         UserEntity.new {
             login = user.login
+            email = user.email
             passwordHash = user.password
             this.salt = salt
             fullName = user.fullName

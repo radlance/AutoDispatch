@@ -25,6 +25,7 @@ class AuthService(
 
         val registerUser = RegisterUser(
             login = user.login,
+            email = user.email,
             password = saltedHash.hash,
             fullName = user.fullName,
             phoneNumber = user.phoneNumber,

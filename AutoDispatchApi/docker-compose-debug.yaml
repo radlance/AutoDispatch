@@ -1,4 +1,14 @@
 services:
+  rabbitmq:
+    container_name: rabbitmq_debug
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
   nginx:
     container_name: auto_dispatch_nginx_debug
     image: nginx:stable-alpine

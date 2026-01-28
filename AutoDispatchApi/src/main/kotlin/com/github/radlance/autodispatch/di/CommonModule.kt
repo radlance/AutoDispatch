@@ -1,18 +1,11 @@
 package com.github.radlance.autodispatch.di
 
-import com.github.radlance.autodispatch.repository.AuthRepository
-import com.github.radlance.autodispatch.repository.DeliveryRepository
-import com.github.radlance.autodispatch.repository.DocumentsRepository
-import com.github.radlance.autodispatch.repository.DriverRepository
-import com.github.radlance.autodispatch.repository.ProfileRepository
-import com.github.radlance.autodispatch.repository.RequestRepository
-import com.github.radlance.autodispatch.repository.StatisticsRepository
-import com.github.radlance.autodispatch.repository.VehicleRepository
+import com.github.radlance.autodispatch.repository.*
 import com.github.radlance.autodispatch.security.hashing.HashingService
 import com.github.radlance.autodispatch.security.hashing.SHA256HashingService
 import com.github.radlance.autodispatch.security.token.TokenConfig
 import com.github.radlance.autodispatch.security.token.TokenService
-import com.github.radlance.autodispatch.service.AuthService
+import com.github.radlance.autodispatch.service.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import org.koin.core.module.dsl.singleOf
@@ -41,9 +34,11 @@ val profileModule
         singleOf(::ProfileRepository)
     }
 
-val requestModule
+val Application.requestModule
     get() = module {
         singleOf(::RequestRepository)
+        single { KtorRabbitNotificationPublisher(this@requestModule) }.bind<NotificationPublisher>()
+        singleOf(::RequestService)
     }
 
 val deliveryModule
@@ -59,6 +54,7 @@ val documentModule
 val driverModule
     get() = module {
         singleOf(::DriverRepository)
+        singleOf(::MailService)
     }
 
 val vehicleModule

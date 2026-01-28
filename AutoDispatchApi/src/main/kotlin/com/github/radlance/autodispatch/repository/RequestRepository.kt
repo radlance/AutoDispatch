@@ -4,55 +4,22 @@ import com.github.radlance.autodispatch.database.entity.CargoTypeEntity
 import com.github.radlance.autodispatch.database.entity.CityEntity
 import com.github.radlance.autodispatch.database.entity.CustomerEntity
 import com.github.radlance.autodispatch.database.entity.RequestStatusEntity
-import com.github.radlance.autodispatch.database.table.AssignmentTable
-import com.github.radlance.autodispatch.database.table.CargoTypeTable
-import com.github.radlance.autodispatch.database.table.CityTable
-import com.github.radlance.autodispatch.database.table.CustomerTable
-import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
-import com.github.radlance.autodispatch.database.table.DriverTable
-import com.github.radlance.autodispatch.database.table.RequestStatusTable
-import com.github.radlance.autodispatch.database.table.RequestTable
-import com.github.radlance.autodispatch.database.table.UserTable
-import com.github.radlance.autodispatch.database.table.VehicleTable
+import com.github.radlance.autodispatch.database.table.*
 import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
-import com.github.radlance.autodispatch.domain.request.Cargo
-import com.github.radlance.autodispatch.domain.request.CargoType
-import com.github.radlance.autodispatch.domain.request.CreateRequest
-import com.github.radlance.autodispatch.domain.request.Customer
-import com.github.radlance.autodispatch.domain.request.DriverRequest
-import com.github.radlance.autodispatch.domain.request.Filters
-import com.github.radlance.autodispatch.domain.request.Point
-import com.github.radlance.autodispatch.domain.request.Request
-import com.github.radlance.autodispatch.domain.request.UserFilter
-import com.github.radlance.autodispatch.domain.request.Vehicle
+import com.github.radlance.autodispatch.domain.request.*
 import com.github.radlance.autodispatch.exception.StateConflictException
+import com.github.radlance.autodispatch.domain.request.NotificationContacts
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Alias
-import org.jetbrains.exposed.sql.AndOp
-import org.jetbrains.exposed.sql.Coalesce
-import org.jetbrains.exposed.sql.Expression
-import org.jetbrains.exposed.sql.Join
-import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.Op
-import org.jetbrains.exposed.sql.OrOp
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
-import org.jetbrains.exposed.sql.alias
-import org.jetbrains.exposed.sql.countDistinct
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
-import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
-import org.jetbrains.exposed.sql.update
-import org.jetbrains.exposed.sql.upsert
 
 class RequestRepository {
 
@@ -307,16 +274,18 @@ class RequestRepository {
         }
     }
 
-    suspend fun createRequest(createdByLogin: String, req: CreateRequest) = loggedTransaction {
+    suspend fun createRequest(createdByLogin: String, req: CreateRequest): Int = loggedTransaction {
         val userId = UserTable
             .select(UserTable.id)
             .where { UserTable.login eq createdByLogin }
             .first()[UserTable.id].value
 
-        RequestTable.insert { row ->
+        val insertedId = RequestTable.insert { row ->
             row[statusId] = 1
             setRequestFields(row, req, userId)
-        }
+        } get RequestTable.id
+
+        insertedId.value
     }
 
     suspend fun customers(query: String): List<Customer> = loggedTransaction {
@@ -555,6 +524,61 @@ class RequestRepository {
         }
 
         AssignmentTable.deleteWhere { AssignmentTable.requestId eq requestId }
+    }
+
+    suspend fun getNotificationData(requestId: Int): NotificationContacts? = loggedTransaction {
+        RequestTable
+            .join(CustomerTable, JoinType.INNER, RequestTable.customerId, CustomerTable.id)
+            .join(AssignmentTable, JoinType.LEFT, RequestTable.id, AssignmentTable.requestId)
+            .join(
+                UserTable,
+                JoinType.LEFT,
+                onColumn = AssignmentTable.driverId,
+                otherColumn = UserTable.id
+            )
+            .select(
+                RequestTable.requestNumber,
+                CustomerTable.email,
+                UserTable.email.alias("driver_email")
+            )
+            .where { RequestTable.id eq requestId }
+            .map {
+                NotificationContacts(
+                    reqNumber = it[RequestTable.requestNumber] ?: "Б/Н",
+                    customerEmail = it[CustomerTable.email],
+                    driverEmail = it.getOrNull(UserTable.email.alias("driver_email"))
+                )
+            }.singleOrNull()
+    }
+
+    suspend fun getRequestEmailView(requestId: Int): RequestEmailView? = loggedTransaction {
+        RequestTable
+            .join(CustomerTable, JoinType.INNER, RequestTable.customerId, CustomerTable.id)
+            .join(CargoTypeTable, JoinType.LEFT, RequestTable.cargoTypeId, CargoTypeTable.id)
+            .select(
+                RequestTable.id,
+                RequestTable.requestNumber,
+                CustomerTable.email,
+                CargoTypeTable.name,
+                RequestTable.transportationDescription,
+                RequestTable.cargoDescription,
+                RequestTable.loadingAddress,
+                RequestTable.unloadingAddress
+            )
+            .where { RequestTable.id eq requestId }
+            .map {
+                RequestEmailView(
+                    requestId = it[RequestTable.id].value,
+                    requestNumber = it[RequestTable.requestNumber] ?: "Б/Н",
+                    customerEmail = it[CustomerTable.email],
+                    cargoTypeName = it.getOrNull(CargoTypeTable.name),
+                    transportationDescription = it[RequestTable.transportationDescription],
+                    cargoDescription = it[RequestTable.cargoDescription],
+                    loadingAddress = it[RequestTable.loadingAddress],
+                    unloadingAddress = it[RequestTable.unloadingAddress]
+                )
+            }
+            .singleOrNull()
     }
 
     private fun <T : Any> setRequestFields(

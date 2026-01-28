@@ -13,6 +13,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<UserEntity>(UserTable)
 
     var login by UserTable.login
+    var email by UserTable.email
     var passwordHash by UserTable.passwordHash
     var salt by UserTable.salt
     var fullName by UserTable.fullName

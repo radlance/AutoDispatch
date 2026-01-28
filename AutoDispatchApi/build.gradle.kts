@@ -12,10 +12,11 @@ application {
 }
 
 dependencies {
+    implementation(libs.simple.java.mail)
+    implementation(libs.ktor.server.rabbitmq)
     implementation(libs.common.codec)
     implementation(libs.liquibase.core)
     implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.websockets)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
     implementation(libs.ktor.serialization.kotlinx.json)

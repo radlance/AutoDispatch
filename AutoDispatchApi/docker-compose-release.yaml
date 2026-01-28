@@ -14,6 +14,7 @@ services:
     environment:
       MODE: release
       DB_URL: jdbc:postgresql://db:5432/auto_dispatch_api
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
 
   nginx:
     container_name: auto_dispatch_nginx
@@ -41,6 +42,18 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    container_name: rabbitmq_broker
+    image: rabbitmq:3-management-alpine
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_running" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   uploaded_files:
   tmp_db:
+  rabbit_data:
