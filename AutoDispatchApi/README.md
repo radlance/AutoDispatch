@@ -14,6 +14,8 @@ Here's a list of features included in this project:
 
 | Name                                                                   | Description                                                                        |
 | ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
+| [HTML DSL](https://start.ktor.io/p/html-dsl) | Generates HTML from Kotlin DSL    |
+| [CSS DSL](https://start.ktor.io/p/css-dsl)   | Generates CSS from Kotlin DSL     |
 | [RabbitMQ](https://start.ktor.io/p/ktor-server-rabbitmq) | Adds RabbitMQ support to your application                   |
 | [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
 | [Koin](https://start.ktor.io/p/koin)                                   | Provides dependency injection                                                      |

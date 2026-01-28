@@ -12,6 +12,9 @@ application {
 }
 
 dependencies {
+    implementation(libs.ktor.server.html.builder)
+    implementation(libs.kotlinx.html)
+    implementation(libs.kotlin.css)
     implementation(libs.simple.java.mail)
     implementation(libs.ktor.server.rabbitmq)
     implementation(libs.common.codec)

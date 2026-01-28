@@ -1,7 +1,9 @@
 package com.github.radlance.autodispatch.service
 
 import com.github.radlance.autodispatch.domain.request.CreateRequest
+import com.github.radlance.autodispatch.presentation.EmailTemplateBuilder
 import com.github.radlance.autodispatch.repository.RequestRepository
+import kotlinx.html.p
 
 class RequestService(
     private val repository: RequestRepository,
@@ -34,32 +36,29 @@ class RequestService(
         val requestId = repository.createRequest(createdByLogin, request)
         val emailView = repository.getRequestEmailView(requestId) ?: return
 
-        val description = emailView.transportationDescription
-            ?: emailView.cargoDescription
-            ?: "Не указано"
+        val customerEmailBody = EmailTemplateBuilder.customer(title = "Заявка успешно создана") {
+            p { +"Ваша заявка №${emailView.requestNumber} успешно создана и принята к обработке." }
 
-        val cargoType = emailView.cargoTypeName ?: "Не указано"
-        val loading = emailView.loadingAddress ?: "Не указано"
-        val unloading = emailView.unloadingAddress ?: "Не указано"
+            emailView.transportationDescription?.let { desc ->
+                p { +"Описание груза: $desc" }
+            }
+
+            emailView.cargoTypeName?.let { type ->
+                p { +"Тип груза: $type" }
+            }
+
+            emailView.loadingAddress?.let { loading ->
+                emailView.unloadingAddress?.let { unloading ->
+                    p { +"Маршрут: $loading → $unloading" }
+                }
+            }
+        }
 
         notificationPublisher.publish(
             EmailNotificationEvent(
                 email = testCustomerEmail,
-                subject = "Ваша заявка создана",
-                body = buildCustomerHtml(
-                    title = "Заявка успешно создана",
-                    message = """
-                        Здравствуйте! Ваша заявка №${emailView.requestNumber} создана и готова к обработке.
-                        <br/><br/>
-                        <strong>Описание груза:</strong> $description<br/>
-                        <strong>Тип груза:</strong> $cargoType<br/>
-                        <strong>Маршрут:</strong> $loading → $unloading
-                    """.trimIndent(),
-                    extraInfo = """
-                        <a href="https://your-customer-dashboard.com/requests/${emailView.requestId}"
-                           class="button">Просмотреть заявку</a>
-                    """
-                )
+                subject = "Ваша заявка №${emailView.requestNumber} создана",
+                body = customerEmailBody
             )
         )
     }
@@ -68,14 +67,17 @@ class RequestService(
         repository.editRequest(createdByLogin, requestId, request)
         val contacts = repository.getNotificationData(requestId) ?: return
 
+        val customerEmail = EmailTemplateBuilder.customer(title = "Обновление заявки") {
+            p { +"В заявку №${contacts.reqNumber} внесены изменения." }
+            contacts.driverFullName?.let { p { +"Водитель: $it" } }
+            contacts.driverPhoneNumber?.let { p { +"Телефон водителя: $it" } }
+        }
+
         notificationPublisher.publish(
             EmailNotificationEvent(
                 email = testCustomerEmail,
                 subject = "Заявка №${contacts.reqNumber} обновлена",
-                body = buildCustomerHtml(
-                    title = "Обновление заявки",
-                    message = "Мы внесли изменения в заявку №${contacts.reqNumber}. Проверьте детали в личном кабинете."
-                )
+                body = customerEmail
             )
         )
     }
@@ -87,7 +89,11 @@ class RequestService(
         contacts?.let {
             notifyBoth(
                 customerSubj = "Заявка №${it.reqNumber} отменена",
-                customerBody = "Ваша заявка снята с выполнения.",
+                customerBody = buildString {
+                    append("Ваша заявка №${it.reqNumber} снята с выполнения.")
+                    it.driverFullName?.let { fullName -> append("\nВодитель: $fullName") }
+                    it.driverPhoneNumber?.let { phoneNumber -> append("\nТелефон водителя: $phoneNumber") }
+                },
                 driverSubj = "Снятие с заявки №${it.reqNumber}",
                 driverBody = "Вы сняты с выполнения заявки."
             )
@@ -96,20 +102,20 @@ class RequestService(
 
     suspend fun assignDriver(requestId: Int, driverId: Int) {
         repository.assignRequestToDriver(requestId, driverId)
-        notifyStatusChanged(
-            requestId,
-            driverSubj = "Новая заявка назначена",
-            customerSubj = "Заявка назначена водителю"
+        val contacts = repository.getNotificationData(requestId) ?: return
+
+        notifyBoth(
+            customerSubj = "Обновление статуса заявки №${contacts.reqNumber}",
+            customerBody = "Заявка №${contacts.reqNumber} назначена водителю ${contacts.driverFullName} (${contacts.driverPhoneNumber}).",
+            driverSubj = "Назначена новая заявка №${contacts.reqNumber}",
+            driverBody = "Вам назначена заявка №${contacts.reqNumber}. Проверьте детали.",
+            driverButtonUrl = "your-app://requests/$requestId"
         )
     }
 
     suspend fun reassignDriver(requestId: Int, driverId: Int) {
         repository.reassignRequestToDriver(requestId, driverId)
-        notifyStatusChanged(
-            requestId,
-            driverSubj = "Заявка переназначена",
-            customerSubj = "Заявка переназначена другому водителю"
-        )
+        notifyStatusChanged(requestId, "Заявка переназначена другому водителю")
     }
 
     suspend fun unassignDriver(requestId: Int) {
@@ -119,24 +125,28 @@ class RequestService(
         contacts?.let {
             notifyBoth(
                 customerSubj = "Заявка №${it.reqNumber} возвращена в ожидание",
-                customerBody = "Мы подберем водителя в ближайшее время.",
+                customerBody = buildString {
+                    append("Заявка №${it.reqNumber} больше не назначена водителю.")
+                    it.driverFullName?.let { fullName -> append("\nБывший водитель: $fullName") }
+                    it.driverPhoneNumber?.let { phoneNumber -> append("\nТелефон: $phoneNumber") }
+                },
                 driverSubj = "Снятие с заявки №${it.reqNumber}",
                 driverBody = "Вы сняты с выполнения заявки."
             )
         }
     }
 
-    private suspend fun notifyStatusChanged(
-        requestId: Int,
-        driverSubj: String,
-        customerSubj: String
-    ) {
+    private suspend fun notifyStatusChanged(requestId: Int, statusDescription: String) {
         val contacts = repository.getNotificationData(requestId) ?: return
         notifyBoth(
-            customerSubj,
-            "Статус заявки №${contacts.reqNumber} обновлен.",
-            driverSubj,
-            "Проверьте заявку №${contacts.reqNumber}."
+            customerSubj = "Обновление статуса заявки №${contacts.reqNumber}",
+            customerBody = buildString {
+                append("Статус заявки №${contacts.reqNumber} изменился: $statusDescription")
+                contacts.driverFullName?.let { append("\nВодитель: $it") }
+                contacts.driverPhoneNumber?.let { append("\nТелефон водителя: $it") }
+            },
+            driverSubj = "Обновление статуса заявки №${contacts.reqNumber}",
+            driverBody = "Статус заявки изменился: $statusDescription"
         )
     }
 
@@ -144,13 +154,25 @@ class RequestService(
         customerSubj: String,
         customerBody: String,
         driverSubj: String,
-        driverBody: String
+        driverBody: String,
+        driverButtonUrl: String? = null
     ) {
+        val customerEmail = EmailTemplateBuilder.customer(title = "AutoDispatch") {
+            p { +customerBody }
+        }
+
+        val driverEmail = EmailTemplateBuilder.driver(
+            title = "AutoDispatch",
+            buttonUrl = driverButtonUrl
+        ) {
+            p { +driverBody }
+        }
+
         notificationPublisher.publish(
             EmailNotificationEvent(
                 email = testCustomerEmail,
                 subject = customerSubj,
-                body = buildCustomerHtml("AutoDispatch", customerBody)
+                body = customerEmail
             )
         )
 
@@ -158,74 +180,8 @@ class RequestService(
             EmailNotificationEvent(
                 email = testDriverEmail,
                 subject = driverSubj,
-                body = buildDriverHtml("AutoDispatch", driverBody)
+                body = driverEmail
             )
         )
     }
-
-    private fun buildCustomerHtml(title: String, message: String, extraInfo: String? = null): String = """
-        <html>
-        <head>
-            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-                .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                .header { background-color: #6200EE; padding: 24px; text-align: center; color: #ffffff; }
-                .header h1 { font-size: 24px; font-weight: 500; margin: 0; }
-                .content { padding: 32px 24px; color: #212121; }
-                .content p { font-size: 16px; line-height: 24px; margin: 0 0 16px; }
-                .footer { background-color: #f4f4f4; padding: 16px; text-align: center; font-size: 12px; color: #757575; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>$title</h1>
-                </div>
-                <div class="content">
-                    <p>$message</p>
-                    ${extraInfo ?: ""}
-                </div>
-                <div class="footer">
-                    Это автоматическое сообщение от AutoDispatch. Пожалуйста, не отвечайте на него.
-                </div>
-            </div>
-        </body>
-        </html>
-    """.trimIndent()
-
-    private fun buildDriverHtml(title: String, message: String): String = """
-        <html>
-        <head>
-            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-                .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                .header { background-color: #03DAC6; padding: 24px; text-align: center; color: #000000; }
-                .header h1 { font-size: 24px; font-weight: 500; margin: 0; }
-                .content { padding: 32px 24px; color: #212121; }
-                .content p { font-size: 16px; line-height: 24px; margin: 0 0 16px; }
-                .button { display: inline-block; background-color: #03DAC6; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 14px; }
-                .content .button-wrapper { text-align: center; margin-top: 24px; }
-                .footer { background-color: #f4f4f4; padding: 16px; text-align: center; font-size: 12px; color: #757575; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>$title</h1>
-                </div>
-                <div class="content">
-                    <p>$message</p>
-                    <div class="button-wrapper">
-                        <a href="#" class="button">Открыть заявку</a>
-                    </div>
-                </div>
-                <div class="footer">
-                    Это автоматическое сообщение от AutoDispatch. Пожалуйста, не отвечайте на него.
-                </div>
-            </div>
-        </body>
-        </html>
-    """.trimIndent()
 }
