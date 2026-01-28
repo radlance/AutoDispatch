@@ -44,11 +44,13 @@ val Application.requestModule
 val deliveryModule
     get() = module {
         singleOf(::DeliveryRepository)
+        singleOf(::DeliveryService)
     }
 
 val documentModule
     get() = module {
         singleOf(::DocumentsRepository)
+        singleOf(::DocumentsService)
     }
 
 val driverModule

@@ -539,18 +539,20 @@ class RequestRepository {
             .select(
                 RequestTable.requestNumber,
                 CustomerTable.email,
-                UserTable.email.alias("driver_email"),
-                UserTable.fullName.alias("driver_name"),
-                UserTable.phoneNumber.alias("driver_phone_number")
+                UserTable.email,
+                UserTable.login,
+                UserTable.fullName,
+                UserTable.phoneNumber
             )
             .where { RequestTable.id eq requestId }
             .map {
                 NotificationContacts(
                     reqNumber = it[RequestTable.requestNumber] ?: "Б/Н",
                     customerEmail = it[CustomerTable.email],
-                    driverEmail = it.getOrNull(UserTable.email.alias("driver_email")),
-                    driverFullName = it.getOrNull(UserTable.fullName.alias("driver_name")),
-                    driverPhoneNumber = it.getOrNull(UserTable.phoneNumber.alias("driver_phone_number"))
+                    driverEmail = it.getOrNull(UserTable.email),
+                    driverLogin = it[UserTable.login],
+                    driverFullName = it.getOrNull(UserTable.fullName),
+                    driverPhoneNumber = it.getOrNull(UserTable.phoneNumber)
                 )
             }.singleOrNull()
     }
