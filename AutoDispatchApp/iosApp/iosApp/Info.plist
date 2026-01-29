@@ -25,5 +25,16 @@
         <string>Приложению нужен доступ к камере для корректной работы.</string>
         <key>NSPhotoLibraryUsageDescription</key>
         <string>Приложению нужен доступ к фото для для корректной работы.</string>
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>com.github.radlance.autodispatch</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>autodispatch</string>
+                </array>
+            </dict>
+        </array>
     </dict>
 </plist>

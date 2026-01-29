@@ -20,6 +20,7 @@ import com.github.radlance.autodispatch.profile.data.RemoteDriverProfileReposito
 import com.github.radlance.autodispatch.profile.domain.DriverProfileRepository
 import com.github.radlance.autodispatch.profile.presentation.ProfileViewModel
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -35,7 +36,12 @@ val deliveryModule
         singleOf(::RemoteDeliveryRepository).bind<DeliveryRepository>()
         viewModelOf(::DeliveryViewModel)
         singleOf(::RemoteDeliveryDetailsRepository).bind<DeliveryDetailsRepository>()
-        viewModelOf(::DeliveryDetailsViewModel)
+        viewModel<DeliveryDetailsViewModel> { params ->
+            DeliveryDetailsViewModel(
+                deliveryId = params.get(),
+                repository = get()
+            )
+        }
         viewModelOf(::DeliveryRouteViewModel)
         viewModelOf(::DeliveryConfirmationViewModel)
         singleOf(::RemoteDeliveryConfirmationRepository).bind<DeliveryConfirmationRepository>()

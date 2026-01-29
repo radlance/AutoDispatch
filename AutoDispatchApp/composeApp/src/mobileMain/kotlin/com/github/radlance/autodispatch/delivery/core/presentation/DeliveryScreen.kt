@@ -63,7 +63,6 @@ import com.github.radlance.autodispatch.common.presentation.EmptySearchPlacehold
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.PaginationErrorItem
-import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -76,8 +75,7 @@ fun DeliveryScreen(
     navigateToDeliveryDetails: (Int, String) -> Unit,
     navigateToDeliveryRoute: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
-    deliveryViewModel: DeliveryViewModel = koinViewModel(),
-    deliveryDetailsViewModel: DeliveryDetailsViewModel = koinViewModel()
+    deliveryViewModel: DeliveryViewModel = koinViewModel()
 ) {
     val deliveriesState by deliveryViewModel.state.collectAsStateWithLifecycle()
     val queryFlow by deliveryViewModel.queryFlow.collectAsStateWithLifecycle()
@@ -187,14 +185,12 @@ fun DeliveryScreen(
                                                 delivery.id,
                                                 delivery.requestNumber
                                             )
-                                            deliveryDetailsViewModel.fetchDeliveryDetails(delivery.id)
                                         },
                                         onContinueDeliveryClick = {
                                             navigateToDeliveryRoute(
                                                 delivery.id,
                                                 delivery.requestNumber
                                             )
-                                            deliveryDetailsViewModel.fetchDeliveryDetails(delivery.id)
                                         },
                                         delivery = delivery
                                     )

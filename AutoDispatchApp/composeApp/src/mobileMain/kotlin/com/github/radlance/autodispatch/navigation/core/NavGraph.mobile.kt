@@ -23,6 +23,7 @@ import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.auth.presentation.SignInScreen
 import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -31,6 +32,18 @@ actual fun NavGraph(navController: NavHostController) {
     val authorized by navigationVieModel.authorizedState.collectAsStateWithLifecycle()
     val sessionExpired by navigationVieModel.sessionExpired.collectAsStateWithLifecycle()
     var showExpiredSessionDialog by rememberSaveable { mutableStateOf(false) }
+    val deepLinkManager = koinInject<DeepLinkManager>()
+    val pendingId by deepLinkManager.pendingRoute.collectAsStateWithLifecycle()
+
+    LaunchedEffect(pendingId, authorized) {
+        if (pendingId != null && authorized) {
+            if (navController.currentDestination?.route?.contains("Home") != true) {
+                navController.navigate(Home) {
+                    popUpTo(Splash) { inclusive = true }
+                }
+            }
+        }
+    }
 
     if (showExpiredSessionDialog) {
 

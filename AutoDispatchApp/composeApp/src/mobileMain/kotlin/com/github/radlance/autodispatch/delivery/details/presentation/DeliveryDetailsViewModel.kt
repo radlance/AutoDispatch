@@ -17,6 +17,7 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class DeliveryDetailsViewModel(
+    private val deliveryId: Int,
     private val repository: DeliveryDetailsRepository
 ) : BaseViewModel() {
     private val deliveryStateMutable =
@@ -29,6 +30,22 @@ class DeliveryDetailsViewModel(
 
     private var deliveryJob: Job? = null
 
+    init {
+        fetchDeliveryDetails()
+    }
+
+    private fun fetchDeliveryDetails() {
+        deliveryJob?.cancel()
+        deliveryStateMutable.value = FetchResultUiState.Loading
+        deliveryJob = handle(background = { repository.deliveryDetails(deliveryId) }) {
+            deliveryStateMutable.value = it.toUiState()
+        }
+    }
+
+    fun refreshDeliveryDetails() {
+        fetchDeliveryDetails()
+    }
+
     fun fetchDeliveryDetails(deliveryId: Int) {
         deliveryJob?.cancel()
         deliveryStateMutable.value = FetchResultUiState.Loading
@@ -38,7 +55,7 @@ class DeliveryDetailsViewModel(
     }
 
     @OptIn(ExperimentalTime::class)
-    fun acceptDelivery(deliveryId: Int) {
+    fun acceptDelivery() {
         acceptDeliveryStateMutable.value = FetchResultUiState.Loading
         handle(background = { repository.acceptDelivery(deliveryId) }) { result ->
             acceptDeliveryStateMutable.value = result.toUiState()

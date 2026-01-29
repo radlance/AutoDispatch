@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.common.data.BaseHandleRequest
 import com.github.radlance.autodispatch.common.data.DataStoreManager
 import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.KtorApiService
+import com.github.radlance.autodispatch.navigation.core.DeepLinkManager
 import com.github.radlance.autodispatch.navigation.core.NavigationViewModel
 import com.github.radlance.autodispatch.navigation.data.LocalNavigationRepository
 import com.github.radlance.autodispatch.navigation.domain.NavigationRepository
@@ -30,6 +31,7 @@ val commonModule = module {
 
 val navigationModule = module {
     singleOf(::LocalNavigationRepository).bind<NavigationRepository>()
+    singleOf(::DeepLinkManager)
     viewModelOf(::NavigationViewModel)
 }
 

@@ -104,12 +104,14 @@ class RequestService(
         repository.assignRequestToDriver(requestId, driverId)
         val contacts = repository.getNotificationData(requestId) ?: return
 
+        val driverDeepLink = "autodispatch://requests/$requestId"
+
         notifyBoth(
             customerSubj = "Обновление статуса заявки №${contacts.reqNumber}",
             customerBody = "Заявка №${contacts.reqNumber} назначена водителю ${contacts.driverFullName} (${contacts.driverPhoneNumber}).",
             driverSubj = "Назначена новая заявка №${contacts.reqNumber}",
-            driverBody = "Вам назначена заявка №${contacts.reqNumber}. Проверьте детали.",
-            driverButtonUrl = "your-app://requests/$requestId"
+            driverBody = "Вам назначена новая заявка №${contacts.reqNumber}. Проверьте детали, нажав на кнопку ниже.",
+            driverButtonUrl = driverDeepLink
         )
     }
 
