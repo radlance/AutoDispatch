@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.service
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.presentation.EmailTemplateBuilder
 import com.github.radlance.autodispatch.repository.RequestRepository
+import com.github.radlance.autodispatch.util.localIpAddress
 import kotlinx.html.p
 
 class RequestService(
@@ -104,14 +105,14 @@ class RequestService(
         repository.assignRequestToDriver(requestId, driverId)
         val contacts = repository.getNotificationData(requestId) ?: return
 
-        val driverDeepLink = "autodispatch://requests/$requestId"
+        val redirectUrl = "http://${localIpAddress}:8084/api/open-delivery/$requestId"
 
         notifyBoth(
             customerSubj = "Обновление статуса заявки №${contacts.reqNumber}",
             customerBody = "Заявка №${contacts.reqNumber} назначена водителю ${contacts.driverFullName} (${contacts.driverPhoneNumber}).",
             driverSubj = "Назначена новая заявка №${contacts.reqNumber}",
             driverBody = "Вам назначена новая заявка №${contacts.reqNumber}. Проверьте детали, нажав на кнопку ниже.",
-            driverButtonUrl = driverDeepLink
+            driverButtonUrl = redirectUrl
         )
     }
 

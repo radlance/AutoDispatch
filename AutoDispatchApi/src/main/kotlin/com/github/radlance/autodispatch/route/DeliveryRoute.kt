@@ -14,6 +14,17 @@ fun Route.deliveries(service: DeliveryService) {
     val uploadDir = fileUploadDir
     if (!uploadDir.exists()) uploadDir.mkdirs()
 
+    get("/open-delivery/{id}") {
+        val id = call.parameters["id"]
+        if (id != null) {
+            val deepLink = "autodispatch://requests/$id"
+            call.response.header(HttpHeaders.Location, deepLink)
+            call.respond(HttpStatusCode.Found)
+        } else {
+            call.respond(HttpStatusCode.BadRequest, "Missing ID")
+        }
+    }
+
     authenticate {
         route("/deliveries") {
 
