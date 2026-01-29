@@ -36,7 +36,6 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
 import com.github.radlance.autodispatch.platform.rememberGalleryLauncher
-import com.github.radlance.autodispatch.platform.rememberPhotoPermissionController
 import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -56,9 +55,7 @@ fun ProfileScreen(
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
     var showAvatarChangeDialog by remember { mutableStateOf(false) }
     val avatar by viewModel.avatar
-    val controller = rememberPhotoPermissionController {
-        hasPermission = it
-    }
+
     val galleryLauncher = rememberGalleryLauncher { picture ->
         picture?.let {
             viewModel.uploadProfileImage(it)
@@ -76,9 +73,7 @@ fun ProfileScreen(
             onDismissRequest = { showAvatarChangeDialog = false },
             driverFullName = profileDetails.fullName,
             onUploadImageClick = {
-                if (controller.hasPermission()) {
-                    galleryLauncher.pick()
-                } else controller.askPermission()
+                galleryLauncher.pick()
             },
             onDeleteImageClick = {
                 viewModel.deleteProfileImage()
@@ -117,12 +112,6 @@ fun ProfileScreen(
                 TextButton(onClick = { hasPermission = null }) { Text("Отмена") }
             }
         )
-    }
-
-    LaunchedEffect(Unit) {
-        if (controller.hasPermission()) {
-            hasPermission = true
-        }
     }
 
     if (showLogoutDialog) {

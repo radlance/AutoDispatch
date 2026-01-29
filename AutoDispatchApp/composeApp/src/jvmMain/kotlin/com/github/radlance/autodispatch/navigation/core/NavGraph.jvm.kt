@@ -22,7 +22,6 @@ import autodispatch.composeapp.generated.resources.session_expired
 import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.auth.presentation.SignInScreen
 import com.github.radlance.autodispatch.controlpanel.presentation.ControlPanelScreen
-import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -30,7 +29,7 @@ import org.koin.compose.viewmodel.koinViewModel
 actual fun NavGraph(navController: NavHostController) {
     val navigationVieModel = koinViewModel<NavigationViewModel>()
 
-    val authorized by navigationVieModel.authorizedState.collectAsStateWithLifecycle()
+    val authorized = navigationVieModel.authorizedState
     val sessionExpired by navigationVieModel.sessionExpired.collectAsStateWithLifecycle()
     var showExpiredSessionDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -63,7 +62,7 @@ actual fun NavGraph(navController: NavHostController) {
     }
 
     LaunchedEffect(sessionExpired) {
-        val unauthorizedScreens = listOf(Splash, SignIn).map { it.toString() }
+        val unauthorizedScreens = listOf(SignIn).map { it.toString() }
         if ((navController.currentDestination?.route?.split(".")
                 ?.last() !in unauthorizedScreens) && sessionExpired
         ) {
@@ -71,9 +70,11 @@ actual fun NavGraph(navController: NavHostController) {
         }
     }
 
+    val initial = if (authorized) ControlPanel else SignIn
+
     NavHost(
         navController = navController,
-        startDestination = Splash,
+        startDestination = initial,
         enterTransition = {
             sharedXTransitionIn(initial = { (it * INITIAL_OFFSET).toInt() })
         },
@@ -87,18 +88,6 @@ actual fun NavGraph(navController: NavHostController) {
             sharedXTransitionOut(target = { -(it * INITIAL_OFFSET).toInt() })
         },
     ) {
-        composable<Splash> {
-            SplashScreen(
-                onDelayFinish = {
-                    val screen = if (authorized) ControlPanel else SignIn
-
-                    navController.navigate(screen) {
-                        popUpTo<Splash> { inclusive = true }
-                    }
-                }
-            )
-        }
-
         composable<SignIn> {
             SignInScreen(navigateToControlPanel = { navController.navigate(ControlPanel) })
         }

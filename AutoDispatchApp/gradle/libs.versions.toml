@@ -9,7 +9,6 @@ composeMultiplatform = "1.9.3"
 datatableMaterial3 = "0.11.6"
 kotlin = "2.2.21"
 kotlinx-coroutines = "1.10.2"
-materialKolor = "4.0.5"
 androidxNavigation = "2.9.1"
 kotlinxSerialization = "1.9.0"
 ktor = "3.3.3"
@@ -26,8 +25,10 @@ zoomable = "2.9.0"
 coil = "3.3.0"
 composeHotReload = "1.1.0-alpha02"
 exifinterface = "1.3.6"
+splashScreen = "1.2.0"
 
 [libraries]
+core-splashscreen = {module = "androidx.core:core-splashscreen", version.ref = "splashScreen" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 datatable-material3 = { module = "com.seanproctor:datatable-material3", version.ref = "datatableMaterial3" }
@@ -50,7 +51,6 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidxNavigation" }
-material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }

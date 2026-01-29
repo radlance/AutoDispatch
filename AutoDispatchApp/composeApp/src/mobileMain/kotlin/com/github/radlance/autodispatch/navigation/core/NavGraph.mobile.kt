@@ -21,7 +21,6 @@ import autodispatch.composeapp.generated.resources.ok
 import autodispatch.composeapp.generated.resources.session_expired
 import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.auth.presentation.SignInScreen
-import com.github.radlance.autodispatch.splash.presentation.SplashScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -29,7 +28,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 actual fun NavGraph(navController: NavHostController) {
     val navigationVieModel = koinViewModel<NavigationViewModel>()
-    val authorized by navigationVieModel.authorizedState.collectAsStateWithLifecycle()
+    val authorized = navigationVieModel.authorizedState
     val sessionExpired by navigationVieModel.sessionExpired.collectAsStateWithLifecycle()
     var showExpiredSessionDialog by rememberSaveable { mutableStateOf(false) }
     val deepLinkManager = koinInject<DeepLinkManager>()
@@ -38,9 +37,7 @@ actual fun NavGraph(navController: NavHostController) {
     LaunchedEffect(pendingId, authorized) {
         if (pendingId != null && authorized) {
             if (navController.currentDestination?.route?.contains("Home") != true) {
-                navController.navigate(Home) {
-                    popUpTo(Splash) { inclusive = true }
-                }
+                navController.navigate(Home)
             }
         }
     }
@@ -74,7 +71,7 @@ actual fun NavGraph(navController: NavHostController) {
     }
 
     LaunchedEffect(sessionExpired) {
-        val unauthorizedScreens = listOf(Splash, SignIn).map { it.toString() }
+        val unauthorizedScreens = listOf(SignIn).map { it.toString() }
         if ((navController.currentDestination?.route?.split(".")
                 ?.last() !in unauthorizedScreens) && sessionExpired
         ) {
@@ -82,6 +79,7 @@ actual fun NavGraph(navController: NavHostController) {
         }
     }
 
+    val initial = if (authorized) Home else SignIn
     NavHost(
         navController = navController,
         enterTransition = {
@@ -96,19 +94,8 @@ actual fun NavGraph(navController: NavHostController) {
         popExitTransition = {
             sharedXTransitionOut(target = { -(it * INITIAL_OFFSET).toInt() })
         },
-        startDestination = Splash
+        startDestination = initial
     ) {
-        composable<Splash> {
-            SplashScreen(
-                onDelayFinish = {
-                    val screen = if (authorized) Home else SignIn
-
-                    navController.navigate(screen) {
-                        popUpTo<Splash> { inclusive = true }
-                    }
-                }
-            )
-        }
 
         composable<SignIn> {
             SignInScreen(

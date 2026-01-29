@@ -5,9 +5,6 @@ import kotlinx.serialization.Serializable
 interface DispatcherDestination
 
 @Serializable
-data object Splash : DispatcherDestination
-
-@Serializable
 object SignIn : DispatcherDestination
 
 @Serializable

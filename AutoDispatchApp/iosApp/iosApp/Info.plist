@@ -23,8 +23,6 @@
         <string>Приложению нужен доступ к вашей геолокации для корректной работы.</string>
         <key>NSCameraUsageDescription</key>
         <string>Приложению нужен доступ к камере для корректной работы.</string>
-        <key>NSPhotoLibraryUsageDescription</key>
-        <string>Приложению нужен доступ к фото для для корректной работы.</string>
         <key>CFBundleURLTypes</key>
         <array>
             <dict>
@@ -36,5 +34,7 @@
                 </array>
             </dict>
         </array>
+        <key>UILaunchStoryboardName</key>
+        <string>SplashScreen</string>
     </dict>
 </plist>

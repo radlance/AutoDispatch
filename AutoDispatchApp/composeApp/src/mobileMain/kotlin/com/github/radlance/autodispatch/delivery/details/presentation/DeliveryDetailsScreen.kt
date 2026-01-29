@@ -32,7 +32,6 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +42,7 @@ fun DeliveryDetailsScreen(
     navigateToDeliveryConfirmation: () -> Unit,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DeliveryDetailsViewModel = koinViewModel(parameters = { parametersOf(deliveryId) })
+    viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
     val requestState by viewModel.deliveryState.collectAsStateWithLifecycle()
     val acceptDeliveryState by viewModel.acceptDeliveryState.collectAsStateWithLifecycle()
@@ -81,7 +80,7 @@ fun DeliveryDetailsScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding()),
             isRefreshing = requestState is FetchResultUiState.Loading,
-            onRefresh = { viewModel.refreshDeliveryDetails() }
+            onRefresh = { viewModel.fetchDeliveryDetails(deliveryId) }
         ) {
             requestState.Reduce(
                 onLoading = {
@@ -93,11 +92,11 @@ fun DeliveryDetailsScreen(
                         delivery = delivery,
                         onContinueDeliveryClick = navigateToDeliveryRoute,
                         onRetakeDocumentsClick = navigateToDeliveryConfirmation,
-                        onAcceptClick = viewModel::acceptDelivery,
+                        onAcceptClick = { viewModel.acceptDelivery(delivery.id) },
                         onCloseError = viewModel::resetAcceptState,
                         navigateUp = navigateUp,
                         fetchDeliveryDetails = {
-                            viewModel.refreshDeliveryDetails()
+                            viewModel.fetchDeliveryDetails(deliveryId)
                             viewModel.resetAcceptState()
                         },
                         acceptDeliveryState = acceptDeliveryState
@@ -108,7 +107,7 @@ fun DeliveryDetailsScreen(
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             ErrorMessage(
                                 message = it.message,
-                                onRetry = viewModel::refreshDeliveryDetails
+                                onRetry = { viewModel.fetchDeliveryDetails(deliveryId) }
                             )
                         }
                     } else {

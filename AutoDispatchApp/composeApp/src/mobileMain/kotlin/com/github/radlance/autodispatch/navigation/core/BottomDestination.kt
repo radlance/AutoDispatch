@@ -60,7 +60,7 @@ object DeliveryList : HomeDestination
 @Serializable
 data class DeliveryDetails(
     val deliveryId: Int,
-    val deliveryNumber: String? = null
+    val deliveryNumber: String
 ) : HomeDestination
 
 @Destination

@@ -40,10 +40,10 @@ kotlin {
         iosMain.get().dependsOn(mobileMain)
 
         androidMain.dependencies {
+            implementation(libs.core.splashscreen)
             implementation(libs.androidx.exifinterface)
             implementation(libs.play.services.location)
             implementation(libs.ktor.client.okhttp)
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
@@ -62,7 +62,6 @@ kotlin {
             implementation(libs.bundles.ktor)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.navigation.compose)
-            implementation(libs.material.kolor)
             implementation(compose.materialIconsExtended)
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -130,10 +129,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-}
-
-dependencies {
-    debugImplementation(compose.uiTooling)
 }
 
 compose.desktop {

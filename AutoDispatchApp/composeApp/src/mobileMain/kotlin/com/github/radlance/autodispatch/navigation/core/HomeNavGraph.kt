@@ -4,10 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,9 +20,7 @@ import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRout
 import com.github.radlance.autodispatch.history.presentation.DeliveryHistoryScreen
 import com.github.radlance.autodispatch.profile.presentation.ProfileScreen
 import kotlinx.serialization.json.Json
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @Composable
 fun HomeNavGraph(
@@ -33,18 +28,7 @@ fun HomeNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val deliveryDetailsViewModel = koinViewModel<DeliveryDetailsViewModel>(
-        parameters = { parametersOf(0) }
-    )
-    val deepLinkManager = koinInject<DeepLinkManager>()
-    val pendingId by deepLinkManager.pendingRoute.collectAsStateWithLifecycle()
-
-    LaunchedEffect(pendingId) {
-        pendingId?.let { id ->
-            navController.navigate(DeliveryDetails(deliveryId = id, deliveryNumber = null))
-            deepLinkManager.consume()
-        }
-    }
+    val deliveryDetailsViewModel = koinViewModel<DeliveryDetailsViewModel>()
 
     NavHost(
         navController = navController,
@@ -73,7 +57,8 @@ fun HomeNavGraph(
                     },
                     navigateToDeliveryRoute = { id, number ->
                         navController.navigate(DeliveryRoute(id, number))
-                    }
+                    },
+                    deliveryDetailsViewModel = deliveryDetailsViewModel
                 )
             }
 
@@ -81,21 +66,23 @@ fun HomeNavGraph(
                 val args = it.toRoute<DeliveryDetails>()
 
                 val deliveryId = args.deliveryId
+                val deliveryNumber = args.deliveryNumber
 
                 DeliveryDetailsScreen(
                     navigateToDeliveryRoute = {
                         navController.navigate(
-                            DeliveryRoute(deliveryId, deliveryNumber = args.deliveryNumber ?: "№${args.deliveryId}")
+                            DeliveryRoute(deliveryId, deliveryNumber)
                         )
                     },
                     navigateUp = navController::navigateUp,
                     deliveryId = deliveryId,
-                    deliveryNumber = args.deliveryNumber ?: "№${args.deliveryId}",
+                    deliveryNumber = deliveryNumber,
                     navigateToDeliveryConfirmation = {
                         navController.navigate(
                             DeliveryConfirmation(deliveryId = deliveryId, retake = true)
                         )
-                    }
+                    },
+                    viewModel = deliveryDetailsViewModel
                 )
             }
 
@@ -160,12 +147,13 @@ fun HomeNavGraph(
                 val args = it.toRoute<DeliveryDetails>()
 
                 val deliveryId = args.deliveryId
+                val deliveryNumber = args.deliveryNumber
 
                 DeliveryDetailsScreen(
                     navigateToDeliveryRoute = {},
                     navigateUp = navController::navigateUp,
                     deliveryId = deliveryId,
-                    deliveryNumber = args.deliveryNumber ?: "№${args.deliveryId}",
+                    deliveryNumber = deliveryNumber,
                     navigateToDeliveryConfirmation = {},
                     viewModel = deliveryDetailsViewModel
                 )
