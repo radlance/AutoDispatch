@@ -5,8 +5,10 @@ import org.simplejavamail.email.EmailBuilder
 import org.simplejavamail.mailer.MailerBuilder
 
 class MailService {
+    private val smtpPassword = System.getenv("SMTP_PASSWORD") ?: ""
+
     private val mailer = MailerBuilder
-        .withSMTPServer("smtp.gmail.com", 465, "manyakindima@gmail.com", "***REMOVED***")
+        .withSMTPServer("smtp.gmail.com", 465, "manyakindima@gmail.com", smtpPassword)
         .withTransportStrategy(TransportStrategy.SMTPS)
         .buildMailer()
 
