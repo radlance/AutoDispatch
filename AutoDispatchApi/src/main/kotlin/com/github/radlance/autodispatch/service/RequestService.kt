@@ -105,13 +105,13 @@ class RequestService(
         repository.assignRequestToDriver(requestId, driverId)
         val contacts = repository.getNotificationData(requestId) ?: return
 
-        val redirectUrl = "http://${localIpAddress}:8084/api/open-delivery/$requestId"
+        val redirectUrl = "http://${localIpAddress}:8084/api/open-delivery/$requestId?number=${contacts.reqNumber}"
 
         notifyBoth(
             customerSubj = "Обновление статуса заявки №${contacts.reqNumber}",
-            customerBody = "Заявка №${contacts.reqNumber} назначена водителю ${contacts.driverFullName} (${contacts.driverPhoneNumber}).",
+            customerBody = "Заявка №${contacts.reqNumber} назначена водителю...",
             driverSubj = "Назначена новая заявка №${contacts.reqNumber}",
-            driverBody = "Вам назначена новая заявка №${contacts.reqNumber}. Проверьте детали, нажав на кнопку ниже.",
+            driverBody = "Вам назначена новая заявка №${contacts.reqNumber}. Проверьте детали.",
             driverButtonUrl = redirectUrl
         )
     }

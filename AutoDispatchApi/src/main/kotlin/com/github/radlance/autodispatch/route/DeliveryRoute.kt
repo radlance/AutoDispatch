@@ -16,8 +16,11 @@ fun Route.deliveries(service: DeliveryService) {
 
     get("/open-delivery/{id}") {
         val id = call.parameters["id"]
+        val number = call.request.queryParameters["number"] ?: ""
+
         if (id != null) {
-            val deepLink = "autodispatch://requests/$id"
+            val deepLink = "autodispatch://requests/$id?number=$number"
+
             call.response.header(HttpHeaders.Location, deepLink)
             call.respond(HttpStatusCode.Found)
         } else {

@@ -4,12 +4,16 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationScreen
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.SuccessUploadScreen
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
@@ -20,6 +24,7 @@ import com.github.radlance.autodispatch.delivery.route.presentation.DeliveryRout
 import com.github.radlance.autodispatch.history.presentation.DeliveryHistoryScreen
 import com.github.radlance.autodispatch.profile.presentation.ProfileScreen
 import kotlinx.serialization.json.Json
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -29,6 +34,31 @@ fun HomeNavGraph(
     modifier: Modifier = Modifier
 ) {
     val deliveryDetailsViewModel = koinViewModel<DeliveryDetailsViewModel>()
+
+    val deepLinkManager = koinInject<DeepLinkManager>()
+    val pendingData by deepLinkManager.pendingRoute.collectAsStateWithLifecycle()
+
+    LaunchedEffect(pendingData) {
+        pendingData?.let { data ->
+            if (deliveryDetailsViewModel.deliveryState.value is FetchResultUiState.Idle) {
+                deliveryDetailsViewModel.fetchDeliveryDetails(deliveryId = data.id)
+            }
+            navController.navigate(
+                DeliveryDetails(
+                    deliveryId = data.id,
+                    deliveryNumber = data.number
+                )
+            ) {
+                popUpTo<DeliveryList> {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+
+            deepLinkManager.consume()
+        }
+    }
 
     NavHost(
         navController = navController,

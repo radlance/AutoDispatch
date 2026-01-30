@@ -36,8 +36,13 @@ actual fun NavGraph(navController: NavHostController) {
 
     LaunchedEffect(pendingId, authorized) {
         if (pendingId != null && authorized) {
-            if (navController.currentDestination?.route?.contains("Home") != true) {
-                navController.navigate(Home)
+            val currentRoute = navController.currentDestination?.route
+            val isAtHome = currentRoute?.contains(Home::class.simpleName ?: "Home") == true
+
+            if (!isAtHome) {
+                navController.navigate(Home) {
+                    popUpTo<SignIn> { inclusive = true }
+                }
             }
         }
     }
