@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.request.core.domain.Point
 
 interface PointSelectionRepository {
 
-    suspend fun fetchCoords(): FetchResult<Coords, String>
+    suspend fun cityCenter(cityName: String): FetchResult<Coords, String>
 
     suspend fun searchPoint(query: String): List<PointDetailed>
 

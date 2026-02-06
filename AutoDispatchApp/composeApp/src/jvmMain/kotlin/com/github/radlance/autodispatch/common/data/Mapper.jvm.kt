@@ -13,7 +13,6 @@ import com.github.radlance.autodispatch.driver.request.domain.DriverRequest
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
-import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
 import com.github.radlance.autodispatch.request.change.data.ReverseAddressDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
@@ -103,11 +102,8 @@ fun ListPaginatedResultDto<DriverStatsDto>.toDriverStatsListPaginatedResult(): L
     )
 }
 
-fun CoordsDto.toCoords(): Coords {
-    return Coords(
-        lat = lat,
-        lon = lon
-    )
+fun PointDetailedDto.toCoords(): Coords {
+    return Coords(lat.toDouble(), lon.toDouble())
 }
 
 fun PointDetailedDto.toPointDetailed(): PointDetailed {

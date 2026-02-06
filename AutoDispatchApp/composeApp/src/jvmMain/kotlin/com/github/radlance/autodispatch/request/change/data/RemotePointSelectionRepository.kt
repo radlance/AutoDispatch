@@ -17,9 +17,9 @@ class RemotePointSelectionRepository(
     private val apiService: ApiServiceJvm,
     private val handleRequest: HandleRequest
 ) : PointSelectionRepository {
-    override suspend fun fetchCoords(): FetchResult<Coords, String> =
+    override suspend fun cityCenter(cityName: String): FetchResult<Coords, String> =
         handleRequest.handle {
-            apiService.coords().toCoords()
+            apiService.points(cityName).first().toCoords()
         }
 
     override suspend fun searchPoint(query: String): List<PointDetailed> {

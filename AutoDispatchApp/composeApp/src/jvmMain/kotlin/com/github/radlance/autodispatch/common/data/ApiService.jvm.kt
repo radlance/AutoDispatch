@@ -6,7 +6,6 @@ import com.github.radlance.autodispatch.driver.request.data.DriverRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.AssignRequestDto
 import com.github.radlance.autodispatch.request.assignment.data.DriverStatsDto
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
-import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
 import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
 import com.github.radlance.autodispatch.request.change.data.ReverseDto
@@ -65,8 +64,6 @@ interface ApiServiceJvm : ApiService {
     suspend fun assignDriverToRequest(requestId: Int, driverId: Int)
 
     suspend fun reassignDriverToRequest(requestId: Int, driverId: Int)
-
-    suspend fun coords(): CoordsDto
 
     suspend fun points(query: String): List<PointDetailedDto>
 
@@ -219,13 +216,6 @@ internal class KtorApiServiceJvm(
         httpClient.put("requests/$requestId/assign") {
             setBody(AssignRequestDto(driverId))
         }
-    }
-
-    override suspend fun coords(): CoordsDto {
-        return httpClient.get {
-            url("http://ip-api.com/json/")
-            headers.remove("Authorization")
-        }.body()
     }
 
     override suspend fun points(query: String): List<PointDetailedDto> {

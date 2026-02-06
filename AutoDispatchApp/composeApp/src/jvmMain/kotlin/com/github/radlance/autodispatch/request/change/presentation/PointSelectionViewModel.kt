@@ -14,7 +14,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class PointSelectionViewModel(
@@ -23,9 +22,7 @@ class PointSelectionViewModel(
     private val fetchPointStateMutable = MutableStateFlow<FetchResultUiState<Coords, String>>(
         FetchResultUiState.Idle
     )
-    val fetchPointState = fetchPointStateMutable.onStart {
-        fetchCoords()
-    }.stateInViewModel(initialValue = fetchPointStateMutable.value)
+    val fetchPointState = fetchPointStateMutable.asStateFlow()
 
     private val validationStateMutable =
         MutableStateFlow<FetchResultUiState<ValidatedPoint, PointValidationError>>(
@@ -42,9 +39,9 @@ class PointSelectionViewModel(
     private var searchJob: Job? = null
     private val debounceTime = 300L
 
-    fun fetchCoords() {
+    fun fetchCoords(cityName: String) {
         fetchPointStateMutable.value = FetchResultUiState.Loading
-        handle(background = repository::fetchCoords) {
+        handle(background = { repository.cityCenter(cityName) }) {
             fetchPointStateMutable.value = it.toUiState()
         }
     }
