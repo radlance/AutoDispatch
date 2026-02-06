@@ -23,11 +23,16 @@ class CustomMapMarker(coord: Coordinate) : MapMarkerDot(coord.lat, coord.lon) {
     override fun paint(g: Graphics, position: Point, radius: Int) {
         val g2d = g as Graphics2D
         if (iconImage != null) {
-            val imageSize = 40
-            val x = position.x - imageSize / 2
-            val y = position.y - imageSize / 2
+            val originalWidth = iconImage.getWidth(null)
+            val originalHeight = iconImage.getHeight(null)
+            val desiredHeight = 40
+            val scale = desiredHeight.toDouble() / originalHeight
+            val scaledWidth = (originalWidth * scale).toInt()
 
-            g2d.drawImage(iconImage, x, y, imageSize, imageSize, null)
+            val x = position.x - scaledWidth / 2
+            val y = position.y - desiredHeight
+
+            g2d.drawImage(iconImage, x, y, scaledWidth, desiredHeight, null)
         } else {
             g2d.fillOval(position.x - radius, position.y - radius, 2 * radius, 2 * radius)
         }
