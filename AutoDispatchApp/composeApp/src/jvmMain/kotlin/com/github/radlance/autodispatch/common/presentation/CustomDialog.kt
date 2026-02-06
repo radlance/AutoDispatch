@@ -45,7 +45,7 @@ import androidx.compose.ui.window.PopupProperties
 @Composable
 fun CustomDialog(
     onDismissRequest: () -> Unit,
-    title: @Composable () -> Unit,
+    title: @Composable (requestDismiss: () -> Unit) -> Unit,
     content: @Composable (requestDismiss: () -> Unit) -> Unit,
     buttons: @Composable RowScope.(requestDismiss: () -> Unit) -> Unit,
     onFinish: () -> Unit = {},
@@ -140,7 +140,7 @@ fun CustomDialog(
                         Column(
                             modifier = Modifier.padding(24.dp)
                         ) {
-                            title()
+                            title { dismissRequested = true }
 
                             Spacer(Modifier.height(16.dp))
 

@@ -101,13 +101,6 @@ fun VehicleAssignmentDialog(
         viewModel.loadNextItems()
     }
 
-    LaunchedEffect(assignDriverState) {
-        if (assignDriverState is FetchResultUiState.Success) {
-            onDismissAction()
-            onSuccessAssignDriver()
-        }
-    }
-
     val successVehicle =
         (vehicleAssignmentsState.paginatorState.itemsState as? FetchResultUiState.Success)?.data?.find { it.id == selectedVehicleId }
     val isDriverSelected = successVehicle != null
@@ -125,7 +118,7 @@ fun VehicleAssignmentDialog(
                 style = MaterialTheme.typography.headlineSmall
             )
         },
-        content = {
+        content = { requestDismiss ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,7 +144,7 @@ fun VehicleAssignmentDialog(
                                 textAlign = TextAlign.Center
                             )
                         } else {
-                            viewModel.resetState()
+                            requestDismiss()
                             onStateError(error.message)
                         }
                     }
@@ -309,11 +302,18 @@ fun VehicleAssignmentDialog(
                     CircularProgressIndicator()
                 }
             }
+
+            LaunchedEffect(assignDriverState) {
+                if (assignDriverState is FetchResultUiState.Success) {
+                    onSuccessAssignDriver()
+                    requestDismiss()
+                }
+            }
         },
 
-        buttons = {
+        buttons = { requestDismiss ->
             Spacer(modifier = Modifier.weight(1f))
-            TextButton(onClick = onDismissAction, enabled = !isLoading) {
+            TextButton(onClick = requestDismiss, enabled = !isLoading) {
                 Text(text = stringResource(Res.string.cancel))
             }
             Spacer(modifier = Modifier.width(12.dp))

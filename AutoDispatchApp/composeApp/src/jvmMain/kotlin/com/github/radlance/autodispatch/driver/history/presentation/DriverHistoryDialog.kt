@@ -68,14 +68,11 @@ fun DriverHistoryDialog(
         viewModel.loadNextItems(driverId = driver.id)
     }
 
-    val onDismiss = {
-        onDismiss()
-        viewModel.resetState()
-    }
     CustomDialog(
         modifier = modifier,
-        onDismissRequest = { if (!isLoading) onDismiss() },
-        title = {
+        onDismissRequest = onDismiss,
+        onFinish = viewModel::resetState,
+        title = { requestDismiss ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -87,7 +84,7 @@ fun DriverHistoryDialog(
                 )
                 IconButton(
                     enabled = !isLoading,
-                    onClick = onDismiss
+                    onClick = requestDismiss
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,

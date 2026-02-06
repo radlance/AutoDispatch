@@ -91,18 +91,6 @@ fun DriverRequestAssignmentDialog(
     val isAssignLoading = assignRequestState is FetchResultUiState.Loading
     val assignError = (assignRequestState as? FetchResultUiState.Error<RequestError>)?.error
 
-    val onDismiss = {
-        onDismiss()
-        viewModel.resetState()
-    }
-
-    LaunchedEffect(assignRequestState) {
-        if (assignRequestState is FetchResultUiState.Success) {
-            onDismiss()
-            onSuccessAssignDriver()
-        }
-    }
-
     LaunchedEffect(Unit) {
         viewModel.loadNextItems()
     }
@@ -126,14 +114,14 @@ fun DriverRequestAssignmentDialog(
 
     CustomDialog(
         modifier = modifier,
-        onDismissRequest = { if (!isRequestsLoading) onDismiss() },
+        onDismissRequest = onDismiss,
         title = {
             Text(
                 text = "Назначение рейса водителю",
                 style = MaterialTheme.typography.titleLarge,
             )
         },
-        content = {
+        content = { requestDismiss ->
             Box(Modifier.fillMaxWidth()) {
                 Column {
                     assignError?.let {
@@ -155,7 +143,7 @@ fun DriverRequestAssignmentDialog(
                                     textAlign = TextAlign.Center
                                 )
                             } else {
-                                viewModel.resetState()
+                                requestDismiss()
                                 onStateReassignError(assignError.message)
                             }
                         }
@@ -308,9 +296,17 @@ fun DriverRequestAssignmentDialog(
                         CircularProgressIndicator()
                     }
                 }
+
+                LaunchedEffect(assignRequestState) {
+                    if (assignRequestState is FetchResultUiState.Success) {
+                        onSuccessAssignDriver()
+                        requestDismiss()
+                    }
+                }
             }
         },
-        buttons = {
+        onFinish = viewModel::resetState,
+        buttons = { requestDismiss ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (selectedRequestId != null && (!hasVehicle || isOverload)) {
                     Icon(
@@ -325,7 +321,7 @@ fun DriverRequestAssignmentDialog(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = onDismiss, enabled = !isRequestsLoading) {
+                TextButton(onClick = requestDismiss, enabled = !isRequestsLoading) {
                     Text(text = stringResource(Res.string.cancel))
                 }
                 Spacer(Modifier.width(12.dp))

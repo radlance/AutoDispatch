@@ -94,31 +94,19 @@ fun DriverAssignmentDialog(
     }
     var selectedDriverId by remember { mutableStateOf<Int?>(null) }
 
-    val onDismissAction = {
-        onDismiss()
-        viewModel.resetState()
-    }
-
     LaunchedEffect(Unit) {
         viewModel.loadNextItems()
     }
 
-    LaunchedEffect(assignRequestState) {
-        if (assignRequestState is FetchResultUiState.Success) {
-            onDismissAction()
-            onSuccessAssignDriver()
-        }
-    }
-
     CustomDialog(
-        onDismissRequest = { if (!isLoading) onDismissAction() },
+        onDismissRequest = { if (!isLoading) onDismiss() },
         title = {
             Text(
                 text = stringResource(Res.string.driver_assignment),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
-        content = {
+        content = { requestDismiss ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -304,8 +292,15 @@ fun DriverAssignmentDialog(
                     CircularProgressIndicator()
                 }
             }
+            LaunchedEffect(assignRequestState) {
+                if (assignRequestState is FetchResultUiState.Success) {
+                    onSuccessAssignDriver()
+                    requestDismiss()
+                }
+            }
         },
-        buttons = {
+        onFinish = viewModel::resetState,
+        buttons = { requestDismiss ->
             val stats =
                 (driverAssignmentsState.paginatorState.itemsState as? FetchResultUiState.Success)?.data?.find { it.driverId == selectedDriverId }
             val isDriverSelected = stats != null
@@ -335,7 +330,7 @@ fun DriverAssignmentDialog(
                 }
                 Spacer(Modifier.weight(1f))
 
-                TextButton(onClick = onDismissAction, enabled = !isLoading) {
+                TextButton(onClick = requestDismiss, enabled = !isLoading) {
                     Text(text = stringResource(Res.string.cancel))
                 }
                 Spacer(Modifier.width(12.dp))

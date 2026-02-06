@@ -77,10 +77,7 @@ fun FilterDialogSelector(
             title = title,
             options = options,
             initiallySelected = selected.ifEmpty { options },
-            onConfirm = {
-                onSelectionChanged(it)
-                showDialog = false
-            },
+            onConfirm = { onSelectionChanged(it) },
             onDismiss = { showDialog = false }
         )
     }
@@ -236,17 +233,20 @@ private fun SelectionDialog(
                 }
             }
         },
-        buttons = {
+        buttons = { requestDismiss ->
             Spacer(Modifier.weight(1f))
+            TextButton(onClick = requestDismiss) {
+                Text(stringResource(Res.string.cancel), style = MaterialTheme.typography.labelLarge)
+            }
+            Spacer(Modifier.width(12.dp))
             TextButton(
-                onClick = { onConfirm(tempSelection) },
+                onClick = {
+                    onConfirm(tempSelection)
+                    requestDismiss()
+                },
                 enabled = tempSelection.isNotEmpty()
             ) {
                 Text(stringResource(Res.string.done), style = MaterialTheme.typography.labelLarge)
-            }
-            Spacer(Modifier.width(12.dp))
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel), style = MaterialTheme.typography.labelLarge)
             }
         }
     )

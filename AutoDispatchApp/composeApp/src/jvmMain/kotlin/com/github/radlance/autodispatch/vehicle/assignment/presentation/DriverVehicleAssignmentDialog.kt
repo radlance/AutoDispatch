@@ -87,32 +87,19 @@ fun DriverVehicleAssignmentDialog(
     var selectedDriverId by remember { mutableStateOf<Int?>(null) }
     val successDriver = (driversWithoutVehicleState.paginatorState.itemsState as? FetchResultUiState.Success)?.data?.find { it.id == selectedDriverId }
 
-    val onDismissAction = {
-        onDismiss()
-        viewModel.resetState()
-    }
-
     LaunchedEffect(Unit) {
         viewModel.loadNextItems()
     }
 
-    LaunchedEffect(assignRequestState) {
-        if (assignRequestState is FetchResultUiState.Success) {
-            onDismissAction()
-            onSuccessAssignVehicle()
-        }
-    }
-
-
     CustomDialog(
-        onDismissRequest = { if (!isLoading) onDismissAction() },
+        onDismissRequest = { if (!isLoading) onDismiss() },
         title = {
             Text(
                 text = "Назначение водителя",
                 style = MaterialTheme.typography.headlineSmall
             )
         },
-        content = {
+        content = { requestDismiss ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -138,7 +125,7 @@ fun DriverVehicleAssignmentDialog(
                                 textAlign = TextAlign.Center
                             )
                         } else {
-                            viewModel.resetState()
+                            requestDismiss()
                             onStateError(error.message)
                         }
                     }
@@ -290,10 +277,19 @@ fun DriverVehicleAssignmentDialog(
                     CircularProgressIndicator()
                 }
             }
+            LaunchedEffect(assignRequestState) {
+                if (assignRequestState is FetchResultUiState.Success) {
+                    requestDismiss()
+                }
+            }
         },
-        buttons = {
+        onFinish = {
+            viewModel.resetState()
+            onSuccessAssignVehicle()
+        },
+        buttons = { requestDismiss ->
             Spacer(modifier = Modifier.weight(1f))
-            TextButton(onClick = onDismissAction, enabled = !isLoading) {
+            TextButton(onClick = requestDismiss, enabled = !isLoading) {
                 Text(text = stringResource(Res.string.cancel))
             }
             Spacer(modifier = Modifier.width(12.dp))

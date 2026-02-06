@@ -88,7 +88,7 @@ fun RequestFilters(
                 )
                 FilterDialogSelector(
                     title = stringResource(Res.string.status),
-                    options = filterStatuses.map { it.name },
+                    options = filterStatuses.map { it.title },
                     selected = selectedStatuses,
                     onSelectionChanged = onStatusesChanged
                 )
