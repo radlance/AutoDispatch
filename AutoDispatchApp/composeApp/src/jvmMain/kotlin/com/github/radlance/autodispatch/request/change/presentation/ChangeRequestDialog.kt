@@ -150,14 +150,6 @@ fun ChangeRequestDialog(
         }
     }
 
-    LaunchedEffect(changeRequestState) {
-        if (changeRequestState is FetchResultUiState.Success) {
-            onSuccessCreateRequest()
-            viewModel.reduce(ChangeRequestEvent.ResetChangeState)
-            onDismiss()
-        }
-    }
-
     val isLoadingChange = changeRequestState is FetchResultUiState.Loading
     val errorChange = (changeRequestState as? FetchResultUiState.Error)?.error
 
@@ -186,7 +178,7 @@ fun ChangeRequestDialog(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
         },
-        content = {
+        content = { requestDismiss ->
             Column(modifier = Modifier.fillMaxWidth()) {
                 errorChange?.let {
                     Column(
@@ -207,7 +199,7 @@ fun ChangeRequestDialog(
                                 textAlign = TextAlign.Center
                             )
                         } else {
-                            onDismiss()
+                            requestDismiss()
                             onStateError(errorChange.message)
                         }
                     }
@@ -247,9 +239,16 @@ fun ChangeRequestDialog(
                         }
                     }
                 }
+                LaunchedEffect(changeRequestState) {
+                    if (changeRequestState is FetchResultUiState.Success) {
+                        onSuccessCreateRequest()
+                        requestDismiss()
+                    }
+                }
             }
         },
-        buttons = {
+        onFinish = { viewModel.reduce(ChangeRequestEvent.ResetChangeState) },
+        buttons = { requestDismiss ->
             Row {
                 if (isEditRequest) {
                     Row(
@@ -277,7 +276,7 @@ fun ChangeRequestDialog(
 
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = onDismiss, enabled = !isLoadingChange) {
+                TextButton(onClick = requestDismiss, enabled = !isLoadingChange) {
                     Text(text = stringResource(Res.string.cancel))
                 }
                 Spacer(Modifier.width(12.dp))
@@ -297,13 +296,13 @@ fun ChangeRequestDialog(
                     onClick = {
                         if (isEditRequest) {
                             if (fieldsUiState == currentFieldsUiState) {
-                                onDismiss()
+                                requestDismiss()
                                 return@Button
                             }
                         } else {
                             if (fieldsUiState.requestId != null) {
                                 viewModel.reduce(ChangeRequestEvent.ResetChangeState)
-                                onDismiss()
+                                requestDismiss()
                                 return@Button
                             }
                         }

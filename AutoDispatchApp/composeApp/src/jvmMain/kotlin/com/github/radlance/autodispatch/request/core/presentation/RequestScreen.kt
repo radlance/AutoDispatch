@@ -121,7 +121,6 @@ fun RequestsScreen(
                                 showCreationDialog = false
                             },
                             onSuccessCreateRequest = {
-                                showCreationDialog = false
                                 viewModel.onRequestChanged()
                             }
                         )
