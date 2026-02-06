@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.service
 
+import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
+import com.github.radlance.autodispatch.domain.history.DriverHistory
 import com.github.radlance.autodispatch.presentation.EmailTemplateBuilder
 import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
@@ -82,4 +84,18 @@ class DeliveryService(
         pageSize = pageSize,
         page = page
     )
+    
+    suspend fun driverDeliveryHistory(
+        driverId: Int,
+        searchQuery: String?,
+        pageSize: Int,
+        page: Int
+    ): ListPaginatedResult<DriverHistory> {
+        return deliveryRepository.driverDeliveryHistory(
+            driverId = driverId,
+            searchQuery = searchQuery,
+            pageSize = pageSize,
+            page = page
+        )
+    }
 }

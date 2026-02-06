@@ -108,6 +108,24 @@ fun Route.deliveries(service: DeliveryService) {
                     )
                 )
             }
+
+            get("/history/{driverId}") {
+                val id = call.parameters["driverId"]?.toIntOrNull()
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid driver ID")
+                val queryParams = call.request.queryParameters
+                val page = queryParams["page"]?.toIntOrNull() ?: 1
+                val pageSize = queryParams["pageSize"]?.toIntOrNull() ?: 5
+                val searchQuery = queryParams["search"]
+
+                val paginatedResult = service.driverDeliveryHistory(
+                    driverId = id,
+                    searchQuery = searchQuery,
+                    pageSize = pageSize,
+                    page = page
+                )
+
+                call.respond(HttpStatusCode.OK, paginatedResult)
+            }
         }
     }
 }
