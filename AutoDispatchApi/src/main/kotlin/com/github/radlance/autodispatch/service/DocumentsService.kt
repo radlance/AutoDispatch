@@ -21,8 +21,10 @@ class DocumentsService(
 
         val contacts = requestRepository.getNotificationData(requestId) ?: return
 
+        val driverLogin = contacts.driverLogin ?: return
+
         val documents = deliveryRepository.delivery(
-            driverLogin = contacts.driverLogin,
+            driverLogin = driverLogin,
             deliveryId = requestId
         ).documents
 

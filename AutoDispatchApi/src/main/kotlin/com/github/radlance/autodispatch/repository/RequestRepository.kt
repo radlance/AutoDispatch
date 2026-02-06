@@ -550,7 +550,7 @@ class RequestRepository {
                     reqNumber = it[RequestTable.requestNumber] ?: "Б/Н",
                     customerEmail = it[CustomerTable.email],
                     driverEmail = it.getOrNull(UserTable.email),
-                    driverLogin = it[UserTable.login],
+                    driverLogin = it.getOrNull(UserTable.login),
                     driverFullName = it.getOrNull(UserTable.fullName),
                     driverPhoneNumber = it.getOrNull(UserTable.phoneNumber)
                 )
