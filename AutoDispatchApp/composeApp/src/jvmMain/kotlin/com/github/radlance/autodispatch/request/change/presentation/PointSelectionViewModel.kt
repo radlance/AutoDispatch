@@ -7,6 +7,9 @@ import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.change.domain.Coords
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.change.domain.PointSelectionRepository
+import com.github.radlance.autodispatch.request.change.domain.PointValidationError
+import com.github.radlance.autodispatch.request.change.domain.ValidatedPoint
+import com.github.radlance.autodispatch.request.core.domain.Point
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +26,16 @@ class PointSelectionViewModel(
     val fetchPointState = fetchPointStateMutable.onStart {
         fetchCoords()
     }.stateInViewModel(initialValue = fetchPointStateMutable.value)
+
+    private val validationStateMutable =
+        MutableStateFlow<FetchResultUiState<ValidatedPoint, PointValidationError>>(
+            FetchResultUiState.Idle
+        )
+
+    val validationState =
+        validationStateMutable.asStateFlow()
+
+
 
     private val pointsMutable = MutableStateFlow<List<PointDetailed>>(emptyList())
     val points = pointsMutable.asStateFlow()
@@ -50,5 +63,19 @@ class PointSelectionViewModel(
                 pointsMutable.value = it
             }
         }
+    }
+
+    fun confirmPointSelection(
+        point: Point,
+        selectedCityName: String
+    ) {
+        validationStateMutable.value = FetchResultUiState.Loading
+        handle(background = { repository.validatePointInCity(point, selectedCityName) }) {
+            validationStateMutable.value = it.toUiState()
+        }
+    }
+
+    fun resetValidationState() {
+        validationStateMutable.value = FetchResultUiState.Idle
     }
 }

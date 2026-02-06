@@ -79,9 +79,11 @@ fun ChangeRequestFields(
 ) {
     var showPointSelectionDialog by rememberSaveable { mutableStateOf(false) }
     var pointSelectionTarget by rememberSaveable { mutableStateOf<PointTarget?>(null) }
+    var selectedCity by rememberSaveable { mutableStateOf<City?>(null) }
 
     if (showPointSelectionDialog) {
         PointSelectionDialog(
+            selectedCityName = selectedCity!!.name,
             onDismissRequest = { showPointSelectionDialog = false },
             onConfirm = { selectedPoint ->
                 when (pointSelectionTarget) {
@@ -302,9 +304,11 @@ fun ChangeRequestFields(
                 OutlinedButton(
                     onClick = {
                         pointSelectionTarget = PointTarget.LOADING
+                        selectedCity = fieldsUiState.departureCity
                         showPointSelectionDialog = true
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = fieldsUiState.departureCity != null
                 ) {
                     Icon(Icons.Outlined.NearMe, null)
                     Spacer(Modifier.width(12.dp))
@@ -350,9 +354,11 @@ fun ChangeRequestFields(
             OutlinedButton(
                 onClick = {
                     pointSelectionTarget = PointTarget.UNLOADING
+                    selectedCity = fieldsUiState.destinationCity
                     showPointSelectionDialog = true
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = fieldsUiState.destinationCity != null
             ) {
                 Icon(Icons.Outlined.NearMe, null)
                 Spacer(Modifier.width(12.dp))

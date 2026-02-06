@@ -9,6 +9,7 @@ import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
 import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
+import com.github.radlance.autodispatch.request.change.data.ReverseDto
 import com.github.radlance.autodispatch.request.core.data.CustomerDto
 import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
@@ -68,6 +69,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun coords(): CoordsDto
 
     suspend fun points(query: String): List<PointDetailedDto>
+
+    suspend fun reverse(lat: Double, lon: Double): ReverseDto
 
     suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto)
 
@@ -236,6 +239,19 @@ internal class KtorApiServiceJvm(
             parameter("polygon_geojson", 1)
         }.body()
     }
+
+    override suspend fun reverse(lat: Double, lon: Double): ReverseDto {
+        return httpClient.get {
+            url("https://nominatim.openstreetmap.org/reverse")
+            header("User-Agent", "AutoDispatch")
+            parameter("lat", lat)
+            parameter("lon", lon)
+            parameter("format", "jsonv2")
+            parameter("addressdetails", 1)
+            parameter("accept-language", "ru")
+        }.body()
+    }
+
 
     override suspend fun rejectDocument(requestId: Int, rejectDocumentDto: RejectDocumentDto) {
         httpClient.post("documents/$requestId/reject") {

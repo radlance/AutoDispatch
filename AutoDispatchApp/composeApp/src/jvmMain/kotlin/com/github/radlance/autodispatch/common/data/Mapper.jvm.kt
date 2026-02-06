@@ -15,6 +15,7 @@ import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 import com.github.radlance.autodispatch.request.change.data.ChangeRequestDto
 import com.github.radlance.autodispatch.request.change.data.CoordsDto
 import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
+import com.github.radlance.autodispatch.request.change.data.ReverseAddressDto
 import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.Coords
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
@@ -190,6 +191,15 @@ fun DashboardStatisticsDto.toDashboardStatistics(): DashboardStatistics {
         topDrivers = topDrivers.map { it.toTopDriverStat() },
         popularRoutes = popularRoutes.map { it.toPopularRouteStat() }
     )
+}
+
+fun ReverseAddressDto.belongsTo(selectedCity: String): Boolean {
+    return when {
+        state?.equals(selectedCity, ignoreCase = true) == true -> true
+        city?.equals(selectedCity, ignoreCase = true) == true -> true
+        town?.equals(selectedCity, ignoreCase = true) == true -> true
+        else -> false
+    }
 }
 
 private fun StatItemDto.toStatItem(): StatItem {
