@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,7 +43,7 @@ import androidx.compose.ui.window.PopupProperties
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun CustomDialog(
+fun ExpandedCustomDialog(
     onDismissRequest: () -> Unit,
     title: @Composable (requestDismiss: () -> Unit) -> Unit,
     content: @Composable (requestDismiss: () -> Unit) -> Unit,
@@ -130,6 +131,7 @@ fun CustomDialog(
                 ) {
                     Surface(
                         modifier = modifier
+                            .fillMaxHeight(0.9f)
                             .widthIn(min = 280.dp, max = 560.dp),
                         shape = AlertDialogDefaults.shape,
                         color = AlertDialogDefaults.containerColor,
@@ -145,6 +147,7 @@ fun CustomDialog(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .weight(1f)
                             ) {
                                 content { dismissRequested = true }
                             }

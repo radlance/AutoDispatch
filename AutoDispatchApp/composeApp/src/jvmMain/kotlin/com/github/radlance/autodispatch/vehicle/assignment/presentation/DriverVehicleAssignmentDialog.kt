@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
-import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
@@ -91,7 +91,7 @@ fun DriverVehicleAssignmentDialog(
         viewModel.loadNextItems()
     }
 
-    CustomDialog(
+    ExpandedCustomDialog(
         onDismissRequest = { if (!isLoading) onDismiss() },
         title = {
             Text(

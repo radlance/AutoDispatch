@@ -38,7 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptyHistoryPlaceholder
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
@@ -68,7 +68,7 @@ fun DriverHistoryDialog(
         viewModel.loadNextItems(driverId = driver.id)
     }
 
-    CustomDialog(
+    ExpandedCustomDialog(
         modifier = modifier,
         onDismissRequest = onDismiss,
         onFinish = viewModel::resetState,

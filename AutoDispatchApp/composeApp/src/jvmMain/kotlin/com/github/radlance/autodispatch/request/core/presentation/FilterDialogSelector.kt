@@ -43,7 +43,7 @@ import autodispatch.composeapp.generated.resources.done
 import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.search
 import autodispatch.composeapp.generated.resources.select_all
-import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -103,7 +103,7 @@ private fun SelectionDialog(
     val screenHeight = LocalWindowInfo.current.containerSize.height
     val maxDialogHeight = screenHeight * 0.6f
 
-    CustomDialog(
+    ExpandedCustomDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(

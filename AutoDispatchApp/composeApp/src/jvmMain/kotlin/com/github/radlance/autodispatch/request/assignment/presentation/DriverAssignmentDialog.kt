@@ -59,7 +59,7 @@ import autodispatch.composeapp.generated.resources.assign
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.driver_assignment
 import autodispatch.composeapp.generated.resources.reassign
-import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
@@ -98,7 +98,7 @@ fun DriverAssignmentDialog(
         viewModel.loadNextItems()
     }
 
-    CustomDialog(
+    ExpandedCustomDialog(
         onDismissRequest = { if (!isLoading) onDismiss() },
         title = {
             Text(

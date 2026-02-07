@@ -18,6 +18,7 @@ import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.change.domain.PointValidationError
 import com.github.radlance.autodispatch.request.core.domain.Point
@@ -99,15 +101,22 @@ fun PointSelectionDialog(
             onDismissRequest()
         },
         onError = { validationError ->
-            AlertDialog(
-                onDismissRequest = viewModel::resetValidationState,
-                icon = {
-                    Icon(imageVector = Icons.Outlined.WarningAmber, contentDescription = null)
+            CustomDialog(
+                onDismissRequest = {
+                    showMapView = true
                 },
+                onFinish = viewModel::resetValidationState,
                 title = {
-                    Text(text = "Ошибка")
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(imageVector = Icons.Outlined.WarningAmber, contentDescription = null)
+                        Spacer(Modifier.height(12.dp))
+                        Text(text = "Ошибка", style = MaterialTheme.typography.titleLarge)
+                    }
                 },
-                text = {
+                content = {
                     when (validationError) {
                         PointValidationError.Network ->
                             Text("Проверьте интернет-соединение")
@@ -121,13 +130,10 @@ fun PointSelectionDialog(
                             )
                     }
                 },
-                dismissButton = {},
-                confirmButton = {
+                buttons = { requestDismiss ->
+                    Spacer(Modifier.weight(1f))
                     TextButton(
-                        onClick = {
-                            viewModel.resetValidationState()
-                            showMapView = true
-                        }
+                        onClick = requestDismiss
                     ) {
                         Text(text = "ОК")
                     }

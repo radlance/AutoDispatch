@@ -57,7 +57,7 @@ import autodispatch.composeapp.generated.resources.attach
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.reassign
 import com.github.radlance.autodispatch.common.domain.DriverStatus
-import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
@@ -108,7 +108,7 @@ fun VehicleAssignmentDialog(
     val isButtonEnabled =
         isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && (!isReassign || driver.status == DriverStatus.Free)
 
-    CustomDialog(
+    ExpandedCustomDialog(
         onDismissRequest = {
             if (!isLoading) onDismissAction()
         },

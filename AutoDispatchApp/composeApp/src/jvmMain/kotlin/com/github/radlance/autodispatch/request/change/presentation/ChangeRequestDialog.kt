@@ -50,6 +50,7 @@ import autodispatch.composeapp.generated.resources.creating_new_request
 import autodispatch.composeapp.generated.resources.edit
 import autodispatch.composeapp.generated.resources.request_editing
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.core.domain.CargoType
@@ -74,6 +75,7 @@ fun ChangeRequestDialog(
         onDismiss()
         viewModel.reduce(event = ChangeRequestEvent.ResetChangeState)
     }
+    var closeBaseDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
     var showRemoveDialog by remember { mutableStateOf(false) }
     val fieldsUiState by viewModel.fieldsUiState.collectAsState()
@@ -117,30 +119,77 @@ fun ChangeRequestDialog(
     }
 
     if (showRemoveDialog) {
-        val onDismissRemoveDialog = {
-            showRemoveDialog = false
-            viewModel.reduce(ChangeRequestEvent.ResetRemoveState)
-        }
+        val isLoadingRemove = removeRequestState is FetchResultUiState.Loading
+        val errorRemove = (removeRequestState as? FetchResultUiState.Error)?.error
 
-        LaunchedEffect(removeRequestState) {
-            if (removeRequestState is FetchResultUiState.Success) {
-                onSuccessCreateRequest()
-                viewModel.reduce(ChangeRequestEvent.ResetChangeState)
-                onDismissRemoveDialog()
-                onDismiss()
-            }
-        }
-
-        RemoveRequestDialog(
-            onDismissDialog = onDismissRemoveDialog,
-            onConfirm = { viewModel.reduce(ChangeRequestEvent.ClickRemoveRequest(fieldsUiState.requestId!!)) },
-            onStateError = {
-                onDismissRemoveDialog()
-                onDismiss()
-                onStateError(it)
+        CustomDialog(
+            modifier = modifier,
+            onDismissRequest = {
+                if (!isLoadingRemove) {
+                    showRemoveDialog = false
+                }
             },
-            removeState = removeRequestState,
-            requestNumber = fieldsUiState.requestNumber
+            onFinish = { viewModel.reduce(ChangeRequestEvent.ResetRemoveState) },
+            title = {
+                Text(text = "Удаление заявки")
+            },
+            content = { requestDismiss ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    errorRemove?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            if (errorRemove is RequestError.BaseError) {
+                                Text(
+                                    text = errorRemove.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            } else {
+                                onStateError(errorRemove.message)
+                            }
+                        }
+                    }
+
+                    Text(
+                        buildAnnotatedString {
+                            append("Вы уверены что хотите удалить заявку ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(fieldsUiState.requestNumber)
+                            }
+                            append("?")
+                        }
+                    )
+                }
+
+                LaunchedEffect(removeRequestState) {
+                    if (removeRequestState is FetchResultUiState.Success) {
+                        requestDismiss()
+                        closeBaseDialog = true
+                    }
+                }
+            },
+            buttons = { dismissRequest ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = dismissRequest, enabled = !isLoadingRemove) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(12.dp))
+                Button(
+                    onClick = { viewModel.reduce(ChangeRequestEvent.ClickRemoveRequest(fieldsUiState.requestId!!)) },
+                    enabled = !isLoadingRemove
+                ) {
+                    Text(text = "Удалить")
+                }
+            }
         )
     }
 
@@ -153,7 +202,7 @@ fun ChangeRequestDialog(
     val isLoadingChange = changeRequestState is FetchResultUiState.Loading
     val errorChange = (changeRequestState as? FetchResultUiState.Error)?.error
 
-    CustomDialog(
+    ExpandedCustomDialog(
         modifier = modifier,
         onDismissRequest = {
             if (!isLoadingChange) {
@@ -245,9 +294,21 @@ fun ChangeRequestDialog(
                         requestDismiss()
                     }
                 }
+
+                LaunchedEffect(closeBaseDialog) {
+                    if (closeBaseDialog) {
+                        requestDismiss()
+                    }
+                }
             }
         },
-        onFinish = { viewModel.reduce(ChangeRequestEvent.ResetChangeState) },
+        onFinish = {
+            viewModel.reduce(ChangeRequestEvent.ResetChangeState)
+            if (closeBaseDialog) {
+                onSuccessCreateRequest()
+                closeBaseDialog = false
+            }
+        },
         buttons = { requestDismiss ->
             Row {
                 if (isEditRequest) {
