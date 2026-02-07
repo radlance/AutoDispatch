@@ -51,6 +51,8 @@ fun VehicleDetailsSections(
             LabeledValue(label = "Модель", value = vehicle.model)
             Spacer(modifier = Modifier.height(ITEM_GAP))
             LabeledValue(label = "Гос. номер", value = vehicle.licensePlate)
+            Spacer(modifier = Modifier.height(ITEM_GAP))
+            LabeledValue(label = "Грузоподъемность", value = "${vehicle.payloadCapacity} кг")
         }
         HorizontalDivider(
             modifier = Modifier.padding(top = SECTION_GAP, bottom = SECTION_GAP, end = 6.dp)

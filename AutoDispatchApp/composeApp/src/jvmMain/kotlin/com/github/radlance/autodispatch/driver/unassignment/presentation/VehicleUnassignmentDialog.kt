@@ -101,7 +101,7 @@ fun VehicleUnassignmentDialog(
                         Text("Автомобиль", modifier = Modifier.alpha(0.7f))
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            "${driver.vehicle!!.model} • ${driver.vehicle.licensePlate} • г/п: ${driver.vehicle.payloadCapacity} кг.",
+                            "${driver.vehicle!!.model} • ${driver.vehicle.licensePlate} • г/п: ${driver.vehicle.payloadCapacity} кг",
                             fontSize = 16.sp
                         )
                     }

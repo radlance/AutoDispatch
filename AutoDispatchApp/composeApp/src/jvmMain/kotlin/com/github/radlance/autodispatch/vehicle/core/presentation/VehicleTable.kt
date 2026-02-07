@@ -65,6 +65,9 @@ fun VehicleTable(
             DataColumn(width = TableColumnWidth.Flex(2f)) {
                 Text("Гос. номер")
             },
+            DataColumn(width = TableColumnWidth.Flex(0.2f)) {
+              Text("Грузоподъемность")
+            },
             DataColumn(width = TableColumnWidth.Flex(1.2f)) {
                 Text("Статус")
             },
@@ -100,6 +103,14 @@ fun VehicleTable(
                 cell {
                     Text(
                         text = item.licensePlate,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                cell {
+                    Text(
+                        text = "${item.payloadCapacity} кг",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
