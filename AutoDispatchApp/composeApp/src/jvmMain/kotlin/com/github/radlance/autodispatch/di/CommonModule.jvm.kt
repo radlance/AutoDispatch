@@ -58,7 +58,7 @@ val requestModule
     get() = module {
         singleOf(::KtorApiServiceJvm).bind<ApiServiceJvm>()
         singleOf(::RemoteRequestRepository).bind<RequestRepository>()
-        singleOf(::RequestViewModel)
+        viewModelOf(::RequestViewModel)
     }
 
 val changeRequestModule

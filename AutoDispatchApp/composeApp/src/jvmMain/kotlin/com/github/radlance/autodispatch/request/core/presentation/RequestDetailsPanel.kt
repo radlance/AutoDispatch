@@ -310,30 +310,73 @@ fun RequestDetailsPanel(
     }
 
     if (showApproveDocumentsDialog) {
-        val onDismissApproveDialog = {
-            showApproveDocumentsDialog = false
-            viewModel.reduce(ChangeRequestEvent.ResetApproveState)
-        }
+        val isLoading = approveDocumentsState is FetchResultUiState.Loading
+        val error = (approveDocumentsState as? FetchResultUiState.Error<String>)?.error
 
-        LaunchedEffect(approveDocumentsState) {
-            if (approveDocumentsState is FetchResultUiState.Success) {
-                onSuccessCreateRequest()
-                onDismissApproveDialog()
-                scope.launch {
-                    scrollState.animateScrollTo(0)
+        CustomDialog(
+            onDismissRequest = {
+                if (!isLoading) {
+                    showApproveDocumentsDialog = false
+                }
+            },
+            onFinish = {
+                viewModel.reduce(ChangeRequestEvent.ResetApproveState)
+            },
+            title = {
+                Text(text = "Одобрить документы", style = MaterialTheme.typography.titleLarge)
+            },
+            content = { requestDismiss ->
+                Column {
+                    error?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    Text(text = "Вы уверены, что хотите одобрить документы по этой заявке? После одобрения заявка будет завершена.")
+                }
+                LaunchedEffect(approveDocumentsState) {
+                    if (approveDocumentsState is FetchResultUiState.Success) {
+                        onSuccessCreateRequest()
+                        requestDismiss()
+                        scope.launch {
+                            scrollState.animateScrollTo(0)
+                        }
+                    }
+                }
+            },
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = requestDismiss, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(12.dp))
+                TextButton(
+                    onClick = {
+                        viewModel.reduce(
+                            ChangeRequestEvent.ClickApproveDocument(
+                                requestId = request.id
+                            )
+                        )
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Одобрить")
                 }
             }
-        }
-        ApproveDocumentDialog(
-            onDismissRequest = onDismissApproveDialog,
-            onApprove = {
-                viewModel.reduce(
-                    ChangeRequestEvent.ClickApproveDocument(
-                        requestId = request.id
-                    )
-                )
-            },
-            approveState = approveDocumentsState
         )
     }
 
