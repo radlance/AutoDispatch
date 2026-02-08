@@ -48,7 +48,9 @@ import autodispatch.composeapp.generated.resources.cancel_variant
 import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.creating_new_request
 import autodispatch.composeapp.generated.resources.edit
+import autodispatch.composeapp.generated.resources.request_cancellation
 import autodispatch.composeapp.generated.resources.request_editing
+import autodispatch.composeapp.generated.resources.you_want_to_cancel_request
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
@@ -94,27 +96,85 @@ fun ChangeRequestDialog(
             viewModel.reduce(ChangeRequestEvent.ResetCancelState)
         }
 
-        LaunchedEffect(cancelRequestState) {
-            if (cancelRequestState is FetchResultUiState.Success) {
-                onSuccessCreateRequest()
-                viewModel.reduce(ChangeRequestEvent.ResetChangeState)
-                onDismissCancelDialog()
-                onDismiss()
-            }
-        }
+        val isLoading = cancelRequestState is FetchResultUiState.Loading
+        val error = (cancelRequestState as? FetchResultUiState.Error)?.error
 
-        CancelRequestDialog(
-            onDismissDialog = onDismissCancelDialog,
-            onConfirm = {
-                viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(fieldsUiState.requestId!!))
+        CustomDialog(
+            onDismissRequest = {
+                if (!isLoading) {
+                    onDismissCancelDialog()
+                }
             },
-            onStateError = {
-                onDismissCancelDialog()
-                onDismiss()
-                onStateError(it)
+            title = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(Res.string.request_cancellation),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             },
-            cancelState = cancelRequestState,
-            requestNumber = fieldsUiState.requestNumber
+            content = { requestDismiss ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    error?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            if (error is RequestError.BaseError) {
+                                Text(
+                                    text = error.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            } else {
+                                onStateError(error.message)
+                            }
+                        }
+                    }
+
+                    Text(
+                        buildAnnotatedString {
+                            append("${stringResource(Res.string.you_want_to_cancel_request)} ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(fieldsUiState.requestNumber)
+                            }
+                            append("?")
+                        }
+                    )
+                }
+                LaunchedEffect(cancelRequestState) {
+                    if (cancelRequestState is FetchResultUiState.Success) {
+                        requestDismiss()
+                        closeBaseDialog = true
+                    }
+                }
+            },
+            buttons = { dismissRequest ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = dismissRequest, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(12.dp))
+                Button(
+                    onClick = {
+                        viewModel.reduce(
+                            ChangeRequestEvent.ClickCancelRequest(
+                                fieldsUiState.requestId!!
+                            )
+                        )
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(text = stringResource(Res.string.cancel_variant))
+                }
+            }
         )
     }
 

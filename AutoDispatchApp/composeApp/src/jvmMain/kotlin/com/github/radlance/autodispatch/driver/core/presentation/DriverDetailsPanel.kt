@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -14,7 +16,6 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.close_panel
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelectionContainer
 import com.github.radlance.autodispatch.driver.assignment.presentation.VehicleAssignmentDialog
 import com.github.radlance.autodispatch.driver.core.domain.Driver
@@ -57,31 +59,34 @@ fun DriverDetailsPanel(
     var showVehicleUnassignmentDialog by remember { mutableStateOf(false) }
 
     if (showReassignErrorDialog) {
-        val onDismiss: () -> Unit = {
-            showReassignErrorDialog = false
-            onSuccessAssignDriver()
-            scope.launch {
-                scrollState.animateScrollTo(0)
-            }
-        }
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.WarningAmber,
-                    contentDescription = null
-                )
+        CustomDialog(
+            onDismissRequest = {
+                showReassignErrorDialog = false
+                onSuccessAssignDriver()
+                scope.launch {
+                    scrollState.animateScrollTo(0)
+                }
             },
             title = {
-                Text(text = "Ошибка")
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.WarningAmber,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(text = "Ошибка", style = MaterialTheme.typography.titleLarge)
+                }
             },
-            text = {
+            content = {
                 Text(text = reassignErrorMessage)
             },
-            dismissButton = {},
-            confirmButton = {
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
                 Button(
-                    onClick = onDismiss
+                    onClick = requestDismiss
                 ) {
                     Text(text = "ОК")
                 }
