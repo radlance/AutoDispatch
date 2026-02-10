@@ -16,20 +16,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.PopupProperties
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Scale
 import coil3.size.Size
+import com.github.radlance.autodispatch.common.presentation.SimpleCustomDialog
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FullScreenImageDialog(
     onDismissRequest: () -> Unit,
@@ -39,12 +41,13 @@ fun FullScreenImageDialog(
     documents: List<String>? = null
 ) {
     val context = LocalPlatformContext.current
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = DialogProperties(
+    SimpleCustomDialog(
+        properties = PopupProperties(
+            focusable = true,
             usePlatformDefaultWidth = false
-        )
-    ) {
+        ),
+        onDismissRequest = onDismissRequest
+    ) { requestDismiss ->
         Surface(
             modifier = modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background.copy(alpha = 0.3f)
@@ -68,7 +71,7 @@ fun FullScreenImageDialog(
                 )
 
                 IconButton(
-                    onClick = onDismissRequest,
+                    onClick = requestDismiss,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(16.dp)

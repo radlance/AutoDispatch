@@ -34,9 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
+import com.github.radlance.autodispatch.common.presentation.SimpleCustomDialog
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.change.domain.PointValidationError
 import com.github.radlance.autodispatch.request.core.domain.Point
@@ -85,7 +85,7 @@ fun PointSelectionDialog(
     pointValidationState.Reduce(
         onLoading = {
             showMapView = false
-            Dialog(onDismissRequest = {}) {
+            SimpleCustomDialog(onDismissRequest = {}) {
                 Box(
                     modifier = Modifier.clip(
                         RoundedCornerShape(18.dp)

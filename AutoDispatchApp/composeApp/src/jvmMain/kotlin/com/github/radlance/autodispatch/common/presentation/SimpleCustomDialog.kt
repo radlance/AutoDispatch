@@ -13,10 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +26,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 
@@ -37,10 +33,12 @@ import androidx.compose.ui.window.PopupProperties
 @Composable
 fun SimpleCustomDialog(
     onDismissRequest: () -> Unit,
-    content: @Composable (requestDismiss: () -> Unit) -> Unit,
     onFinish: () -> Unit = {},
     allowDismiss: Boolean = true,
-    modifier: Modifier = Modifier,
+    properties: PopupProperties = PopupProperties(
+        focusable = true
+    ),
+    content: @Composable (requestDismiss: () -> Unit) -> Unit
 ) {
     val visibleState = remember { MutableTransitionState(false) }
     var dismissRequested by remember { mutableStateOf(false) }
@@ -54,9 +52,7 @@ fun SimpleCustomDialog(
     DisableSelection {
         Popup(
             onDismissRequest = attemptDismiss,
-            properties = PopupProperties(
-                focusable = true
-            )
+            properties = properties
         ) {
             BackHandler(enabled = (visibleState.currentState || visibleState.targetState) && allowDismiss) {
                 attemptDismiss()
@@ -124,16 +120,8 @@ fun SimpleCustomDialog(
                         )
                     )
                 ) {
-                    Surface(
-                        modifier = modifier
-                            .widthIn(max = 560.dp),
-                        shape = AlertDialogDefaults.shape,
-                        color = AlertDialogDefaults.containerColor,
-                        tonalElevation = AlertDialogDefaults.TonalElevation
-                    ) {
-                        Box {
-                            content(attemptDismiss)
-                        }
+                    Box {
+                        content(attemptDismiss)
                     }
                 }
             }
