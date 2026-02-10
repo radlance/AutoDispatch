@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.change.domain.PointValidationError
 import com.github.radlance.autodispatch.request.core.domain.Point
@@ -63,6 +63,7 @@ fun PointSelectionDialog(
     var markerLocation by remember { mutableStateOf<Coordinate?>(null) }
     var resultPoint by remember { mutableStateOf<Point?>(null) }
     var showMapView by remember { mutableStateOf(true) }
+    var shouldClose by remember { mutableStateOf(false) }
 
     val finalSelectedCoordinate: Coordinate? = remember(markerLocation, searchResult) {
         if (markerLocation != null) {
@@ -95,10 +96,7 @@ fun PointSelectionDialog(
             }
         },
         onSuccess = {
-            showMapView = true
-            viewModel.resetValidationState()
-            onConfirm(resultPoint!!)
-            onDismissRequest()
+            shouldClose = true
         },
         onError = { validationError ->
             CustomDialog(
@@ -142,10 +140,15 @@ fun PointSelectionDialog(
         }
     )
 
-    AlertDialog(
+    ExpandedCustomDialog(
         modifier = modifier.fillMaxSize(),
         onDismissRequest = onDismissRequest,
-        text = {
+        title = {},
+        onFinish = {
+            resultPoint?.let(onConfirm)
+            viewModel.resetValidationState()
+        },
+        content = { requestDismiss ->
             fetchPointState.Reduce(
                 onLoading = {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -212,8 +215,15 @@ fun PointSelectionDialog(
                     }
                 }
             )
+            LaunchedEffect(shouldClose) {
+                if (shouldClose) {
+                    requestDismiss()
+                    shouldClose = false
+                }
+            }
+
         },
-        confirmButton = {
+        buttons = { requestDismiss ->
             Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(onClick = {
                     placeSuggestionFieldValue = ""
@@ -223,7 +233,7 @@ fun PointSelectionDialog(
                     Text("Очистить")
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = onDismissRequest) { Text("Отмена") }
+                TextButton(onClick = requestDismiss) { Text("Отмена") }
                 Spacer(Modifier.width(12.dp))
                 Button(
                     onClick = {
@@ -244,7 +254,6 @@ fun PointSelectionDialog(
                     Text(text = "Подтвердить выбор")
                 }
             }
-        },
-        dismissButton = {}
+        }
     )
 }

@@ -143,7 +143,6 @@ fun DriverDetailsPanel(
                 }
             },
             onStateError = {
-                showVehicleAssignmentDialog = false
                 showReassignErrorDialog = true
                 reassignErrorMessage = it
             }

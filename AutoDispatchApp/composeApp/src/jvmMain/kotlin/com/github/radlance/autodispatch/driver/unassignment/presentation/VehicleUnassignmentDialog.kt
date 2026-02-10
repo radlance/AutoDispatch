@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -19,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.driver.core.domain.Driver
@@ -45,29 +49,24 @@ fun VehicleUnassignmentDialog(
     val unassignmentState by viewModel.unassignmentState.collectAsState()
     val isLoading = unassignmentState is FetchResultUiState.Loading
     val error = (unassignmentState as? FetchResultUiState.Error)?.error
-
-    val onDismissAction = {
-        onDismiss()
-        viewModel.resetState()
-    }
-
-    LaunchedEffect(unassignmentState) {
-        if (unassignmentState is FetchResultUiState.Success) {
-            onDismissAction()
-            onSuccessUnassignVehicle()
-        }
-    }
-
-    AlertDialog(
+    var callOnSuccess by remember { mutableStateOf(false) }
+    CustomDialog(
         modifier = modifier,
-        onDismissRequest = { if (!isLoading) onDismissAction() },
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        onFinish = {
+            viewModel.resetState()
+            if (callOnSuccess) {
+                onSuccessUnassignVehicle()
+                callOnSuccess = false
+            }
+        },
         title = {
             Text(
                 text = "Открепление автомобиля",
                 style = MaterialTheme.typography.headlineSmall
             )
         },
-        text = {
+        content = { requestDismiss ->
             Column(modifier = Modifier.fillMaxWidth()) {
                 error?.let {
                     Column(
@@ -90,6 +89,7 @@ fun VehicleUnassignmentDialog(
                             )
                         } else {
                             viewModel.resetState()
+                            requestDismiss()
                             onStateError(error.message)
                         }
                     }
@@ -120,13 +120,19 @@ fun VehicleUnassignmentDialog(
                     }
                 }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = { if (!isLoading) onDismissAction() }) {
-                Text(text = stringResource(Res.string.cancel))
+            LaunchedEffect(unassignmentState) {
+                if (unassignmentState is FetchResultUiState.Success) {
+                    callOnSuccess = true
+                    requestDismiss()
+                }
             }
         },
-        confirmButton = {
+        buttons = { requestDismiss ->
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = { if (!isLoading) requestDismiss() }) {
+                Text(text = stringResource(Res.string.cancel))
+            }
+            Spacer(Modifier.width(12.dp))
             Button(
                 onClick = {
                     viewModel.unassignVehicle(driver.id)

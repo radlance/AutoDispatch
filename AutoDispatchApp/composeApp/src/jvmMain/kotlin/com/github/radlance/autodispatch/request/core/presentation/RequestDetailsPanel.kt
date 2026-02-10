@@ -34,23 +34,29 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
+import autodispatch.composeapp.generated.resources.cancel_variant
+import autodispatch.composeapp.generated.resources.request_cancellation
+import autodispatch.composeapp.generated.resources.you_want_to_cancel_request
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelectionContainer
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatNumberNoTrailingZeros
+import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.assignment.presentation.DriverAssignmentDialog
-import com.github.radlance.autodispatch.request.change.presentation.CancelRequestDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestEvent
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestFieldsUiState
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
-import com.github.radlance.autodispatch.request.change.presentation.DriverUnassignmentDialog
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
@@ -193,31 +199,84 @@ fun RequestDetailsPanel(
     }
 
     if (showCancelAssignmentDialog) {
-        val onDismissCancelDialog = {
-            showCancelAssignmentDialog = false
-            viewModel.reduce(ChangeRequestEvent.ResetCancelState)
-        }
+        val isLoading = cancelRequestState is FetchResultUiState.Loading
+        val error = (cancelRequestState as? FetchResultUiState.Error)?.error
 
-        LaunchedEffect(cancelRequestState) {
-            if (cancelRequestState is FetchResultUiState.Success) {
-                onSuccessCreateRequest()
-                viewModel.reduce(ChangeRequestEvent.ResetChangeState)
-                onDismissCancelDialog()
+        CustomDialog(
+            onDismissRequest = {
+                if (!isLoading) {
+                    showCancelAssignmentDialog = false
+                }
+            },
+            onFinish = {
+                viewModel.reduce(ChangeRequestEvent.ResetCancelState)
+            },
+            title = {
+                Text(
+                    text = stringResource(Res.string.request_cancellation),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            content = { requestDismiss ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    error?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            if (error is RequestError.BaseError) {
+                                Text(
+                                    text = error.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            } else {
+                                requestDismiss()
+                                showStateErrorDialog = true
+                                stateErrorMessage = error.message
+                            }
+                        }
+                    }
+
+                    Text(
+                        buildAnnotatedString {
+                            append("${stringResource(Res.string.you_want_to_cancel_request)} ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(request.requestNumber)
+                            }
+                            append("?")
+                        }
+                    )
+                }
+                LaunchedEffect(cancelRequestState) {
+                    if (cancelRequestState is FetchResultUiState.Success) {
+                        onSuccessCreateRequest()
+                        requestDismiss()
+                    }
+                }
+            },
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = requestDismiss, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(14.dp))
+                Button(
+                    onClick = {
+                        viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(request.id))
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(text = stringResource(Res.string.cancel_variant))
+                }
             }
-        }
-
-        CancelRequestDialog(
-            onDismissDialog = onDismissCancelDialog,
-            onConfirm = {
-                viewModel.reduce(ChangeRequestEvent.ClickCancelRequest(request.id))
-            },
-            onStateError = {
-                onDismissCancelDialog()
-                showStateErrorDialog = true
-                stateErrorMessage = it
-            },
-            cancelState = cancelRequestState,
-            requestNumber = request.requestNumber
         )
     }
 
@@ -381,32 +440,73 @@ fun RequestDetailsPanel(
     }
 
     if (showDriverUnassignmentDialog) {
-        val onDismissUnassignmentDialog = {
-            showDriverUnassignmentDialog = false
-            viewModel.reduce(ChangeRequestEvent.ResetDriverUnassignmentState)
-        }
+        val isLoading = driverUnassignmentState is FetchResultUiState.Loading
+        val error = (driverUnassignmentState as? FetchResultUiState.Error)?.error
 
-        LaunchedEffect(driverUnassignmentState) {
-            if (driverUnassignmentState is FetchResultUiState.Success) {
-                onSuccessCreateRequest()
-                onDismissUnassignmentDialog()
-                scope.launch {
-                    scrollState.animateScrollTo(0)
+        CustomDialog(
+            onDismissRequest = {
+                if (!isLoading) showDriverUnassignmentDialog = false
+            },
+            onFinish = {
+                viewModel.reduce(ChangeRequestEvent.ResetDriverUnassignmentState)
+            },
+            title = {
+                Text(text = "Снятие водителя с заявки", style = MaterialTheme.typography.titleLarge)
+            },
+            content = { requestDismiss ->
+                Column {
+                    error?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            if (error is RequestError.BaseError) {
+                                Text(
+                                    text = error.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            } else {
+                                showDriverUnassignmentDialog = false
+                                showStateErrorDialog = true
+                                stateErrorMessage = error.message
+                            }
+                        }
+                    }
+                    Text(text = "Вы уверены, что хотите снять водителя с этой заявки?")
+                }
+                LaunchedEffect(driverUnassignmentState) {
+                    if (driverUnassignmentState is FetchResultUiState.Success) {
+                        onSuccessCreateRequest()
+                        requestDismiss()
+                        scope.launch {
+                            scrollState.animateScrollTo(0)
+                        }
+                    }
+                }
+            },
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = requestDismiss, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(12.dp))
+                Button(
+                    onClick = {
+                        viewModel.reduce(ChangeRequestEvent.ClickUnassignDriver(request.id))
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Снять")
                 }
             }
-        }
-        DriverUnassignmentDialog(
-            onDismissRequest = { showDriverUnassignmentDialog = false },
-            onConfirm = {
-                viewModel.reduce(ChangeRequestEvent.ClickUnassignDriver(request.id))
-
-            },
-            onStateError = {
-                onDismissUnassignmentDialog()
-                showStateErrorDialog = true
-                stateErrorMessage = it
-            },
-            unassignmentState = driverUnassignmentState
         )
     }
 
