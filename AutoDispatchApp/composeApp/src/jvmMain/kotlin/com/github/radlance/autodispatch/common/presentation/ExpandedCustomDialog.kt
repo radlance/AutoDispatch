@@ -49,22 +49,27 @@ fun ExpandedCustomDialog(
     content: @Composable (requestDismiss: () -> Unit) -> Unit,
     buttons: @Composable RowScope.(requestDismiss: () -> Unit) -> Unit,
     onFinish: () -> Unit = {},
+    allowDismiss: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val visibleState = remember { MutableTransitionState(false) }
     var dismissRequested by remember { mutableStateOf(false) }
 
+    val attemptDismiss = {
+        if (allowDismiss) {
+            dismissRequested = true
+        }
+    }
+
     DisableSelection {
         Popup(
-            onDismissRequest = { dismissRequested = true },
+            onDismissRequest = attemptDismiss,
             properties = PopupProperties(
                 focusable = true
             )
         ) {
             BackHandler(enabled = visibleState.currentState || visibleState.targetState) {
-                if (!dismissRequested) {
-                    dismissRequested = true
-                }
+                attemptDismiss()
             }
 
             LaunchedEffect(Unit) {
@@ -107,7 +112,7 @@ fun ExpandedCustomDialog(
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() }
                             ) {
-                                dismissRequested = true
+                                attemptDismiss()
                             }
                     )
                 }
@@ -140,7 +145,7 @@ fun ExpandedCustomDialog(
                         Column(
                             modifier = Modifier.padding(24.dp)
                         ) {
-                            title { dismissRequested = true }
+                            title(attemptDismiss)
 
                             Spacer(Modifier.height(16.dp))
 
@@ -149,7 +154,7 @@ fun ExpandedCustomDialog(
                                     .fillMaxWidth()
                                     .weight(1f)
                             ) {
-                                content { dismissRequested = true }
+                                content(attemptDismiss)
                             }
 
                             Spacer(Modifier.height(24.dp))
@@ -158,7 +163,7 @@ fun ExpandedCustomDialog(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                buttons { dismissRequested = true }
+                                buttons(attemptDismiss)
                             }
                         }
                     }

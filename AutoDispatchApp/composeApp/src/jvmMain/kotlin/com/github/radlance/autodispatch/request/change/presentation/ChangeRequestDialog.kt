@@ -100,10 +100,9 @@ fun ChangeRequestDialog(
         val error = (cancelRequestState as? FetchResultUiState.Error)?.error
 
         CustomDialog(
+            allowDismiss = !isLoading,
             onDismissRequest = {
-                if (!isLoading) {
-                    onDismissCancelDialog()
-                }
+                onDismissCancelDialog()
             },
             title = {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -184,10 +183,9 @@ fun ChangeRequestDialog(
 
         CustomDialog(
             modifier = modifier,
+            allowDismiss = !isLoadingRemove,
             onDismissRequest = {
-                if (!isLoadingRemove) {
-                    showRemoveDialog = false
-                }
+                showRemoveDialog = false
             },
             onFinish = { viewModel.reduce(ChangeRequestEvent.ResetRemoveState) },
             title = {
@@ -264,11 +262,8 @@ fun ChangeRequestDialog(
 
     ExpandedCustomDialog(
         modifier = modifier,
-        onDismissRequest = {
-            if (!isLoadingChange) {
-                onDismiss()
-            }
-        },
+        allowDismiss = !isLoadingChange,
+        onDismissRequest = onDismiss,
         title = {
             val title = if (isEditRequest) {
                 buildAnnotatedString {

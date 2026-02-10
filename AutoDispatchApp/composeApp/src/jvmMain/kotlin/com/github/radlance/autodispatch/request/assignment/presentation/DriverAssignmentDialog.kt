@@ -99,7 +99,8 @@ fun DriverAssignmentDialog(
     }
 
     ExpandedCustomDialog(
-        onDismissRequest = { if (!isLoading) onDismiss() },
+        allowDismiss = !isLoading,
+        onDismissRequest = onDismiss,
         title = {
             Text(
                 text = stringResource(Res.string.driver_assignment),

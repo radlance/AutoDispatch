@@ -52,7 +52,8 @@ fun VehicleUnassignmentDialog(
     var callOnSuccess by remember { mutableStateOf(false) }
     CustomDialog(
         modifier = modifier,
-        onDismissRequest = { if (!isLoading) onDismiss() },
+        allowDismiss = !isLoading,
+        onDismissRequest = onDismiss,
         onFinish = {
             viewModel.resetState()
             if (callOnSuccess) {

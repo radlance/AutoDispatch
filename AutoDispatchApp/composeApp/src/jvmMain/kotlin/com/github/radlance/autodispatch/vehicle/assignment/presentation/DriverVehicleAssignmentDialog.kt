@@ -92,7 +92,8 @@ fun DriverVehicleAssignmentDialog(
     }
 
     ExpandedCustomDialog(
-        onDismissRequest = { if (!isLoading) onDismiss() },
+        allowDismiss = !isLoading,
+        onDismissRequest = onDismiss,
         title = {
             Text(
                 text = "Назначение водителя",

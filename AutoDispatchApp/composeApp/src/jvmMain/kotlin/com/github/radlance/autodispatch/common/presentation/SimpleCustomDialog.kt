@@ -12,14 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.AlertDialogDefaults
@@ -42,11 +35,9 @@ import androidx.compose.ui.window.PopupProperties
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun CustomDialog(
+fun SimpleCustomDialog(
     onDismissRequest: () -> Unit,
-    title: @Composable (requestDismiss: () -> Unit) -> Unit,
     content: @Composable (requestDismiss: () -> Unit) -> Unit,
-    buttons: @Composable RowScope.(requestDismiss: () -> Unit) -> Unit,
     onFinish: () -> Unit = {},
     allowDismiss: Boolean = true,
     modifier: Modifier = Modifier,
@@ -68,9 +59,7 @@ fun CustomDialog(
             )
         ) {
             BackHandler(enabled = (visibleState.currentState || visibleState.targetState) && allowDismiss) {
-                if (!dismissRequested) {
-                    dismissRequested = true
-                }
+                attemptDismiss()
             }
 
             LaunchedEffect(Unit) {
@@ -137,32 +126,13 @@ fun CustomDialog(
                 ) {
                     Surface(
                         modifier = modifier
-                            .widthIn(min = 280.dp, max = 560.dp),
+                            .widthIn(max = 560.dp),
                         shape = AlertDialogDefaults.shape,
                         color = AlertDialogDefaults.containerColor,
                         tonalElevation = AlertDialogDefaults.TonalElevation
                     ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp)
-                        ) {
-                            title { attemptDismiss() }
-
-                            Spacer(Modifier.height(16.dp))
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                content { attemptDismiss() }
-                            }
-
-                            Spacer(Modifier.height(24.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                buttons { attemptDismiss() }
-                            }
+                        Box {
+                            content(attemptDismiss)
                         }
                     }
                 }

@@ -109,9 +109,8 @@ fun VehicleAssignmentDialog(
         isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && (!isReassign || driver.status == DriverStatus.Free)
 
     ExpandedCustomDialog(
-        onDismissRequest = {
-            if (!isLoading) onDismissAction()
-        },
+        allowDismiss = !isLoading,
+        onDismissRequest = onDismissAction,
         title = {
             Text(
                 text = "Назначение автомобиля",

@@ -203,10 +203,9 @@ fun RequestDetailsPanel(
         val error = (cancelRequestState as? FetchResultUiState.Error)?.error
 
         CustomDialog(
+            allowDismiss = !isLoading,
             onDismissRequest = {
-                if (!isLoading) {
-                    showCancelAssignmentDialog = false
-                }
+                showCancelAssignmentDialog = false
             },
             onFinish = {
                 viewModel.reduce(ChangeRequestEvent.ResetCancelState)
@@ -287,10 +286,9 @@ fun RequestDetailsPanel(
         val error = (rejectDocumentsState as? FetchResultUiState.Error<String>)?.error
 
         CustomDialog(
+            allowDismiss = !isLoading,
             onDismissRequest = {
-                if (!isLoading) {
-                    showRejectDocumentsDialog = false
-                }
+                showRejectDocumentsDialog = false
             },
             onFinish = {
                 viewModel.reduce(ChangeRequestEvent.ResetRejectState)
@@ -373,10 +371,9 @@ fun RequestDetailsPanel(
         val error = (approveDocumentsState as? FetchResultUiState.Error<String>)?.error
 
         CustomDialog(
+            allowDismiss = !isLoading,
             onDismissRequest = {
-                if (!isLoading) {
-                    showApproveDocumentsDialog = false
-                }
+                showApproveDocumentsDialog = false
             },
             onFinish = {
                 viewModel.reduce(ChangeRequestEvent.ResetApproveState)
@@ -444,8 +441,9 @@ fun RequestDetailsPanel(
         val error = (driverUnassignmentState as? FetchResultUiState.Error)?.error
 
         CustomDialog(
+            allowDismiss = !isLoading,
             onDismissRequest = {
-                if (!isLoading) showDriverUnassignmentDialog = false
+                showDriverUnassignmentDialog = false
             },
             onFinish = {
                 viewModel.reduce(ChangeRequestEvent.ResetDriverUnassignmentState)

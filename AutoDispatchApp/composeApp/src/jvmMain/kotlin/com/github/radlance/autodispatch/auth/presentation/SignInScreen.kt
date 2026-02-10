@@ -32,12 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
 import com.github.radlance.autodispatch.common.presentation.BaseColumn
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.SimpleCustomDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -74,15 +74,18 @@ private fun SignInScreen(
     ) {
         signInResultUiState.Reduce(
             onLoading = {
-                Dialog(onDismissRequest = {}) {
-                    Box(
-                        modifier = Modifier.clip(
-                            RoundedCornerShape(18.dp)
-                        ).background(AlertDialogDefaults.containerColor)
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier.padding(24.dp))
+                SimpleCustomDialog(
+                    onDismissRequest = {},
+                    content = {
+                        Box(
+                            modifier = Modifier.clip(
+                                RoundedCornerShape(18.dp)
+                            ).background(AlertDialogDefaults.containerColor)
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.padding(24.dp))
+                        }
                     }
-                }
+                )
             },
             onSuccess = {
                 if (it.roleId == 1) {
