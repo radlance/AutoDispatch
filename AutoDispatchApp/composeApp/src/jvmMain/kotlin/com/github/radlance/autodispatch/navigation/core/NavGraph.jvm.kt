@@ -1,9 +1,13 @@
 package com.github.radlance.autodispatch.navigation.core
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -12,6 +16,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -21,6 +28,7 @@ import autodispatch.composeapp.generated.resources.ok
 import autodispatch.composeapp.generated.resources.session_expired
 import autodispatch.composeapp.generated.resources.session_expired_description
 import com.github.radlance.autodispatch.auth.presentation.SignInScreen
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.controlpanel.presentation.ControlPanelScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,29 +42,37 @@ actual fun NavGraph(navController: NavHostController) {
     var showExpiredSessionDialog by rememberSaveable { mutableStateOf(false) }
 
     if (showExpiredSessionDialog) {
-
-        val onDismissRequest: () -> Unit = {
-            showExpiredSessionDialog = false
-            navigationVieModel.updateExpirationState()
-            navController.navigate(SignIn) {
-                popUpTo<ControlPanel> { inclusive = true }
-            }
-        }
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            confirmButton = {
-                TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(Res.string.ok))
+        CustomDialog(
+            onDismissRequest = {
+                showExpiredSessionDialog = false
+            },
+            onFinish = {
+                navigationVieModel.updateExpirationState()
+                navController.navigate(SignIn) {
+                    popUpTo<ControlPanel> { inclusive = true }
                 }
             },
-            icon = {
-                Icon(imageVector = Icons.Filled.Info, contentDescription = null)
-            },
             title = {
-                Text(text = stringResource(Res.string.session_expired))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(imageVector = Icons.Filled.Info, contentDescription = null)
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(Res.string.session_expired),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             },
-            text = {
+            content = {
                 Text(text = stringResource(Res.string.session_expired_description))
+            },
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = requestDismiss) {
+                    Text(text = stringResource(Res.string.ok))
+                }
             }
         )
     }

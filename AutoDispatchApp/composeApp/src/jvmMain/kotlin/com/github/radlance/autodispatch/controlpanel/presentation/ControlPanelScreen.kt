@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +52,7 @@ import autodispatch.composeapp.generated.resources.exit
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.you_want_to_logout
 import com.github.radlance.autodispatch.auth.presentation.AppIconBox
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.shimmerBackground
 import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.navigation.core.DrawerNavGraph
@@ -84,32 +84,42 @@ fun ControlPanelScreen(
     val navHostController = rememberNavController()
     val navigationState = rememberNavigationState(navHostController)
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var shouldLogout by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
-        AlertDialog(
+        CustomDialog(
             modifier = modifier,
             onDismissRequest = {
                 showLogoutDialog = false
             },
-            title = {
-                Text(text = stringResource(Res.string.exit))
+            onFinish = {
+                if (shouldLogout) {
+                    viewModel.logout()
+                    navigateToSignInScreen()
+                    shouldLogout = false
+                }
             },
-            text = {
+            title = {
+                Text(
+                    text = stringResource(Res.string.exit),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            content = {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.you_want_to_logout))
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = requestDismiss) {
                     Text(text = stringResource(Res.string.cancel))
                 }
-            },
-            confirmButton = {
+                Spacer(Modifier.width(12.dp))
                 TextButton(
                     onClick = {
-                        viewModel.logout()
-                        showLogoutDialog = false
-                        navigateToSignInScreen()
+                        shouldLogout = true
+                        requestDismiss()
                     }
                 ) {
                     Text(text = stringResource(Res.string.exit))

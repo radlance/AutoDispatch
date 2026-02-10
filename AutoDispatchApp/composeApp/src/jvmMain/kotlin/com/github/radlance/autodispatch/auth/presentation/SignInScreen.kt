@@ -19,7 +19,6 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -37,6 +36,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
 import com.github.radlance.autodispatch.common.presentation.BaseColumn
+import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -88,27 +88,30 @@ private fun SignInScreen(
                 if (it.roleId == 1) {
                     navigateToControlPanel()
                 } else {
-                    AlertDialog(
+                    CustomDialog(
                         onDismissRequest = {
                             onEvent(SignInEvent.ResetState)
                         },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.WarningAmber,
-                                contentDescription = null
-                            )
-                        },
                         title = {
-                            Text(text = "Ошибка")
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.WarningAmber,
+                                    contentDescription = null
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                Text(text = "Ошибка", style = MaterialTheme.typography.titleLarge)
+                            }
                         },
-                        text = {
+                        content = {
                             Text(text = "Этот аккаунт принадлежит водителю. Вход в приложение диспетчера с такими данными невозможен.")
                         },
-                        confirmButton = {
+                        buttons = { requestDismiss ->
+                            Spacer(Modifier.weight(1f))
                             TextButton(
-                                onClick = {
-                                    onEvent(SignInEvent.ResetState)
-                                }
+                                onClick = requestDismiss
                             ) {
                                 Text(text = "ОК")
                             }
@@ -116,26 +119,31 @@ private fun SignInScreen(
                     )
                 }
             },
-            onError = {
-                AlertDialog(
+            onError = { message ->
+                CustomDialog(
                     onDismissRequest = {
                         onEvent(SignInEvent.ResetState)
                     },
-                    icon = {
-                        Icon(imageVector = Icons.Outlined.WarningAmber, contentDescription = null)
-                    },
                     title = {
-                        Text(text = "Ошибка")
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.WarningAmber,
+                                contentDescription = null
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text(text = "Ошибка", style = MaterialTheme.typography.titleLarge)
+                        }
                     },
-                    text = {
-                        Text(text = it)
+                    content = {
+                        Text(text = message)
                     },
-                    dismissButton = {},
-                    confirmButton = {
+                    buttons = { requestDismiss ->
+                        Spacer(Modifier.weight(1f))
                         TextButton(
-                            onClick = {
-                                onEvent(SignInEvent.ResetState)
-                            }
+                            onClick = requestDismiss
                         ) {
                             Text(text = "ОК")
                         }
