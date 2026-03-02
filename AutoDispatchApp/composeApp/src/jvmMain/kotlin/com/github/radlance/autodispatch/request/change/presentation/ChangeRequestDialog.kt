@@ -52,7 +52,6 @@ import autodispatch.composeapp.generated.resources.request_cancellation
 import autodispatch.composeapp.generated.resources.request_editing
 import autodispatch.composeapp.generated.resources.you_want_to_cancel_request
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
-import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.core.domain.CargoType
@@ -260,7 +259,7 @@ fun ChangeRequestDialog(
     val isLoadingChange = changeRequestState is FetchResultUiState.Loading
     val errorChange = (changeRequestState as? FetchResultUiState.Error)?.error
 
-    ExpandedCustomDialog(
+    CustomDialog(
         modifier = modifier,
         allowDismiss = !isLoadingChange,
         onDismissRequest = onDismiss,
