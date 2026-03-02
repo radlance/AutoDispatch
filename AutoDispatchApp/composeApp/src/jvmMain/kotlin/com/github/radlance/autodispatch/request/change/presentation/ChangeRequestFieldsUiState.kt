@@ -26,4 +26,6 @@ data class ChangeRequestFieldsUiState(
     val unloadingFieldLatValue: Double? = null,
     val unloadingFieldLonValue: Double? = null,
     val additionalInfoFieldValue: String = "",
+    val plannedLoadingAt: String = "",
+    val plannedUnloadingAt: String = ""
 )

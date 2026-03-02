@@ -152,6 +152,18 @@ class ChangeRequestViewModel(
                 }
             }
 
+            override fun changePlannedLoadingAt(value: String) {
+                fieldsUiStateMutable.update { state ->
+                    state.copy(plannedLoadingAt = value)
+                }
+            }
+
+            override fun changePlannedUnloadingAt(value: String) {
+                fieldsUiStateMutable.update { state ->
+                    state.copy(plannedUnloadingAt = value)
+                }
+            }
+
             override fun changeAdditionalInfo(value: String) {
                 fieldsUiStateMutable.update { state ->
                     state.copy(additionalInfoFieldValue = value)
@@ -175,7 +187,9 @@ class ChangeRequestViewModel(
                 cargoUnloadingLon: Double,
                 cargoUnloadingLat: Double,
                 additionalInfo: String?,
-                requestId: Int?
+                requestId: Int?,
+                plannedLoadingAt: String,
+                plannedUnloadingAt: String
             ) {
                 with(validator) {
                     fieldsUiStateMutable.update { state ->
@@ -222,7 +236,9 @@ class ChangeRequestViewModel(
                                     customerPhone = companyPhone,
                                     originId = originId,
                                     destinationId = destinationId,
-                                    transportationDescription = additionalInfo
+                                    transportationDescription = additionalInfo,
+                                    plannedLoadingAt = plannedLoadingAt,
+                                    plannedUnloadingAt = plannedUnloadingAt
                                 )
                                 requestId?.let {
                                     repository.editRequest(requestId, request)
@@ -259,7 +275,9 @@ class ChangeRequestViewModel(
                         unloadingFieldAddressValue = "",
                         unloadingFieldLatValue = null,
                         unloadingFieldLonValue = null,
-                        additionalInfoFieldValue = ""
+                        additionalInfoFieldValue = "",
+                        plannedLoadingAt = "",
+                        plannedUnloadingAt = ""
                     )
                 }
 

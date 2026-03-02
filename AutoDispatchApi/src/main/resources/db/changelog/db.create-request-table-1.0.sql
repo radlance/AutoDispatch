@@ -20,5 +20,9 @@ CREATE TABLE request
     updated_at                 TIMESTAMP WITH TIME ZONE,
     request_number             VARCHAR(6) UNIQUE NOT NULL,
     transportation_description TEXT,
-    rejection_reason           TEXT
+    rejection_reason           TEXT,
+    planned_loading_at         TIMESTAMP WITH TIME ZONE,
+    planned_unloading_at       TIMESTAMP WITH TIME ZONE,
+    actual_loading_at          TIMESTAMP WITH TIME ZONE,
+    actual_unloading_at        TIMESTAMP WITH TIME ZONE
 );

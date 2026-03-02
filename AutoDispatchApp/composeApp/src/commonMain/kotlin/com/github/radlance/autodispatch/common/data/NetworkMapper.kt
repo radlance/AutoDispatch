@@ -98,6 +98,10 @@ fun RequestDto.toRequest(): Request {
         customer = customer.toCustomer(),
         vehicle = vehicle?.toVehicle(),
         transportationDescription = transportationDescription,
+        plannedLoadingAt = plannedLoadingAt.toLocalDateTimeFromUtc(),
+        plannedUnloadingAt = plannedUnloadingAt.toLocalDateTimeFromUtc(),
+        actualLoadingAt = actualLoadingAt?.toLocalDateTimeFromUtc(),
+        actualUnloadingAt = actualUnloadingAt?.toLocalDateTimeFromUtc(),
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
         documents = documents.map { it.toDeliveryDocument() }

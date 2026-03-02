@@ -20,6 +20,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
+import java.time.format.DateTimeFormatter
 
 class RequestRepository {
 
@@ -42,6 +43,10 @@ class RequestRepository {
         RequestTable.id,
         RequestTable.requestNumber,
         RequestTable.transportationDescription,
+        RequestTable.plannedLoadingAt,
+        RequestTable.plannedUnloadingAt,
+        RequestTable.actualLoadingAt,
+        RequestTable.actualUnloadingAt,
         RequestStatusTable.id,
         RequestStatusTable.name,
         originCity[CityTable.name].alias("origin_name"),
@@ -84,9 +89,14 @@ class RequestRepository {
                 payloadCapacity = row[VehicleTable.payloadCapacity]
             )
         }
+        val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
         return Request(
             id = row[RequestTable.id].value,
             requestNumber = row[RequestTable.requestNumber],
+            plannedLoadingAt = row[RequestTable.plannedLoadingAt]?.format(formatter),
+            plannedUnloadingAt = row[RequestTable.plannedUnloadingAt]?.format(formatter),
+            actualLoadingAt = row[RequestTable.actualLoadingAt]?.format(formatter),
+            actualUnloadingAt = row[RequestTable.actualUnloadingAt]?.format(formatter),
             status = Status(
                 id = row[RequestStatusTable.id].value,
                 name = row[RequestStatusTable.name]
@@ -592,6 +602,8 @@ class RequestRepository {
         req: CreateRequest,
         userId: Int
     ) {
+        row[RequestTable.plannedLoadingAt] = java.time.OffsetDateTime.parse(req.plannedLoadingAt)
+        row[RequestTable.plannedUnloadingAt] = java.time.OffsetDateTime.parse(req.plannedUnloadingAt)
         row[RequestTable.createdById] = userId
         row[RequestTable.loadingAddress] = req.loadingAddress
         row[RequestTable.loadingLat] = req.loadingLat

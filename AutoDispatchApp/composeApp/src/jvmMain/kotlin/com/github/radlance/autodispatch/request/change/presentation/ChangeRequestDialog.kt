@@ -31,7 +31,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +60,10 @@ import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import kotlinx.coroutines.launch
 
 @Composable
 fun ChangeRequestDialog(
@@ -84,6 +90,8 @@ fun ChangeRequestDialog(
     val changeRequestState by viewModel.changeRequestState.collectAsState()
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
     val removeRequestState by viewModel.removeRequestState.collectAsState()
+    val fieldAnchors = remember { mutableStateMapOf<ChangeRequestFieldAnchor, Int>() }
+    val scope = rememberCoroutineScope()
 
     val scrollState = rememberScrollState()
     val screenHeight = LocalWindowInfo.current.containerSize.height
@@ -315,6 +323,7 @@ fun ChangeRequestDialog(
                         onEvent = viewModel::reduce,
                         scrollState = scrollState,
                         fieldsUiState = fieldsUiState,
+                        onAnchorPositioned = { anchor, y -> fieldAnchors[anchor] = y }
                     )
                     if (!isLoadingChange) {
                         VerticalScrollbar(
@@ -388,7 +397,6 @@ fun ChangeRequestDialog(
                             }
                         }
                     }
-
                 }
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = requestDismiss, enabled = !isLoadingChange) {
@@ -396,19 +404,17 @@ fun ChangeRequestDialog(
                 }
                 Spacer(Modifier.width(12.dp))
                 Button(
-                    enabled = with(fieldsUiState) {
-                        departureCity != null
-                                && destinationCity != null
-                                && cargoType != null
-                                && companyNameFieldValue.isNotBlank()
-                                && companyEmailFieldValue.isNotBlank()
-                                && companyPhoneFieldValue.isNotBlank()
-                                && cargoWeightFieldValue.isNotBlank()
-                                && (loadingFieldLatValue != null && loadingFieldLonValue != null)
-                                && (unloadingFieldLatValue != null && unloadingFieldLonValue != null)
-                                && !isLoadingChange
-                    },
+                    enabled = !isLoadingChange,
                     onClick = {
+                        firstInvalidAnchor(fieldsUiState)?.let { invalidAnchor ->
+                            fieldAnchors[invalidAnchor]?.let { targetY ->
+                                scope.launch {
+                                    scrollState.animateScrollTo((targetY - 24).coerceAtLeast(0))
+                                }
+                            }
+                            return@Button
+                        }
+
                         if (isEditRequest) {
                             if (fieldsUiState == currentFieldsUiState) {
                                 requestDismiss()
@@ -441,7 +447,9 @@ fun ChangeRequestDialog(
                                     cargoUnloadingLat = unloadingFieldLatValue!!,
                                     cargoUnloadingLon = unloadingFieldLonValue!!,
                                     additionalInfo = additionalInfoFieldValue,
-                                    requestId = requestId
+                                    requestId = requestId,
+                                    plannedLoadingAt = plannedLoadingAt,
+                                    plannedUnloadingAt = plannedUnloadingAt
                                 )
                             )
                         }
@@ -455,4 +463,77 @@ fun ChangeRequestDialog(
             }
         }
     )
+}
+
+private fun firstInvalidAnchor(fieldsUiState: ChangeRequestFieldsUiState): ChangeRequestFieldAnchor? {
+    with(fieldsUiState) {
+        if (departureCity == null || destinationCity == null) {
+            return ChangeRequestFieldAnchor.ROUTE
+        }
+        if (plannedLoadingAt.isBlank() || plannedUnloadingAt.isBlank()) {
+            return ChangeRequestFieldAnchor.PLANNED_DATE_TIME
+        }
+        if (validatePlannedDateTime(plannedLoadingAt, plannedUnloadingAt) != null) {
+            return ChangeRequestFieldAnchor.PLANNED_DATE_TIME
+        }
+        if (
+            companyNameFieldValue.isBlank()
+            || companyEmailFieldValue.isBlank()
+            || companyPhoneFieldValue.isBlank()
+            || companyEmailErrorMessage.isNotBlank()
+            || companyPhoneErrorMessage.isNotBlank()
+        ) {
+            return ChangeRequestFieldAnchor.CLIENT_INFO
+        }
+        if (
+            cargoType == null
+            || cargoWeightFieldValue.isBlank()
+            || cargoWeightErrorMessage.isNotBlank()
+            || cargoVolumeErrorMessage.isNotBlank()
+        ) {
+            return ChangeRequestFieldAnchor.CARGO_INFO
+        }
+        if (loadingFieldLatValue == null || loadingFieldLonValue == null) {
+            return ChangeRequestFieldAnchor.LOADING_POINT
+        }
+        if (unloadingFieldLatValue == null || unloadingFieldLonValue == null) {
+            return ChangeRequestFieldAnchor.UNLOADING_POINT
+        }
+    }
+
+    return null
+}
+
+private fun validatePlannedDateTime(
+    plannedLoadingAt: String,
+    plannedUnloadingAt: String
+): String? {
+    if (plannedLoadingAt.isBlank()) return "Выберите ожидаемую дату и время загрузки"
+    if (plannedUnloadingAt.isBlank()) return "Выберите ожидаемую дату и время разгрузки"
+
+    val loadingAt = parsePlannedDateTime(plannedLoadingAt)
+        ?: return "Неверный формат даты и времени загрузки"
+    val unloadingAt = parsePlannedDateTime(plannedUnloadingAt)
+        ?: return "Неверный формат даты и времени разгрузки"
+
+    if (loadingAt.isBefore(OffsetDateTime.now())) {
+        return "Дата и время загрузки не должны быть в прошлом"
+    }
+
+    if (unloadingAt.isBefore(loadingAt)) {
+        return "Дата и время разгрузки не могут быть раньше загрузки"
+    }
+
+    return null
+}
+
+private fun parsePlannedDateTime(rawValue: String): OffsetDateTime? {
+    if (rawValue.isBlank()) return null
+
+    return runCatching { OffsetDateTime.parse(rawValue) }.getOrNull()
+        ?: runCatching {
+            val local = LocalDateTime.parse(rawValue)
+            val offset = ZoneId.systemDefault().rules.getOffset(local)
+            OffsetDateTime.of(local, offset)
+        }.getOrNull()
 }

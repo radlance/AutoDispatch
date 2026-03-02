@@ -4,30 +4,46 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePickerLayoutType
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material3.TimePicker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,6 +72,7 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.volume_label
 import autodispatch.composeapp.generated.resources.weight_label
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
+import com.github.radlance.autodispatch.common.presentation.SimpleCustomDialog
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Customer
@@ -63,8 +80,26 @@ import com.github.radlance.autodispatch.request.core.presentation.PhoneVisualTra
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.WeightIcon
 import org.jetbrains.compose.resources.stringResource
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 private enum class PointTarget { LOADING, UNLOADING }
+private enum class DateTarget { LOADING, UNLOADING }
+
+enum class ChangeRequestFieldAnchor {
+    ROUTE,
+    PLANNED_DATE_TIME,
+    CLIENT_INFO,
+    CARGO_INFO,
+    LOADING_POINT,
+    UNLOADING_POINT
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,11 +110,16 @@ fun ChangeRequestFields(
     onEvent: (ChangeRequestEvent) -> Unit,
     fieldsUiState: ChangeRequestFieldsUiState,
     scrollState: ScrollState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAnchorPositioned: (ChangeRequestFieldAnchor, Int) -> Unit = { _, _ -> }
 ) {
     var showPointSelectionDialog by rememberSaveable { mutableStateOf(false) }
     var pointSelectionTarget by rememberSaveable { mutableStateOf<PointTarget?>(null) }
     var selectedCity by rememberSaveable { mutableStateOf<City?>(null) }
+    var showDatePickerDialog by rememberSaveable { mutableStateOf(false) }
+    var showTimePickerDialog by rememberSaveable { mutableStateOf(false) }
+    var datePickerTarget by rememberSaveable { mutableStateOf<DateTarget?>(null) }
+    var selectedDateForTimePicker by rememberSaveable { mutableStateOf<String?>(null) }
 
     if (showPointSelectionDialog) {
         PointSelectionDialog(
@@ -101,11 +141,76 @@ fun ChangeRequestFields(
         )
     }
 
+    if (showDatePickerDialog) {
+        val isLoadingDate = datePickerTarget == DateTarget.LOADING
+        val currentValue = if (isLoadingDate) {
+            fieldsUiState.plannedLoadingAt
+        } else {
+            fieldsUiState.plannedUnloadingAt
+        }
+
+        PlannedDatePickerDialog(
+            title = if (isLoadingDate) {
+                "Ожидаемая дата загрузки"
+            } else {
+                "Ожидаемая дата разгрузки"
+            },
+            initialDateValue = currentValue,
+            onDismissRequest = { showDatePickerDialog = false },
+            onConfirm = { value ->
+                selectedDateForTimePicker = value
+                showTimePickerDialog = true
+            }
+        )
+    }
+
+    if (showTimePickerDialog) {
+        val isLoadingDate = datePickerTarget == DateTarget.LOADING
+        val currentValue = if (isLoadingDate) {
+            fieldsUiState.plannedLoadingAt
+        } else {
+            fieldsUiState.plannedUnloadingAt
+        }
+
+        PlannedTimePickerDialog(
+            title = if (isLoadingDate) {
+                "Ожидаемое время загрузки"
+            } else {
+                "Ожидаемое время разгрузки"
+            },
+            initialDateTimeValue = currentValue,
+            onDismissRequest = {
+                showTimePickerDialog = false
+                selectedDateForTimePicker = null
+            },
+            onConfirm = { hour, minute ->
+                val selectedDate = selectedDateForTimePicker
+                    ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                    ?: rememberParsedDateTime(currentValue)?.toLocalDate()
+                    ?: LocalDate.now()
+                val value = toServerOffsetDateTimeValue(selectedDate, hour, minute)
+                when (datePickerTarget) {
+                    DateTarget.LOADING -> onEvent(ChangeRequestEvent.ChangePlannedLoadingAt(value))
+                    DateTarget.UNLOADING -> onEvent(ChangeRequestEvent.ChangePlannedUnloadingAt(value))
+                    null -> Unit
+                }
+                selectedDateForTimePicker = null
+            }
+        )
+    }
+
 
     Column(modifier = modifier.verticalScroll(scrollState)) {
         Text(text = stringResource(Res.string.route), fontSize = 18.sp)
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
-        Row {
+        Row(
+            modifier = Modifier.onGloballyPositioned {
+                onAnchorPositioned(
+                    ChangeRequestFieldAnchor.ROUTE,
+                    it.positionInParent().y.toInt()
+                )
+            }
+        ) {
             CustomDropDownMenu(
                 label = stringResource(Res.string.from),
                 selectedOption = cities.find { fieldsUiState.departureCity == it }?.name,
@@ -146,6 +251,59 @@ fun ChangeRequestFields(
                 )
             }
         }
+        Spacer(Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.onGloballyPositioned {
+                onAnchorPositioned(
+                    ChangeRequestFieldAnchor.PLANNED_DATE_TIME,
+                    it.positionInParent().y.toInt()
+                )
+            }
+        ) {
+            OutlinedButton(
+                onClick = {
+                    datePickerTarget = DateTarget.LOADING
+                    showDatePickerDialog = true
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Outlined.CalendarMonth, null)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = if (fieldsUiState.plannedLoadingAt.isBlank()) {
+                        "Ожидаемая дата загрузки"
+                    } else {
+                        "Загр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedLoadingAt)}"
+                    },
+                    fontSize = if (fieldsUiState.plannedLoadingAt.isBlank()) 12.sp else 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            OutlinedButton(
+                onClick = {
+                    datePickerTarget = DateTarget.UNLOADING
+                    showDatePickerDialog = true
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Outlined.CalendarMonth, null)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = if (fieldsUiState.plannedUnloadingAt.isBlank()) {
+                        "Ожидаемая дата разгрузки"
+                    } else {
+                        "Разгр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedUnloadingAt)}"
+                    },
+                    fontSize = if (fieldsUiState.plannedUnloadingAt.isBlank()) 12.sp else 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
 
         Spacer(Modifier.height(32.dp))
         Text(text = stringResource(Res.string.client_info), fontSize = 18.sp)
@@ -169,9 +327,16 @@ fun ChangeRequestFields(
                 onEvent(ChangeRequestEvent.ChangeCompanyEmail(company.email))
                 onEvent(ChangeRequestEvent.ChangeCompanyPhone(company.phoneNumber.drop(2)))
             },
-            modifier = Modifier.fillMaxWidth(),
             isRequired = true,
-            leadingIcon = Icons.Outlined.Person
+            leadingIcon = Icons.Outlined.Person,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned {
+                    onAnchorPositioned(
+                        ChangeRequestFieldAnchor.CLIENT_INFO,
+                        it.positionInParent().y.toInt()
+                    )
+                }
         )
 
         Spacer(Modifier.height(16.dp))
@@ -226,7 +391,14 @@ fun ChangeRequestFields(
                 onEvent(ChangeRequestEvent.ChangeCargoType(cargoTypes.first { option == it.name }))
             },
             hint = stringResource(Res.string.choice_type),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned {
+                    onAnchorPositioned(
+                        ChangeRequestFieldAnchor.CARGO_INFO,
+                        it.positionInParent().y.toInt()
+                    )
+                },
             isRequired = true
         ) {
             Text(
@@ -291,7 +463,14 @@ fun ChangeRequestFields(
             fontSize = 18.sp
         )
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp))
-        Column {
+        Column(
+            modifier = Modifier.onGloballyPositioned {
+                onAnchorPositioned(
+                    ChangeRequestFieldAnchor.LOADING_POINT,
+                    it.positionInParent().y.toInt()
+                )
+            }
+        ) {
             Text(
                 text = buildAnnotatedString {
                     append(stringResource(Res.string.loading_point))
@@ -347,7 +526,14 @@ fun ChangeRequestFields(
                 append(stringResource(Res.string.unloading_point))
                 withStyle(SpanStyle(MaterialTheme.colorScheme.error)) { append(" *") }
             },
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .onGloballyPositioned {
+                    onAnchorPositioned(
+                        ChangeRequestFieldAnchor.UNLOADING_POINT,
+                        it.positionInParent().y.toInt()
+                    )
+                }
         )
 
         if (fieldsUiState.unloadingFieldLatValue == null || fieldsUiState.unloadingFieldLonValue == null) {
@@ -404,4 +590,160 @@ fun ChangeRequestFields(
             )
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlannedDatePickerDialog(
+    title: String,
+    initialDateValue: String,
+    onDismissRequest: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    val initialDate = rememberDatePickerMillis(initialDateValue)
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate)
+
+    SimpleCustomDialog(onDismissRequest = onDismissRequest) { requestDismiss ->
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = AlertDialogDefaults.containerColor
+        ) {
+            Column(
+                modifier = Modifier
+                    .width(420.dp)
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(8.dp))
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = requestDismiss) {
+                        Text("Отмена")
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Button(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let { selectedMillis ->
+                                onConfirm(epochMillisToIsoDate(selectedMillis))
+                            }
+                            requestDismiss()
+                        },
+                        enabled = datePickerState.selectedDateMillis != null
+                    ) {
+                        Text("Выбрать")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlannedTimePickerDialog(
+    title: String,
+    initialDateTimeValue: String,
+    onDismissRequest: () -> Unit,
+    onConfirm: (hour: Int, minute: Int) -> Unit
+) {
+    val initialDateTime = rememberParsedDateTime(initialDateTimeValue)
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialDateTime?.hour ?: 9,
+        initialMinute = initialDateTime?.minute ?: 0,
+        is24Hour = true
+    )
+
+    SimpleCustomDialog(onDismissRequest = onDismissRequest) { requestDismiss ->
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = AlertDialogDefaults.containerColor
+        ) {
+            Column(
+                modifier = Modifier
+                    .width(420.dp)
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    TimePicker(
+                        state = timePickerState,
+                        layoutType = TimePickerLayoutType.Vertical
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = requestDismiss) {
+                        Text("Отмена")
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Button(
+                        onClick = {
+                            onConfirm(timePickerState.hour, timePickerState.minute)
+                            requestDismiss()
+                        }
+                    ) {
+                        Text("Выбрать")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun rememberDatePickerMillis(rawValue: String): Long {
+    val date = rememberParsedDateTime(rawValue)?.toLocalDate()
+        ?: rawValue.takeIf { it.isNotBlank() }
+            ?.take(10)
+            ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        ?: LocalDate.now()
+
+    return date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+}
+
+private fun epochMillisToIsoDate(epochMillis: Long): String {
+    return Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalDate().toString()
+}
+
+private fun rememberParsedDateTime(rawValue: String): LocalDateTime? {
+    if (rawValue.isBlank()) return null
+
+    return runCatching { OffsetDateTime.parse(rawValue).toLocalDateTime() }.getOrNull()
+        ?: runCatching { LocalDateTime.parse(rawValue) }.getOrNull()
+        ?: runCatching { LocalDate.parse(rawValue.take(10)).atTime(9, 0) }.getOrNull()
+}
+
+private fun formatPlannedDateTimeLabel(rawValue: String): String {
+    val parsed = rememberParsedDateTime(rawValue)
+        ?: return rawValue
+
+    return parsed.format(DateTimeFormatter.ofPattern("dd.MM HH:mm"))
+}
+
+private fun toServerOffsetDateTimeValue(
+    date: LocalDate,
+    hour: Int,
+    minute: Int
+): String {
+    val localDateTime = LocalDateTime.of(date, LocalTime.of(hour, minute))
+    val offset = ZoneId.systemDefault().rules.getOffset(localDateTime)
+    return OffsetDateTime.of(localDateTime, offset)
+        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }

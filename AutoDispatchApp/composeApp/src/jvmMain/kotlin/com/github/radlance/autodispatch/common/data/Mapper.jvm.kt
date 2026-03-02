@@ -78,7 +78,9 @@ fun ChangeRequest.toCreateRequestDto(): ChangeRequestDto {
         customerPhone = customerPhone,
         originId = originId,
         destinationId = destinationId,
-        transportationDescription = transportationDescription
+        transportationDescription = transportationDescription,
+        plannedLoadingAt = plannedLoadingAt,
+        plannedUnloadingAt = plannedUnloadingAt,
     )
 }
 

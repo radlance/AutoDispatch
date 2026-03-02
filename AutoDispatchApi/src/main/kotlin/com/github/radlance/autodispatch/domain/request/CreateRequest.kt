@@ -19,5 +19,7 @@ data class CreateRequest(
     val customerPhone: String,
     val originId: Int?,
     val destinationId: Int?,
-    val transportationDescription: String?
+    val transportationDescription: String?,
+    val plannedLoadingAt: String,
+    val plannedUnloadingAt: String
 )

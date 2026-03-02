@@ -66,6 +66,16 @@ interface ChangeRequestEvent : Event {
         override fun apply(action: CreateRequestAction) = action.changeUnloading(value)
     }
 
+    class ChangePlannedLoadingAt(private val value: String) : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) = action.changePlannedLoadingAt(value)
+    }
+
+    class ChangePlannedUnloadingAt(private val value: String) : ChangeRequestEvent {
+
+        override fun apply(action: CreateRequestAction) = action.changePlannedUnloadingAt(value)
+    }
+
     class ChangeAdditionalInfo(private val value: String) : ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) = action.changeAdditionalInfo(value)
@@ -88,6 +98,8 @@ interface ChangeRequestEvent : Event {
         private val cargoUnloadingLat: Double,
         private val cargoUnloadingLon: Double,
         private val additionalInfo: String,
+        val plannedLoadingAt: String,
+        val plannedUnloadingAt: String,
         private val requestId: Int? = null
     ) : ChangeRequestEvent {
 
@@ -108,7 +120,9 @@ interface ChangeRequestEvent : Event {
             cargoUnloadingLat = cargoUnloadingLat,
             cargoUnloadingLon = cargoUnloadingLon,
             additionalInfo = additionalInfo.ifBlank { null },
-            requestId = requestId
+            requestId = requestId,
+            plannedLoadingAt = plannedLoadingAt,
+            plannedUnloadingAt = plannedUnloadingAt
         )
     }
 
@@ -223,6 +237,10 @@ interface CreateRequestAction {
 
     fun changeUnloading(value: Point?)
 
+    fun changePlannedLoadingAt(value: String)
+
+    fun changePlannedUnloadingAt(value: String)
+
     fun changeAdditionalInfo(value: String)
 
     fun createRequest(
@@ -242,7 +260,9 @@ interface CreateRequestAction {
         cargoUnloadingLon: Double,
         cargoUnloadingLat: Double,
         additionalInfo: String?,
-        requestId: Int?
+        requestId: Int?,
+        plannedLoadingAt: String,
+        plannedUnloadingAt: String
     )
 
     fun cancelRequest(requestId: Int)
