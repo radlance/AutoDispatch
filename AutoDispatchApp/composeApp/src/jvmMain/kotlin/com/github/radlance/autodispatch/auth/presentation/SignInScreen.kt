@@ -53,6 +53,7 @@ internal fun SignInScreen(
         fieldsUiState = fieldsUiState,
         signInResultUiState = signInResultUiState,
         navigateToControlPanel = navigateToControlPanel,
+        clearInvalidRoleToken = viewModel::clearInvalidRoleToken,
         onEvent = viewModel::reduce,
         modifier = modifier
     )
@@ -63,6 +64,7 @@ private fun SignInScreen(
     fieldsUiState: SignInFieldsUiState,
     signInResultUiState: FetchResultUiState<LoginResponse, String>,
     navigateToControlPanel: () -> Unit,
+    clearInvalidRoleToken: () -> Unit,
     onEvent: (SignInEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,6 +95,7 @@ private fun SignInScreen(
                 } else {
                     CustomDialog(
                         onDismissRequest = {
+                            clearInvalidRoleToken()
                             onEvent(SignInEvent.ResetState)
                         },
                         title = {
@@ -114,7 +117,10 @@ private fun SignInScreen(
                         buttons = { requestDismiss ->
                             Spacer(Modifier.weight(1f))
                             TextButton(
-                                onClick = requestDismiss
+                                onClick = {
+                                    clearInvalidRoleToken()
+                                    requestDismiss()
+                                }
                             ) {
                                 Text(text = "ОК")
                             }

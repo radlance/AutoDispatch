@@ -11,6 +11,8 @@ data class Delivery(
     val unloadingPoint: Point,
     val cargoWeight: Double,
     val cargoTypeName: String,
+    val plannedUnloadingAt: LocalDateTime?,
+    val actualUnloadingAt: LocalDateTime?,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime?,
     val requestNumber: String

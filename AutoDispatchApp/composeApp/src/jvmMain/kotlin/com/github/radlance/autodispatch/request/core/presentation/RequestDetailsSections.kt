@@ -246,11 +246,7 @@ fun RequestDetailsSections(
                 InfoRow(
                     icon = Icons.Outlined.CalendarToday,
                     iconDesc = stringResource(Res.string.creation_date),
-                    text = "${lastSent.date}, ${
-                        lastSent.hour.toString().padStart(2, '0')
-                    }:${
-                        lastSent.minute.toString().padStart(2, '0')
-                    }:${lastSent.second.toString().padStart(2, '0')}"
+                    text = lastSent.toSimpleDateWithTimeString()
                 )
                 Spacer(modifier = Modifier.height(ITEM_GAP))
 

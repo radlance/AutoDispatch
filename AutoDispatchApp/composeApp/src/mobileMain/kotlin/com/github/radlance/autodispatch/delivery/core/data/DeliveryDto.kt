@@ -12,6 +12,8 @@ data class DeliveryDto(
     val unloadingPoint: PointDto,
     val cargoWeight: Double,
     val cargoTypeName: String,
+    val plannedUnloadingAt: String? = null,
+    val actualUnloadingAt: String? = null,
     val createdAt: String,
     val updatedAt: String?,
     val requestNumber: String,

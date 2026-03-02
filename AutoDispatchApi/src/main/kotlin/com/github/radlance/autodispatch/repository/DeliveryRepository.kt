@@ -514,6 +514,8 @@ class DeliveryRepository {
             RequestTable.unloadingLon,
             RequestTable.cargoWeight,
             CargoTypeTable.name.alias("cargo_type_name"),
+            RequestTable.plannedUnloadingAt,
+            RequestTable.actualUnloadingAt,
             RequestTable.createdAt,
             RequestTable.updatedAt
         )
@@ -570,6 +572,8 @@ class DeliveryRepository {
                     ),
                     cargoWeight = row[RequestTable.cargoWeight],
                     cargoTypeName = row[CargoTypeTable.name.alias("cargo_type_name")],
+                    plannedUnloadingAt = row[RequestTable.plannedUnloadingAt]?.toString(),
+                    actualUnloadingAt = row[RequestTable.actualUnloadingAt]?.toString(),
                     createdAt = row[RequestTable.createdAt]?.toString(),
                     updatedAt = row[RequestTable.updatedAt]?.toString()
                 )

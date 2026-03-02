@@ -17,6 +17,8 @@ fun DeliveryDto.toDelivery(): Delivery {
         unloadingPoint = unloadingPoint.toPoint(),
         cargoWeight = cargoWeight,
         cargoTypeName = cargoTypeName,
+        plannedUnloadingAt = plannedUnloadingAt?.toLocalDateTimeFromUtc(),
+        actualUnloadingAt = actualUnloadingAt?.toLocalDateTimeFromUtc(),
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
         requestNumber = requestNumber
@@ -41,7 +43,11 @@ fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
         updatedAt = updatedAt.toLocalDateTimeFromUtc(),
         requestNumber = requestNumber,
         rejectionReason = rejectionReason,
-        documents = documents.map { it.toDeliveryDocument() }
+        documents = documents.map { it.toDeliveryDocument() },
+        plannedLoadingAt = plannedLoadingAt?.toLocalDateTimeFromUtc(),
+        plannedUnloadingAt = plannedUnloadingAt?.toLocalDateTimeFromUtc(),
+        actualLoadingAt = actualLoadingAt?.toLocalDateTimeFromUtc(),
+        actualUnloadingAt = actualUnloadingAt?.toLocalDateTimeFromUtc()
     )
 }
 

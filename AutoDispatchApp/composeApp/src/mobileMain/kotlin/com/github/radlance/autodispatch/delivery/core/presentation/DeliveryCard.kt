@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.delivery.core.presentation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,6 +33,7 @@ import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,13 +60,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.common.utils.formatKg
+import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.platform.MapPoint
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun DeliveryCard(
     navigateToDeliveryDetails: () -> Unit,
@@ -72,6 +83,27 @@ fun DeliveryCard(
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status)
+    val deadlineState = delivery.deadlineState()
+
+    val cardContainerColor by animateColorAsState(
+        targetValue = when (deadlineState) {
+            DeliveryDeadlineState.OVERDUE -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+            DeliveryDeadlineState.SOON -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.16f)
+            DeliveryDeadlineState.NORMAL -> MaterialTheme.colorScheme.surfaceContainerHighest
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "deliveryCardContainerColor"
+    )
+
+    val cardBorderColor by animateColorAsState(
+        targetValue = when (deadlineState) {
+            DeliveryDeadlineState.OVERDUE -> MaterialTheme.colorScheme.error.copy(alpha = 0.28f)
+            DeliveryDeadlineState.SOON -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.28f)
+            DeliveryDeadlineState.NORMAL -> Color.Transparent
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "deliveryCardBorderColor"
+    )
 
     val customTextSelectionColors = TextSelectionColors(
         handleColor = contentColor,
@@ -81,10 +113,18 @@ fun DeliveryCard(
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
         Card(
             modifier = modifier.fillMaxWidth(),
+            border = BorderStroke(width = 1.dp, color = cardBorderColor),
+            colors = CardDefaults.cardColors(containerColor = cardContainerColor),
             onClick = navigateToDeliveryDetails
         ) {
             Column {
-                DeliveryHeader(navigateToDeliveryDetails, delivery, backgroundColor, contentColor)
+                DeliveryHeader(
+                    navigateToRequestDetails = navigateToDeliveryDetails,
+                    delivery = delivery,
+                    deadlineState = deadlineState,
+                    backgroundColor = backgroundColor,
+                    contentColor = contentColor
+                )
                 DeliveryRoute(
                     fromPoint = delivery.loadingPoint.toStringAddress(),
                     toPoint = delivery.unloadingPoint.toStringAddress(),
@@ -129,6 +169,7 @@ fun DeliveryCard(
 private fun DeliveryHeader(
     navigateToRequestDetails: () -> Unit,
     delivery: Delivery,
+    deadlineState: DeliveryDeadlineState,
     backgroundColor: Color,
     contentColor: Color
 ) {
@@ -167,24 +208,30 @@ private fun DeliveryHeader(
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(delivery.requestNumber) }
             })
             Spacer(Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(backgroundColor)
-                    .border(
-                        width = 2.dp,
-                        color = contentColor.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(8.dp)
-                    )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = delivery.status.title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = 13.sp,
-                    color = contentColor,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(backgroundColor)
+                        .border(
+                            width = 2.dp,
+                            color = contentColor.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                ) {
+                    Text(
+                        text = delivery.status.title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 13.sp,
+                        color = contentColor,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
+                DeadlineIndicator(deadlineState)
             }
         }
         IconButton(
@@ -338,18 +385,7 @@ private fun DeliveryFooter(delivery: Delivery) {
         CardSection("Вес", delivery.cargoWeight.formatKg())
         CardSection(
             "Обновлена",
-            "${(delivery.updatedAt ?: delivery.createdAt).day.toString().padStart(2, '0')}." +
-                    "${
-                        (delivery.updatedAt ?: delivery.createdAt).month.ordinal.inc()
-                            .toString().padStart(2, '0')
-                    }, " +
-                    "${
-                        (delivery.updatedAt ?: delivery.createdAt).hour.toString()
-                            .padStart(2, '0')
-                    }:${
-                        (delivery.updatedAt ?: delivery.createdAt).minute.toString()
-                            .padStart(2, '0')
-                    }"
+            (delivery.updatedAt ?: delivery.createdAt).toSimpleDateWithTimeString()
         )
     }
 
@@ -386,6 +422,50 @@ private fun CardSection(title: String, subtitle: String, modifier: Modifier = Mo
 }
 
 @Composable
+private fun DeadlineIndicator(deadlineState: DeliveryDeadlineState) {
+    val text = when (deadlineState) {
+        DeliveryDeadlineState.SOON -> "Скоро"
+        DeliveryDeadlineState.OVERDUE -> "Просроч."
+        DeliveryDeadlineState.NORMAL -> return
+    }
+    val (bg, fg, border) = when (deadlineState) {
+        DeliveryDeadlineState.SOON -> Triple(
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.2f)
+        )
+
+        DeliveryDeadlineState.OVERDUE -> Triple(
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer,
+            MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.2f)
+        )
+
+        DeliveryDeadlineState.NORMAL -> return
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(bg)
+            .border(
+                width = 2.dp,
+                color = border,
+                shape = RoundedCornerShape(8.dp)
+            )
+    ) {
+        Text(
+            text = text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 13.sp,
+            color = fg,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+    }
+}
+
+@Composable
 fun deliveryStatusColors(status: RequestStatus) =
     when (status) {
         RequestStatus.Assigned -> {
@@ -403,3 +483,25 @@ fun deliveryStatusColors(status: RequestStatus) =
 
         else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
     }
+
+private enum class DeliveryDeadlineState {
+    NORMAL,
+    SOON,
+    OVERDUE
+}
+
+@OptIn(ExperimentalTime::class)
+private fun Delivery.deadlineState(
+    now: Instant = Clock.System.now(),
+    timeZone: TimeZone = TimeZone.currentSystemDefault()
+): DeliveryDeadlineState {
+    if (status.id !in setOf(2, 3, 6, 7)) return DeliveryDeadlineState.NORMAL
+    if (actualUnloadingAt != null) return DeliveryDeadlineState.NORMAL
+
+    val plannedUnloadingInstant = plannedUnloadingAt?.toInstant(timeZone) ?: return DeliveryDeadlineState.NORMAL
+    return when {
+        now >= plannedUnloadingInstant -> DeliveryDeadlineState.OVERDUE
+        plannedUnloadingInstant - now <= 3.hours -> DeliveryDeadlineState.SOON
+        else -> DeliveryDeadlineState.NORMAL
+    }
+}

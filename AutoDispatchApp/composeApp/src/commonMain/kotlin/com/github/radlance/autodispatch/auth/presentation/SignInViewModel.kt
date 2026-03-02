@@ -76,4 +76,8 @@ class SignInViewModel(
         }
         event.apply(action = action)
     }
+
+    fun clearInvalidRoleToken() {
+        handle(background = signInRepository::clearToken) {}
+    }
 }

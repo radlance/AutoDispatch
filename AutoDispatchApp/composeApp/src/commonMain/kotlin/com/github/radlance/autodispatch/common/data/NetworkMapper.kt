@@ -144,7 +144,13 @@ fun VehicleDto.toVehicle(): Vehicle {
 
 @OptIn(ExperimentalTime::class)
 fun String.toLocalDateTimeFromUtc(): LocalDateTime {
-    val instant = Instant.parse(this)
+    val normalized = trim()
+        .replace(" ", "")
+        .replace(
+            Regex("""T(\d{2}:\d{2})(Z|[+-]\d{2}:\d{2})$"""),
+            "T$1:00$2"
+        )
+    val instant = Instant.parse(normalized)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault())
 }
 

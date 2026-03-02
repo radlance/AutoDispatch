@@ -103,6 +103,7 @@ import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.ConversionPathIcon
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+import kotlinx.datetime.LocalDateTime
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
 import kotlin.time.Clock
@@ -280,6 +281,16 @@ fun DeliveryDetails(
                             modifier = Modifier.fillMaxWidth()
                         )
 
+                        DeadlinesCard(
+                            plannedLoadingAt = delivery.plannedLoadingAt,
+                            plannedUnloadingAt = delivery.plannedUnloadingAt,
+                            actualLoadingAt = delivery.actualLoadingAt,
+                            actualUnloadingAt = delivery.actualUnloadingAt,
+                            backgroundColor = backgroundColor,
+                            contentColor = contentColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
                         CargoCard(
                             cargo = delivery.cargo,
                             backgroundColor = backgroundColor,
@@ -356,13 +367,7 @@ fun DeliveryDetails(
                                 icon = Icons.Outlined.ErrorOutline,
                                 contentColor = contentColor,
                                 containerColor = backgroundColor,
-                                message = "Отправлено: ${sentAt.date}, ${
-                                    sentAt.hour.toString().padStart(2, '0')
-                                }:${
-                                    sentAt.minute.toString().padStart(2, '0')
-                                }:${
-                                    sentAt.second.toString().padStart(2, '0')
-                                }\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
+                                message = "Отправлено: ${sentAt.toSimpleDateWithTimeString()}\nДиспетчер проверяет загруженные документы. Ожидайте подтверждения.",
                             )
                         }
 
@@ -372,16 +377,8 @@ fun DeliveryDetails(
 
                             DocumentRejectCard(
                                 rejectionReason = delivery.rejectionReason ?: "",
-                                sentAt = "${lastSent.date}, ${
-                                    lastSent.hour.toString().padStart(2, '0')
-                                }:${
-                                    lastSent.minute.toString().padStart(2, '0')
-                                }",
-                                rejectedAt = "${updatedAt.date}, ${
-                                    updatedAt.hour.toString().padStart(2, '0')
-                                }:${
-                                    updatedAt.minute.toString().padStart(2, '0')
-                                }",
+                                sentAt = lastSent.toSimpleDateWithTimeString(),
+                                rejectedAt = updatedAt.toSimpleDateWithTimeString(),
                                 backgroundColor = backgroundColor,
                                 contentColor = contentColor
                             )
@@ -521,6 +518,61 @@ private fun RouteCard(
                 showOpenMapButton = true,
                 modifier = Modifier.padding(18.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun DeadlinesCard(
+    plannedLoadingAt: LocalDateTime?,
+    plannedUnloadingAt: LocalDateTime?,
+    actualLoadingAt: LocalDateTime?,
+    actualUnloadingAt: LocalDateTime?,
+    backgroundColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier) {
+        Column {
+            SectionHeader(
+                text = "Сроки доставки",
+                icon = Icons.Outlined.CalendarMonth,
+                color = contentColor,
+                backgroundColor = backgroundColor
+            )
+            Column(modifier = Modifier.padding(18.dp)) {
+                InfoRow(
+                    title = plannedLoadingAt.asDeadlineText(),
+                    subtitle = "Плановая загрузка",
+                    icon = Icons.Outlined.CalendarMonth,
+                    iconTint = contentColor,
+                    iconBackgroundColor = backgroundColor
+                )
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp))
+                InfoRow(
+                    title = actualLoadingAt.asDeadlineText(),
+                    subtitle = "Фактическая загрузка",
+                    icon = Icons.Outlined.CalendarMonth,
+                    iconTint = contentColor,
+                    iconBackgroundColor = backgroundColor
+                )
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp))
+                InfoRow(
+                    title = plannedUnloadingAt.asDeadlineText(),
+                    subtitle = "Плановая разгрузка",
+                    icon = Icons.Outlined.CalendarMonth,
+                    iconTint = contentColor,
+                    iconBackgroundColor = backgroundColor
+                )
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp))
+                InfoRow(
+                    title = actualUnloadingAt.asDeadlineText(),
+                    subtitle = "Фактическая разгрузка",
+                    icon = Icons.Outlined.CalendarMonth,
+                    iconTint = contentColor,
+                    iconBackgroundColor = backgroundColor
+                )
+            }
         }
     }
 }
@@ -811,3 +863,5 @@ private fun DocumentRejectCard(
         }
     }
 }
+
+private fun LocalDateTime?.asDeadlineText(): String = this?.toSimpleDateWithTimeString() ?: "—"

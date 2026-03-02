@@ -187,6 +187,10 @@ private fun SuccessDeliveryScreenPreview() {
                 origin = "Москва",
                 destination = "Калуга",
                 transportationDescription = "",
+                plannedLoadingAt = LocalDateTime(1, 1, 1, 1, 1),
+                plannedUnloadingAt = LocalDateTime(1, 1, 1, 1, 1),
+                actualLoadingAt = LocalDateTime(1, 1, 1, 1, 1),
+                actualUnloadingAt = LocalDateTime(1, 1, 1, 1, 1),
                 cargo = Cargo(
                     type = CargoType(
                         id = 1,

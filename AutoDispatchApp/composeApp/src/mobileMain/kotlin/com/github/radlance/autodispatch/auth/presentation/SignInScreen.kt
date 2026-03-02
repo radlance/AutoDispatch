@@ -47,6 +47,7 @@ fun SignInScreen(
         fieldsUiState = fieldsUiState,
         signInResultUiState = signInResultUiState,
         navigateToHomeScreen = navigateToHomeScreen,
+        clearInvalidRoleToken = viewModel::clearInvalidRoleToken,
         onEvent = viewModel::reduce,
         modifier = modifier
     )
@@ -57,6 +58,7 @@ private fun SignInScreen(
     fieldsUiState: SignInFieldsUiState,
     signInResultUiState: FetchResultUiState<LoginResponse, String>,
     navigateToHomeScreen: () -> Unit,
+    clearInvalidRoleToken: () -> Unit,
     onEvent: (SignInEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -78,6 +80,7 @@ private fun SignInScreen(
             } else {
                 AlertDialog(
                     onDismissRequest = {
+                        clearInvalidRoleToken()
                         onEvent(SignInEvent.ResetState)
                     },
                     icon = {
@@ -95,6 +98,7 @@ private fun SignInScreen(
                     confirmButton = {
                         TextButton(
                             onClick = {
+                                clearInvalidRoleToken()
                                 onEvent(SignInEvent.ResetState)
                             }
                         ) {

@@ -27,8 +27,8 @@ fun Point.toStringAddress(): String {
 
 fun LocalDateTime.toSimpleDateWithTimeString(): String {
     return "${date.day.toString().padStart(2, '0')}.${
-        month.ordinal.toString().padStart(2, '0')
-    }.${year.toString().padStart(2, '0')}, ${
+        date.month.ordinal.inc().toString().padStart(2, '0')
+    }.${year}, ${
         hour.toString().padStart(2, '0')
     }:${
         minute.toString().padStart(2, '0')
@@ -37,6 +37,6 @@ fun LocalDateTime.toSimpleDateWithTimeString(): String {
 
 fun LocalDateTime.toSimpleDateString(): String {
     return "${date.day.toString().padStart(2, '0')}.${
-        month.ordinal.toString().padStart(2, '0')
-    }.${year.toString().padStart(2, '0')}"
+        date.month.ordinal.inc().toString().padStart(2, '0')
+    }.${year}"
 }
