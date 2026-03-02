@@ -60,9 +60,13 @@ import com.github.radlance.autodispatch.request.change.presentation.ChangeReques
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
 import com.github.radlance.autodispatch.request.core.domain.Request
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -172,7 +176,9 @@ fun RequestDetailsPanel(
                     unloadingFieldLonValue = unloadingPoint.lon,
                     unloadingFieldLatValue = unloadingPoint.lat,
                     additionalInfoFieldValue = transportationDescription ?: "",
-                    requestId = request.id
+                    requestId = request.id,
+                    plannedLoadingAt = toIsoOffsetDateTime(plannedLoadingAt),
+                    plannedUnloadingAt = toIsoOffsetDateTime(plannedUnloadingAt)
                 )
             )
         }
@@ -541,4 +547,10 @@ fun RequestDetailsPanel(
             }
         }
     }
+}
+
+private fun toIsoOffsetDateTime(value: kotlinx.datetime.LocalDateTime): String {
+    val localDateTime = value.toJavaLocalDateTime()
+    val offset = ZoneId.systemDefault().rules.getOffset(localDateTime)
+    return OffsetDateTime.of(localDateTime, offset).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }

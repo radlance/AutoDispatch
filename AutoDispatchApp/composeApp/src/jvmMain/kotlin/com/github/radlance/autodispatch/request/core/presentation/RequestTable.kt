@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Schedule
@@ -38,6 +39,15 @@ import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import java.time.Duration
+import java.time.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
+
+private enum class DeadlineState {
+    NORMAL,
+    SOON,
+    OVERDUE
+}
 
 @Composable
 fun RequestTable(
@@ -51,6 +61,7 @@ fun RequestTable(
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
+    val now = LocalDateTime.now()
 
     LaunchedEffect(requests.size) {
         dataTableState.verticalScrollState.scrollTo(0)
@@ -59,7 +70,13 @@ fun RequestTable(
     val highlight = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
 
     val animatedColors: Map<Request, Color> = requests.associateWith { req ->
-        val target = if (req == selectedRequest && showPanel) highlight else Color.Transparent
+        val deadlineState = req.deadlineState(now)
+        val deadlineTint = when (deadlineState) {
+            DeadlineState.OVERDUE -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.42f)
+            DeadlineState.SOON -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.32f)
+            DeadlineState.NORMAL -> Color.Transparent
+        }
+        val target = if (req == selectedRequest && showPanel) highlight else deadlineTint
         animateColorAsState(
             targetValue = target,
             animationSpec = tween(durationMillis = 200),
@@ -88,6 +105,9 @@ fun RequestTable(
             },
             DataColumn(width = TableColumnWidth.Flex(1.2f)) {
                 Text(stringResource(Res.string.status))
+            },
+            DataColumn(width = TableColumnWidth.Flex(1.2f)) {
+                Text("Срок")
             },
             DataColumn(width = TableColumnWidth.Flex(0.5f)) {
                 Text("Документы")
@@ -148,6 +168,9 @@ fun RequestTable(
                     StatusWithColor(status = item.status)
                 }
                 cell {
+                    DeadlineBadge(state = item.deadlineState(now))
+                }
+                cell {
                     DocumentsStatusWithColor(status = item.status.name)
                 }
                 cell {
@@ -163,6 +186,56 @@ fun RequestTable(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DeadlineBadge(state: DeadlineState) {
+    val (label, bgColor, textColor, icon) = when (state) {
+        DeadlineState.OVERDUE -> Quadruple(
+            "Просроч.",
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer,
+            Icons.Outlined.ErrorOutline
+        )
+
+        DeadlineState.SOON -> Quadruple(
+            "Скоро",
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+            Icons.Outlined.Schedule
+        )
+
+        DeadlineState.NORMAL -> Quadruple("—", Color.Transparent, MaterialTheme.colorScheme.onSurfaceVariant, null)
+    }
+
+    if (state == DeadlineState.NORMAL) {
+        Text(text = label)
+        return
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(bgColor)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+            icon?.let {
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = textColor,
+                    modifier = Modifier.padding(end = 6.dp)
+                )
+            }
+            Text(
+                text = label,
+                color = textColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -200,3 +273,16 @@ private fun DocumentsStatusWithColor(status: String?) {
         }
     } else Text(text = "—")
 }
+
+private fun Request.deadlineState(now: LocalDateTime): DeadlineState {
+    if (actualUnloadingAt != null) return DeadlineState.NORMAL
+    val plannedUnloading = plannedUnloadingAt.toJavaLocalDateTime()
+
+    return when {
+        now >= plannedUnloading -> DeadlineState.OVERDUE
+        Duration.between(now, plannedUnloading).toHours() <= 3L -> DeadlineState.SOON
+        else -> DeadlineState.NORMAL
+    }
+}
+
+private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)

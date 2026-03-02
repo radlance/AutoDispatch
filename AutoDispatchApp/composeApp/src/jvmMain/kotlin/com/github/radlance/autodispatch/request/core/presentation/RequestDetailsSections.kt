@@ -151,9 +151,33 @@ fun RequestDetailsSections(
             )
             Spacer(modifier = Modifier.height(ITEM_GAP))
             LabeledValue(
+                label = "Плановая загрузка",
+                value = request.plannedLoadingAt.toSimpleDateWithTimeString()
+            )
+            request.actualLoadingAt?.let {
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+                LabeledValue(
+                    label = "Фактическая загрузка",
+                    value = it.toSimpleDateWithTimeString()
+                )
+            }
+            Spacer(modifier = Modifier.height(ITEM_GAP))
+            LabeledValue(
                 label = stringResource(Res.string.unloading_point),
                 value = request.unloadingPoint.toStringAddress()
             )
+            Spacer(modifier = Modifier.height(ITEM_GAP))
+            LabeledValue(
+                label = "Плановая разгрузка",
+                value = request.plannedUnloadingAt.toSimpleDateWithTimeString()
+            )
+            request.actualUnloadingAt?.let {
+                Spacer(modifier = Modifier.height(ITEM_GAP))
+                LabeledValue(
+                    label = "Фактическая разгрузка",
+                    value = it.toSimpleDateWithTimeString()
+                )
+            }
             request.transportationDescription?.let {
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 LabeledValue(
