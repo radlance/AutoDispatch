@@ -86,6 +86,7 @@ fun DriverVehicleAssignmentDialog(
         }
     }
     var selectedDriverId by remember { mutableStateOf<Int?>(null) }
+    var callOnSuccess by remember { mutableStateOf(false) }
     val successDriver = (driversWithoutVehicleState.paginatorState.itemsState as? FetchResultUiState.Success)?.data?.find { it.id == selectedDriverId }
 
     LaunchedEffect(Unit) {
@@ -286,13 +287,17 @@ fun DriverVehicleAssignmentDialog(
             }
             LaunchedEffect(assignRequestState) {
                 if (assignRequestState is FetchResultUiState.Success) {
+                    callOnSuccess = true
                     requestDismiss()
                 }
             }
         },
         onFinish = {
             viewModel.resetState()
-            onSuccessAssignVehicle()
+            if (callOnSuccess) {
+                onSuccessAssignVehicle()
+                callOnSuccess = false
+            }
         },
         buttons = { requestDismiss ->
             Spacer(modifier = Modifier.weight(1f))
