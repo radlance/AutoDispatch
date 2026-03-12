@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.AlertDialog
@@ -65,6 +64,7 @@ import com.github.radlance.autodispatch.request.core.domain.Customer
 import com.github.radlance.autodispatch.request.core.domain.Point
 import com.github.radlance.autodispatch.uikit.vector.DeployedCodeIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
+import com.github.radlance.autodispatch.uikit.vector.VitalSignsIcon
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.PI
 import kotlin.math.asin
@@ -224,7 +224,7 @@ private fun RoutePoints(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(24.dp)) {
                         Icon(
-                            imageVector = Icons.Outlined.Circle,
+                            imageVector = VitalSignsIcon,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(4.dp)
@@ -232,21 +232,14 @@ private fun RoutePoints(
                     }
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        text = "Точка погрузки"
+                        text = "Прогресс доставки"
                     )
-                    Spacer(Modifier.weight(1f))
-                    if (isOverflowLoadingPoint) {
-                        IconButton(
-                            onClick = { isExpandedLoadingPoint = !isExpandedLoadingPoint },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            val icon = if (isExpandedLoadingPoint) {
-                                Icons.Default.ExpandLess
-                            } else Icons.Default.ExpandMore
-                            Icon(imageVector = icon, contentDescription = null)
-                        }
-                    }
                 }
+            }
+            Column(
+                modifier = Modifier.padding(horizontal = 18.dp)
+            ) {
+                // TODO
             }
             Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                 Text(
