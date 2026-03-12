@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
@@ -33,6 +34,7 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.RequestError
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -46,6 +48,7 @@ fun DeliveryRouteScreen(
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val requestState by viewModel.deliveryState.collectAsStateWithLifecycle()
     Scaffold(
@@ -118,7 +121,13 @@ fun DeliveryRouteScreen(
                         scrollState = scrollState,
                         delivery = delivery,
                         navigateToDeliveryConfirmation = navigateToDeliveryConfirmation,
-                        deliveryViewModel = viewModel
+                        onActionSuccess = {
+                            scope.launch {
+                                scrollState.animateScrollTo(0)
+                            }
+                        },
+                        deliveryViewModel = viewModel,
+                        modifier = Modifier.fillMaxSize()
                     )
                 },
                 onError = {

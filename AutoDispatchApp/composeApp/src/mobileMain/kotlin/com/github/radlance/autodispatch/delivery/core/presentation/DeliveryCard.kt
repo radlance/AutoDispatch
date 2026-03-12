@@ -417,7 +417,7 @@ private fun DeliveryRouteAction(
 private fun CardSection(title: String, subtitle: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = title, fontSize = 12.sp, modifier = Modifier.alpha(0.7f))
-        Text(text = subtitle, fontSize = 14.sp)
+        Text(text = subtitle, fontSize = 12.sp, maxLines = 1)
     }
 }
 

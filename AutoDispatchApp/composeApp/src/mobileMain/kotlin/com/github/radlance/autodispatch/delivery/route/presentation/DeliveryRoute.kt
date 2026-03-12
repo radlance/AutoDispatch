@@ -59,7 +59,6 @@ import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.RequestError
-import com.github.radlance.autodispatch.delivery.route.domain.DeliveryRouteAction
 import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
@@ -84,6 +83,7 @@ fun DeliveryRoute(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
     navigateToDeliveryConfirmation: () -> Unit,
+    onActionSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     deliveryViewModel: DeliveryDetailsViewModel,
     viewModel: DeliveryRouteViewModel = koinViewModel()
@@ -179,6 +179,14 @@ fun DeliveryRoute(
         }
     }
 
+    LaunchedEffect(routeActionState, routeActionType) {
+        if (routeActionState is FetchResultUiState.Success && routeActionType != null) {
+            deliveryViewModel.resetRouteActionState()
+
+            onActionSuccess()
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (controller.hasPermission()) {
             hasPermission = true
@@ -246,12 +254,7 @@ fun DeliveryRoute(
 
     LaunchedEffect(routeActionState, routeActionType) {
         if (routeActionState is FetchResultUiState.Success && routeActionType != null) {
-            val actionType = routeActionType
             deliveryViewModel.resetRouteActionState()
-
-            if (actionType == DeliveryRouteAction.ArriveUnloading) {
-                navigateToDeliveryConfirmation()
-            }
         }
     }
 
