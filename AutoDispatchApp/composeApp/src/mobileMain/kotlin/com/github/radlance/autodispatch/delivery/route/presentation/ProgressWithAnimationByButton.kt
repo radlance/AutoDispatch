@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -34,9 +32,6 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,11 +78,15 @@ fun MilestoneDot(isCompleted: Boolean) {
 }
 
 @Composable
-fun ProgressWithAnimationByButton() {
-    var progress by remember { mutableStateOf(0.65f) }
-
+fun ProgressWithAnimationByButton(
+    progress: Float,
+    leftLabel: String,
+    rightLabel: String,
+    steps: List<ProgressStep>,
+    modifier: Modifier = Modifier
+) {
     val animatedProgress by animateFloatAsState(
-        targetValue = progress,
+        targetValue = progress.coerceIn(0f, 1f),
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
 
@@ -103,20 +102,10 @@ fun ProgressWithAnimationByButton() {
         animationSpec = tween(300)
     )
 
-    val stepTexts = remember {
-        listOf(
-            0.01f to "first",
-            0.33f to "second",
-            0.66f to "third",
-            1f to "last"
-        )
-    }
-
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(18.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -146,7 +135,7 @@ fun ProgressWithAnimationByButton() {
         ) {
             Box(modifier = Modifier.width(labelBoxWidth)) {
                 Text(
-                    text = "загрузка",
+                    text = leftLabel,
                     style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
                     color = leftLabelColor,
                     textAlign = TextAlign.Start,
@@ -163,7 +152,7 @@ fun ProgressWithAnimationByButton() {
 
             Box(modifier = Modifier.width(labelBoxWidth)) {
                 Text(
-                    text = "разгрузка",
+                    text = rightLabel,
                     style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
                     color = rightLabelColor,
                     textAlign = TextAlign.End,
@@ -178,64 +167,49 @@ fun ProgressWithAnimationByButton() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(
-            modifier = Modifier.fillMaxWidth().animateContentSize(),
-            horizontalAlignment = Alignment.Start
+            modifier = Modifier.fillMaxWidth().animateContentSize()
         ) {
-            stepTexts.forEach { (threshold, text) ->
+            steps.forEach { step ->
                 AnimatedVisibility(
-                    visible = progress >= threshold,
+                    visible = step.isCompleted,
                     enter = fadeIn(tween(400)) + slideInVertically(
                         animationSpec = tween(400),
                         initialOffsetY = { it / 2 }
                     ),
                     exit = fadeOut(tween(300)) + slideOutVertically(tween(300))
                 ) {
-                    Text(
-                        text = text,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary,
+                    Row(
                         modifier = Modifier
-                            .padding(vertical = 6.dp)
+                            .padding(vertical = 4.dp)
                             .fillMaxWidth()
-                    )
+                    ) {
+                        Text(
+                            text = step.label,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Text(
+                            text = step.time,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline,
+                            textAlign = TextAlign.End,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.width(120.dp)
+                        )
+                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Прогресс: ${(progress * 100).toInt()}%",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = {
-                progress = (progress + 0.25f).coerceAtMost(1f)
-            },
-            modifier = Modifier.width(280.dp)
-        ) {
-            Text("Увеличить на +25%")
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = { progress = 0f },
-            modifier = Modifier.width(280.dp)
-        ) {
-            Text("Сбросить до 0%")
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = { progress = 1f },
-            modifier = Modifier.width(280.dp)
-        ) {
-            Text("Сразу 100%")
-        }
     }
 }
+
+data class ProgressStep(
+    val label: String,
+    val time: String,
+    val isCompleted: Boolean
+)

@@ -51,10 +51,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
+import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
+import com.github.radlance.autodispatch.delivery.domain.RequestError
+import com.github.radlance.autodispatch.delivery.route.domain.DeliveryRouteAction
 import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
@@ -80,6 +85,7 @@ fun DeliveryRoute(
     delivery: DeliveryDetailed,
     navigateToDeliveryConfirmation: () -> Unit,
     modifier: Modifier = Modifier,
+    deliveryViewModel: DeliveryDetailsViewModel,
     viewModel: DeliveryRouteViewModel = koinViewModel()
 ) {
     var selectedPoint by remember { mutableStateOf<Point?>(null) }
@@ -89,9 +95,59 @@ fun DeliveryRoute(
     }
     val context = getPlatformContext()
     val currentLocation by viewModel.currentLocation.collectAsStateWithLifecycle()
+    val routeActionState by deliveryViewModel.routeActionState.collectAsStateWithLifecycle()
+    val routeActionType by deliveryViewModel.routeActionType.collectAsStateWithLifecycle()
 
-    val uiState = remember(currentLocation, delivery.unloadingPoint) {
+    val progressSteps = remember(delivery) {
+        listOf(
+            "Прибыл на погрузку" to delivery.arrivedLoadingAt,
+            "Отправился с погрузки" to delivery.actualLoadingAt,
+            "Прибыл на разгрузку" to delivery.arrivedUnloadingAt,
+            "Документы отправлены" to delivery.actualUnloadingAt
+        ).map { (label, time) ->
+            ProgressStep(
+                label = label,
+                time = time?.toSimpleDateWithTimeString() ?: "",
+                isCompleted = time != null
+            )
+        }
+    }
+
+    val progressValue = remember(progressSteps) {
+        progressSteps.count { it.isCompleted } / 4f
+    }
+
+    val action = remember(delivery) {
+        when {
+            delivery.arrivedLoadingAt == null -> RouteAction.ArriveLoading
+            delivery.actualLoadingAt == null -> RouteAction.DepartLoading
+            delivery.arrivedUnloadingAt == null -> RouteAction.ArriveUnloading
+            else -> RouteAction.UploadDocuments
+        }
+    }
+
+    val buttonText = when (action) {
+        RouteAction.ArriveLoading -> "Прибыл на погрузку"
+        RouteAction.DepartLoading -> "Отправился с погрузки"
+        RouteAction.ArriveUnloading -> "Прибыл на разгрузку"
+        RouteAction.UploadDocuments -> "Загрузить документы"
+    }
+
+    val isActionLoading = routeActionState is FetchResultUiState.Loading
+    val targetPoint = when (action) {
+        RouteAction.ArriveLoading, RouteAction.DepartLoading -> delivery.loadingPoint
+        RouteAction.ArriveUnloading, RouteAction.UploadDocuments -> delivery.unloadingPoint
+    }
+
+    val uiState = remember(currentLocation, targetPoint, action) {
         derivedStateOf {
+            if (action == RouteAction.UploadDocuments) {
+                return@derivedStateOf ArriveUi(
+                    enabled = true,
+                    text = buttonText
+                )
+            }
+
             if (currentLocation == null) {
                 return@derivedStateOf ArriveUi(
                     enabled = false,
@@ -101,7 +157,7 @@ fun DeliveryRoute(
 
             val distance = distanceMeters(
                 currentLocation!!.lat, currentLocation!!.lon,
-                delivery.unloadingPoint.lat, delivery.unloadingPoint.lon
+                targetPoint.lat, targetPoint.lon
             )
 
             if (distance > 300) {
@@ -112,12 +168,12 @@ fun DeliveryRoute(
 //                )
                 ArriveUi(
                     enabled = true,
-                    text = "Прибыл на место"
+                    text = buttonText
                 )
             } else {
                 ArriveUi(
                     enabled = true,
-                    text = "Прибыл на место"
+                    text = buttonText
                 )
             }
         }
@@ -166,6 +222,39 @@ fun DeliveryRoute(
         }
     }
 
+    if (routeActionState is FetchResultUiState.Error<RequestError>) {
+        val error = (routeActionState as FetchResultUiState.Error<RequestError>).error
+        AlertDialog(
+            onDismissRequest = deliveryViewModel::resetRouteActionState,
+            icon = {
+                Icon(
+                    Icons.Outlined.LocationOn,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { Text("Ошибка") },
+            text = { Text(error.message) },
+            confirmButton = {
+                TextButton(onClick = deliveryViewModel::resetRouteActionState) {
+                    Text("ОК")
+                }
+            },
+            dismissButton = {}
+        )
+    }
+
+    LaunchedEffect(routeActionState, routeActionType) {
+        if (routeActionState is FetchResultUiState.Success && routeActionType != null) {
+            val actionType = routeActionType
+            deliveryViewModel.resetRouteActionState()
+
+            if (actionType == DeliveryRouteAction.ArriveUnloading) {
+                navigateToDeliveryConfirmation()
+            }
+        }
+    }
+
     selectedPoint?.let {
         MapRouteDialog(
             lat = it.lat,
@@ -183,7 +272,11 @@ fun DeliveryRoute(
         RoutePoints(
             openRoute = { selectedPoint = it },
             loadingPoint = delivery.loadingPoint,
-            unloadingPoint = delivery.unloadingPoint
+            unloadingPoint = delivery.unloadingPoint,
+            showLoadingPoint = action == RouteAction.ArriveLoading || action == RouteAction.DepartLoading,
+            showUnloadingPoint = action == RouteAction.ArriveUnloading || action == RouteAction.UploadDocuments,
+            progress = progressValue,
+            progressSteps = progressSteps
         )
         CargoCard(cargo = delivery.cargo)
         CustomerCard(customer = delivery.customer)
@@ -193,8 +286,15 @@ fun DeliveryRoute(
                     viewModel.fetchCurrentLocation()
                 } else controller.askPermission()
             },
-            onArrivedPlaceClick = navigateToDeliveryConfirmation,
-            arrivedButtonEnabled = uiState.value.enabled,
+            onArrivedPlaceClick = {
+                when (action) {
+                    RouteAction.ArriveLoading -> deliveryViewModel.arriveLoading(delivery.id)
+                    RouteAction.DepartLoading -> deliveryViewModel.departLoading(delivery.id)
+                    RouteAction.ArriveUnloading -> deliveryViewModel.arriveUnloading(delivery.id)
+                    RouteAction.UploadDocuments -> navigateToDeliveryConfirmation()
+                }
+            },
+            arrivedButtonEnabled = uiState.value.enabled && !isActionLoading,
             buttonText = uiState.value.text
         )
     }
@@ -204,7 +304,11 @@ fun DeliveryRoute(
 private fun RoutePoints(
     openRoute: (address: Point) -> Unit,
     loadingPoint: Point,
-    unloadingPoint: Point
+    unloadingPoint: Point,
+    showLoadingPoint: Boolean,
+    showUnloadingPoint: Boolean,
+    progress: Float,
+    progressSteps: List<ProgressStep>
 ) {
     var isExpandedLoadingPoint by rememberSaveable { mutableStateOf(false) }
     var isOverflowLoadingPoint by rememberSaveable { mutableStateOf(false) }
@@ -240,131 +344,140 @@ private fun RoutePoints(
             Column(
                 modifier = Modifier.padding(horizontal = 18.dp)
             ) {
-                ProgressWithAnimationByButton()
+                ProgressWithAnimationByButton(
+                    progress = progress,
+                    leftLabel = "загрузка",
+                    rightLabel = "разгрузка",
+                    steps = progressSteps
+                )
             }
         }
     }
 
-    Card {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.then(
-                    if (isOverflowLoadingPoint) {
-                        Modifier.clickable {
-                            isExpandedLoadingPoint = !isExpandedLoadingPoint
+    if (showLoadingPoint) {
+        Card {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.then(
+                        if (isOverflowLoadingPoint) {
+                            Modifier.clickable {
+                                isExpandedLoadingPoint = !isExpandedLoadingPoint
+                            }
+                        } else Modifier
+                    ).padding(18.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                imageVector = Icons.Outlined.Circle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(4.dp)
+                            )
                         }
-                    } else Modifier
-                ).padding(18.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(24.dp)) {
-                        Icon(
-                            imageVector = Icons.Outlined.Circle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(4.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = "Точка погрузки"
                         )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = "Точка погрузки"
-                    )
-                    Spacer(Modifier.weight(1f))
-                    if (isOverflowLoadingPoint) {
-                        IconButton(
-                            onClick = { isExpandedLoadingPoint = !isExpandedLoadingPoint },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            val icon = if (isExpandedLoadingPoint) {
-                                Icons.Default.ExpandLess
-                            } else Icons.Default.ExpandMore
-                            Icon(imageVector = icon, contentDescription = null)
+                        Spacer(Modifier.weight(1f))
+                        if (isOverflowLoadingPoint) {
+                            IconButton(
+                                onClick = { isExpandedLoadingPoint = !isExpandedLoadingPoint },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                val icon = if (isExpandedLoadingPoint) {
+                                    Icons.Default.ExpandLess
+                                } else Icons.Default.ExpandMore
+                                Icon(imageVector = icon, contentDescription = null)
+                            }
                         }
                     }
                 }
-            }
-            Column(modifier = Modifier.padding(horizontal = 18.dp)) {
-                Text(
-                    text = loadingPoint.toStringAddress(),
-                    fontSize = 14.sp,
-                    maxLines = if (isExpandedLoadingPoint) Int.MAX_VALUE else 2,
-                    overflow = TextOverflow.Ellipsis,
-                    onTextLayout = { result ->
-                        if (result.didOverflowHeight) {
-                            isOverflowLoadingPoint = true
-                        }
-                    },
-                    modifier = Modifier.animateContentSize()
-                )
+                Column(modifier = Modifier.padding(horizontal = 18.dp)) {
+                    Text(
+                        text = loadingPoint.toStringAddress(),
+                        fontSize = 14.sp,
+                        maxLines = if (isExpandedLoadingPoint) Int.MAX_VALUE else 2,
+                        overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { result ->
+                            if (result.didOverflowHeight) {
+                                isOverflowLoadingPoint = true
+                            }
+                        },
+                        modifier = Modifier.animateContentSize()
+                    )
 
-                Button(
-                    onClick = { openRoute(loadingPoint) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
-                ) {
-                    Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
-                    Spacer(Modifier.width(12.dp))
-                    Text(text = "Проложить маршрут")
+                    Button(
+                        onClick = { openRoute(loadingPoint) },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
+                    ) {
+                        Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                        Spacer(Modifier.width(12.dp))
+                        Text(text = "Проложить маршрут")
+                    }
                 }
             }
         }
     }
 
-    Card {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.then(
-                    if (isOverflowUnloadingPoint) {
-                        Modifier.clickable {
-                            isExpandedUnloadingPoint = !isExpandedUnloadingPoint
+    if (showUnloadingPoint) {
+        Card {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.then(
+                        if (isOverflowUnloadingPoint) {
+                            Modifier.clickable {
+                                isExpandedUnloadingPoint = !isExpandedUnloadingPoint
+                            }
+                        } else Modifier
+                    ).padding(18.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                imageVector = Icons.Outlined.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    } else Modifier
-                ).padding(18.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(24.dp)) {
-                        Icon(
-                            imageVector = Icons.Outlined.LocationOn,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = "Точка разгрузки"
                         )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = "Точка разгрузки"
-                    )
-                    Spacer(Modifier.weight(1f))
-                    if (isOverflowUnloadingPoint) {
-                        IconButton(
-                            onClick = { isExpandedUnloadingPoint = !isExpandedUnloadingPoint },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            val icon = if (isExpandedUnloadingPoint) {
-                                Icons.Default.ExpandLess
-                            } else Icons.Default.ExpandMore
-                            Icon(imageVector = icon, contentDescription = null)
+                        Spacer(Modifier.weight(1f))
+                        if (isOverflowUnloadingPoint) {
+                            IconButton(
+                                onClick = { isExpandedUnloadingPoint = !isExpandedUnloadingPoint },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                val icon = if (isExpandedUnloadingPoint) {
+                                    Icons.Default.ExpandLess
+                                } else Icons.Default.ExpandMore
+                                Icon(imageVector = icon, contentDescription = null)
+                            }
                         }
                     }
                 }
-            }
-            Column(modifier = Modifier.padding(horizontal = 18.dp)) {
-                Text(
-                    text = unloadingPoint.toStringAddress(),
-                    fontSize = 14.sp,
-                    maxLines = if (isExpandedUnloadingPoint) Int.MAX_VALUE else 2,
-                    overflow = TextOverflow.Ellipsis,
-                    onTextLayout = { result ->
-                        if (result.didOverflowHeight) {
-                            isOverflowUnloadingPoint = true
-                        }
-                    },
-                    modifier = Modifier.animateContentSize()
-                )
+                Column(modifier = Modifier.padding(horizontal = 18.dp)) {
+                    Text(
+                        text = unloadingPoint.toStringAddress(),
+                        fontSize = 14.sp,
+                        maxLines = if (isExpandedUnloadingPoint) Int.MAX_VALUE else 2,
+                        overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { result ->
+                            if (result.didOverflowHeight) {
+                                isOverflowUnloadingPoint = true
+                            }
+                        },
+                        modifier = Modifier.animateContentSize()
+                    )
 
-                Button(
-                    onClick = { openRoute(unloadingPoint) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
-                ) {
-                    Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
-                    Spacer(Modifier.width(12.dp))
-                    Text(text = "Проложить маршрут")
+                    Button(
+                        onClick = { openRoute(unloadingPoint) },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
+                    ) {
+                        Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
+                        Spacer(Modifier.width(12.dp))
+                        Text(text = "Проложить маршрут")
+                    }
                 }
             }
         }
@@ -492,6 +605,13 @@ private fun ActionButtons(
             Text(text = buttonText)
         }
     }
+}
+
+private sealed interface RouteAction {
+    data object ArriveLoading : RouteAction
+    data object DepartLoading : RouteAction
+    data object ArriveUnloading : RouteAction
+    data object UploadDocuments : RouteAction
 }
 
 fun distanceMeters(

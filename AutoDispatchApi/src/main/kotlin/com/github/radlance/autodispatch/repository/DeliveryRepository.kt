@@ -12,6 +12,7 @@ import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
 import com.github.radlance.autodispatch.exception.DriverBusyException
+import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -79,7 +80,9 @@ class DeliveryRepository {
                 RequestTable.rejectionReason,
                 RequestTable.plannedLoadingAt,
                 RequestTable.plannedUnloadingAt,
+                RequestTable.arrivedLoadingAt,
                 RequestTable.actualLoadingAt,
+                RequestTable.arrivedUnloadingAt,
                 RequestTable.actualUnloadingAt,
                 CustomerTable.id,
                 CustomerTable.organizationName,
@@ -174,7 +177,9 @@ class DeliveryRepository {
             updatedAt = row[RequestTable.updatedAt]?.toString(),
             plannedLoadingAt = row[RequestTable.plannedLoadingAt]?.toString(),
             plannedUnloadingAt = row[RequestTable.plannedUnloadingAt]?.toString(),
+            arrivedLoadingAt = row[RequestTable.arrivedLoadingAt]?.toString(),
             actualLoadingAt = row[RequestTable.actualLoadingAt]?.toString(),
+            arrivedUnloadingAt = row[RequestTable.arrivedUnloadingAt]?.toString(),
             actualUnloadingAt = row[RequestTable.actualUnloadingAt]?.toString(),
             requestNumber = row[RequestTable.requestNumber],
             rejectionReason = row[RequestTable.rejectionReason],
@@ -247,8 +252,17 @@ class DeliveryRepository {
                 }
             )
 
+            val currentUnloadingAt = RequestTable
+                .selectAll()
+                .where { RequestTable.id eq deliveryId }
+                .firstOrNull()
+                ?.get(RequestTable.actualUnloadingAt)
+
             RequestTable.update({ RequestTable.id eq deliveryId }) {
                 it[statusId] = 6
+                if (currentUnloadingAt == null) {
+                    it[actualUnloadingAt] = CurrentTimestampWithTimeZone
+                }
             }
 
             AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
@@ -260,6 +274,92 @@ class DeliveryRepository {
                 this[DeliveryDocumentTable.imageUrl] = url
             }
         }
+
+    suspend fun arriveLoading(deliveryId: Int, driverLogin: String) = loggedTransaction {
+        validateAndGetAssignmentId(
+            deliveryId,
+            driverLogin,
+            allowedStatuses = listOf(3),
+            canceledStatus = 5,
+            unexpectedStatusMessage = { number, _ ->
+                "Доставка $number отменена или недоступна."
+            }
+        )
+
+        val currentArrivedLoadingAt = RequestTable
+            .selectAll()
+            .where { RequestTable.id eq deliveryId }
+            .firstOrNull()
+            ?.get(RequestTable.arrivedLoadingAt)
+
+        if (currentArrivedLoadingAt != null) return@loggedTransaction
+
+        RequestTable.update({ RequestTable.id eq deliveryId }) {
+            it[arrivedLoadingAt] = CurrentTimestampWithTimeZone
+        }
+    }
+
+    suspend fun departLoading(deliveryId: Int, driverLogin: String) = loggedTransaction {
+        validateAndGetAssignmentId(
+            deliveryId,
+            driverLogin,
+            allowedStatuses = listOf(3),
+            canceledStatus = 5,
+            unexpectedStatusMessage = { number, _ ->
+                "Доставка $number отменена или недоступна."
+            }
+        )
+
+        val row = RequestTable
+            .selectAll()
+            .where { RequestTable.id eq deliveryId }
+            .firstOrNull()
+            ?: return@loggedTransaction
+
+        val arrivedLoadingAt = row[RequestTable.arrivedLoadingAt]
+        val departedLoadingAt = row[RequestTable.actualLoadingAt]
+
+        if (departedLoadingAt != null) return@loggedTransaction
+
+        if (arrivedLoadingAt == null) {
+            throw StateConflictException("Сначала отметьте прибытие на погрузку.")
+        }
+
+        RequestTable.update({ RequestTable.id eq deliveryId }) {
+            it[actualLoadingAt] = CurrentTimestampWithTimeZone
+        }
+    }
+
+    suspend fun arriveUnloading(deliveryId: Int, driverLogin: String) = loggedTransaction {
+        validateAndGetAssignmentId(
+            deliveryId,
+            driverLogin,
+            allowedStatuses = listOf(3),
+            canceledStatus = 5,
+            unexpectedStatusMessage = { number, _ ->
+                "Доставка $number отменена или недоступна."
+            }
+        )
+
+        val row = RequestTable
+            .selectAll()
+            .where { RequestTable.id eq deliveryId }
+            .firstOrNull()
+            ?: return@loggedTransaction
+
+        val departedLoadingAt = row[RequestTable.actualLoadingAt]
+        val arrivedUnloadingAt = row[RequestTable.arrivedUnloadingAt]
+
+        if (arrivedUnloadingAt != null) return@loggedTransaction
+
+        if (departedLoadingAt == null) {
+            throw StateConflictException("Сначала отметьте отправление с погрузки.")
+        }
+
+        RequestTable.update({ RequestTable.id eq deliveryId }) {
+            it[RequestTable.arrivedUnloadingAt] = CurrentTimestampWithTimeZone
+        }
+    }
 
     suspend fun retakeDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
         loggedTransaction {

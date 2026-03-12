@@ -28,4 +28,5 @@ databaseChangeLog:
   - include: { file: db/changelog/db.insert-assignment-data-1.0.sql }
   - include: { file: db/changelog/db.insert-driver-data-1.0.sql }
   - include: { file: db/changelog/db.create-delivery-document-table-1.0.sql }
+  - include: { file: db/changelog/db.add-request-route-stages-1.1.sql }
   - include: { file: db/changelog/db.create-tables-indexes-1.0.sql }

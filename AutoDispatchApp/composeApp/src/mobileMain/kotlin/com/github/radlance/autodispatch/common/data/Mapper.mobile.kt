@@ -46,7 +46,9 @@ fun DeliveryDetailedDto.toDeliveryDetailed(): DeliveryDetailed {
         documents = documents.map { it.toDeliveryDocument() },
         plannedLoadingAt = plannedLoadingAt?.toLocalDateTimeFromUtc(),
         plannedUnloadingAt = plannedUnloadingAt?.toLocalDateTimeFromUtc(),
+        arrivedLoadingAt = arrivedLoadingAt?.toLocalDateTimeFromUtc(),
         actualLoadingAt = actualLoadingAt?.toLocalDateTimeFromUtc(),
+        arrivedUnloadingAt = arrivedUnloadingAt?.toLocalDateTimeFromUtc(),
         actualUnloadingAt = actualUnloadingAt?.toLocalDateTimeFromUtc()
     )
 }

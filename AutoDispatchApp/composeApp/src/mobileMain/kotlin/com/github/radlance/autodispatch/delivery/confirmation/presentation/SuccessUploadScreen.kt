@@ -129,7 +129,7 @@ fun SuccessUploadScreen(
                                 .background(MaterialTheme.colorScheme.primaryContainer)
                         ) {
                             Text(
-                                text = "Нв проверке",
+                                text = "На проверке",
                                 maxLines = 1,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 overflow = TextOverflow.Ellipsis,
@@ -189,7 +189,9 @@ private fun SuccessDeliveryScreenPreview() {
                 transportationDescription = "",
                 plannedLoadingAt = LocalDateTime(1, 1, 1, 1, 1),
                 plannedUnloadingAt = LocalDateTime(1, 1, 1, 1, 1),
+                arrivedLoadingAt = LocalDateTime(1, 1, 1, 1, 1),
                 actualLoadingAt = LocalDateTime(1, 1, 1, 1, 1),
+                arrivedUnloadingAt = LocalDateTime(1, 1, 1, 1, 1),
                 actualUnloadingAt = LocalDateTime(1, 1, 1, 1, 1),
                 cargo = Cargo(
                     type = CargoType(

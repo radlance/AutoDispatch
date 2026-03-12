@@ -8,4 +8,10 @@ interface DeliveryDetailsRepository {
     suspend fun deliveryDetails(deliveryId: Int): FetchResult<DeliveryDetailed, RequestError>
 
     suspend fun acceptDelivery(deliveryId: Int): FetchResult<Unit, RequestError>
+
+    suspend fun arriveLoading(deliveryId: Int): FetchResult<Unit, RequestError>
+
+    suspend fun departLoading(deliveryId: Int): FetchResult<Unit, RequestError>
+
+    suspend fun arriveUnloading(deliveryId: Int): FetchResult<Unit, RequestError>
 }

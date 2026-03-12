@@ -47,14 +47,37 @@ class RemoteDeliveryDetailsRepository(
 
     @OptIn(ExperimentalTime::class)
     override suspend fun acceptDelivery(deliveryId: Int): FetchResult<Unit, RequestError> {
-        return try {
-            apiService.startDelivery(deliveryId)
-            cache.update(deliveryId) {
-                it.copy(
-                    status = RequestStatus.InProgress,
-                    updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                )
+        return handleDeliveryAction(
+            action = { apiService.startDelivery(deliveryId) }
+        ).also { result ->
+            if (result is FetchResult.Success) {
+                cache.update(deliveryId) {
+                    it.copy(
+                        status = RequestStatus.InProgress,
+                        updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    )
+                }
             }
+        }
+    }
+
+    override suspend fun arriveLoading(deliveryId: Int): FetchResult<Unit, RequestError> {
+        return handleDeliveryAction { apiService.arriveLoading(deliveryId) }
+    }
+
+    override suspend fun departLoading(deliveryId: Int): FetchResult<Unit, RequestError> {
+        return handleDeliveryAction { apiService.departLoading(deliveryId) }
+    }
+
+    override suspend fun arriveUnloading(deliveryId: Int): FetchResult<Unit, RequestError> {
+        return handleDeliveryAction { apiService.arriveUnloading(deliveryId) }
+    }
+
+    private suspend fun handleDeliveryAction(
+        action: suspend () -> Unit
+    ): FetchResult<Unit, RequestError> {
+        return try {
+            action()
             FetchResult.Success(Unit)
         } catch (e: ClientRequestException) {
             val message = e.response.bodyAsText()

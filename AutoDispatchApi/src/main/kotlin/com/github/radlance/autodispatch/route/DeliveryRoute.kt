@@ -66,6 +66,36 @@ fun Route.deliveries(service: DeliveryService) {
                 call.respond(HttpStatusCode.OK)
             }
 
+            post("/{id}/arrive-loading") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                service.arriveLoading(id, login)
+
+                call.respond(HttpStatusCode.OK)
+            }
+
+            post("/{id}/depart-loading") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                service.departLoading(id, login)
+
+                call.respond(HttpStatusCode.OK)
+            }
+
+            post("/{id}/arrive-unloading") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                service.arriveUnloading(id, login)
+
+                call.respond(HttpStatusCode.OK)
+            }
+
             post("/{id}/upload-documents") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")

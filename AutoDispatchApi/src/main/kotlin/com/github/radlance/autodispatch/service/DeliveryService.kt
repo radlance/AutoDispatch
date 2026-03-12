@@ -63,6 +63,15 @@ class DeliveryService(
         imageUrls
     )
 
+    suspend fun arriveLoading(deliveryId: Int, driverLogin: String) =
+        deliveryRepository.arriveLoading(deliveryId, driverLogin)
+
+    suspend fun departLoading(deliveryId: Int, driverLogin: String) =
+        deliveryRepository.departLoading(deliveryId, driverLogin)
+
+    suspend fun arriveUnloading(deliveryId: Int, driverLogin: String) =
+        deliveryRepository.arriveUnloading(deliveryId, driverLogin)
+
     suspend fun retakeDocuments(
         deliveryId: Int,
         driverLogin: String,

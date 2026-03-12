@@ -117,7 +117,8 @@ fun DeliveryRouteScreen(
                     DeliveryRoute(
                         scrollState = scrollState,
                         delivery = delivery,
-                        navigateToDeliveryConfirmation = navigateToDeliveryConfirmation
+                        navigateToDeliveryConfirmation = navigateToDeliveryConfirmation,
+                        deliveryViewModel = viewModel
                     )
                 },
                 onError = {

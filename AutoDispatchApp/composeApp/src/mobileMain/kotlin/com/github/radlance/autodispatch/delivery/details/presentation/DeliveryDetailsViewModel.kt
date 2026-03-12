@@ -8,6 +8,7 @@ import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailsRepository
 import com.github.radlance.autodispatch.delivery.domain.RequestError
+import com.github.radlance.autodispatch.delivery.route.domain.DeliveryRouteAction
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +27,13 @@ class DeliveryDetailsViewModel(
     private val acceptDeliveryStateMutable =
         MutableStateFlow<FetchResultUiState<Unit, RequestError>>(FetchResultUiState.Idle)
     val acceptDeliveryState = acceptDeliveryStateMutable.asStateFlow()
+
+    private val routeActionStateMutable =
+        MutableStateFlow<FetchResultUiState<Unit, RequestError>>(FetchResultUiState.Idle)
+    val routeActionState = routeActionStateMutable.asStateFlow()
+
+    private val routeActionTypeMutable = MutableStateFlow<DeliveryRouteAction?>(null)
+    val routeActionType = routeActionTypeMutable.asStateFlow()
 
     private var deliveryJob: Job? = null
 
@@ -61,5 +69,67 @@ class DeliveryDetailsViewModel(
 
     fun resetAcceptState() {
         acceptDeliveryStateMutable.value = FetchResultUiState.Idle
+    }
+
+    fun arriveLoading(deliveryId: Int) {
+        updateRouteProgress(
+            action = DeliveryRouteAction.ArriveLoading,
+            request = { repository.arriveLoading(deliveryId) },
+            applyUpdate = { current, now ->
+                if (current.arrivedLoadingAt != null) current
+                else current.copy(arrivedLoadingAt = now, updatedAt = now)
+            }
+        )
+    }
+
+    fun departLoading(deliveryId: Int) {
+        updateRouteProgress(
+            action = DeliveryRouteAction.DepartLoading,
+            request = { repository.departLoading(deliveryId) },
+            applyUpdate = { current, now ->
+                if (current.actualLoadingAt != null) current
+                else current.copy(actualLoadingAt = now, updatedAt = now)
+            }
+        )
+    }
+
+    fun arriveUnloading(deliveryId: Int) {
+        updateRouteProgress(
+            action = DeliveryRouteAction.ArriveUnloading,
+            request = { repository.arriveUnloading(deliveryId) },
+            applyUpdate = { current, now ->
+                if (current.arrivedUnloadingAt != null) current
+                else current.copy(arrivedUnloadingAt = now, updatedAt = now)
+            }
+        )
+    }
+
+    fun resetRouteActionState() {
+        routeActionStateMutable.value = FetchResultUiState.Idle
+        routeActionTypeMutable.value = null
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun updateRouteProgress(
+        action: DeliveryRouteAction,
+        request: suspend () -> FetchResult<Unit, RequestError>,
+        applyUpdate: (DeliveryDetailed, kotlinx.datetime.LocalDateTime) -> DeliveryDetailed
+    ) {
+        routeActionTypeMutable.value = action
+        routeActionStateMutable.value = FetchResultUiState.Loading
+
+        handle(background = { request() }) { result ->
+            routeActionStateMutable.value = result.toUiState()
+
+            if (result is FetchResult.Success) {
+                val current = deliveryStateMutable.value
+                if (current is FetchResultUiState.Success) {
+                    val now = Clock.System.now()
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                    val updatedDelivery = applyUpdate(current.data, now)
+                    deliveryStateMutable.value = FetchResultUiState.Success(updatedDelivery)
+                }
+            }
+        }
     }
 }

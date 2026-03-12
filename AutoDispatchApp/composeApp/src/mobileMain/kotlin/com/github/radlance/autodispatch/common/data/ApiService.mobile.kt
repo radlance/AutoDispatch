@@ -24,6 +24,12 @@ interface ApiServiceMobile : ApiService {
 
     suspend fun startDelivery(deliveryId: Int)
 
+    suspend fun arriveLoading(deliveryId: Int)
+
+    suspend fun departLoading(deliveryId: Int)
+
+    suspend fun arriveUnloading(deliveryId: Int)
+
     suspend fun completeDelivery(deliveryId: Int, formData: List<PartData>)
 
     suspend fun retakeDocument(deliveryId: Int, formData: List<PartData>)
@@ -65,6 +71,18 @@ internal class KtorApiServiceMobile(
 
     override suspend fun startDelivery(deliveryId: Int) {
         httpClient.post("deliveries/${deliveryId}/start")
+    }
+
+    override suspend fun arriveLoading(deliveryId: Int) {
+        httpClient.post("deliveries/${deliveryId}/arrive-loading")
+    }
+
+    override suspend fun departLoading(deliveryId: Int) {
+        httpClient.post("deliveries/${deliveryId}/depart-loading")
+    }
+
+    override suspend fun arriveUnloading(deliveryId: Int) {
+        httpClient.post("deliveries/${deliveryId}/arrive-unloading")
     }
 
     override suspend fun completeDelivery(
