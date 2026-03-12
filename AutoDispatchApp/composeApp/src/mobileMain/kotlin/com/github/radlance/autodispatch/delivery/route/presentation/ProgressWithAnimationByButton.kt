@@ -42,7 +42,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun MilestoneDot(isCompleted: Boolean) {
@@ -88,6 +91,18 @@ fun ProgressWithAnimationByButton() {
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
 
+    val labelBoxWidth = 64.dp
+
+    val leftLabelColor by animateColorAsState(
+        targetValue = if (progress > 0.01f) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        animationSpec = tween(300)
+    )
+
+    val rightLabelColor by animateColorAsState(
+        targetValue = if (progress >= 0.99f) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        animationSpec = tween(300)
+    )
+
     val stepTexts = remember {
         listOf(
             0.01f to "first",
@@ -121,6 +136,43 @@ fun ProgressWithAnimationByButton() {
             Spacer(Modifier.width(12.dp))
 
             MilestoneDot(isCompleted = progress >= 0.99f)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            Box(modifier = Modifier.width(labelBoxWidth)) {
+                Text(
+                    text = "загрузка",
+                    style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
+                    color = leftLabelColor,
+                    textAlign = TextAlign.Start,
+                    maxLines = 2,
+                    softWrap = true,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            Spacer(Modifier.weight(1f))
+
+            Box(modifier = Modifier.width(labelBoxWidth)) {
+                Text(
+                    text = "разгрузка",
+                    style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
+                    color = rightLabelColor,
+                    textAlign = TextAlign.End,
+                    maxLines = 2,
+                    softWrap = true,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
