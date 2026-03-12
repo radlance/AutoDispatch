@@ -32,6 +32,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import org.jetbrains.compose.resources.stringResource
@@ -102,7 +103,12 @@ fun VehicleUnassignmentDialog(
                         Text("Автомобиль", modifier = Modifier.alpha(0.7f))
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            "${driver.vehicle!!.model} • ${driver.vehicle.licensePlate} • г/п: ${driver.vehicle.payloadCapacity} кг",
+                            "${driver.vehicle!!.model} • ${
+                                formatLicensePlate(
+                                    driver.vehicle.licensePlate,
+                                    driver.vehicle.regionCode
+                                )
+                            } • г/п: ${driver.vehicle.payloadCapacity} кг",
                             fontSize = 16.sp
                         )
                     }

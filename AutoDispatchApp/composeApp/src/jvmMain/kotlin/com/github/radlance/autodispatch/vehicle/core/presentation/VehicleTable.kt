@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.github.radlance.autodispatch.common.utils.abbreviateName
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 import com.seanproctor.datatable.DataColumn
@@ -102,7 +103,7 @@ fun VehicleTable(
 
                 cell {
                     Text(
-                        text = item.licensePlate,
+                        text = formatLicensePlate(item.licensePlate, item.regionCode),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

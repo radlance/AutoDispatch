@@ -11,6 +11,7 @@ data class DriverStats(
     val driverStatus: Status,
     val vehicleModel: String?,
     val vehicleLicensePlate: String?,
+    val vehicleRegionCode: String?,
     val vehiclePayloadCapacity: Int?,
     val totalAssignedRequests: Long
 )

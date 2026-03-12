@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
 
 @Composable
@@ -66,7 +67,13 @@ fun DriverAssignmentCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = driverStats.vehicleModel?.let { "${driverStats.vehicleModel} • ${driverStats.vehicleLicensePlate} • г/п: ${driverStats.vehiclePayloadCapacity} кг" }
+                            text = driverStats.vehicleModel?.let {
+                                val plate = formatLicensePlate(
+                                    driverStats.vehicleLicensePlate.orEmpty(),
+                                    driverStats.vehicleRegionCode
+                                )
+                                "${driverStats.vehicleModel} • $plate • г/п: ${driverStats.vehiclePayloadCapacity} кг"
+                            }
                                 ?: "Нет автомобиля",
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 12.sp,
@@ -157,4 +164,3 @@ private fun pluralizeRequests(count: Int): String {
 
     return "$count $word"
 }
-

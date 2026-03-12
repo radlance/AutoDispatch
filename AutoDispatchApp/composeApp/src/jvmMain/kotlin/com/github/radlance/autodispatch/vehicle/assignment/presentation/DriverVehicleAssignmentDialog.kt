@@ -53,11 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.cancel
-import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.uikit.vector.PersonCheckIcon
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
@@ -136,7 +137,12 @@ fun DriverVehicleAssignmentDialog(
                         Text("Автомобиль", modifier = Modifier.alpha(0.7f))
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            "${vehicle.model} • ${vehicle.licensePlate} • г/п: ${vehicle.payloadCapacity} кг.",
+                            "${vehicle.model} • ${
+                                formatLicensePlate(
+                                    vehicle.licensePlate,
+                                    vehicle.regionCode
+                                )
+                            } • г/п: ${vehicle.payloadCapacity} кг.",
                             fontSize = 16.sp
                         )
                     }

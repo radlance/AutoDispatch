@@ -32,16 +32,17 @@ import autodispatch.composeapp.generated.resources.status
 import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.abbreviateName
+import com.github.radlance.autodispatch.common.utils.formattedLicensePlate
 import com.github.radlance.autodispatch.common.utils.toSimpleDateString
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth
 import kotlinx.coroutines.launch
+import kotlinx.datetime.toJavaLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import java.time.Duration
 import java.time.LocalDateTime
-import kotlinx.datetime.toJavaLocalDateTime
 
 private enum class DeadlineState {
     NORMAL,
@@ -180,7 +181,8 @@ fun RequestTable(
                 }
                 cell {
                     Text(
-                        text = item.vehicle?.let { "${it.model} (${it.licensePlate})" } ?: "—",
+                        text = item.vehicle?.let { "${it.model} (${it.formattedLicensePlate()})" }
+                            ?: "—",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

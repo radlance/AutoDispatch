@@ -9,6 +9,7 @@ data class DriverStats(
     val driverStatus: DriverStatus,
     val vehicleModel: String?,
     val vehicleLicensePlate: String?,
+    val vehicleRegionCode: String?,
     val vehiclePayloadCapacity: Int?,
     val totalAssignedRequests: Long
 )

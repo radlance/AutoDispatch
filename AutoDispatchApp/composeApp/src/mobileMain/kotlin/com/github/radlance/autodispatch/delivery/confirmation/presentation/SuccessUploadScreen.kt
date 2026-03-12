@@ -222,6 +222,7 @@ private fun SuccessDeliveryScreenPreview() {
                     id = 1,
                     model = "",
                     licensePlate = "",
+                    regionCode = "",
                     payloadCapacity = 0
                 ),
                 createdAt = LocalDateTime(1, 1, 1, 1, 1),

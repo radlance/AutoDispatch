@@ -47,6 +47,7 @@ import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.SectionHeader
 import com.github.radlance.autodispatch.common.utils.avatarInitials
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.profile.domain.ProfileDetails
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.DocumentIcon
@@ -214,7 +215,7 @@ fun DriverProfile(
                     HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
                     SelectionContainer {
                         InfoRow(
-                            title = vehicle.licensePlate,
+                            title = formatLicensePlate(vehicle.licensePlate, vehicle.regionCode),
                             subtitle = "Гос. номер",
                             icon = DocumentIcon,
                             iconTint = onPrimaryContainer,

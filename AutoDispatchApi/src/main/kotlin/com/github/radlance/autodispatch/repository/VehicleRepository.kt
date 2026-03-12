@@ -59,6 +59,7 @@ class VehicleRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity
             )
             .where(AndOp(conditions))
@@ -70,6 +71,7 @@ class VehicleRepository {
                     id = row[VehicleTable.id].value,
                     model = row[VehicleTable.model],
                     licensePlate = row[VehicleTable.licensePlate],
+                    regionCode = row[VehicleTable.regionCode],
                     payloadCapacity = row[VehicleTable.payloadCapacity]
                 )
             }
@@ -231,6 +233,7 @@ class VehicleRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 UserTable.fullName
             )
@@ -248,6 +251,7 @@ class VehicleRepository {
                     id = row[VehicleTable.id].value,
                     model = row[VehicleTable.model],
                     licensePlate = row[VehicleTable.licensePlate],
+                    regionCode = row[VehicleTable.regionCode],
                     payloadCapacity = row[VehicleTable.payloadCapacity],
                     driverFullName = row.getOrNull(UserTable.fullName)
                 )

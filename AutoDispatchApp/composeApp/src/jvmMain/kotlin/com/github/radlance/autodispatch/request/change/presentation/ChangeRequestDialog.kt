@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -30,14 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -54,16 +53,17 @@ import autodispatch.composeapp.generated.resources.request_cancellation
 import autodispatch.composeapp.generated.resources.request_editing
 import autodispatch.composeapp.generated.resources.you_want_to_cancel_request
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import kotlinx.coroutines.launch
 
 @Composable
 fun ChangeRequestDialog(
@@ -94,8 +94,6 @@ fun ChangeRequestDialog(
     val scope = rememberCoroutineScope()
 
     val scrollState = rememberScrollState()
-    val screenHeight = LocalWindowInfo.current.containerSize.height
-    val maxDialogHeight = screenHeight * 0.6f
 
     if (showCancelDialog) {
         val onDismissCancelDialog = {
@@ -267,7 +265,7 @@ fun ChangeRequestDialog(
     val isLoadingChange = changeRequestState is FetchResultUiState.Loading
     val errorChange = (changeRequestState as? FetchResultUiState.Error)?.error
 
-    CustomDialog(
+    ExpandedCustomDialog(
         modifier = modifier,
         allowDismiss = !isLoadingChange,
         onDismissRequest = onDismiss,
@@ -290,7 +288,7 @@ fun ChangeRequestDialog(
             )
         },
         content = { requestDismiss ->
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
                 errorChange?.let {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
@@ -315,7 +313,7 @@ fun ChangeRequestDialog(
                         }
                     }
                 }
-                Box(modifier = Modifier.fillMaxWidth().heightIn(max = maxDialogHeight.dp)) {
+                Box(modifier = Modifier.fillMaxSize()) {
                     ChangeRequestFields(
                         cities = cities,
                         cargoTypes = cargoTypes,

@@ -21,6 +21,7 @@ import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
 import com.github.radlance.autodispatch.common.presentation.LabeledValue
 import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
 import com.github.radlance.autodispatch.common.presentation.Section
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,7 +51,10 @@ fun VehicleDetailsSections(
         Section(header = "Автомобиль") {
             LabeledValue(label = "Модель", value = vehicle.model)
             Spacer(modifier = Modifier.height(ITEM_GAP))
-            LabeledValue(label = "Гос. номер", value = vehicle.licensePlate)
+            LabeledValue(
+                label = "Гос. номер",
+                value = formatLicensePlate(vehicle.licensePlate, vehicle.regionCode)
+            )
             Spacer(modifier = Modifier.height(ITEM_GAP))
             LabeledValue(label = "Грузоподъемность", value = "${vehicle.payloadCapacity} кг")
         }

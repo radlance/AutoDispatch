@@ -43,6 +43,7 @@ class ProfileRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 RequestStatusTable.name,
                 countExpression
@@ -56,6 +57,7 @@ class ProfileRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 RequestStatusTable.name
             )
@@ -83,6 +85,7 @@ class ProfileRepository {
                 id = id,
                 model = first[VehicleTable.model],
                 licensePlate = first[VehicleTable.licensePlate],
+                regionCode = first[VehicleTable.regionCode],
                 payloadCapacity = first[VehicleTable.payloadCapacity]
             )
         }

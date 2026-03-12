@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +41,7 @@ import autodispatch.composeapp.generated.resources.done
 import autodispatch.composeapp.generated.resources.no_results_generic
 import autodispatch.composeapp.generated.resources.search
 import autodispatch.composeapp.generated.resources.select_all
-import com.github.radlance.autodispatch.common.presentation.CustomDialog
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -100,10 +98,7 @@ private fun SelectionDialog(
         else options.filter { it.contains(searchQuery, ignoreCase = true) }
     }
 
-    val screenHeight = LocalWindowInfo.current.containerSize.height
-    val maxDialogHeight = screenHeight * 0.6f
-
-    CustomDialog(
+    ExpandedCustomDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -113,7 +108,7 @@ private fun SelectionDialog(
             )
         },
         content = {
-            Box(modifier = Modifier.fillMaxWidth().heightIn(max = maxDialogHeight.dp)) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     TextField(
                         value = searchQuery,

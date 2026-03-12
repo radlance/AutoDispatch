@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
 
 @Composable
@@ -73,7 +74,7 @@ fun VehicleAssignmentCard(
                                 .background(MaterialTheme.colorScheme.primaryContainer)
                         ) {
                             Text(
-                                text = vehicle.licensePlate,
+                                text = formatLicensePlate(vehicle.licensePlate, vehicle.regionCode),
                                 maxLines = 1,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 overflow = TextOverflow.Ellipsis,

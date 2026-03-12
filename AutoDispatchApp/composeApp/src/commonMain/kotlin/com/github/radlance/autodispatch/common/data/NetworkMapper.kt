@@ -138,6 +138,7 @@ fun VehicleDto.toVehicle(): Vehicle {
         id = id,
         model = model,
         licensePlate = licensePlate,
+        regionCode = regionCode,
         payloadCapacity = payloadCapacity
     )
 }

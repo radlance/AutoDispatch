@@ -84,6 +84,7 @@ class DriverRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 RequestStatusTable.name,
                 countExpression
@@ -98,6 +99,7 @@ class DriverRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 RequestStatusTable.name,
                 DriverTable.updatedAt,
@@ -139,6 +141,7 @@ class DriverRepository {
                         id = id,
                         model = first[VehicleTable.model],
                         licensePlate = first[VehicleTable.licensePlate],
+                        regionCode = first[VehicleTable.regionCode],
                         payloadCapacity = first[VehicleTable.payloadCapacity]
                     )
                 }
@@ -214,6 +217,7 @@ class DriverRepository {
                 DriverStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 requestCount
             )
@@ -228,6 +232,7 @@ class DriverRepository {
                 DriverStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity
             )
             .orderBy(statusOrder, SortOrder.ASC)
@@ -245,6 +250,7 @@ class DriverRepository {
                     ),
                     vehicleModel = row[VehicleTable.model],
                     vehicleLicensePlate = row[VehicleTable.licensePlate],
+                    vehicleRegionCode = row[VehicleTable.regionCode],
                     vehiclePayloadCapacity = row[VehicleTable.payloadCapacity],
                     totalAssignedRequests = row[requestCount] ?: 0L
                 )

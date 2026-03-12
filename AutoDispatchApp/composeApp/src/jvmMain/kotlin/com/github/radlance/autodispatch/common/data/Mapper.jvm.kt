@@ -92,6 +92,7 @@ private fun DriverStatsDto.toDriverStats(): DriverStats {
         driverStatus = driverStatus.id.toDriverStatus(),
         vehicleModel = vehicleModel,
         vehicleLicensePlate = vehicleLicensePlate,
+        vehicleRegionCode = vehicleRegionCode,
         vehiclePayloadCapacity = vehiclePayloadCapacity,
         totalAssignedRequests = totalAssignedRequests
     )
@@ -277,6 +278,7 @@ private fun VehicleDetailedDto.toVehicleDetailed(): VehicleDetailed {
         id = id,
         model = model,
         licensePlate = licensePlate,
+        regionCode = regionCode,
         payloadCapacity = payloadCapacity,
         driverFullName = driverFullName
     )

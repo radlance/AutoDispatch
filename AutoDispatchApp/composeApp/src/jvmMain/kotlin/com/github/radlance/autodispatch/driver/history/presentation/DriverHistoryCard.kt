@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.github.radlance.autodispatch.common.presentation.DefaultPointerSelectionContainer
 import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.driver.common.presentation.DeliveryRoute
@@ -94,7 +95,14 @@ fun DriverHistoryCard(
                             )
                             Spacer(Modifier.height(8.dp))
                             val vehicle = driverHistory.vehicle
-                            Text(text = "${vehicle.model} (${vehicle.licensePlate})")
+                            Text(
+                                text = "${vehicle.model} (${
+                                    formatLicensePlate(
+                                        vehicle.licensePlate,
+                                        vehicle.regionCode
+                                    )
+                                })"
+                            )
                         }
 
                         Column {
@@ -126,4 +134,3 @@ fun DriverHistoryCard(
         }
     }
 }
-

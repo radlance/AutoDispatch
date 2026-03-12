@@ -61,6 +61,7 @@ import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.common.presentation.StatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
+import com.github.radlance.autodispatch.common.utils.formattedLicensePlate
 import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.request.core.domain.Request
@@ -225,7 +226,8 @@ fun RequestDetailsSections(
                 value = request.driverFullName
             )
             Spacer(modifier = Modifier.height(ITEM_GAP))
-            val vehicle = request.vehicle?.let { "${it.model} (${it.licensePlate})" } ?: "—"
+            val vehicle =
+                request.vehicle?.let { "${it.model} (${it.formattedLicensePlate()})" } ?: "—"
             LabeledValue(label = stringResource(Res.string.vehicle), value = vehicle)
             request.vehicle?.let {
                 Spacer(modifier = Modifier.height(ITEM_GAP))

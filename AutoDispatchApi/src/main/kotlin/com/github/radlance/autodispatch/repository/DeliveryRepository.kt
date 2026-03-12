@@ -88,6 +88,7 @@ class DeliveryRepository {
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
+                VehicleTable.regionCode,
                 VehicleTable.payloadCapacity,
                 dispatcherUser[UserTable.fullName].alias("dispatcher_full_name"),
                 dispatcherUser[UserTable.phoneNumber].alias("dispatcher_phone_number"),
@@ -165,6 +166,7 @@ class DeliveryRepository {
                     id = it.value,
                     model = row[VehicleTable.model],
                     licensePlate = row[VehicleTable.licensePlate],
+                    regionCode = row[VehicleTable.regionCode],
                     payloadCapacity = row[VehicleTable.payloadCapacity]
                 )
             },
@@ -396,6 +398,7 @@ class DeliveryRepository {
             VehicleTable.id,
             VehicleTable.model,
             VehicleTable.licensePlate,
+            VehicleTable.regionCode,
             VehicleTable.payloadCapacity,
             AssignmentTable.assignedAt,
             AssignmentTable.completedAt,
@@ -452,6 +455,7 @@ class DeliveryRepository {
                         id = row[VehicleTable.id].value,
                         model = row[VehicleTable.model],
                         licensePlate = row[VehicleTable.licensePlate],
+                        regionCode = row[VehicleTable.regionCode],
                         payloadCapacity = row[VehicleTable.payloadCapacity]
                     ),
                     originCity = originCityName,

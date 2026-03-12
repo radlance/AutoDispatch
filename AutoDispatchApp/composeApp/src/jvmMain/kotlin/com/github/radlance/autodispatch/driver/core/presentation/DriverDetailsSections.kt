@@ -45,6 +45,7 @@ import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
 import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.common.utils.avatarInitials
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.driver.history.presentation.DriverHistoryDialog
 import com.github.radlance.autodispatch.request.core.presentation.FullScreenImageDialog
@@ -135,7 +136,10 @@ fun DriverDetailsSections(
             driver.vehicle?.let { vehicle ->
                 LabeledValue(label = "Модель", value = vehicle.model)
                 Spacer(modifier = Modifier.height(ITEM_GAP))
-                LabeledValue(label = "Гос. номер", value = vehicle.licensePlate)
+                LabeledValue(
+                    label = "Гос. номер",
+                    value = formatLicensePlate(vehicle.licensePlate, vehicle.regionCode)
+                )
                 Spacer(modifier = Modifier.height(ITEM_GAP))
                 LabeledValue(label = "Грузоподъёмность", value = "${vehicle.payloadCapacity} кг")
                 Spacer(modifier = Modifier.height(ITEM_GAP))

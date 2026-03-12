@@ -87,6 +87,7 @@ import com.github.radlance.autodispatch.common.presentation.LoadableImage
 import com.github.radlance.autodispatch.common.presentation.SectionHeader
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
@@ -672,7 +673,12 @@ private fun VehicleCard(
             SelectionContainer {
                 InfoRow(
                     title = vehicle.model,
-                    subtitle = "Гос. номер: ${vehicle.licensePlate}",
+                    subtitle = "Гос. номер: ${
+                        formatLicensePlate(
+                            vehicle.licensePlate,
+                            vehicle.regionCode
+                        )
+                    }",
                     icon = Icons.Outlined.LocationOn,
                     iconTint = contentColor,
                     iconBackgroundColor = backgroundColor,

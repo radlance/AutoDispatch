@@ -73,6 +73,7 @@ class RequestRepository {
         VehicleTable.id,
         VehicleTable.model,
         VehicleTable.licensePlate,
+        VehicleTable.regionCode,
         VehicleTable.payloadCapacity
     )
 
@@ -86,6 +87,7 @@ class RequestRepository {
                 id = it.value,
                 model = row[VehicleTable.model],
                 licensePlate = row[VehicleTable.licensePlate],
+                regionCode = row[VehicleTable.regionCode],
                 payloadCapacity = row[VehicleTable.payloadCapacity]
             )
         }
@@ -250,12 +252,19 @@ class RequestRepository {
             .map { UserFilter(it[UserTable.id].value, it[UserTable.fullName]) }
 
         val vehicles = VehicleTable
-            .select(VehicleTable.id, VehicleTable.model, VehicleTable.licensePlate, VehicleTable.payloadCapacity)
+            .select(
+                VehicleTable.id,
+                VehicleTable.model,
+                VehicleTable.licensePlate,
+                VehicleTable.regionCode,
+                VehicleTable.payloadCapacity
+            )
             .map {
                 Vehicle(
                     it[VehicleTable.id].value,
                     it[VehicleTable.model],
                     it[VehicleTable.licensePlate],
+                    it[VehicleTable.regionCode],
                     it[VehicleTable.payloadCapacity]
                 )
             }

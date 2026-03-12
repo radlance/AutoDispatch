@@ -14,6 +14,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.vehicle
 import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.common.utils.abbreviateName
+import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.driver.core.domain.Driver
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
 import com.seanproctor.datatable.DataColumn
@@ -109,7 +110,9 @@ fun DriverTable(
                 }
                 cell {
                     Text(
-                        text = item.vehicle?.let { "${it.model} (${it.licensePlate})" } ?: "—",
+                        text = item.vehicle?.let {
+                            "${it.model} (${formatLicensePlate(it.licensePlate, it.regionCode)})"
+                        } ?: "—",
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
