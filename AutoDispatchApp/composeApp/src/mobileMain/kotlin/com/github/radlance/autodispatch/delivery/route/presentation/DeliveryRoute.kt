@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.AlertDialog
@@ -239,7 +240,47 @@ private fun RoutePoints(
             Column(
                 modifier = Modifier.padding(horizontal = 18.dp)
             ) {
-                // TODO
+                ProgressWithAnimationByButton()
+            }
+        }
+    }
+
+    Card {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.then(
+                    if (isOverflowLoadingPoint) {
+                        Modifier.clickable {
+                            isExpandedLoadingPoint = !isExpandedLoadingPoint
+                        }
+                    } else Modifier
+                ).padding(18.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(24.dp)) {
+                        Icon(
+                            imageVector = Icons.Outlined.Circle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(4.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = "Точка погрузки"
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (isOverflowLoadingPoint) {
+                        IconButton(
+                            onClick = { isExpandedLoadingPoint = !isExpandedLoadingPoint },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            val icon = if (isExpandedLoadingPoint) {
+                                Icons.Default.ExpandLess
+                            } else Icons.Default.ExpandMore
+                            Icon(imageVector = icon, contentDescription = null)
+                        }
+                    }
+                }
             }
             Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                 Text(
@@ -266,6 +307,7 @@ private fun RoutePoints(
             }
         }
     }
+
     Card {
         Column(modifier = Modifier.fillMaxWidth()) {
             Column(
