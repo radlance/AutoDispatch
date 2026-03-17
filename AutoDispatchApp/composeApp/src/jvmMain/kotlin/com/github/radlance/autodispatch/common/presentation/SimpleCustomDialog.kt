@@ -24,7 +24,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
@@ -54,7 +53,7 @@ fun SimpleCustomDialog(
             onDismissRequest = attemptDismiss,
             properties = properties
         ) {
-            BackHandler(enabled = (visibleState.currentState || visibleState.targetState) && allowDismiss) {
+            NavigationBackHandler(enabled = (visibleState.currentState || visibleState.targetState) && allowDismiss) {
                 attemptDismiss()
             }
 

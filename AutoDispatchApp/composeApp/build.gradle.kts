@@ -21,6 +21,7 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
+        androidResources { enable = true }
     }
 
     listOf(
@@ -53,7 +54,6 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
-            implementation(libs.ui.backhandler)
             implementation(libs.zoomable)
             implementation(libs.kotlinx.datetime)
             implementation(libs.slf4j.simple)
@@ -66,15 +66,18 @@ kotlin {
             implementation(libs.bundles.ktor)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.navigation.compose)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+        }
+        mobileMain.dependencies {
+            implementation(libs.androidx.navigationevent.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -99,6 +102,7 @@ kotlin {
             implementation(libs.datatable.material3)
             implementation(libs.ktor.client.okhttp)
             implementation(compose.desktop.currentOs)
+            implementation(libs.ui.backhandler)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.jmapviewer)
         }
