@@ -94,14 +94,23 @@ fun DeliveryScreen(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
-                val newOffset = searchBarOffsetHeightPx.value + delta
+                val currentOffset = searchBarOffsetHeightPx.value
+
+                val newOffset = (currentOffset + delta).coerceIn(-searchBarHeightPx, 0f)
+
+                val consumed = newOffset - currentOffset
+
                 coroutineScope.launch {
-                    searchBarOffsetHeightPx.snapTo(newOffset.coerceIn(-searchBarHeightPx, 0f))
+                    searchBarOffsetHeightPx.snapTo(newOffset)
                 }
-                return Offset.Zero
+
+                return Offset(x = 0f, y = consumed)
             }
 
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+            override suspend fun onPostFling(
+                consumed: Velocity,
+                available: Velocity
+            ): Velocity {
                 val targetValue = if (searchBarOffsetHeightPx.value > -searchBarHeightPx / 2) {
                     0f
                 } else {
@@ -111,12 +120,12 @@ fun DeliveryScreen(
                     targetValue = targetValue,
                     animationSpec = spring(stiffness = Spring.StiffnessLow)
                 )
-                return super.onPostFling(consumed, available)
+                return available
             }
         }
     }
     Scaffold(
-        modifier = modifier.nestedScroll(nestedScrollConnection),
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -176,7 +185,7 @@ fun DeliveryScreen(
                             }
                             LazyColumn(
                                 state = lazyListState,
-                                modifier = contentModifier,
+                                modifier = contentModifier.nestedScroll(nestedScrollConnection),
                                 verticalArrangement = Arrangement.spacedBy(24.dp),
                                 contentPadding = PaddingValues(bottom = 24.dp)
                             ) {
@@ -221,7 +230,10 @@ fun DeliveryScreen(
                             }
                         } else {
                             Box(
-                                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                                Modifier.fillMaxSize()
+                                    .padding(top = topPadding)
+                                    .verticalScroll(rememberScrollState())
+                                    .nestedScroll(nestedScrollConnection)
                                     .padding(horizontal = 18.dp),
                                 contentAlignment = Alignment.Center
                             ) {
