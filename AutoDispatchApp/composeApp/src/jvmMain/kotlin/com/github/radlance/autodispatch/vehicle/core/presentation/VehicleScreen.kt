@@ -36,11 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.retry
+import com.github.radlance.autodispatch.common.presentation.AppBackHandler
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
@@ -73,7 +73,7 @@ fun VehicleScreen(
 
     val dataTableState = remember { DataTableState() }
 
-    BackHandler {
+    AppBackHandler {
         if (showVehicleDetailsPanel) {
             showVehicleDetailsPanel = false
         }

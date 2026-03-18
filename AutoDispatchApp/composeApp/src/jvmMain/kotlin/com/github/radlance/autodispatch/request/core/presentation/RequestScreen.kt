@@ -46,13 +46,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.search_by_requests
+import com.github.radlance.autodispatch.common.presentation.AppBackHandler
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
@@ -97,7 +97,7 @@ fun RequestsScreen(
     val dataTableState = remember { DataTableState() }
     val scope = rememberCoroutineScope()
 
-    BackHandler {
+    AppBackHandler {
         if (showRequestDetailsPanel) {
             showRequestDetailsPanel = false
         }

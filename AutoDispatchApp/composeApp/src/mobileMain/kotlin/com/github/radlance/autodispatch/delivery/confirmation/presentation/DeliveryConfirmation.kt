@@ -63,7 +63,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.decodeToImageBitmap
@@ -74,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.common.presentation.AppBackHandler
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
@@ -122,7 +122,7 @@ fun DeliveryConfirmation(
             { fullscreenIndex = null }
         } else navigateUp
 
-    BackHandler {
+    AppBackHandler {
         if (documents.isNotEmpty() && fullscreenIndex == null) {
             showBackDialog = true
         } else {
