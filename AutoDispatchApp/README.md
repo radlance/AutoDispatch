@@ -1,14 +1,12 @@
 This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
 
 * [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
+  It contains several Kotlin source sets:
   - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+  - [mobileMain](./composeApp/src/mobileMain/kotlin) is for code shared between Android and iOS (mobile-only).
   - [androidMain](./composeApp/src/androidMain/kotlin) is for Android-specific shared Kotlin code (without app resources).
+  - [iosMain](./composeApp/src/iosMain/kotlin) is for iOS-specific Kotlin code.
+  - [jvmMain](./composeApp/src/jvmMain/kotlin) is for Desktop (JVM)-specific Kotlin code.
 
 * [/androidApp](./androidApp) contains the Android application entry point (manifest, resources, `MainActivity`).
 
