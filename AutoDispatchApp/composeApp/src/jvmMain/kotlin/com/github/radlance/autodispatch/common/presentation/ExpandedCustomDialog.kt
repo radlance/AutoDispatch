@@ -35,6 +35,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -67,7 +68,7 @@ fun ExpandedCustomDialog(
                 focusable = true
             )
         ) {
-            NavigationBackHandler(enabled = visibleState.currentState || visibleState.targetState) {
+            BackHandler(enabled = visibleState.currentState || visibleState.targetState) {
                 attemptDismiss()
             }
 

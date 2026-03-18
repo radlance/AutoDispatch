@@ -28,7 +28,6 @@ composeHotReload = "1.1.0-beta01"
 exifinterface = "1.4.2"
 splashScreen = "1.2.0"
 composeMaterial3 = "1.9.0"
-navigationevent = "1.1.0-alpha01"
 
 [libraries]
 core-splashscreen = {module = "androidx.core:core-splashscreen", version.ref = "splashScreen" }
@@ -68,7 +67,6 @@ androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecyc
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "uiBackhandler" }
-androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 

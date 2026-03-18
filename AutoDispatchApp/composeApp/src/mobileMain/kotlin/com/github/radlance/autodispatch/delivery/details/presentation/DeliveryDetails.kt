@@ -66,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -83,7 +84,6 @@ import coil3.size.Size
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LoadableImage
-import com.github.radlance.autodispatch.common.presentation.NavigationBackHandler
 import com.github.radlance.autodispatch.common.presentation.SectionHeader
 import com.github.radlance.autodispatch.common.presentation.WarningCard
 import com.github.radlance.autodispatch.common.utils.formatKg
@@ -138,7 +138,7 @@ fun DeliveryDetails(
     val isLoading = acceptDeliveryState is FetchResultUiState.Loading
     val error = (acceptDeliveryState as? FetchResultUiState.Error)?.error
 
-    NavigationBackHandler {
+    BackHandler {
         val currentNavigateUp =
             if (fullscreenIndex != null) {
                 { fullscreenIndex = null }
