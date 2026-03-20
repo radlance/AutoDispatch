@@ -112,9 +112,10 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "com.github.radlance.autodispatch.MainKt"
+        mainClass = "com.github.radlance.autodispatch.core.MainKt"
 
         nativeDistributions {
+            modules("jdk.unsupported")
             val iconsDir = project.file("src/jvmMain/resources/icons")
 
             macOS {
@@ -127,7 +128,7 @@ compose.desktop {
                 iconFile.set(iconsDir.resolve("icon.png"))
             }
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.github.radlance.autodispatch"
+            packageName = "AutoDispatch"
             packageVersion = "1.0.0"
         }
     }
