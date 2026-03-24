@@ -52,6 +52,7 @@ fun StatisticsScreen(
                     Spacer(Modifier.height(24.dp))
                     StatisticsDiagrams(statistics = statistics)
                     Spacer(Modifier.height(24.dp))
+                    DownloadReportDialog()
                 }
                 VerticalScrollbar(
                     modifier = Modifier

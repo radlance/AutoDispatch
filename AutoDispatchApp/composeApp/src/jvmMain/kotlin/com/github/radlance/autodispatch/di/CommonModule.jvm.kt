@@ -36,6 +36,7 @@ import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.request.core.presentation.RequestViewModel
 import com.github.radlance.autodispatch.statistics.data.RemoteStatisticsRepository
 import com.github.radlance.autodispatch.statistics.domain.StatisticsRepository
+import com.github.radlance.autodispatch.statistics.presentation.DownloadReportViewModel
 import com.github.radlance.autodispatch.statistics.presentation.StatisticsViewModel
 import com.github.radlance.autodispatch.vehicle.assignment.data.RemoteDriverVehicleAssignmentRepository
 import com.github.radlance.autodispatch.vehicle.assignment.domain.DriverVehicleAssignmentRepository
@@ -126,4 +127,5 @@ val statisticsModule
     get() = module {
         singleOf(::RemoteStatisticsRepository).bind<StatisticsRepository>()
         viewModelOf(::StatisticsViewModel)
+        viewModelOf(::DownloadReportViewModel)
     }
