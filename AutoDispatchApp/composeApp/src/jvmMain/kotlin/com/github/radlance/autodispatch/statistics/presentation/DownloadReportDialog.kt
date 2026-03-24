@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.statistics.presentation
 
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,25 +18,37 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Upload
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
+import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import org.koin.compose.viewmodel.koinViewModel
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 fun DownloadReportDialog(
@@ -43,37 +56,103 @@ fun DownloadReportDialog(
     viewModel: DownloadReportViewModel = koinViewModel()
 ) {
     val fieldsUiState by viewModel.fieldsUiState.collectAsState()
+    val downloadState by viewModel.downloadState.collectAsState()
     var showDownloadReportDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val isLoading = downloadState is FetchResultUiState.Loading
+    val error = (downloadState as? FetchResultUiState.Error)?.error
 
     if (showDownloadReportDialog) {
         ExpandedCustomDialog(
+            allowDismiss = !isLoading,
             onDismissRequest = { showDownloadReportDialog = false },
-            title = {
+            onFinish = { viewModel.reduce(DownloadReportEvent.ResetDownloadState) },
+            title = { _ ->
                 Text(
                     text = "Выгрузить отчёт",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
             },
-            content = {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    DownloadReportFields(
-                        onEvent = viewModel::reduce,
-                        scrollState = scrollState,
-                        fieldsUiState = fieldsUiState
-                    )
+            content = { requestDismiss ->
+                Column(modifier = Modifier.fillMaxSize()) {
+                    error?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
 
-                    VerticalScrollbar(
-                        adapter = rememberScrollbarAdapter(scrollState),
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .align(Alignment.CenterEnd)
-                            .offset(x = 10.dp)
-                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        DownloadReportFields(
+                            onEvent = viewModel::reduce,
+                            scrollState = scrollState,
+                            fieldsUiState = fieldsUiState
+                        )
+
+                        if (!isLoading) {
+                            VerticalScrollbar(
+                                adapter = rememberScrollbarAdapter(scrollState),
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .align(Alignment.CenterEnd)
+                                    .offset(x = 10.dp)
+                            )
+                        }
+
+                        if (isLoading) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(AlertDialogDefaults.containerColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                }
+
+                LaunchedEffect(downloadState) {
+                    if (downloadState is FetchResultUiState.Success) {
+                        requestDismiss()
+                    }
                 }
             },
-            buttons = {}
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(
+                    onClick = requestDismiss,
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Отмена")
+                }
+                Spacer(Modifier.width(12.dp))
+                Button(
+                    onClick = {
+                        val suggestedName = buildDefaultFileName(fieldsUiState)
+                        val path = selectSavePath(suggestedName, fieldsUiState.fileFormat)
+                        if (path != null) {
+                            viewModel.reduce(DownloadReportEvent.DownloadReport(path))
+                        }
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Выгрузить")
+                }
+            }
         )
     }
     Card(
@@ -113,5 +192,25 @@ fun DownloadReportDialog(
                 Text(text = "Выгрузить отчёт")
             }
         }
+    }
+}
+
+private fun buildDefaultFileName(state: DownloadReportUiState): String {
+    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"))
+    val type = state.reportType.name.lowercase()
+    val period = state.reportPeriod.name.lowercase()
+    return "report_${type}_${period}_$timestamp.${state.fileFormat.extension}"
+}
+
+private fun selectSavePath(defaultFileName: String, format: FileFormat): String? {
+    val chooser = JFileChooser().apply {
+        dialogTitle = "Сохранить отчёт"
+        selectedFile = File(defaultFileName)
+        fileFilter = FileNameExtensionFilter(format.displayName, format.extension)
+    }
+    return if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+        chooser.selectedFile.absolutePath
+    } else {
+        null
     }
 }

@@ -20,6 +20,16 @@ interface DownloadReportEvent : Event {
 
         override fun apply(action: DownloadReportAction) = action.changeReportPeriod(period)
     }
+
+    class DownloadReport(private val targetPath: String) : DownloadReportEvent {
+
+        override fun apply(action: DownloadReportAction) = action.downloadReport(targetPath)
+    }
+
+    object ResetDownloadState : DownloadReportEvent {
+
+        override fun apply(action: DownloadReportAction) = action.resetDownloadState()
+    }
 }
 
 interface DownloadReportAction {
@@ -29,4 +39,8 @@ interface DownloadReportAction {
     fun changeFileFormat(fileFormat: FileFormat)
 
     fun changeReportPeriod(period: ReportPeriod)
+
+    fun downloadReport(targetPath: String)
+
+    fun resetDownloadState()
 }

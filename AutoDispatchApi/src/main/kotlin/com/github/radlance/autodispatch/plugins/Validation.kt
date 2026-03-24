@@ -6,10 +6,10 @@ import com.github.radlance.autodispatch.domain.auth.RegisterUser
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
-import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.exception.NoAccessException
+import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.exception.UnauthorizedException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,7 +17,6 @@ import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
-
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -120,6 +119,13 @@ fun Application.configureValidation() {
             cause.message?.let { call.respondText(status = HttpStatusCode.Forbidden, text = it) } ?: run {
                 call.respond(HttpStatusCode.Forbidden)
             }
+        }
+
+        exception<NoSuchElementException> { call, cause ->
+            call.respondText(
+                status = HttpStatusCode.NotFound,
+                text = cause.message ?: "Not found"
+            )
         }
 
         exception<Throwable> { call, cause ->

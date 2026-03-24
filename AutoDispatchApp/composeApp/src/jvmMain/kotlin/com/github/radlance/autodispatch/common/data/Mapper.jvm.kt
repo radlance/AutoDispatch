@@ -34,11 +34,17 @@ import com.github.radlance.autodispatch.statistics.data.GeneralStatsDto
 import com.github.radlance.autodispatch.statistics.data.PopularRouteStatDto
 import com.github.radlance.autodispatch.statistics.data.StatItemDto
 import com.github.radlance.autodispatch.statistics.data.TopDriverStatDto
+import com.github.radlance.autodispatch.statistics.data.FileFormatDto
+import com.github.radlance.autodispatch.statistics.data.ReportPeriodDto
+import com.github.radlance.autodispatch.statistics.data.ReportTypeDto
 import com.github.radlance.autodispatch.statistics.domain.DashboardStatistics
 import com.github.radlance.autodispatch.statistics.domain.GeneralStats
 import com.github.radlance.autodispatch.statistics.domain.PopularRouteStat
 import com.github.radlance.autodispatch.statistics.domain.StatItem
 import com.github.radlance.autodispatch.statistics.domain.TopDriverStat
+import com.github.radlance.autodispatch.statistics.presentation.FileFormat
+import com.github.radlance.autodispatch.statistics.presentation.ReportPeriod
+import com.github.radlance.autodispatch.statistics.presentation.ReportType
 import com.github.radlance.autodispatch.vehicle.assignment.data.DriverWithoutVehicleDto
 import com.github.radlance.autodispatch.vehicle.assignment.domain.DriverWithoutVehicle
 import com.github.radlance.autodispatch.vehicle.core.data.VehicleDetailedDto
@@ -191,6 +197,12 @@ fun DashboardStatisticsDto.toDashboardStatistics(): DashboardStatistics {
         popularRoutes = popularRoutes.map { it.toPopularRouteStat() }
     )
 }
+
+fun ReportType.toDto(): ReportTypeDto = ReportTypeDto.valueOf(name)
+
+fun FileFormat.toDto(): FileFormatDto = FileFormatDto.valueOf(name)
+
+fun ReportPeriod.toDto(): ReportPeriodDto = ReportPeriodDto.valueOf(name)
 
 fun ReverseAddressDto.belongsTo(selectedCity: String): Boolean {
     return when {

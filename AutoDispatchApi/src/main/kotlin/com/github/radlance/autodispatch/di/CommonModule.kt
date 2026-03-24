@@ -1,11 +1,26 @@
 package com.github.radlance.autodispatch.di
 
-import com.github.radlance.autodispatch.repository.*
+import com.github.radlance.autodispatch.repository.AuthRepository
+import com.github.radlance.autodispatch.repository.DeliveryRepository
+import com.github.radlance.autodispatch.repository.DocumentsRepository
+import com.github.radlance.autodispatch.repository.DriverRepository
+import com.github.radlance.autodispatch.repository.ProfileRepository
+import com.github.radlance.autodispatch.repository.ReportRepository
+import com.github.radlance.autodispatch.repository.RequestRepository
+import com.github.radlance.autodispatch.repository.StatisticsRepository
+import com.github.radlance.autodispatch.repository.VehicleRepository
 import com.github.radlance.autodispatch.security.hashing.HashingService
 import com.github.radlance.autodispatch.security.hashing.SHA256HashingService
 import com.github.radlance.autodispatch.security.token.TokenConfig
 import com.github.radlance.autodispatch.security.token.TokenService
-import com.github.radlance.autodispatch.service.*
+import com.github.radlance.autodispatch.service.AuthService
+import com.github.radlance.autodispatch.service.DeliveryService
+import com.github.radlance.autodispatch.service.DocumentsService
+import com.github.radlance.autodispatch.service.KtorRabbitNotificationPublisher
+import com.github.radlance.autodispatch.service.MailService
+import com.github.radlance.autodispatch.service.NotificationPublisher
+import com.github.radlance.autodispatch.service.ReportService
+import com.github.radlance.autodispatch.service.RequestService
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import org.koin.core.module.dsl.singleOf
@@ -67,4 +82,6 @@ val vehicleModule
 val statisticsModule
     get() = module {
         singleOf(::StatisticsRepository)
+        singleOf(::ReportRepository)
+        singleOf(::ReportService)
     }

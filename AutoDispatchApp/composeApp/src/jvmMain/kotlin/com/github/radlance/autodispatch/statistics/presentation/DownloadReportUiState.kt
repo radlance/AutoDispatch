@@ -13,14 +13,14 @@ enum class ReportType(val displayName: String) {
     VEHICLES("Автомобили")
 }
 
-enum class FileFormat(val displayName: String) {
-    EXCEL("Excel (.xlsx)"),
-    PDF("PDF (.pdf)"),
-    CSV("CSV (.csv)")
+enum class FileFormat(val displayName: String, val extension: String) {
+    EXCEL("Excel (.xlsx)", "xlsx"),
+    PDF("PDF (.pdf)", "pdf"),
+    CSV("CSV (.csv)", "csv")
 }
 
 enum class ReportPeriod(val displayName: String) {
     TODAY("Сегодня"),
-    LAST_7_DAYS("Последнии 7 дней"),
-    LAST_30_DAYS("Последнии 30 дней")
+    LAST_7_DAYS("Последние 7 дней"),
+    LAST_30_DAYS("Последние 30 дней")
 }
