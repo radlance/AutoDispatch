@@ -44,11 +44,12 @@ import androidx.compose.ui.unit.sp
 import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import org.koin.compose.viewmodel.koinViewModel
+import java.awt.FileDialog
+import java.awt.Frame
 import java.io.File
+import java.io.FilenameFilter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 fun DownloadReportDialog(
@@ -203,14 +204,20 @@ private fun buildDefaultFileName(state: DownloadReportUiState): String {
 }
 
 private fun selectSavePath(defaultFileName: String, format: FileFormat): String? {
-    val chooser = JFileChooser().apply {
-        dialogTitle = "Сохранить отчёт"
-        selectedFile = File(defaultFileName)
-        fileFilter = FileNameExtensionFilter(format.displayName, format.extension)
+    val dialog = FileDialog(null as Frame?, "Сохранить отчёт", FileDialog.SAVE).apply {
+        file = defaultFileName
+        filenameFilter = FilenameFilter { _, name ->
+            name.endsWith(".${format.extension}", ignoreCase = true)
+        }
     }
-    return if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-        chooser.selectedFile.absolutePath
-    } else {
-        null
+
+    dialog.isVisible = true
+
+    val directory = dialog.directory ?: return null
+    val file = dialog.file ?: return null
+    var path = File(directory, file).absolutePath
+    if (!path.lowercase().endsWith(".${format.extension}")) {
+        path += ".${format.extension}"
     }
+    return path
 }
