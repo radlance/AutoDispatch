@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
+import com.github.radlance.autodispatch.uikit.theme.statusPalette
 import com.github.radlance.autodispatch.vehicle.core.domain.VehicleDetailed
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState
@@ -134,10 +135,12 @@ fun VehicleTable(
 }
 @Composable
 fun VehicleStatusWithColor(isAvailable: Boolean, fontSize: TextUnit = TextUnit.Unspecified) {
-    val (bgColor, textColor) = if (isAvailable) MaterialTheme.colorScheme.tertiaryContainer to
-            MaterialTheme.colorScheme.onTertiaryContainer
-    else MaterialTheme.colorScheme.primaryContainer to
-            MaterialTheme.colorScheme.onPrimaryContainer
+    val palette = MaterialTheme.statusPalette
+    val (bgColor, textColor) = if (isAvailable) {
+        palette.successBg to palette.successText
+    } else {
+        palette.progressBg to palette.progressText
+    }
 
     Box(
         modifier = Modifier

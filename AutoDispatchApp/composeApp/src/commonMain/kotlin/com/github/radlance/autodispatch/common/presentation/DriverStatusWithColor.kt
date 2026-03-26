@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.github.radlance.autodispatch.common.domain.DriverStatus
+import com.github.radlance.autodispatch.uikit.theme.statusPalette
 
 @Composable
 fun DriverStatusWithColor(
@@ -22,9 +23,10 @@ fun DriverStatusWithColor(
     verticalPadding: Dp = 4.dp,
     modifier: Modifier = Modifier
 ) {
+    val palette = MaterialTheme.statusPalette
     val (bgColor, textColor) =
         status?.colors()
-            ?: (MaterialTheme.colorScheme.surface to MaterialTheme.colorScheme.onSurface)
+            ?: (palette.neutralBg to palette.neutralText)
 
     Box(
         modifier = modifier
@@ -48,11 +50,13 @@ fun DriverStatusWithColor(
 @Composable
 private fun DriverStatus.colors() =
     when (this) {
-        DriverStatus.Free ->
-            MaterialTheme.colorScheme.primaryContainer to
-                    MaterialTheme.colorScheme.onPrimaryContainer
+        DriverStatus.Free -> {
+            val palette = MaterialTheme.statusPalette
+            palette.successBg to palette.successText
+        }
 
-        DriverStatus.OnRoute ->
-            MaterialTheme.colorScheme.secondaryContainer to
-                    MaterialTheme.colorScheme.onSecondaryContainer
+        DriverStatus.OnRoute -> {
+            val palette = MaterialTheme.statusPalette
+            palette.progressBg to palette.progressText
+        }
     }

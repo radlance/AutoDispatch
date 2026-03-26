@@ -103,4 +103,20 @@
     <string name="delivery">Доставка</string>
     <string name="attach">Закрепить</string>
     <string name="statistics">Статистика</string>
+    <string name="settings">Настройки</string>
+    <string name="appearance">Внешний вид</string>
+    <string name="theme_mode">Тема</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_amoled">AMOLED режим</string>
+    <string name="theme_amoled_desc">Доступно только в темной теме</string>
+    <string name="theme_color">Цвет Material You</string>
+    <string name="theme_color_default">Стандартный</string>
+    <string name="theme_color_blue">Синий</string>
+    <string name="theme_color_green">Зелёный</string>
+    <string name="theme_color_orange">Оранжевый</string>
+    <string name="theme_color_red">Красный</string>
+    <string name="theme_color_purple">Фиолетовый</string>
+    <string name="theme_color_teal">Бирюзовый</string>
 </resources>

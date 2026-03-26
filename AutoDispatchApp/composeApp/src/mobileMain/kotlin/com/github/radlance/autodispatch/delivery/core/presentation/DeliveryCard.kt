@@ -64,6 +64,7 @@ import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.core.domain.Delivery
 import com.github.radlance.autodispatch.platform.MapPoint
+import com.github.radlance.autodispatch.uikit.theme.statusPalette
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.GlobalLocationPinIcon
 import com.github.radlance.autodispatch.uikit.vector.Package2Icon
@@ -84,11 +85,12 @@ fun DeliveryCard(
 ) {
     val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status)
     val deadlineState = delivery.deadlineState()
+    val palette = MaterialTheme.statusPalette
 
     val cardContainerColor by animateColorAsState(
         targetValue = when (deadlineState) {
-            DeliveryDeadlineState.OVERDUE -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
-            DeliveryDeadlineState.SOON -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.16f)
+            DeliveryDeadlineState.OVERDUE -> palette.errorBg.copy(alpha = 0.2f)
+            DeliveryDeadlineState.SOON -> palette.warningBg.copy(alpha = 0.16f)
             DeliveryDeadlineState.NORMAL -> MaterialTheme.colorScheme.surfaceContainerHighest
         },
         animationSpec = tween(durationMillis = 200),
@@ -97,8 +99,8 @@ fun DeliveryCard(
 
     val cardBorderColor by animateColorAsState(
         targetValue = when (deadlineState) {
-            DeliveryDeadlineState.OVERDUE -> MaterialTheme.colorScheme.error.copy(alpha = 0.28f)
-            DeliveryDeadlineState.SOON -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.28f)
+            DeliveryDeadlineState.OVERDUE -> palette.errorText.copy(alpha = 0.28f)
+            DeliveryDeadlineState.SOON -> palette.warningText.copy(alpha = 0.28f)
             DeliveryDeadlineState.NORMAL -> Color.Transparent
         },
         animationSpec = tween(durationMillis = 200),
@@ -423,6 +425,7 @@ private fun CardSection(title: String, subtitle: String, modifier: Modifier = Mo
 
 @Composable
 private fun DeadlineIndicator(deadlineState: DeliveryDeadlineState) {
+    val palette = MaterialTheme.statusPalette
     val text = when (deadlineState) {
         DeliveryDeadlineState.SOON -> "Скоро"
         DeliveryDeadlineState.OVERDUE -> "Просроч."
@@ -430,15 +433,15 @@ private fun DeadlineIndicator(deadlineState: DeliveryDeadlineState) {
     }
     val (bg, fg, border) = when (deadlineState) {
         DeliveryDeadlineState.SOON -> Triple(
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.2f)
+            palette.warningBg,
+            palette.warningText,
+            palette.warningText.copy(alpha = 0.2f)
         )
 
         DeliveryDeadlineState.OVERDUE -> Triple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
-            MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.2f)
+            palette.errorBg,
+            palette.errorText,
+            palette.errorText.copy(alpha = 0.2f)
         )
 
         DeliveryDeadlineState.NORMAL -> return
@@ -468,20 +471,36 @@ private fun DeadlineIndicator(deadlineState: DeliveryDeadlineState) {
 @Composable
 fun deliveryStatusColors(status: RequestStatus) =
     when (status) {
-        RequestStatus.Assigned -> {
-            MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+        RequestStatus.Waiting -> {
+            val palette = MaterialTheme.statusPalette
+            palette.neutralBg to palette.neutralText
         }
 
-        RequestStatus.Canceled, RequestStatus.Rejected -> {
-            MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        RequestStatus.Assigned -> {
+            val palette = MaterialTheme.statusPalette
+            palette.infoBg to palette.infoText
+        }
+
+        RequestStatus.InProgress -> {
+            val palette = MaterialTheme.statusPalette
+            palette.progressBg to palette.progressText
         }
 
         RequestStatus.OnCheck -> {
-            MaterialTheme.colorScheme.secondaryContainer to
-                    MaterialTheme.colorScheme.onSecondaryContainer
+            val palette = MaterialTheme.statusPalette
+            palette.reviewBg to palette.reviewText
         }
 
-        else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+        RequestStatus.Completed -> {
+            val palette = MaterialTheme.statusPalette
+            palette.successBg to palette.successText
+        }
+
+        RequestStatus.Canceled,
+        RequestStatus.Rejected -> {
+            val palette = MaterialTheme.statusPalette
+            palette.errorBg to palette.errorText
+        }
     }
 
 private enum class DeliveryDeadlineState {

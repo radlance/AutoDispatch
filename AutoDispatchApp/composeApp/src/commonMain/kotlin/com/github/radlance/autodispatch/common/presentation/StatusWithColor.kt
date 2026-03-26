@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.common.presentation
 
-import com.github.radlance.autodispatch.common.domain.RequestStatus
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -14,6 +13,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.github.radlance.autodispatch.common.domain.RequestStatus
+import com.github.radlance.autodispatch.uikit.theme.statusPalette
 
 @Composable
 fun StatusWithColor(
@@ -22,9 +23,10 @@ fun StatusWithColor(
     verticalPadding: Dp = 4.dp,
     modifier: Modifier = Modifier
 ) {
+    val palette = MaterialTheme.statusPalette
     val (bgColor, textColor) =
         status?.colors()
-            ?: (MaterialTheme.colorScheme.surface to MaterialTheme.colorScheme.onSurface)
+            ?: (palette.neutralBg to palette.neutralText)
 
     Box(
         modifier = modifier
@@ -48,25 +50,34 @@ fun StatusWithColor(
 @Composable
 private fun RequestStatus.colors() =
     when (this) {
-        RequestStatus.Waiting ->
-            MaterialTheme.colorScheme.surfaceVariant to
-                    MaterialTheme.colorScheme.onSurfaceVariant
+        RequestStatus.Waiting -> {
+            val palette = MaterialTheme.statusPalette
+            palette.neutralBg to palette.neutralText
+        }
 
-        RequestStatus.Assigned ->
-            MaterialTheme.colorScheme.primaryContainer to
-                    MaterialTheme.colorScheme.onPrimaryContainer
+        RequestStatus.Assigned -> {
+            val palette = MaterialTheme.statusPalette
+            palette.infoBg to palette.infoText
+        }
 
-        RequestStatus.InProgress,
-        RequestStatus.OnCheck ->
-            MaterialTheme.colorScheme.secondaryContainer to
-                    MaterialTheme.colorScheme.onSecondaryContainer
+        RequestStatus.InProgress -> {
+            val palette = MaterialTheme.statusPalette
+            palette.progressBg to palette.progressText
+        }
 
-        RequestStatus.Completed ->
-            MaterialTheme.colorScheme.tertiaryContainer to
-                    MaterialTheme.colorScheme.onTertiaryContainer
+        RequestStatus.OnCheck -> {
+            val palette = MaterialTheme.statusPalette
+            palette.reviewBg to palette.reviewText
+        }
+
+        RequestStatus.Completed -> {
+            val palette = MaterialTheme.statusPalette
+            palette.successBg to palette.successText
+        }
 
         RequestStatus.Canceled,
-        RequestStatus.Rejected ->
-            MaterialTheme.colorScheme.errorContainer to
-                    MaterialTheme.colorScheme.onErrorContainer
+        RequestStatus.Rejected -> {
+            val palette = MaterialTheme.statusPalette
+            palette.errorBg to palette.errorText
+        }
     }

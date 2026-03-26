@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.service
 
+import com.github.radlance.autodispatch.domain.statistics.ReportDateRange
 import com.github.radlance.autodispatch.domain.statistics.ReportFormat
 import com.github.radlance.autodispatch.domain.statistics.ReportPeriod
 import com.github.radlance.autodispatch.domain.statistics.ReportRequest
@@ -87,7 +88,7 @@ class ReportService(
         return ReportFile(bytes = bytes, fileName = fileName)
     }
 
-    private suspend fun buildRequestsSection(range: com.github.radlance.autodispatch.domain.statistics.ReportDateRange): ReportSection {
+    private suspend fun buildRequestsSection(range: ReportDateRange): ReportSection {
         val rows = repository.requests(range).map { it.toRequestRow() }
         return ReportSection(
             title = "Заявки",
@@ -111,7 +112,7 @@ class ReportService(
         )
     }
 
-    private suspend fun buildDriversSection(range: com.github.radlance.autodispatch.domain.statistics.ReportDateRange): ReportSection {
+    private suspend fun buildDriversSection(range: ReportDateRange): ReportSection {
         val rows = repository.drivers(range).map { it.toDriverRow() }
         return ReportSection(
             title = "Водители",
@@ -126,7 +127,7 @@ class ReportService(
         )
     }
 
-    private suspend fun buildVehiclesSection(range: com.github.radlance.autodispatch.domain.statistics.ReportDateRange): ReportSection {
+    private suspend fun buildVehiclesSection(range: ReportDateRange): ReportSection {
         val rows = repository.vehicles(range).map { it.toVehicleRow() }
         return ReportSection(
             title = "Автомобили",

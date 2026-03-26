@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.driver.core.presentation.DriverScreen
 import com.github.radlance.autodispatch.profile.domain.User
 import com.github.radlance.autodispatch.request.core.presentation.RequestsScreen
+import com.github.radlance.autodispatch.settings.presentation.SettingsScreen
 import com.github.radlance.autodispatch.statistics.presentation.StatisticsScreen
 import com.github.radlance.autodispatch.vehicle.core.presentation.VehicleScreen
 
@@ -58,6 +59,9 @@ fun DrawerNavGraph(
         }
         composable<Statistic> {
             StatisticsScreen()
+        }
+        composable<Settings> {
+            SettingsScreen()
         }
     }
 }

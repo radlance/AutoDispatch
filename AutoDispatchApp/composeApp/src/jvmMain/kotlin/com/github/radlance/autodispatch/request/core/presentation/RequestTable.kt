@@ -35,6 +35,7 @@ import com.github.radlance.autodispatch.common.utils.abbreviateName
 import com.github.radlance.autodispatch.common.utils.formattedLicensePlate
 import com.github.radlance.autodispatch.common.utils.toSimpleDateString
 import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.uikit.theme.statusPalette
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.DataTableState
 import com.seanproctor.datatable.TableColumnWidth
@@ -72,9 +73,10 @@ fun RequestTable(
 
     val animatedColors: Map<Request, Color> = requests.associateWith { req ->
         val deadlineState = req.deadlineState(now)
+        val palette = MaterialTheme.statusPalette
         val deadlineTint = when (deadlineState) {
-            DeadlineState.OVERDUE -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.42f)
-            DeadlineState.SOON -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.32f)
+            DeadlineState.OVERDUE -> palette.errorBg.copy(alpha = 0.42f)
+            DeadlineState.SOON -> palette.warningBg.copy(alpha = 0.32f)
             DeadlineState.NORMAL -> Color.Transparent
         }
         val target = if (req == selectedRequest && showPanel) highlight else deadlineTint
@@ -194,22 +196,23 @@ fun RequestTable(
 
 @Composable
 private fun DeadlineBadge(state: DeadlineState) {
+    val palette = MaterialTheme.statusPalette
     val (label, bgColor, textColor, icon) = when (state) {
         DeadlineState.OVERDUE -> Quadruple(
             "Просроч.",
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
+            palette.errorBg,
+            palette.errorText,
             Icons.Outlined.ErrorOutline
         )
 
         DeadlineState.SOON -> Quadruple(
             "Скоро",
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer,
+            palette.warningBg,
+            palette.warningText,
             Icons.Outlined.Schedule
         )
 
-        DeadlineState.NORMAL -> Quadruple("—", Color.Transparent, MaterialTheme.colorScheme.onSurfaceVariant, null)
+        DeadlineState.NORMAL -> Quadruple("—", Color.Transparent, palette.neutralText, null)
     }
 
     if (state == DeadlineState.NORMAL) {
@@ -244,17 +247,18 @@ private fun DeadlineBadge(state: DeadlineState) {
 
 @Composable
 private fun DocumentsStatusWithColor(status: String?) {
+    val palette = MaterialTheme.statusPalette
     val (bgColor, textColor, icon) = when (status) {
         "На проверке" -> Triple(
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer,
+            palette.reviewBg,
+            palette.reviewText,
             Icons.Outlined.Schedule
         )
 
 
         else -> Triple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
+            palette.errorBg,
+            palette.errorText,
             Icons.Outlined.ErrorOutline
         )
     }

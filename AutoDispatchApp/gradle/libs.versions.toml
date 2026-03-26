@@ -13,21 +13,22 @@ kotlinx-coroutines = "1.10.2"
 androidxNavigation = "2.9.2"
 kotlinxSerialization = "1.10.0"
 ktor = "3.4.1"
-koin = "4.1.1"
+koin = "4.2.0"
 datastore = "1.2.1"
-atomicfu = "0.31.0"
+atomicfu = "0.32.1"
 playServicesLocation = "21.3.0"
 slf4jSimple = "2.0.17"
 kotlinxDateTime = "0.7.1"
 jmapviewer = "2.24"
 javafx = "17.0.2"
-uiBackhandler = "1.10.2"
+uiBackhandler = "1.10.3"
 zoomable = "2.11.1"
 coil = "3.4.0"
 composeHotReload = "1.1.0-beta01"
 exifinterface = "1.4.2"
 splashScreen = "1.2.0"
 composeMaterial3 = "1.9.0"
+materialKolor = "4.1.1"
 
 [libraries]
 core-splashscreen = {module = "androidx.core:core-splashscreen", version.ref = "splashScreen" }
@@ -69,6 +70,7 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "uiBackhandler" }
 zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
+material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload"}
