@@ -339,9 +339,6 @@ fun DriverAssignmentDialog(
                     }
                 }
                 if (outOfScheduleStats != null) {
-                    if (outOfScheduleStats.vehiclePayloadCapacity != null) {
-                        Spacer(Modifier.width(12.dp))
-                    }
                     Text(
                         text = outOfScheduleStats.scheduleHint,
                         color = MaterialTheme.colorScheme.error,
