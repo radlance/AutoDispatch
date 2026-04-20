@@ -46,6 +46,7 @@ internal class BaseHandleRequest : HandleRequest {
                 FetchResult.Error(
                     when (errorResponse.errorCode) {
                         "DRIVER_BUSY" -> RequestError.DriverBusyError(errorResponse.message)
+                        "WORK_SCHEDULE" -> RequestError.WorkScheduleError(errorResponse.message)
                         else -> RequestError.GenericStateError(errorResponse.message)
                     }
                 )

@@ -12,5 +12,7 @@ sealed interface RequestError {
 
     data class GenericStateError(override val message: String) : RequestError
 
+    data class WorkScheduleError(override val message: String) : RequestError
+
     data class BaseError(override val message: String) : RequestError
 }

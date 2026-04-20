@@ -31,6 +31,7 @@ class DriverViewModel(
             triggerDriverLoad()
         }
     }
+
     fun triggerDriverLoad() {
         val state = driverScreenStateMutable.value
         val searchQuery = state.query.takeIf { it.isNotBlank() }

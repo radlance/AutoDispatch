@@ -1,26 +1,52 @@
 package com.github.radlance.autodispatch.repository
 
-import com.github.radlance.autodispatch.database.table.*
+import com.github.radlance.autodispatch.database.table.AssignmentTable
+import com.github.radlance.autodispatch.database.table.CargoTypeTable
+import com.github.radlance.autodispatch.database.table.CityTable
+import com.github.radlance.autodispatch.database.table.CustomerTable
+import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
+import com.github.radlance.autodispatch.database.table.RequestStatusTable
+import com.github.radlance.autodispatch.database.table.RequestTable
+import com.github.radlance.autodispatch.database.table.UserTable
+import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
 import com.github.radlance.autodispatch.domain.history.DriverHistory
-import com.github.radlance.autodispatch.domain.request.*
+import com.github.radlance.autodispatch.domain.request.Cargo
+import com.github.radlance.autodispatch.domain.request.CargoType
+import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.Point
+import com.github.radlance.autodispatch.domain.request.Vehicle
 import com.github.radlance.autodispatch.exception.DeliveryCanceledException
 import com.github.radlance.autodispatch.exception.DeliveryForbiddenException
 import com.github.radlance.autodispatch.exception.DeliveryNotFoundException
 import com.github.radlance.autodispatch.exception.DriverBusyException
 import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.util.loggedTransaction
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.AndOp
+import org.jetbrains.exposed.sql.Coalesce
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.OrOp
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
+import org.jetbrains.exposed.sql.lowerCase
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 
-class DeliveryRepository {
+class DeliveryRepository(
+    private val driverScheduleGuard: DriverScheduleGuard
+) {
 
     suspend fun deliveries(
         driverLogin: String,
@@ -193,6 +219,12 @@ class DeliveryRepository {
         val driverId = UserTable.select(UserTable.id).where {
             UserTable.login eq driverLogin
         }.first()[UserTable.id].value
+
+        driverScheduleGuard.ensureDriverWorkingNow(
+            driverId = driverId
+        ) { evaluation ->
+            "Сейчас вы вне рабочего графика. Начать доставку можно только в рабочее время. ${evaluation.hint}"
+        }
 
         val activeAssignmentsCount = AssignmentTable
             .select(AssignmentTable.id)

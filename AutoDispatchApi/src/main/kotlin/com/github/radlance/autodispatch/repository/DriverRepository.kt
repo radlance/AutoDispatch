@@ -1,6 +1,7 @@
 package com.github.radlance.autodispatch.repository
 
 import com.github.radlance.autodispatch.database.table.AssignmentTable
+import com.github.radlance.autodispatch.database.table.DriverShiftTable
 import com.github.radlance.autodispatch.database.table.DriverStatusTable
 import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
@@ -13,8 +14,10 @@ import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.driver.Driver
 import com.github.radlance.autodispatch.domain.driver.DriverStats
 import com.github.radlance.autodispatch.domain.driver.DriverWithoutCar
+import com.github.radlance.autodispatch.domain.driver.DriverWorkShift
 import com.github.radlance.autodispatch.domain.profile.DeliveriesStats
 import com.github.radlance.autodispatch.domain.request.Vehicle
+import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.AndOp
 import org.jetbrains.exposed.sql.Case
@@ -22,19 +25,26 @@ import org.jetbrains.exposed.sql.Coalesce
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.countDistinct
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.intLiteral
 import org.jetbrains.exposed.sql.longLiteral
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.sum
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
-class DriverRepository {
+class DriverRepository(
+    private val driverScheduleGuard: DriverScheduleGuard
+) {
 
     suspend fun drivers(
         page: Int,
@@ -156,12 +166,20 @@ class DriverRepository {
                         name = first[DriverStatusTable.name]
                     ),
                     vehicle = vehicle,
-                    deliveriesStats = deliveriesStats
+                    deliveriesStats = deliveriesStats,
+                    workSchedule = emptyList()
                 )
             }
 
+        val scheduleByDriverId = loadScheduleBundlesByDriverIds(items.map { it.id })
+        val itemsWithSchedule = items.map { driver ->
+            driver.copy(
+                workSchedule = scheduleByDriverId[driver.id]?.shifts.orEmpty()
+            )
+        }
+
         TablePaginatedResult(
-            items = items,
+            items = itemsWithSchedule,
             totalCount = total
         )
     }
@@ -239,31 +257,87 @@ class DriverRepository {
             .orderBy(UserTable.fullName, SortOrder.ASC)
             .limit(pageSize + 1)
             .offset(offset)
-            .map { row ->
-                DriverStats(
-                    driverId = row[UserTable.id].value,
-                    driverName = row[UserTable.fullName],
-                    phoneNumber = row[UserTable.phoneNumber],
-                    driverStatus = Status(
-                        id = row[DriverStatusTable.id].value,
-                        name = row[DriverStatusTable.name]
-                    ),
-                    vehicleModel = row[VehicleTable.model],
-                    vehicleLicensePlate = row[VehicleTable.licensePlate],
-                    vehicleRegionCode = row[VehicleTable.regionCode],
-                    vehiclePayloadCapacity = row[VehicleTable.payloadCapacity],
-                    totalAssignedRequests = row[requestCount] ?: 0L
-                )
-            }
+            .toList()
 
         val hasMore = rawStats.size > pageSize
-        val stats = if (hasMore) rawStats.dropLast(1) else rawStats
+        val rows = if (hasMore) rawStats.dropLast(1) else rawStats
+        val scheduleByDriverId = loadScheduleBundlesByDriverIds(rows.map { it[UserTable.id].value })
+
+        val stats = rows.map { row ->
+            val driverId = row[UserTable.id].value
+            val scheduleBundle = scheduleByDriverId[driverId]
+            val evaluation = driverScheduleGuard.evaluate(scheduleBundle?.windows.orEmpty())
+
+            DriverStats(
+                driverId = driverId,
+                driverName = row[UserTable.fullName],
+                phoneNumber = row[UserTable.phoneNumber],
+                driverStatus = Status(
+                    id = row[DriverStatusTable.id].value,
+                    name = row[DriverStatusTable.name]
+                ),
+                vehicleModel = row[VehicleTable.model],
+                vehicleLicensePlate = row[VehicleTable.licensePlate],
+                vehicleRegionCode = row[VehicleTable.regionCode],
+                vehiclePayloadCapacity = row[VehicleTable.payloadCapacity],
+                totalAssignedRequests = row[requestCount] ?: 0L,
+                workSchedule = scheduleBundle?.shifts.orEmpty(),
+                isWorkingNow = evaluation.isWorkingNow,
+                scheduleHint = evaluation.hint
+            )
+        }
 
         ListPaginatedResult(
             items = stats,
             hasMore = hasMore
         )
     }
+
+    private fun loadScheduleBundlesByDriverIds(driverIds: List<Int>): Map<Int, DriverScheduleBundle> {
+        if (driverIds.isEmpty()) return emptyMap()
+
+        return DriverShiftTable
+            .select(
+                DriverShiftTable.driverId,
+                DriverShiftTable.dayOfWeek,
+                DriverShiftTable.startTime,
+                DriverShiftTable.endTime
+            )
+            .where { DriverShiftTable.driverId inList driverIds }
+            .toList()
+            .groupBy { it[DriverShiftTable.driverId].value }
+            .mapValues { (_, rows) ->
+                val orderedRows = rows.sortedWith(
+                    compareBy<ResultRow>(
+                        { it[DriverShiftTable.dayOfWeek] },
+                        { it[DriverShiftTable.startTime] }
+                    )
+                )
+                val shifts = orderedRows.map { row ->
+                    DriverWorkShift(
+                        dayOfWeek = row[DriverShiftTable.dayOfWeek].toInt(),
+                        startTime = row[DriverShiftTable.startTime].format(TIME_FORMAT),
+                        endTime = row[DriverShiftTable.endTime].format(TIME_FORMAT)
+                    )
+                }
+                val windows = orderedRows.map { row ->
+                    DriverScheduleGuard.ShiftWindow(
+                        dayOfWeek = row[DriverShiftTable.dayOfWeek].toInt(),
+                        startTime = row[DriverShiftTable.startTime],
+                        endTime = row[DriverShiftTable.endTime]
+                    )
+                }
+                DriverScheduleBundle(
+                    shifts = shifts,
+                    windows = windows
+                )
+            }
+    }
+
+    private data class DriverScheduleBundle(
+        val shifts: List<DriverWorkShift>,
+        val windows: List<DriverScheduleGuard.ShiftWindow>
+    )
 
     suspend fun driversWithoutCar(
         page: Int,
@@ -328,4 +402,118 @@ class DriverRepository {
             hasMore = hasMore
         )
     }
+
+    suspend fun driverSchedule(driverId: Int): List<DriverWorkShift> = loggedTransaction {
+        ensureDriverExists(driverId)
+        DriverShiftTable
+            .select(
+                DriverShiftTable.dayOfWeek,
+                DriverShiftTable.startTime,
+                DriverShiftTable.endTime
+            )
+            .where { DriverShiftTable.driverId eq driverId }
+            .orderBy(DriverShiftTable.dayOfWeek, SortOrder.ASC)
+            .orderBy(DriverShiftTable.startTime, SortOrder.ASC)
+            .map { row ->
+                DriverWorkShift(
+                    dayOfWeek = row[DriverShiftTable.dayOfWeek].toInt(),
+                    startTime = row[DriverShiftTable.startTime].format(TIME_FORMAT),
+                    endTime = row[DriverShiftTable.endTime].format(TIME_FORMAT)
+                )
+            }
+    }
+
+    suspend fun replaceDriverSchedule(driverId: Int, shifts: List<DriverWorkShift>) = loggedTransaction {
+        ensureDriverExists(driverId)
+        validateShifts(shifts)
+
+        DriverShiftTable.deleteWhere { DriverShiftTable.driverId eq driverId }
+        if (shifts.isEmpty()) return@loggedTransaction
+
+        DriverShiftTable.batchInsert(shifts) { shift ->
+            this[DriverShiftTable.driverId] = driverId
+            this[DriverShiftTable.dayOfWeek] = shift.dayOfWeek.toShort()
+            this[DriverShiftTable.startTime] = shift.startTime.toLocalTime()
+            this[DriverShiftTable.endTime] = shift.endTime.toLocalTime()
+        }
+    }
+
+    private fun ensureDriverExists(driverId: Int) {
+        val exists = DriverTable
+            .select(DriverTable.userId)
+            .where { DriverTable.userId eq driverId }
+            .any()
+        if (!exists) throw StateConflictException("Водитель с ID $driverId не найден")
+    }
+
+    private fun validateShifts(shifts: List<DriverWorkShift>) {
+        val intervals = mutableListOf<TimeInterval>()
+
+        shifts.forEach { shift ->
+            if (shift.dayOfWeek !in 1..7) {
+                throw StateConflictException("dayOfWeek должен быть в диапазоне 1..7")
+            }
+            val start = shift.startTime.toLocalTime()
+            val end = shift.endTime.toLocalTime()
+            if (start == end) {
+                throw StateConflictException(
+                    "Некорректный интервал смены для дня ${shift.dayOfWeek}: startTime и endTime не должны совпадать"
+                )
+            }
+
+            val dayOffsetMinutes = (shift.dayOfWeek - 1) * MINUTES_PER_DAY
+            val startMinutes = start.hour * 60 + start.minute
+            val endMinutes = end.hour * 60 + end.minute
+
+            if (start < end) {
+                intervals += TimeInterval(
+                    startMinute = dayOffsetMinutes + startMinutes,
+                    endMinute = dayOffsetMinutes + endMinutes
+                )
+            } else {
+                intervals += TimeInterval(
+                    startMinute = dayOffsetMinutes + startMinutes,
+                    endMinute = dayOffsetMinutes + MINUTES_PER_DAY
+                )
+                intervals += TimeInterval(
+                    startMinute = ((dayOffsetMinutes + MINUTES_PER_DAY) % MINUTES_PER_WEEK),
+                    endMinute = ((dayOffsetMinutes + MINUTES_PER_DAY) % MINUTES_PER_WEEK) + endMinutes
+                )
+            }
+        }
+
+        val duplicatedIntervals = (intervals + intervals.map {
+            TimeInterval(
+                startMinute = it.startMinute + MINUTES_PER_WEEK,
+                endMinute = it.endMinute + MINUTES_PER_WEEK
+            )
+        }).sortedBy { it.startMinute }
+
+        for (i in 1 until duplicatedIntervals.size) {
+            val prev = duplicatedIntervals[i - 1]
+            val current = duplicatedIntervals[i]
+            if (current.startMinute < prev.endMinute) {
+                throw StateConflictException("Пересекающиеся смены в расписании")
+            }
+        }
+    }
+
+    private fun String.toLocalTime(): LocalTime {
+        return try {
+            LocalTime.parse(this, TIME_FORMAT)
+        } catch (_: Exception) {
+            LocalTime.parse(this)
+        }
+    }
+
+    private companion object {
+        private val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        private const val MINUTES_PER_DAY: Int = 24 * 60
+        private const val MINUTES_PER_WEEK: Int = 7 * MINUTES_PER_DAY
+    }
 }
+
+private data class TimeInterval(
+    val startMinute: Int,
+    val endMinute: Int
+)

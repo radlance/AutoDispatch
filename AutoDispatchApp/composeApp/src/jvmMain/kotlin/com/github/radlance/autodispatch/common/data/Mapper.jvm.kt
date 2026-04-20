@@ -5,7 +5,9 @@ import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.common.domain.toDriverStatus
 import com.github.radlance.autodispatch.common.domain.toRequestStatus
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
+import com.github.radlance.autodispatch.driver.core.data.DriverWorkShiftDto
 import com.github.radlance.autodispatch.driver.core.domain.Driver
+import com.github.radlance.autodispatch.driver.core.domain.DriverWorkShift
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
 import com.github.radlance.autodispatch.driver.history.domain.DriverHistory
 import com.github.radlance.autodispatch.driver.request.data.DriverRequestDto
@@ -30,13 +32,13 @@ import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import com.github.radlance.autodispatch.statistics.data.DashboardStatisticsDto
+import com.github.radlance.autodispatch.statistics.data.FileFormatDto
 import com.github.radlance.autodispatch.statistics.data.GeneralStatsDto
 import com.github.radlance.autodispatch.statistics.data.PopularRouteStatDto
-import com.github.radlance.autodispatch.statistics.data.StatItemDto
-import com.github.radlance.autodispatch.statistics.data.TopDriverStatDto
-import com.github.radlance.autodispatch.statistics.data.FileFormatDto
 import com.github.radlance.autodispatch.statistics.data.ReportPeriodDto
 import com.github.radlance.autodispatch.statistics.data.ReportTypeDto
+import com.github.radlance.autodispatch.statistics.data.StatItemDto
+import com.github.radlance.autodispatch.statistics.data.TopDriverStatDto
 import com.github.radlance.autodispatch.statistics.domain.DashboardStatistics
 import com.github.radlance.autodispatch.statistics.domain.GeneralStats
 import com.github.radlance.autodispatch.statistics.domain.PopularRouteStat
@@ -100,7 +102,10 @@ private fun DriverStatsDto.toDriverStats(): DriverStats {
         vehicleLicensePlate = vehicleLicensePlate,
         vehicleRegionCode = vehicleRegionCode,
         vehiclePayloadCapacity = vehiclePayloadCapacity,
-        totalAssignedRequests = totalAssignedRequests
+        totalAssignedRequests = totalAssignedRequests,
+        workSchedule = workSchedule.toDriverWorkShifts(),
+        isWorkingNow = isWorkingNow,
+        scheduleHint = scheduleHint
     )
 }
 
@@ -133,6 +138,10 @@ fun TablePaginatedResultDto<DriverDto>.toPaginatedResultDriver(): TablePaginated
         items = items.map { it.toDriver() },
         totalCount = totalCount
     )
+}
+
+private fun List<DriverWorkShiftDto>.toDriverWorkShifts(): List<DriverWorkShift> {
+    return map { it.toDriverWorkShift() }
 }
 
 fun ListPaginatedResultDto<DriverHistoryDto>.toDriverHistoryListPaginatedResult(): ListPaginatedResult<DriverHistory> {
@@ -268,7 +277,16 @@ private fun DriverDto.toDriver(): Driver {
         phoneNumber = phoneNumber,
         status = status.id.toDriverStatus(),
         vehicle = vehicle?.toVehicle(),
-        deliveriesStats = deliveriesStats.toDeliveriesStats()
+        deliveriesStats = deliveriesStats.toDeliveriesStats(),
+        workSchedule = workSchedule.toDriverWorkShifts()
+    )
+}
+
+private fun DriverWorkShiftDto.toDriverWorkShift(): DriverWorkShift {
+    return DriverWorkShift(
+        dayOfWeek = dayOfWeek,
+        startTime = startTime,
+        endTime = endTime
     )
 }
 

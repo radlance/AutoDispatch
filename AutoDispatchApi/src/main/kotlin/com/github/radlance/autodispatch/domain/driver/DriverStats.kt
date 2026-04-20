@@ -13,5 +13,8 @@ data class DriverStats(
     val vehicleLicensePlate: String?,
     val vehicleRegionCode: String?,
     val vehiclePayloadCapacity: Int?,
-    val totalAssignedRequests: Long
+    val totalAssignedRequests: Long,
+    val workSchedule: List<DriverWorkShift>,
+    val isWorkingNow: Boolean,
+    val scheduleHint: String
 )

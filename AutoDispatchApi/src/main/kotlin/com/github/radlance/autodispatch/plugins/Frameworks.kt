@@ -1,10 +1,22 @@
 package com.github.radlance.autodispatch.plugins
 
-import com.github.radlance.autodispatch.di.*
+import com.github.radlance.autodispatch.di.authModule
+import com.github.radlance.autodispatch.di.deliveryModule
+import com.github.radlance.autodispatch.di.documentModule
+import com.github.radlance.autodispatch.di.driverModule
+import com.github.radlance.autodispatch.di.profileModule
+import com.github.radlance.autodispatch.di.requestModule
+import com.github.radlance.autodispatch.di.scheduleModule
+import com.github.radlance.autodispatch.di.statisticsModule
+import com.github.radlance.autodispatch.di.vehicleModule
 import com.github.radlance.autodispatch.domain.request.EmailNotification
 import com.github.radlance.autodispatch.service.MailService
 import io.github.damir.denis.tudor.ktor.server.rabbitmq.RabbitMQ
-import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.*
+import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.basicConsume
+import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.exchangeDeclare
+import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.queueBind
+import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.queueDeclare
+import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.rabbitmq
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +31,7 @@ fun Application.configureDi() {
         modules(
             authModule,
             profileModule,
+            scheduleModule,
             requestModule,
             deliveryModule,
             documentModule,

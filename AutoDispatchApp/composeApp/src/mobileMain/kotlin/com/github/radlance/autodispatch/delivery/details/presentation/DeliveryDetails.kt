@@ -180,6 +180,10 @@ fun DeliveryDetails(
                     fetchDeliveryDetails()
                 }
 
+                is RequestError.WorkScheduleError -> {
+                    onCloseError()
+                }
+
                 is RequestError.InternalError -> {
                     onCloseError()
                     navigateUp()

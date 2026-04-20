@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodispatch.composeapp.generated.resources.Res
@@ -59,10 +60,10 @@ import autodispatch.composeapp.generated.resources.assign
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.driver_assignment
 import autodispatch.composeapp.generated.resources.reassign
-import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
+import com.github.radlance.autodispatch.common.presentation.ExpandedCustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.delivery.domain.RequestError
@@ -309,8 +310,16 @@ fun DriverAssignmentDialog(
             val vehicleCapacity = stats?.vehiclePayloadCapacity
             val isOverweight = vehicleCapacity != null &&
                     request.cargo.weight > vehicleCapacity
+            val isOutOfSchedule = stats?.isWorkingNow == false
+            val outOfScheduleStats = stats?.takeIf { !it.isWorkingNow }
             val isButtonEnabled =
-                isDriverSelected && !isLoading && (!isReassign || hasDriverChanged) && stats.vehicleModel != null && vehicleCapacity != null && !isOverweight
+                isDriverSelected &&
+                        !isLoading &&
+                        (!isReassign || hasDriverChanged) &&
+                        stats.vehicleModel != null &&
+                        vehicleCapacity != null &&
+                        !isOverweight &&
+                        !isOutOfSchedule
 
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -329,7 +338,21 @@ fun DriverAssignmentDialog(
                         )
                     }
                 }
-                Spacer(Modifier.weight(1f))
+                if (outOfScheduleStats != null) {
+                    if (outOfScheduleStats.vehiclePayloadCapacity != null) {
+                        Spacer(Modifier.width(12.dp))
+                    }
+                    Text(
+                        text = outOfScheduleStats.scheduleHint,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } else {
+                    Spacer(Modifier.weight(1f))
+                }
 
                 TextButton(onClick = requestDismiss, enabled = !isLoading) {
                     Text(text = stringResource(Res.string.cancel))

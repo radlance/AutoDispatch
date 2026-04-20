@@ -1,8 +1,10 @@
 package com.github.radlance.autodispatch.route
 
+import com.github.radlance.autodispatch.domain.driver.DriverWorkScheduleRequest
 import com.github.radlance.autodispatch.repository.DriverRepository
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -50,6 +52,23 @@ fun Route.driver(repository: DriverRepository) {
                 )
 
                 call.respond(HttpStatusCode.OK, paginatedRequests)
+            }
+
+            get("/{id}/schedule") {
+                val driverId = call.parameters["id"]?.toIntOrNull()
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid driver ID")
+
+                val schedule = repository.driverSchedule(driverId)
+                call.respond(HttpStatusCode.OK, schedule)
+            }
+
+            put("/{id}/schedule") {
+                val driverId = call.parameters["id"]?.toIntOrNull()
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid driver ID")
+                val body = call.receive<DriverWorkScheduleRequest>()
+
+                repository.replaceDriverSchedule(driverId, body.shifts)
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

@@ -13,5 +13,6 @@ data class DriverDto(
     val phoneNumber: String,
     val status: StatusDto,
     val vehicle: VehicleDto?,
-    val deliveriesStats: DeliveriesStatsDto
+    val deliveriesStats: DeliveriesStatsDto,
+    val workSchedule: List<DriverWorkShiftDto>
 )

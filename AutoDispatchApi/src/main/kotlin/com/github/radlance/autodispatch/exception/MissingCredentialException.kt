@@ -11,3 +11,5 @@ data class StateConflictException(override val message: String = "Illegal delive
 data class DriverBusyException(override val message: String) : RuntimeException(message)
 
 class DeliveryCanceledException(override val message: String) : RuntimeException()
+
+data class WorkScheduleException(override val message: String) : RuntimeException(message)

@@ -4,6 +4,7 @@ import com.github.radlance.autodispatch.repository.AuthRepository
 import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.repository.DocumentsRepository
 import com.github.radlance.autodispatch.repository.DriverRepository
+import com.github.radlance.autodispatch.repository.DriverScheduleGuard
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.ReportRepository
 import com.github.radlance.autodispatch.repository.RequestRepository
@@ -26,6 +27,7 @@ import io.ktor.server.config.*
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import java.time.Clock
 
 val Application.authModule
     get() = module {
@@ -47,6 +49,12 @@ val Application.authModule
 val profileModule
     get() = module {
         singleOf(::ProfileRepository)
+    }
+
+val Application.scheduleModule
+    get() = module {
+        single<Clock> { Clock.systemDefaultZone() }
+        singleOf(::DriverScheduleGuard)
     }
 
 val Application.requestModule

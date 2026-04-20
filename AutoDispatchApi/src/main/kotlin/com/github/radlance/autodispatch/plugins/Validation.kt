@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.exception.NoAccessException
 import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.exception.UnauthorizedException
+import com.github.radlance.autodispatch.exception.WorkScheduleException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -81,6 +82,14 @@ fun Application.configureValidation() {
             val error = ErrorResponse(
                 message = cause.message,
                 errorCode = "STATE_CONFLICT"
+            )
+            call.respond(HttpStatusCode.Conflict, error)
+        }
+
+        exception<WorkScheduleException> { call, cause ->
+            val error = ErrorResponse(
+                message = cause.message,
+                errorCode = "WORK_SCHEDULE"
             )
             call.respond(HttpStatusCode.Conflict, error)
         }

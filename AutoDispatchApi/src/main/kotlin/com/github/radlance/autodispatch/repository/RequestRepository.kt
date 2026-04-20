@@ -4,25 +4,62 @@ import com.github.radlance.autodispatch.database.entity.CargoTypeEntity
 import com.github.radlance.autodispatch.database.entity.CityEntity
 import com.github.radlance.autodispatch.database.entity.CustomerEntity
 import com.github.radlance.autodispatch.database.entity.RequestStatusEntity
-import com.github.radlance.autodispatch.database.table.*
+import com.github.radlance.autodispatch.database.table.AssignmentTable
+import com.github.radlance.autodispatch.database.table.CargoTypeTable
+import com.github.radlance.autodispatch.database.table.CityTable
+import com.github.radlance.autodispatch.database.table.CustomerTable
+import com.github.radlance.autodispatch.database.table.DeliveryDocumentTable
+import com.github.radlance.autodispatch.database.table.DriverTable
+import com.github.radlance.autodispatch.database.table.RequestStatusTable
+import com.github.radlance.autodispatch.database.table.RequestTable
+import com.github.radlance.autodispatch.database.table.UserTable
+import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
 import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.common.TablePaginatedResult
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
-import com.github.radlance.autodispatch.domain.request.*
-import com.github.radlance.autodispatch.exception.StateConflictException
+import com.github.radlance.autodispatch.domain.request.Cargo
+import com.github.radlance.autodispatch.domain.request.CargoType
+import com.github.radlance.autodispatch.domain.request.CreateRequest
+import com.github.radlance.autodispatch.domain.request.Customer
+import com.github.radlance.autodispatch.domain.request.DriverRequest
+import com.github.radlance.autodispatch.domain.request.Filters
 import com.github.radlance.autodispatch.domain.request.NotificationContacts
+import com.github.radlance.autodispatch.domain.request.Point
+import com.github.radlance.autodispatch.domain.request.Request
+import com.github.radlance.autodispatch.domain.request.RequestEmailView
+import com.github.radlance.autodispatch.domain.request.UserFilter
+import com.github.radlance.autodispatch.domain.request.Vehicle
+import com.github.radlance.autodispatch.exception.StateConflictException
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Alias
+import org.jetbrains.exposed.sql.AndOp
+import org.jetbrains.exposed.sql.Coalesce
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.Join
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.OrOp
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.countDistinct
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
+import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
+import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.upsert
 import java.time.format.DateTimeFormatter
 
-class RequestRepository {
+class RequestRepository(
+    private val driverScheduleGuard: DriverScheduleGuard
+) {
 
     private fun joinBaseQuery(originCity: Alias<CityTable>, destCity: Alias<CityTable>): Join =
         RequestTable
@@ -389,6 +426,12 @@ class RequestRepository {
             ?.get(DriverTable.vehicleId)
             ?: throw StateConflictException("У водителя не выбран автомобиль, назначение невозможно")
 
+        driverScheduleGuard.ensureDriverWorkingNow(
+            driverId = driverId
+        ) { evaluation ->
+            "Нельзя назначить заявку: водитель сейчас вне рабочего графика. ${evaluation.hint}"
+        }
+
         AssignmentTable.insert {
             it[this.requestId] = EntityID(requestId, RequestTable)
             it[this.driverId] = EntityID(driverId, UserTable)
@@ -415,6 +458,12 @@ class RequestRepository {
             .singleOrNull()
             ?.get(DriverTable.vehicleId)
             ?: throw StateConflictException("У водителя не выбран автомобиль")
+
+        driverScheduleGuard.ensureDriverWorkingNow(
+            driverId = driverId
+        ) { evaluation ->
+            "Нельзя назначить заявку: водитель сейчас вне рабочего графика. ${evaluation.hint}"
+        }
 
         AssignmentTable.upsert(AssignmentTable.requestId) {
             it[this.requestId] = EntityID(requestId, RequestTable)

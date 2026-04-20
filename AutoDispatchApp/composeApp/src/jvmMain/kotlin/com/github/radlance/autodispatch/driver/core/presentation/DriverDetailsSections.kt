@@ -47,6 +47,7 @@ import com.github.radlance.autodispatch.common.presentation.Section
 import com.github.radlance.autodispatch.common.utils.avatarInitials
 import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.driver.core.domain.Driver
+import com.github.radlance.autodispatch.driver.core.domain.DriverWorkShift
 import com.github.radlance.autodispatch.driver.history.presentation.DriverHistoryDialog
 import com.github.radlance.autodispatch.request.core.presentation.FullScreenImageDialog
 import kotlin.time.Clock
@@ -184,6 +185,12 @@ fun DriverDetailsSections(
         HorizontalDivider(
             modifier = Modifier.padding(top = SECTION_GAP, bottom = SECTION_GAP, end = 6.dp)
         )
+        Section(header = "График работы") {
+            DriverScheduleContent(driver.workSchedule)
+        }
+        HorizontalDivider(
+            modifier = Modifier.padding(top = SECTION_GAP, bottom = SECTION_GAP, end = 6.dp)
+        )
         Section(header = "Статистика доставок") {
             val stats = driver.deliveriesStats
 
@@ -216,6 +223,40 @@ fun DriverDetailsSections(
         }
     }
 
+}
+
+@Composable
+private fun DriverScheduleContent(shifts: List<DriverWorkShift>) {
+    if (shifts.isEmpty()) {
+        Text(
+            text = "График не задан",
+            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 14.sp
+        )
+        return
+    }
+
+    val dayNames = mapOf(
+        1 to "Понедельник",
+        2 to "Вторник",
+        3 to "Среда",
+        4 to "Четверг",
+        5 to "Пятница",
+        6 to "Суббота",
+        7 to "Воскресенье"
+    )
+    val grouped = shifts.groupBy { it.dayOfWeek }
+
+    for (day in 1..7) {
+        val dayShifts = grouped[day].orEmpty().sortedBy { it.startTime }
+        if (dayShifts.isEmpty()) continue
+
+        LabeledValue(
+            label = dayNames[day] ?: day.toString(),
+            value = dayShifts.joinToString(", ") { "${it.startTime}-${it.endTime}" }
+        )
+        Spacer(modifier = Modifier.height(ITEM_GAP))
+    }
 }
 
 @Composable

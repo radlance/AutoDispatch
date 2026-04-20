@@ -97,6 +97,9 @@ class RemoteDeliveryDetailsRepository(
                             "DELIVERY_CANCELED" -> FetchResult.Error(
                                 RequestError.DeliveryCanceledError(errorResponse.message)
                             )
+                            "WORK_SCHEDULE" -> FetchResult.Error(
+                                RequestError.WorkScheduleError(errorResponse.message)
+                            )
                             else -> FetchResult.Error(
                                 RequestError.GenericStateError(errorResponse.message)
                             )

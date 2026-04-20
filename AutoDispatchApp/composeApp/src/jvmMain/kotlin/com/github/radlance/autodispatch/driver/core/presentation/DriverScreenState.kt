@@ -1,8 +1,8 @@
 package com.github.radlance.autodispatch.driver.core.presentation
 
+import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.driver.core.domain.Driver
-import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 
 data class DriverScreenState(
     val driversResultState: FetchResultUiState<TablePaginatedResult<Driver>, String> = FetchResultUiState.Loading,

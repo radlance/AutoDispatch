@@ -79,6 +79,23 @@ fun DriverAssignmentCard(
                             fontSize = 12.sp,
                             modifier = Modifier.alpha(0.7f)
                         )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "График: ${formatSchedule(driverStats)}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 12.sp,
+                            modifier = Modifier.alpha(0.7f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (!driverStats.isWorkingNow) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Сейчас вне графика",
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val count = driverStats.totalAssignedRequests.toInt()
@@ -111,6 +128,64 @@ fun DriverAssignmentCard(
                 }
             }
         }
+    }
+}
+
+private fun formatSchedule(driverStats: DriverStats): String {
+    if (driverStats.workSchedule.isEmpty()) return "не задан"
+
+    val daySchedule = (1..7).associateWith { day ->
+        val shifts = driverStats.workSchedule
+            .filter { it.dayOfWeek == day }
+            .sortedBy { it.startTime }
+        if (shifts.isEmpty()) {
+            "выходной"
+        } else {
+            shifts.joinToString(", ") { "${shortTime(it.startTime)}-${shortTime(it.endTime)}" }
+        }
+    }
+
+    val parts = mutableListOf<String>()
+    var startDay = 1
+    var currentText = daySchedule.getValue(1)
+
+    for (day in 2..7) {
+        val nextText = daySchedule.getValue(day)
+        if (nextText != currentText) {
+            parts += "${dayRangeLabel(startDay, day - 1)} $currentText"
+            startDay = day
+            currentText = nextText
+        }
+    }
+    parts += "${dayRangeLabel(startDay, 7)} $currentText"
+
+    return parts.joinToString("; ")
+}
+
+private fun shortTime(value: String): String {
+    val parts = value.split(":")
+    if (parts.size != 2) return value
+    val hour = parts[0].toIntOrNull()?.toString() ?: parts[0]
+    val minute = parts[1]
+    return "$hour:$minute"
+}
+
+private fun dayRangeLabel(startDay: Int, endDay: Int): String {
+    val start = dayShort(startDay)
+    val end = dayShort(endDay)
+    return if (startDay == endDay) start else "$start-$end"
+}
+
+private fun dayShort(dayOfWeek: Int): String {
+    return when (dayOfWeek) {
+        1 -> "Пн"
+        2 -> "Вт"
+        3 -> "Ср"
+        4 -> "Чт"
+        5 -> "Пт"
+        6 -> "Сб"
+        7 -> "Вс"
+        else -> dayOfWeek.toString()
     }
 }
 
