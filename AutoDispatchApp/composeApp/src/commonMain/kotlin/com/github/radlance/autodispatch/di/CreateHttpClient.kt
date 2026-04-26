@@ -21,7 +21,6 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 
@@ -44,16 +43,17 @@ fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
         install(Auth) {
             bearer {
                 loadTokens {
-                    val token = runBlocking { dataStoreManager.token.first() }
+                    val token = dataStoreManager.token.first()
                     token?.let { BearerTokens(accessToken = it, refreshToken = null) }
                 }
 
                 refreshTokens {
-                    val token = runBlocking { dataStoreManager.token.first() }
+                    val token = dataStoreManager.token.first()
 
                     try {
                         val newToken = withTimeout(5000) {
                             client.post("auth/refresh-token") {
+                                markAsRefreshTokenRequest()
                                 setBody(TokenDto(token!!))
                             }.body<TokenDto>().accessToken
                         }
