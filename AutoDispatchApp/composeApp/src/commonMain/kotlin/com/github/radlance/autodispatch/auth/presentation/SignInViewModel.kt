@@ -30,7 +30,7 @@ class SignInViewModel(
                 fieldsUiStateMutable.update { state ->
                     state.copy(
                         loginFieldValue = value,
-                        loginErrorMessage = ""
+                        loginErrorMessage = null
                     )
                 }
             }
@@ -39,7 +39,7 @@ class SignInViewModel(
                 fieldsUiStateMutable.update { state ->
                     state.copy(
                         passwordFieldValue = value,
-                        passwordErrorMessage = ""
+                        passwordErrorMessage = null
                     )
                 }
             }
@@ -55,7 +55,7 @@ class SignInViewModel(
                 }
 
                 with(fieldsUiState.value) {
-                    if (loginErrorMessage.isEmpty() && passwordErrorMessage.isEmpty()) {
+                    if (loginErrorMessage == null && passwordErrorMessage == null) {
                         authResultUiStateMutable.value = FetchResultUiState.Loading
 
                         handle(background = {

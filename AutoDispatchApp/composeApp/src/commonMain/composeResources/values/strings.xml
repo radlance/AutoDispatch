@@ -8,10 +8,14 @@
     <string name="welcome">Добро пожаловать!</string>
     <string name="log_in_to_control_panel">Войдите в панель диспетчера</string>
     <string name="login">Логин</string>
+    <string name="error_login_required">Введите логин</string>
+    <string name="error_password_required">Введите пароль</string>
+    <string name="error_password_min_length">Пароль должен содержать не менее 8 символов</string>
+    <string name="error_password_max_length">Пароль должен содержать не более 50 символов</string>
     <string name="password">Пароль</string>
     <string name="sign_in">Войти в систему</string>
     <string name="auto_request">АвтоЗаявка</string>
-    <string name="control_panel">Панель диспетчера</string>
+    <string name="control_panel">Панель управления</string>
     <string name="ok">ОК</string>
     <string name="session_expired">Сессия истекла</string>
     <string name="session_expired_description">Сессия истекла, вам необходимо снова войти в систему, чтобы продолжить использование приложения</string>

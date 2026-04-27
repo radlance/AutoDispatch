@@ -62,16 +62,16 @@ fun SignInFields(
                     value = fieldsUiState.loginFieldValue,
                     onValueChange = { onEvent(SignInEvent.ChangeLogin(it)) },
                     label = {
-                        val label = if (
-                            fieldsUiState.loginFieldValue.isEmpty() || fieldsUiState.loginErrorMessage.isEmpty()
-                        ) stringResource(Res.string.login) else {
+                        val labelRes = if (
+                            fieldsUiState.loginFieldValue.isEmpty() || fieldsUiState.loginErrorMessage == null
+                        ) Res.string.login else {
                             fieldsUiState.loginErrorMessage
                         }
 
-                        Text(text = label)
+                        Text(text = stringResource(labelRes))
                     },
                     singleLine = true,
-                    isError = fieldsUiState.loginErrorMessage.isNotEmpty(),
+                    isError = fieldsUiState.loginErrorMessage != null,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(12.dp))
@@ -79,13 +79,13 @@ fun SignInFields(
                     value = fieldsUiState.passwordFieldValue,
                     onValueChange = { onEvent(SignInEvent.ChangePassword(it)) },
                     label = {
-                        val label = if (
-                            fieldsUiState.passwordFieldValue.isEmpty() || fieldsUiState.passwordErrorMessage.isEmpty()
-                        ) stringResource(Res.string.password) else {
+                        val labelRes = if (
+                            fieldsUiState.passwordFieldValue.isEmpty() || fieldsUiState.passwordErrorMessage == null
+                        ) Res.string.password else {
                             fieldsUiState.passwordErrorMessage
                         }
 
-                        Text(text = label)
+                        Text(text = stringResource(labelRes))
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     visualTransformation = if (!showPassword) {
@@ -103,7 +103,7 @@ fun SignInFields(
                         }
                     },
                     singleLine = true,
-                    isError = fieldsUiState.passwordErrorMessage.isNotEmpty(),
+                    isError = fieldsUiState.passwordErrorMessage != null,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(24.dp))

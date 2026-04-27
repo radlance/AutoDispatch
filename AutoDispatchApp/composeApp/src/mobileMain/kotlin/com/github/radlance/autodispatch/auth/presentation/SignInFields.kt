@@ -48,14 +48,14 @@ fun SignInFields(
             onValueChange = { onEvent(SignInEvent.ChangeLogin(it)) },
             label = {
                 val label = if (
-                    fieldsUiState.loginFieldValue.isEmpty() || fieldsUiState.loginErrorMessage.isEmpty()
-                ) stringResource(Res.string.login) else {
+                    fieldsUiState.loginFieldValue.isEmpty() || fieldsUiState.loginErrorMessage == null
+                ) Res.string.login else {
                     fieldsUiState.loginErrorMessage
                 }
 
-                Text(text = label)
+                Text(text = stringResource(label))
             },
-            isError = fieldsUiState.loginErrorMessage.isNotEmpty(),
+            isError = fieldsUiState.loginErrorMessage != null,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -65,12 +65,12 @@ fun SignInFields(
             onValueChange = { onEvent(SignInEvent.ChangePassword(it)) },
             label = {
                 val label = if (
-                    fieldsUiState.passwordFieldValue.isEmpty() || fieldsUiState.passwordErrorMessage.isEmpty()
-                ) stringResource(Res.string.password) else {
+                    fieldsUiState.passwordFieldValue.isEmpty() || fieldsUiState.passwordErrorMessage == null
+                ) Res.string.password else {
                     fieldsUiState.passwordErrorMessage
                 }
 
-                Text(text = label)
+                Text(text = stringResource(label))
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = if (!showPassword) {
@@ -87,7 +87,7 @@ fun SignInFields(
                     Icon(imageVector = icon, contentDescription = null)
                 }
             },
-            isError = fieldsUiState.passwordErrorMessage.isNotEmpty(),
+            isError = fieldsUiState.passwordErrorMessage != null,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )

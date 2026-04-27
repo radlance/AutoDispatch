@@ -1,23 +1,32 @@
 package com.github.radlance.autodispatch.auth.presentation
 
+import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.error_login_required
+import autodispatch.composeapp.generated.resources.error_password_max_length
+import autodispatch.composeapp.generated.resources.error_password_min_length
+import autodispatch.composeapp.generated.resources.error_password_required
+import org.jetbrains.compose.resources.StringResource
+
 
 interface SignInValidator {
 
-    fun validationLoginMessage(value: String): String
+    fun validationLoginMessage(value: String): StringResource?
 
-    fun validationPasswordMessage(value: String): String
+    fun validationPasswordMessage(value: String): StringResource?
 }
 
 internal class BaseSignInValidator : SignInValidator {
 
-    override fun validationLoginMessage(value: String): String = if (value.isBlank()) {
-        "Логин обязателен"
-    } else ""
+    override fun validationLoginMessage(value: String): StringResource? =
+        if (value.isBlank()) {
+            Res.string.error_login_required
+        } else null
 
-    override fun validationPasswordMessage(value: String): String = when {
-        value.isBlank() -> "Пароль обязателен"
-        value.trim().length < 8 -> "Минимальная длина пароля – 8 симоволов"
-        value.trim().length > 50 -> "Максимальная длина пароля – 50 символов"
-        else -> ""
-    }
+    override fun validationPasswordMessage(value: String): StringResource? =
+        when {
+            value.isBlank() -> Res.string.error_password_required
+            value.trim().length < 8 -> Res.string.error_password_min_length
+            value.trim().length > 50 -> Res.string.error_password_max_length
+            else -> null
+        }
 }
