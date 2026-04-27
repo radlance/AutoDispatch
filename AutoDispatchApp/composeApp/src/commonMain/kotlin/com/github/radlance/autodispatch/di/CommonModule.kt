@@ -11,6 +11,9 @@ import com.github.radlance.autodispatch.common.data.BaseHandleRequest
 import com.github.radlance.autodispatch.common.data.DataStoreManager
 import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.KtorApiService
+import com.github.radlance.autodispatch.core.data.LocalAppSettingsRepository
+import com.github.radlance.autodispatch.core.domain.AppSettingsRepository
+import com.github.radlance.autodispatch.core.presentation.AppSettingsViewModel
 import com.github.radlance.autodispatch.navigation.core.DeepLinkManager
 import com.github.radlance.autodispatch.navigation.core.NavigationViewModel
 import com.github.radlance.autodispatch.navigation.data.LocalNavigationRepository
@@ -45,4 +48,9 @@ val authModule = module {
 
 val profileModule = module {
     singleOf(::LocalProfileRepository).bind<ProfileRepository>()
+}
+
+val settingsModule = module {
+    singleOf(::LocalAppSettingsRepository).bind<AppSettingsRepository>()
+    viewModelOf(::AppSettingsViewModel)
 }

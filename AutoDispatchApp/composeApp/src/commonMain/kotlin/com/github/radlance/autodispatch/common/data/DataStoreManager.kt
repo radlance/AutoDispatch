@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.github.radlance.autodispatch.uikit.theme.AppSettings
 import com.github.radlance.autodispatch.uikit.theme.ThemeAccent
 import com.github.radlance.autodispatch.uikit.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -26,17 +27,13 @@ interface DataStoreManager {
 
     suspend fun setLocationPermissionAsked(asked: Boolean)
 
-    val themeMode: Flow<ThemeMode>
+    val appSettings: Flow<AppSettings>
 
-    suspend fun setThemeMode(mode: ThemeMode)
+    suspend fun updateThemeMode(mode: ThemeMode)
 
-    val themeAccent: Flow<ThemeAccent>
+    suspend fun updateThemeAccent(accent: ThemeAccent)
 
-    suspend fun setThemeAccent(accent: ThemeAccent)
-
-    val amoledEnabled: Flow<Boolean>
-
-    suspend fun setAmoledEnabled(enabled: Boolean)
+    suspend fun updateAmoledEnabled(enabled: Boolean)
 }
 
 internal class BaseDataStoreManager(
@@ -46,54 +43,50 @@ internal class BaseDataStoreManager(
         dataStore.edit { settings -> settings[KEY_TOKEN] = token }
     }
 
-    override val token: Flow<String?> = dataStore.data.map { preferences ->
-        preferences[KEY_TOKEN]
+    override val token: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[KEY_TOKEN]
     }
 
     override suspend fun deleteToken() {
-        dataStore.edit { preferences -> preferences.remove(KEY_TOKEN) }
+        dataStore.edit { prefs -> prefs.remove(KEY_TOKEN) }
     }
 
-    override val sessionExpired: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[KEY_SESSION_EXPIRED] ?: false
+    override val sessionExpired: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_SESSION_EXPIRED] ?: false
     }
 
     override suspend fun saveSessionExpired(expired: Boolean) {
-        dataStore.edit { settings -> settings[KEY_SESSION_EXPIRED] = expired }
+        dataStore.edit { prefs -> prefs[KEY_SESSION_EXPIRED] = expired }
     }
 
-    override val locationPermissionAsked: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[KEY_LOCATION_ASKED] ?: false
+    override val locationPermissionAsked: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_LOCATION_ASKED] ?: false
     }
 
     override suspend fun setLocationPermissionAsked(asked: Boolean) {
-        dataStore.edit { settings -> settings[KEY_LOCATION_ASKED] = asked }
+        dataStore.edit { prefs -> prefs[KEY_LOCATION_ASKED] = asked }
     }
 
-    override val themeMode: Flow<ThemeMode> = dataStore.data.map { preferences ->
-        ThemeMode.entries.firstOrNull { it.name == preferences[KEY_THEME_MODE] }
-            ?: ThemeMode.SYSTEM
+    override val appSettings: Flow<AppSettings> = dataStore.data.map { prefs ->
+        AppSettings(
+            themeMode = ThemeMode.entries.firstOrNull { it.name == prefs[KEY_THEME_MODE] }
+                ?: ThemeMode.SYSTEM,
+            themeAccent = ThemeAccent.entries.firstOrNull { it.name == prefs[KEY_THEME_ACCENT] }
+                ?: ThemeAccent.DEFAULT,
+            amoledEnabled = prefs[KEY_AMOLED_ENABLED] ?: false
+        )
     }
 
-    override suspend fun setThemeMode(mode: ThemeMode) {
-        dataStore.edit { settings -> settings[KEY_THEME_MODE] = mode.name }
+    override suspend fun updateThemeMode(mode: ThemeMode) {
+        dataStore.edit { prefs -> prefs[KEY_THEME_MODE] = mode.name }
     }
 
-    override val themeAccent: Flow<ThemeAccent> = dataStore.data.map { preferences ->
-        ThemeAccent.entries.firstOrNull { it.name == preferences[KEY_THEME_ACCENT] }
-            ?: ThemeAccent.DEFAULT
+    override suspend fun updateThemeAccent(accent: ThemeAccent) {
+        dataStore.edit { prefs -> prefs[KEY_THEME_ACCENT] = accent.name }
     }
 
-    override suspend fun setThemeAccent(accent: ThemeAccent) {
-        dataStore.edit { settings -> settings[KEY_THEME_ACCENT] = accent.name }
-    }
-
-    override val amoledEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[KEY_AMOLED_ENABLED] ?: false
-    }
-
-    override suspend fun setAmoledEnabled(enabled: Boolean) {
-        dataStore.edit { settings -> settings[KEY_AMOLED_ENABLED] = enabled }
+    override suspend fun updateAmoledEnabled(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[KEY_AMOLED_ENABLED] = enabled }
     }
 
     companion object {

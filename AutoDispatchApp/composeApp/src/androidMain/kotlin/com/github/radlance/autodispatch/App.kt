@@ -11,6 +11,7 @@ import com.github.radlance.autodispatch.di.driverProfileModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
+import com.github.radlance.autodispatch.di.settingsModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -30,7 +31,8 @@ class App : Application() {
                 deliveryModule,
                 deliveryPlatformModule,
                 deliveryHistoryModule,
-                driverProfileModule
+                driverProfileModule,
+                settingsModule
             )
         }
     }

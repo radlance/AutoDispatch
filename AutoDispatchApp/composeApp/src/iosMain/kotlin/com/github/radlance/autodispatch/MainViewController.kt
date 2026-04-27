@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch
 
 import androidx.compose.ui.window.ComposeUIViewController
-import com.github.radlance.autodispatch.core.App
+import com.github.radlance.autodispatch.core.presentation.App
 import com.github.radlance.autodispatch.di.authModule
 import com.github.radlance.autodispatch.di.commonModule
 import com.github.radlance.autodispatch.di.dataStoreModule
@@ -12,6 +12,7 @@ import com.github.radlance.autodispatch.di.driverProfileModule
 import com.github.radlance.autodispatch.di.navigationModule
 import com.github.radlance.autodispatch.di.profileModule
 import com.github.radlance.autodispatch.di.requestModule
+import com.github.radlance.autodispatch.di.settingsModule
 import org.koin.core.context.startKoin
 
 fun MainViewController() = ComposeUIViewController(
@@ -27,7 +28,8 @@ fun MainViewController() = ComposeUIViewController(
                 deliveryModule,
                 deliveryPlatformModule,
                 deliveryHistoryModule,
-                driverProfileModule
+                driverProfileModule,
+                settingsModule
             )
         }
     }

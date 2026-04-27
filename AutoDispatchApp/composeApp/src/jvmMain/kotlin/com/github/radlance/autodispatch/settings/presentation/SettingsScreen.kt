@@ -35,15 +35,14 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.appearance
 import autodispatch.composeapp.generated.resources.theme_amoled
@@ -53,30 +52,24 @@ import autodispatch.composeapp.generated.resources.theme_dark
 import autodispatch.composeapp.generated.resources.theme_light
 import autodispatch.composeapp.generated.resources.theme_mode
 import autodispatch.composeapp.generated.resources.theme_system
-import com.github.radlance.autodispatch.common.data.DataStoreManager
+import com.github.radlance.autodispatch.core.presentation.AppSettingsViewModel
 import com.github.radlance.autodispatch.uikit.theme.ThemeAccent
 import com.github.radlance.autodispatch.uikit.theme.ThemeMode
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-    dataStoreManager: DataStoreManager = koinInject()
+    viewModel: AppSettingsViewModel = koinViewModel()
 ) {
-    val themeMode by dataStoreManager.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
-    val themeAccent by dataStoreManager.themeAccent.collectAsState(initial = ThemeAccent.DEFAULT)
-    val amoledEnabled by dataStoreManager.amoledEnabled.collectAsState(initial = false)
-    val scope = rememberCoroutineScope()
-
-    val isDarkTheme = when (themeMode) {
+    val appSettings by viewModel.appSettings.collectAsStateWithLifecycle()
+    val isDarkTheme = when (appSettings.themeMode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    val amoledAvailable = isDarkTheme
 
     Box(modifier = modifier.fillMaxSize()) {
         val scrollState = rememberScrollState()
@@ -92,9 +85,9 @@ fun SettingsScreen(
             SectionTitle(text = stringResource(Res.string.theme_mode))
             Spacer(Modifier.height(8.dp))
             ThemeModeSegmented(
-                selected = themeMode,
+                selected = appSettings.themeMode,
                 onSelect = { mode ->
-                    scope.launch { dataStoreManager.setThemeMode(mode) }
+                    viewModel.updateThemeMode(mode)
                 }
             )
 
@@ -131,13 +124,13 @@ fun SettingsScreen(
                         )
                     }
                     Switch(
-                        checked = amoledEnabled && amoledAvailable,
+                        checked = appSettings.amoledEnabled && isDarkTheme,
                         onCheckedChange = { checked ->
-                            if (amoledAvailable) {
-                                scope.launch { dataStoreManager.setAmoledEnabled(checked) }
+                            if (isDarkTheme) {
+                                viewModel.updateAmoledEnabled(checked)
                             }
                         },
-                        enabled = amoledAvailable
+                        enabled = isDarkTheme
                     )
                 }
             }
@@ -170,9 +163,9 @@ fun SettingsScreen(
                     AccentItem(
                         color = accent.seedColor,
                         label = stringResource(accent.labelRes),
-                        selected = accent == themeAccent,
+                        selected = accent == appSettings.themeAccent,
                         onClick = {
-                            scope.launch { dataStoreManager.setThemeAccent(accent) }
+                            viewModel.updateThemeAccent(accent)
                         }
                     )
                 }
