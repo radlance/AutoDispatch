@@ -11,4 +11,8 @@ interface NavigationRepository {
     val sessionExpired: Flow<Boolean>
 
     suspend fun saveSessionExpired(expired: Boolean)
+
+    val userRoleId: Flow<Int?>
+
+    suspend fun deleteUserRoleId()
 }

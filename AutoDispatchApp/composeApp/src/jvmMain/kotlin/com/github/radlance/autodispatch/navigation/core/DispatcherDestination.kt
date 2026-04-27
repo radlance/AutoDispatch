@@ -8,4 +8,6 @@ interface DispatcherDestination
 object SignIn : DispatcherDestination
 
 @Serializable
-object ControlPanel : DispatcherDestination
+data class ControlPanel(
+    val userRoleId: Int
+) : DispatcherDestination

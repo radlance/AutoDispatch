@@ -16,6 +16,7 @@
     <string name="session_expired">Сессия истекла</string>
     <string name="session_expired_description">Сессия истекла, вам необходимо снова войти в систему, чтобы продолжить использование приложения</string>
     <string name="dispatcher">Диспетчер</string>
+    <string name="admin">Администратор</string>
     <string name="requests">Заявки</string>
     <string name="destinations">Назначения</string>
     <string name="vehicles">Автомобили</string>

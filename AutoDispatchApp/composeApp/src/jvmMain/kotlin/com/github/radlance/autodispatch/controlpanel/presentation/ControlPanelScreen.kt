@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import autodispatch.composeapp.generated.resources.Res
+import autodispatch.composeapp.generated.resources.admin
 import autodispatch.composeapp.generated.resources.auto_request
 import autodispatch.composeapp.generated.resources.cancel
 import autodispatch.composeapp.generated.resources.dispatcher
@@ -52,6 +53,8 @@ import autodispatch.composeapp.generated.resources.exit
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.you_want_to_logout
 import com.github.radlance.autodispatch.auth.presentation.AppIconBox
+import com.github.radlance.autodispatch.common.domain.UserRole
+import com.github.radlance.autodispatch.common.domain.toUserRole
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.shimmerBackground
 import com.github.radlance.autodispatch.common.utils.abbreviateName
@@ -68,21 +71,23 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ControlPanelScreen(
+    userRoleId: Int,
     navigateToSignInScreen: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ControlPanelViewModel = koinViewModel()
 ) {
+    val userRole by remember { mutableStateOf(userRoleId.toUserRole()) }
     val loadProfileUiState by viewModel.loadProfileUiState.collectAsState()
     var selectedItem by rememberSaveable { mutableStateOf(0) }
 
-    val items =
-        listOf(
-            Requests,
-            Drivers,
-            Vehicles,
-            Statistic,
-            Settings
-        )
+    val items = listOf(
+        Requests,
+        Drivers,
+        Vehicles,
+        Statistic,
+        Settings
+    )
+
     val navHostController = rememberNavController()
     val navigationState = rememberNavigationState(navHostController)
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -151,8 +156,11 @@ fun ControlPanelScreen(
                     Spacer(Modifier.width(24.dp))
                     Column {
                         Text(text = stringResource(Res.string.auto_request), fontSize = 20.sp)
+                        val res = if (userRole == UserRole.Admin) {
+                            Res.string.admin
+                        } else Res.string.dispatcher
                         Text(
-                            text = stringResource(Res.string.dispatcher),
+                            text = stringResource(res),
                             fontSize = 14.sp,
                             modifier = Modifier.alpha(0.5f)
                         )

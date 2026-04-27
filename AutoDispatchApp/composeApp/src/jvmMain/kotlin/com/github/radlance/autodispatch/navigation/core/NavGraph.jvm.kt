@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.ok
 import autodispatch.composeapp.generated.resources.session_expired
@@ -38,6 +39,7 @@ actual fun NavGraph(navController: NavHostController) {
     val navigationVieModel = koinViewModel<NavigationViewModel>()
 
     val authorized = navigationVieModel.authorizedState
+    val userRoleId = navigationVieModel.userRoleId
     val sessionExpired by navigationVieModel.sessionExpired.collectAsStateWithLifecycle()
     var showExpiredSessionDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -86,7 +88,9 @@ actual fun NavGraph(navController: NavHostController) {
         }
     }
 
-    val initial = if (authorized) ControlPanel else SignIn
+    val initial = if (authorized) userRoleId?.let {
+        ControlPanel(userRoleId = it)
+    } ?: SignIn else SignIn
 
     NavHost(
         navController = navController,
@@ -105,11 +109,17 @@ actual fun NavGraph(navController: NavHostController) {
         },
     ) {
         composable<SignIn> {
-            SignInScreen(navigateToControlPanel = { navController.navigate(ControlPanel) })
+            SignInScreen(
+                navigateToControlPanel = { roleId ->
+                    navController.navigate(ControlPanel(userRoleId = roleId))
+                }
+            )
         }
 
         composable<ControlPanel> {
+            val args = it.toRoute<ControlPanel>()
             ControlPanelScreen(
+                userRoleId = args.userRoleId,
                 navigateToSignInScreen = {
                     navController.navigate(SignIn) {
                         popUpTo<ControlPanel> { inclusive = true }

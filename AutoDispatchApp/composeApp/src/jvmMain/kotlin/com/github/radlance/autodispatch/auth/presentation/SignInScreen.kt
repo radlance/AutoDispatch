@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
+import com.github.radlance.autodispatch.common.domain.UserRole
 import com.github.radlance.autodispatch.common.presentation.BaseColumn
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
@@ -42,7 +43,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 internal fun SignInScreen(
-    navigateToControlPanel: () -> Unit,
+    navigateToControlPanel: (Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SignInViewModel = koinViewModel()
 ) {
@@ -63,7 +64,7 @@ internal fun SignInScreen(
 private fun SignInScreen(
     fieldsUiState: SignInFieldsUiState,
     signInResultUiState: FetchResultUiState<LoginResponse, String>,
-    navigateToControlPanel: () -> Unit,
+    navigateToControlPanel: (Int) -> Unit,
     clearInvalidRoleToken: () -> Unit,
     onEvent: (SignInEvent) -> Unit,
     modifier: Modifier = Modifier
@@ -90,8 +91,8 @@ private fun SignInScreen(
                 )
             },
             onSuccess = {
-                if (it.roleId == 1) {
-                    navigateToControlPanel()
+                if (it.role == UserRole.Dispatcher || it.role == UserRole.Admin) {
+                    navigateToControlPanel(it.role.id)
                 } else {
                     CustomDialog(
                         onDismissRequest = {

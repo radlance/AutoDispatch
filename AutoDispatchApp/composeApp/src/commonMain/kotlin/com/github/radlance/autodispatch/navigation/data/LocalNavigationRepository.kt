@@ -24,4 +24,10 @@ class LocalNavigationRepository(
     override suspend fun saveSessionExpired(expired: Boolean) {
         dataStoreManager.saveSessionExpired(expired)
     }
+
+    override val userRoleId: Flow<Int?> = dataStoreManager.userRoleId
+
+    override suspend fun deleteUserRoleId() {
+        dataStoreManager.deleteUserRoleId()
+    }
 }

@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.common.data
 import com.github.radlance.autodispatch.auth.data.LoginResponseDto
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
 import com.github.radlance.autodispatch.common.domain.toRequestStatus
+import com.github.radlance.autodispatch.common.domain.toUserRole
 import com.github.radlance.autodispatch.di.CurrentIp
 import com.github.radlance.autodispatch.profile.data.DeliveriesStatsDto
 import com.github.radlance.autodispatch.profile.data.UserDto
@@ -79,7 +80,7 @@ internal fun UserDto.toUser(): User {
 fun LoginResponseDto.toLoginResponse(): LoginResponse {
     return LoginResponse(
         accessToken = accessToken,
-        roleId = roleId
+        role = roleId.toUserRole()
     )
 }
 

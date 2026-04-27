@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.auth.domain.LoginResponse
+import com.github.radlance.autodispatch.common.domain.UserRole
 import com.github.radlance.autodispatch.common.presentation.BaseColumn
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import org.koin.compose.viewmodel.koinViewModel
@@ -75,7 +76,7 @@ private fun SignInScreen(
             }
         },
         onSuccess = {
-            if (it.roleId == 2) {
+            if (it.role == UserRole.Dispatcher) {
                 navigateToHomeScreen()
             } else {
                 AlertDialog(

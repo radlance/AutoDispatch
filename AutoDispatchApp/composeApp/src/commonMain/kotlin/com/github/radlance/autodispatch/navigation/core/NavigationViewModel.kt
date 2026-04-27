@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -19,8 +18,12 @@ class NavigationViewModel(
         navigationRepository.authorized.first()
     }
 
+    val userRoleId: Int? = runBlocking {
+        navigationRepository.userRoleId.first()
+    }
+
     val sessionExpired: StateFlow<Boolean> =
-        navigationRepository.sessionExpired.flowOn(Dispatchers.IO).stateInViewModel(
+        navigationRepository.sessionExpired.stateInViewModel(
         initialValue = false
     )
 

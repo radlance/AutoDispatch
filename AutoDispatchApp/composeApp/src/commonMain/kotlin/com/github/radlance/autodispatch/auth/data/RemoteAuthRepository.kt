@@ -25,6 +25,7 @@ internal class RemoteAuthRepository(
             httpClient.clearBearerTokenCache()
             apiService.signIn(loginUser = SignInUserDto(login = login, password = password)).also {
                 dataStoreManager.saveToken(it.accessToken)
+                dataStoreManager.saveUserRoleId(it.roleId)
                 httpClient.clearBearerTokenCache()
             }
         }.map { it.toLoginResponse() }

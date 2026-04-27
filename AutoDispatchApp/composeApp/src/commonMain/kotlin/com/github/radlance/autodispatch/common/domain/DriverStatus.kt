@@ -14,6 +14,4 @@ enum class DriverStatus(
 }
 
 fun Int.toDriverStatus(): DriverStatus =
-    DriverStatus.fromId(this)
-        ?: error("Unknown driver status id=$this")
-
+    DriverStatus.fromId(this) ?: error("Unknown driver status id=$this")
