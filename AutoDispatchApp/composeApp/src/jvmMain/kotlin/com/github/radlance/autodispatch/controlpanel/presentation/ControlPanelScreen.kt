@@ -58,11 +58,13 @@ import com.github.radlance.autodispatch.common.domain.toUserRole
 import com.github.radlance.autodispatch.common.presentation.CustomDialog
 import com.github.radlance.autodispatch.common.presentation.shimmerBackground
 import com.github.radlance.autodispatch.common.utils.abbreviateName
+import com.github.radlance.autodispatch.navigation.core.AdminNavGraph
 import com.github.radlance.autodispatch.navigation.core.DrawerNavGraph
 import com.github.radlance.autodispatch.navigation.core.Drivers
 import com.github.radlance.autodispatch.navigation.core.Requests
 import com.github.radlance.autodispatch.navigation.core.Settings
 import com.github.radlance.autodispatch.navigation.core.Statistic
+import com.github.radlance.autodispatch.navigation.core.Users
 import com.github.radlance.autodispatch.navigation.core.Vehicles
 import com.github.radlance.autodispatch.navigation.core.rememberNavigationState
 import org.jetbrains.compose.resources.stringResource
@@ -80,7 +82,8 @@ fun ControlPanelScreen(
     val loadProfileUiState by viewModel.loadProfileUiState.collectAsState()
     var selectedItem by rememberSaveable { mutableStateOf(0) }
 
-    val items = listOf(
+    val items = if (userRole == UserRole.Admin) listOf(Users)
+    else listOf(
         Requests,
         Drivers,
         Vehicles,
@@ -281,10 +284,16 @@ fun ControlPanelScreen(
             }
         }
     ) {
-        DrawerNavGraph(
-            navigationState = navigationState,
-            loadProfileUiState = loadProfileUiState,
-            onReloadProfile = viewModel::loadProfile
-        )
+        if (userRole == UserRole.Admin) {
+            AdminNavGraph(
+                navigationState = navigationState
+            )
+        } else {
+            DrawerNavGraph(
+                navigationState = navigationState,
+                loadProfileUiState = loadProfileUiState,
+                onReloadProfile = viewModel::loadProfile
+            )
+        }
     }
 }

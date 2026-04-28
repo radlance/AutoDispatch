@@ -120,4 +120,5 @@
     <string name="theme_color_red">Красный</string>
     <string name="theme_color_purple">Фиолетовый</string>
     <string name="theme_color_teal">Бирюзовый</string>
+    <string name="users">Пользователи</string>
 </resources>

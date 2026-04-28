@@ -3,6 +3,7 @@ package com.github.radlance.autodispatch.navigation.core
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DataUsage
 import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import autodispatch.composeapp.generated.resources.Res
@@ -10,6 +11,7 @@ import autodispatch.composeapp.generated.resources.drivers
 import autodispatch.composeapp.generated.resources.requests
 import autodispatch.composeapp.generated.resources.settings
 import autodispatch.composeapp.generated.resources.statistics
+import autodispatch.composeapp.generated.resources.users
 import autodispatch.composeapp.generated.resources.vehicles
 import com.github.radlance.autodispatch.uikit.vector.DeliveryBoltIcon
 import com.github.radlance.autodispatch.uikit.vector.DocumentIcon
@@ -49,4 +51,10 @@ object Statistic : DrawerDestination {
 object Settings : DrawerDestination {
     override val icon: ImageVector = Icons.Outlined.Settings
     override val titleRes: StringResource = Res.string.settings
+}
+
+@Serializable
+object Users : DrawerDestination {
+    override val icon: ImageVector = Icons.Outlined.Person
+    override val titleRes: StringResource = Res.string.users
 }
