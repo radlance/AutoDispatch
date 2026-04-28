@@ -1,9 +1,10 @@
 package com.github.radlance.autodispatch.route
 
 import com.github.radlance.autodispatch.domain.auth.LoginUser
+import com.github.radlance.autodispatch.domain.auth.RefreshTokenRequest
 import com.github.radlance.autodispatch.domain.auth.RegisterUser
-import com.github.radlance.autodispatch.domain.auth.Token
 import com.github.radlance.autodispatch.domain.auth.User
+import com.github.radlance.autodispatch.exception.MissingCredentialException
 import com.github.radlance.autodispatch.service.AuthService
 import com.github.radlance.autodispatch.util.receiveOrThrow
 import io.ktor.http.*
@@ -25,9 +26,13 @@ fun Route.auth(authService: AuthService) {
         }
 
         post("/refresh-token") {
-            val request = call.receiveOrThrow<Token>()
-            val tokens = authService.refreshToken(token = request)
-            call.respond(HttpStatusCode.OK, tokens)
+            val request = call.receiveOrThrow<RefreshTokenRequest>()
+            try {
+                val tokens = authService.refreshToken(request)
+                call.respond(HttpStatusCode.OK, tokens)
+            } catch (_: MissingCredentialException) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Session expired or invalid"))
+            }
         }
     }
 }

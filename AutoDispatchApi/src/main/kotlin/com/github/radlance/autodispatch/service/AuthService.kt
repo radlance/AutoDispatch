@@ -1,8 +1,9 @@
 package com.github.radlance.autodispatch.service
 
+import com.github.radlance.autodispatch.domain.auth.AuthTokens
 import com.github.radlance.autodispatch.domain.auth.LoginUser
+import com.github.radlance.autodispatch.domain.auth.RefreshTokenRequest
 import com.github.radlance.autodispatch.domain.auth.RegisterUser
-import com.github.radlance.autodispatch.domain.auth.Token
 import com.github.radlance.autodispatch.domain.auth.User
 import com.github.radlance.autodispatch.domain.request.LoginResponse
 import com.github.radlance.autodispatch.repository.AuthRepository
@@ -10,11 +11,13 @@ import com.github.radlance.autodispatch.security.hashing.HashingService
 import com.github.radlance.autodispatch.security.hashing.SaltedHash
 import com.github.radlance.autodispatch.security.token.TokenService
 import com.github.radlance.autodispatch.exception.MissingCredentialException
+import com.github.radlance.autodispatch.security.token.TokenConfig
 
 class AuthService(
     private val authRepository: AuthRepository,
     private val hashingService: HashingService,
-    private val tokenService: TokenService
+    private val tokenService: TokenService,
+    private val tokenConfig: TokenConfig
 ) {
     suspend fun register(user: RegisterUser): User {
         if (authRepository.getUserByLogin(user.login) != null) {
@@ -41,18 +44,44 @@ class AuthService(
 
         val isValidPassword = hashingService.verify(
             value = user.password,
-            saltedHash = SaltedHash(
-                hash = existingUser.passwordHash,
-                salt = existingUser.salt
-            )
+            saltedHash = SaltedHash(existingUser.passwordHash, existingUser.salt)
         )
-        if (!isValidPassword) {
-            throw MissingCredentialException("Incorrect login or password")
-        }
+        if (!isValidPassword) throw MissingCredentialException("Incorrect login or password")
 
-        val accessToken = tokenService.generateToken(userLogin = user.login)
-        return LoginResponse(accessToken = accessToken, roleId = existingUser.roleId)
+        val accessToken = tokenService.generateAccessToken(userLogin = user.login)
+        val refreshToken = tokenService.generateRefreshToken()
+
+        authRepository.saveRefreshToken(
+            token = refreshToken,
+            userId = existingUser.id,
+            expiresInMs = tokenConfig.totalExpiresIn
+        )
+
+        return LoginResponse(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            roleId = existingUser.roleId
+        )
     }
 
-    fun refreshToken(token: Token): Token = tokenService.refreshToken(token)
+    suspend fun refreshToken(request: RefreshTokenRequest): AuthTokens {
+        val userId = authRepository.getUserIdByRefreshToken(request.refreshToken)
+            ?: throw MissingCredentialException("Invalid refresh token")
+
+        authRepository.deleteRefreshToken(request.refreshToken)
+
+        val user = authRepository.getUserById(userId)
+            ?: throw MissingCredentialException("User not found")
+
+        val newAccessToken = tokenService.generateAccessToken(user.login)
+        val newRefreshToken = tokenService.generateRefreshToken()
+
+        authRepository.saveRefreshToken(
+            token = newRefreshToken,
+            userId = userId,
+            expiresInMs = tokenConfig.totalExpiresIn
+        )
+
+        return AuthTokens(accessToken = newAccessToken, refreshToken = newRefreshToken)
+    }
 }
