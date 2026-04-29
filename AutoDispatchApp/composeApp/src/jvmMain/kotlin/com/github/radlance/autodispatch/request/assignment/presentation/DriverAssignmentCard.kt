@@ -65,37 +65,6 @@ fun DriverAssignmentCard(
                             fontSize = 12.sp,
                             modifier = Modifier.alpha(0.7f)
                         )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = driverStats.vehicleModel?.let {
-                                val plate = formatLicensePlate(
-                                    driverStats.vehicleLicensePlate.orEmpty(),
-                                    driverStats.vehicleRegionCode
-                                )
-                                "${driverStats.vehicleModel} • $plate • г/п: ${driverStats.vehiclePayloadCapacity} кг"
-                            }
-                                ?: "Нет автомобиля",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 12.sp,
-                            modifier = Modifier.alpha(0.7f)
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = "График: ${formatSchedule(driverStats)}",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 12.sp,
-                            modifier = Modifier.alpha(0.7f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        if (!driverStats.isWorkingNow) {
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = "Сейчас вне графика",
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
-                        }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val count = driverStats.totalAssignedRequests.toInt()
@@ -125,6 +94,37 @@ fun DriverAssignmentCard(
                             )
                         }
                     }
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = driverStats.vehicleModel?.let {
+                        val plate = formatLicensePlate(
+                            driverStats.vehicleLicensePlate.orEmpty(),
+                            driverStats.vehicleRegionCode
+                        )
+                        "${driverStats.vehicleModel} • $plate • г/п: ${driverStats.vehiclePayloadCapacity} кг"
+                    }
+                        ?: "Нет автомобиля",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 12.sp,
+                    modifier = Modifier.alpha(0.7f)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "График: ${formatSchedule(driverStats)}",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 12.sp,
+                    modifier = Modifier.alpha(0.7f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!driverStats.isWorkingNow) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Сейчас вне графика",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
                 }
             }
         }
