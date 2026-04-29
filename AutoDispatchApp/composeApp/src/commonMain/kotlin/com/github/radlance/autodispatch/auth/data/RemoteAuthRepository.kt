@@ -21,17 +21,18 @@ internal class RemoteAuthRepository(
         password: String
     ): FetchResult<LoginResponse, String> =
         handleRequest.handle {
-            dataStoreManager.deleteToken()
+            dataStoreManager.deleteTokens()
             httpClient.clearBearerTokenCache()
             apiService.signIn(loginUser = SignInUserDto(login = login, password = password)).also {
-                dataStoreManager.saveToken(it.accessToken)
+                dataStoreManager.saveTokens(it.accessToken, it.refreshToken)
                 dataStoreManager.saveUserRoleId(it.roleId)
                 httpClient.clearBearerTokenCache()
             }
         }.map { it.toLoginResponse() }
 
     override suspend fun clearToken() {
-        dataStoreManager.deleteToken()
+        dataStoreManager.deleteTokens()
+        dataStoreManager.deleteUserRoleId()
         httpClient.clearBearerTokenCache()
     }
 }

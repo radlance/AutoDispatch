@@ -12,10 +12,10 @@ class LocalNavigationRepository(
     private val httpClient: HttpClient
 ) : NavigationRepository {
 
-    override val authorized: Flow<Boolean> = dataStoreManager.token.map { it != null }
+    override val authorized: Flow<Boolean> = dataStoreManager.refreshToken.map { it != null }
 
     override suspend fun deleteToken() {
-        dataStoreManager.deleteToken()
+        dataStoreManager.deleteTokens()
         httpClient.clearBearerTokenCache()
     }
 

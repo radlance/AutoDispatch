@@ -6,10 +6,12 @@ import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.domain.auth.RegisterUser
 import com.github.radlance.autodispatch.domain.auth.User
 import com.github.radlance.autodispatch.domain.auth.UserWithPassword
+import com.github.radlance.autodispatch.security.token.RefreshTokenData
 import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import java.time.Instant
 
 class AuthRepository {
@@ -42,11 +44,16 @@ class AuthRepository {
         }
     }
 
-    suspend fun getUserIdByRefreshToken(token: String): Int? = loggedTransaction {
+    suspend fun getRefreshTokenData(token: String): RefreshTokenData? = loggedTransaction {
         RefreshTokenTable
-            .select(RefreshTokenTable.userId)
+            .selectAll()
             .where { RefreshTokenTable.token eq token }
-            .map { it[RefreshTokenTable.userId].value }
+            .map {
+                RefreshTokenData(
+                    userId = it[RefreshTokenTable.userId].value,
+                    expiresAt = it[RefreshTokenTable.expiresAt]
+                )
+            }
             .singleOrNull()
     }
 

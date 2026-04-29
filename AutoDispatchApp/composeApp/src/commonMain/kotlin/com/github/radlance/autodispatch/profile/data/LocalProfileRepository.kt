@@ -11,7 +11,7 @@ internal class LocalProfileRepository(
 ) : ProfileRepository {
 
     override suspend fun logout() {
-        dataStoreManager.deleteToken()
+        dataStoreManager.deleteTokens()
         dataStoreManager.deleteUserRoleId()
         httpClient.clearBearerTokenCache()
     }

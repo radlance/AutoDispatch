@@ -54,7 +54,7 @@ class AuthService(
         authRepository.saveRefreshToken(
             token = refreshToken,
             userId = existingUser.id,
-            expiresInMs = tokenConfig.totalExpiresIn
+            expiresInMs = tokenConfig.refreshExpiresIn
         )
 
         return LoginResponse(
@@ -65,12 +65,17 @@ class AuthService(
     }
 
     suspend fun refreshToken(request: RefreshTokenRequest): AuthTokens {
-        val userId = authRepository.getUserIdByRefreshToken(request.refreshToken)
+        val tokenData = authRepository.getRefreshTokenData(request.refreshToken)
             ?: throw MissingCredentialException("Invalid refresh token")
+
+        if (tokenData.expiresAt.isBefore(java.time.Instant.now())) {
+            authRepository.deleteRefreshToken(request.refreshToken)
+            throw MissingCredentialException("Refresh token expired")
+        }
 
         authRepository.deleteRefreshToken(request.refreshToken)
 
-        val user = authRepository.getUserById(userId)
+        val user = authRepository.getUserById(tokenData.userId)
             ?: throw MissingCredentialException("User not found")
 
         val newAccessToken = tokenService.generateAccessToken(user.login)
@@ -78,8 +83,8 @@ class AuthService(
 
         authRepository.saveRefreshToken(
             token = newRefreshToken,
-            userId = userId,
-            expiresInMs = tokenConfig.totalExpiresIn
+            userId = tokenData.userId,
+            expiresInMs = tokenConfig.refreshExpiresIn
         )
 
         return AuthTokens(accessToken = newAccessToken, refreshToken = newRefreshToken)

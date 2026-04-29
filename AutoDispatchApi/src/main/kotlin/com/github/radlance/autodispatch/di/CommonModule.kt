@@ -41,7 +41,7 @@ val Application.authModule
                 audience = environment.config.property("jwt.audience").getString(),
                 secret = environment.config.property("jwt.secret").getString(),
                 expiresIn = environment.config.property("jwt.expiration").getAs(),
-                totalExpiresIn = environment.config.property("jwt.total-expiration").getAs()
+                refreshExpiresIn = environment.config.property("jwt.refresh-expiration").getAs()
             )
         }
     }

@@ -1,6 +1,5 @@
 package com.github.radlance.autodispatch.di
 
-import com.github.radlance.autodispatch.auth.data.TokenDto
 import com.github.radlance.autodispatch.common.data.DataStoreManager
 import com.github.radlance.autodispatch.common.data.httpClientEngine
 import io.ktor.client.HttpClient
@@ -19,9 +18,9 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 const val CurrentIp = "192.168.0.102"
@@ -33,39 +32,52 @@ fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
             url("http://$CurrentIp:8084/api/")
             contentType(ContentType.Application.Json)
         }
+
         install(ContentNegotiation) {
-            json(json = Json { ignoreUnknownKeys = true })
+            json(Json {
+                ignoreUnknownKeys = true
+                encodeDefaults = true
+            })
         }
+
         install(Logging) {
             level = LogLevel.ALL
             logger = Logger.SIMPLE
         }
+
         install(Auth) {
             bearer {
                 loadTokens {
-                    val token = dataStoreManager.token.first()
-                    token?.let { BearerTokens(accessToken = it, refreshToken = null) }
+                    val access = dataStoreManager.accessToken.first()
+                    val refresh = dataStoreManager.refreshToken.first()
+
+                    if (access != null && refresh != null) {
+                        BearerTokens(accessToken = access, refreshToken = refresh)
+                    } else null
                 }
 
                 refreshTokens {
-                    val token = dataStoreManager.token.first()
+                    val currentRefreshToken = oldTokens?.refreshToken ?: return@refreshTokens null
 
                     try {
-                        val newToken = withTimeout(5000) {
+                        val newTokensDto = withTimeout(5000) {
                             client.post("auth/refresh-token") {
                                 markAsRefreshTokenRequest()
-                                setBody(TokenDto(token!!))
-                            }.body<TokenDto>().accessToken
+                                setBody(RefreshTokenRequest(currentRefreshToken))
+                            }.body<AuthTokens>()
                         }
 
-                        with(dataStoreManager) {
-                            deleteToken()
-                            saveToken(newToken)
-                        }
+                        dataStoreManager.saveTokens(
+                            accessToken = newTokensDto.accessToken,
+                            refreshToken = newTokensDto.refreshToken
+                        )
 
-                        BearerTokens(accessToken = newToken, refreshToken = null)
-                    } catch (_: TimeoutCancellationException) {
-                        dataStoreManager.deleteToken()
+                        BearerTokens(
+                            accessToken = newTokensDto.accessToken,
+                            refreshToken = newTokensDto.refreshToken
+                        )
+                    } catch (_: Exception) {
+                        dataStoreManager.deleteTokens()
                         dataStoreManager.saveSessionExpired(expired = true)
                         null
                     }
@@ -74,3 +86,14 @@ fun createHttpClient(dataStoreManager: DataStoreManager): HttpClient {
         }
     }
 }
+
+@Serializable
+data class RefreshTokenRequest(
+    val refreshToken: String
+)
+
+@Serializable
+data class AuthTokens(
+    val accessToken: String,
+    val refreshToken: String
+)

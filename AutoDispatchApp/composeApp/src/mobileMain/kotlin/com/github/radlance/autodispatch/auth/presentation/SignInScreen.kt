@@ -76,7 +76,7 @@ private fun SignInScreen(
             }
         },
         onSuccess = {
-            if (it.role == UserRole.Dispatcher) {
+            if (it.role == UserRole.Driver) {
                 navigateToHomeScreen()
             } else {
                 AlertDialog(

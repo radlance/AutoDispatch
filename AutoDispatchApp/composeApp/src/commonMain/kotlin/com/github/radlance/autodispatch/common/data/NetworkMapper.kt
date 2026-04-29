@@ -80,6 +80,7 @@ internal fun UserDto.toUser(): User {
 fun LoginResponseDto.toLoginResponse(): LoginResponse {
     return LoginResponse(
         accessToken = accessToken,
+        refreshToken = refreshToken,
         role = roleId.toUserRole()
     )
 }

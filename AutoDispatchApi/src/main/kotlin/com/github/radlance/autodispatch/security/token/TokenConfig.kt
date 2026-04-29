@@ -5,5 +5,5 @@ data class TokenConfig(
     val audience: String,
     val secret: String,
     val expiresIn: Long,
-    val totalExpiresIn: Long
+    val refreshExpiresIn: Long
 )

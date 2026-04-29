@@ -14,11 +14,13 @@ import kotlinx.coroutines.flow.map
 
 interface DataStoreManager {
 
-    val token: Flow<String?>
+    val accessToken: Flow<String?>
 
-    suspend fun saveToken(token: String)
+    val refreshToken: Flow<String?>
 
-    suspend fun deleteToken()
+    suspend fun saveTokens(accessToken: String, refreshToken: String)
+
+    suspend fun deleteTokens()
 
     val userRoleId: Flow<Int?>
 
@@ -46,16 +48,26 @@ interface DataStoreManager {
 internal class BaseDataStoreManager(
     private val dataStore: DataStore<Preferences>
 ) : DataStoreManager {
-    override suspend fun saveToken(token: String) {
-        dataStore.edit { prefs -> prefs[KEY_TOKEN] = token }
+    override val accessToken: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[KEY_ACCESS_TOKEN]
     }
 
-    override val token: Flow<String?> = dataStore.data.map { prefs ->
-        prefs[KEY_TOKEN]
+    override val refreshToken: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[KEY_REFRESH_TOKEN]
     }
 
-    override suspend fun deleteToken() {
-        dataStore.edit { prefs -> prefs.remove(KEY_TOKEN) }
+    override suspend fun saveTokens(accessToken: String, refreshToken: String) {
+        dataStore.edit { prefs ->
+            prefs[KEY_ACCESS_TOKEN] = accessToken
+            prefs[KEY_REFRESH_TOKEN] = refreshToken
+        }
+    }
+
+    override suspend fun deleteTokens() {
+        dataStore.edit { prefs ->
+            prefs.remove(KEY_ACCESS_TOKEN)
+            prefs.remove(KEY_REFRESH_TOKEN)
+        }
     }
 
     override val userRoleId: Flow<Int?> = dataStore.data.map { prefs ->
@@ -109,7 +121,8 @@ internal class BaseDataStoreManager(
     }
 
     private companion object {
-        val KEY_TOKEN = stringPreferencesKey("token")
+        val KEY_ACCESS_TOKEN = stringPreferencesKey("access_token")
+        val KEY_REFRESH_TOKEN = stringPreferencesKey("refresh_token")
         val KEY_USER_ROLE_ID = intPreferencesKey("user_role_id")
         val KEY_SESSION_EXPIRED = booleanPreferencesKey("session_expired")
         val KEY_LOCATION_ASKED = booleanPreferencesKey("location_permission_asked")
