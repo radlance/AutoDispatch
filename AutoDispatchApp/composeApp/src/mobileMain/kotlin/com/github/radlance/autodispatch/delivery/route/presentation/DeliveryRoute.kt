@@ -59,6 +59,8 @@ import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.RequestError
+import com.github.radlance.autodispatch.delivery.presentation.ProgressStep
+import com.github.radlance.autodispatch.delivery.presentation.TrackedProgressWithAnimationByButton
 import com.github.radlance.autodispatch.platform.MapRouteDialog
 import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openAppSettings
@@ -347,7 +349,7 @@ private fun RoutePoints(
             Column(
                 modifier = Modifier.padding(horizontal = 18.dp)
             ) {
-                ProgressWithAnimationByButton(
+                TrackedProgressWithAnimationByButton(
                     progress = progress,
                     leftLabel = "загрузка",
                     rightLabel = "разгрузка",

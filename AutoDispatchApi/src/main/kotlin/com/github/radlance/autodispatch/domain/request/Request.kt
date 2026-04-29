@@ -15,6 +15,8 @@ data class Request(
     val plannedUnloadingAt: String?,
     val actualLoadingAt: String?,
     val actualUnloadingAt: String?,
+    val arrivedLoadingAt: String?,
+    val arrivedUnloadingAt: String?,
     val cargo: Cargo,
     val loadingPoint: Point,
     val unloadingPoint: Point,

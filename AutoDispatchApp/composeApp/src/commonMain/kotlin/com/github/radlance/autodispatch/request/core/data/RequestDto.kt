@@ -14,6 +14,8 @@ data class RequestDto(
     val plannedUnloadingAt: String,
     val actualLoadingAt: String?,
     val actualUnloadingAt: String?,
+    val arrivedLoadingAt: String?,
+    val arrivedUnloadingAt: String?,
     val cargo: CargoDto,
     val loadingPoint: PointDto,
     val unloadingPoint: PointDto,

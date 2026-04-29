@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.delivery.route.presentation
+package com.github.radlance.autodispatch.delivery.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -82,7 +82,6 @@ fun ProgressWithAnimationByButton(
     progress: Float,
     leftLabel: String,
     rightLabel: String,
-    steps: List<ProgressStep>,
     modifier: Modifier = Modifier
 ) {
     val animatedProgress by animateFloatAsState(
@@ -102,67 +101,82 @@ fun ProgressWithAnimationByButton(
         animationSpec = tween(300)
     )
 
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        MilestoneDot(isCompleted = progress > 0.01f)
+
+        Spacer(Modifier.width(12.dp))
+
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            modifier = Modifier.weight(1f),
+            drawStopIndicator = {},
+            strokeCap = StrokeCap.Round
+        )
+
+        Spacer(Modifier.width(12.dp))
+
+        MilestoneDot(isCompleted = progress >= 0.99f)
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(modifier = Modifier.width(labelBoxWidth)) {
+            Text(
+                text = leftLabel,
+                style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
+                color = leftLabelColor,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                softWrap = true,
+                overflow = TextOverflow.Clip,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(Modifier.width(12.dp))
+
+        Spacer(Modifier.weight(1f))
+
+        Box(modifier = Modifier.width(labelBoxWidth)) {
+            Text(
+                text = rightLabel,
+                style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
+                color = rightLabelColor,
+                textAlign = TextAlign.End,
+                maxLines = 2,
+                softWrap = true,
+                overflow = TextOverflow.Clip,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+fun TrackedProgressWithAnimationByButton(
+    progress: Float,
+    leftLabel: String,
+    rightLabel: String,
+    steps: List<ProgressStep>,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(18.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            MilestoneDot(isCompleted = progress > 0.01f)
-
-            Spacer(Modifier.width(12.dp))
-
-            LinearProgressIndicator(
-                progress = { animatedProgress },
-                modifier = Modifier.weight(1f),
-                drawStopIndicator = {},
-                strokeCap = StrokeCap.Round
-            )
-
-            Spacer(Modifier.width(12.dp))
-
-            MilestoneDot(isCompleted = progress >= 0.99f)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
-        ) {
-            Box(modifier = Modifier.width(labelBoxWidth)) {
-                Text(
-                    text = leftLabel,
-                    style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
-                    color = leftLabelColor,
-                    textAlign = TextAlign.Start,
-                    maxLines = 2,
-                    softWrap = true,
-                    overflow = TextOverflow.Clip,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Spacer(Modifier.width(12.dp))
-
-            Spacer(Modifier.weight(1f))
-
-            Box(modifier = Modifier.width(labelBoxWidth)) {
-                Text(
-                    text = rightLabel,
-                    style = MaterialTheme.typography.labelSmall.copy(lineHeight = 12.sp),
-                    color = rightLabelColor,
-                    textAlign = TextAlign.End,
-                    maxLines = 2,
-                    softWrap = true,
-                    overflow = TextOverflow.Clip,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
+        ProgressWithAnimationByButton(
+            progress = progress,
+            leftLabel = leftLabel,
+            rightLabel = rightLabel
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

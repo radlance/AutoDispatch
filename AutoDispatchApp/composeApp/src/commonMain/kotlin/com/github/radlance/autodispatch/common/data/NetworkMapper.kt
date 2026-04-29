@@ -104,6 +104,8 @@ fun RequestDto.toRequest(): Request {
         plannedUnloadingAt = plannedUnloadingAt.toLocalDateTimeFromUtc(),
         actualLoadingAt = actualLoadingAt?.toLocalDateTimeFromUtc(),
         actualUnloadingAt = actualUnloadingAt?.toLocalDateTimeFromUtc(),
+        arrivedLoadingAt = arrivedLoadingAt?.toLocalDateTimeFromUtc(),
+        arrivedUnloadingAt = arrivedUnloadingAt?.toLocalDateTimeFromUtc(),
         createdAt = createdAt.toLocalDateTimeFromUtc(),
         updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
         documents = documents.map { it.toDeliveryDocument() }

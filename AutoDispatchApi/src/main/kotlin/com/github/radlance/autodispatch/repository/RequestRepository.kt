@@ -82,6 +82,8 @@ class RequestRepository(
         RequestTable.transportationDescription,
         RequestTable.plannedLoadingAt,
         RequestTable.plannedUnloadingAt,
+        RequestTable.arrivedLoadingAt,
+        RequestTable.arrivedUnloadingAt,
         RequestTable.actualLoadingAt,
         RequestTable.actualUnloadingAt,
         RequestStatusTable.id,
@@ -136,6 +138,8 @@ class RequestRepository(
             plannedUnloadingAt = row[RequestTable.plannedUnloadingAt]?.format(formatter),
             actualLoadingAt = row[RequestTable.actualLoadingAt]?.format(formatter),
             actualUnloadingAt = row[RequestTable.actualUnloadingAt]?.format(formatter),
+            arrivedLoadingAt = row[RequestTable.arrivedLoadingAt]?.format(formatter),
+            arrivedUnloadingAt = row[RequestTable.arrivedUnloadingAt]?.format(formatter),
             status = Status(
                 id = row[RequestStatusTable.id].value,
                 name = row[RequestStatusTable.name]

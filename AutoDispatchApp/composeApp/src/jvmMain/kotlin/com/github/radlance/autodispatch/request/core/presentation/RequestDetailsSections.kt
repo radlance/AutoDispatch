@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,6 +53,7 @@ import autodispatch.composeapp.generated.resources.unloading_point
 import autodispatch.composeapp.generated.resources.vehicle
 import autodispatch.composeapp.generated.resources.volume
 import autodispatch.composeapp.generated.resources.weight
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
 import com.github.radlance.autodispatch.common.presentation.InfoRow
 import com.github.radlance.autodispatch.common.presentation.LabeledValue
@@ -64,6 +66,8 @@ import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.formattedLicensePlate
 import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
+import com.github.radlance.autodispatch.delivery.presentation.ProgressStep
+import com.github.radlance.autodispatch.delivery.presentation.ProgressWithAnimationByButton
 import com.github.radlance.autodispatch.request.core.domain.Request
 import org.jetbrains.compose.resources.stringResource
 
@@ -83,6 +87,26 @@ fun RequestDetailsSections(
     showDriverUnassignmentDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val progressSteps = remember(request) {
+        with(request) {
+            listOf(
+                arrivedLoadingAt,
+                actualLoadingAt,
+                arrivedUnloadingAt,
+                actualUnloadingAt
+            ).map { time ->
+                ProgressStep(
+                    label = "",
+                    time = time?.toSimpleDateWithTimeString() ?: "",
+                    isCompleted = time != null
+                )
+            }
+        }
+    }
+
+    val progressValue = remember(progressSteps) {
+        progressSteps.count { it.isCompleted } / 4f
+    }
     Column(modifier = modifier.verticalScroll(scrollState)) {
         Spacer(modifier = Modifier.height(SECTION_GAP))
 
@@ -102,6 +126,13 @@ fun RequestDetailsSections(
                 icon = Icons.Outlined.LocationOn,
                 iconDesc = stringResource(Res.string.route),
                 text = routeText(request.origin, request.destination)
+            )
+            Spacer(modifier = Modifier.height(SECTION_GAP))
+            ProgressWithAnimationByButton(
+                progress = progressValue,
+                leftLabel = "загрузка",
+                rightLabel = "разгрузка",
+                modifier = Modifier.padding(end = 12.dp)
             )
         }
 
@@ -234,7 +265,11 @@ fun RequestDetailsSections(
                 LabeledValue(label = "Грузоподъёмность", value = "${it.payloadCapacity} кг")
             }
         }
-        if ((request.status.id == 6 || request.status.id == 4 || request.status.id == 7) && request.documents.isNotEmpty()) {
+        if ((request.status == RequestStatus.OnCheck
+                    || request.status == RequestStatus.Completed
+                    || request.status == RequestStatus.Rejected)
+            && request.documents.isNotEmpty()
+        ) {
             HorizontalDivider(
                 modifier = Modifier.padding(
                     top = SECTION_GAP,
@@ -281,7 +316,7 @@ fun RequestDetailsSections(
                         )
                     }
                 }
-                if (request.status.id == 6) {
+                if (request.status == RequestStatus.OnCheck) {
                     Spacer(modifier = Modifier.height(ITEM_GAP))
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(
@@ -307,8 +342,8 @@ fun RequestDetailsSections(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        if (request.status.id == 1 || request.status.id == 2) {
-            onChangeReassign(request.status.id == 2)
+        if (request.status == RequestStatus.Waiting || request.status == RequestStatus.Assigned) {
+            onChangeReassign(request.status == RequestStatus.Assigned)
             Row {
                 Button(
                     onClick = showDriverAssignmentDialog,
