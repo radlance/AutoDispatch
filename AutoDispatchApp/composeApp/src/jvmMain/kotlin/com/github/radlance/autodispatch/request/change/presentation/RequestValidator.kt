@@ -24,8 +24,8 @@ class BaseRequestValidator : RequestValidator {
     }
 
     override fun validationPhoneNumberMessage(value: String): String {
-        val replace = value.replace(Regex("[\\s\\-()]"), "")
-        return if (replace.take(12).length != 12) {
+        val digits = value.filter { it.isDigit() }
+        return if (digits.length != 10) {
             "Неверный формат телефона"
         } else ""
     }

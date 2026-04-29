@@ -108,7 +108,11 @@ interface ChangeRequestEvent : Event {
             destinationId = destinationId,
             companyName = companyName,
             companyEmail = companyEmail,
-            companyPhone = if (companyPhone.isBlank()) null else "+7$companyPhone",
+            companyPhone = if (companyPhone.isBlank()) {
+                null
+            } else {
+                "+7${companyPhone.filter { it.isDigit() }.takeLast(10)}"
+            },
             cargoTypeId = cargoTypeId,
             cargoWeight = cargoWeight,
             cargoVolume = cargoVolume.ifBlank { null },
@@ -205,6 +209,12 @@ interface ChangeRequestEvent : Event {
         }
     }
 
+    class ValidateFields(private val isEditing: Boolean) : ChangeRequestEvent {
+        override fun apply(action: CreateRequestAction) {
+            action.validateFields(isEditing)
+        }
+    }
+
     class SetupFieldsState(private val fieldsUiState: ChangeRequestFieldsUiState) :
         ChangeRequestEvent {
         override fun apply(action: CreateRequestAction) {
@@ -288,4 +298,6 @@ interface CreateRequestAction {
     fun resetDriverUnassignmentState()
 
     fun setupRequestFieldsState(fieldsUiState: ChangeRequestFieldsUiState)
+
+    fun validateFields(isEditing: Boolean)
 }

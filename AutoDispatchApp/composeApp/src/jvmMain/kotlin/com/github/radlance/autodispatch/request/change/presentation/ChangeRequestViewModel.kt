@@ -66,25 +66,25 @@ class ChangeRequestViewModel(
         val action = object : CreateRequestAction {
             override fun changeDepartureCity(city: City) {
                 fieldsUiStateMutable.update { state ->
-                    state.copy(departureCity = city)
+                    state.copy(departureCity = city, departureCityError = false)
                 }
             }
 
             override fun changeDestinationCity(city: City) {
                 fieldsUiStateMutable.update { state ->
-                    state.copy(destinationCity = city)
+                    state.copy(destinationCity = city, destinationCityError = false)
                 }
             }
 
             override fun changeCargoType(cargoType: CargoType) {
                 fieldsUiStateMutable.update { state ->
-                    state.copy(cargoType = cargoType)
+                    state.copy(cargoType = cargoType, cargoTypeError = false)
                 }
             }
 
             override fun changeCompanyName(value: String) {
                 fieldsUiStateMutable.update { state ->
-                    state.copy(companyNameFieldValue = value)
+                    state.copy(companyNameFieldValue = value, companyNameError = false)
                 }
 
                 searchJob?.cancel()
@@ -137,7 +137,8 @@ class ChangeRequestViewModel(
                     state.copy(
                         loadingFieldAddressValue = value?.toStringAddress() ?: "",
                         loadingFieldLatValue = value?.lat,
-                        loadingFieldLonValue = value?.lon
+                        loadingFieldLonValue = value?.lon,
+                        loadingPointError = false
                     )
                 }
             }
@@ -147,20 +148,45 @@ class ChangeRequestViewModel(
                     state.copy(
                         unloadingFieldAddressValue = value?.toStringAddress() ?: "",
                         unloadingFieldLatValue = value?.lat,
-                        unloadingFieldLonValue = value?.lon
+                        unloadingFieldLonValue = value?.lon,
+                        unloadingPointError = false
                     )
                 }
             }
 
             override fun changePlannedLoadingAt(value: String) {
+                val newLoad = DateTimeCoordinator.parse(value) ?: return
+
                 fieldsUiStateMutable.update { state ->
-                    state.copy(plannedLoadingAt = value)
+
+                    val (load, unload) = DateTimeCoordinator.updateLoad(
+                        currentUnload = state.plannedUnloadingAt,
+                        newLoad = newLoad,
+                        isEditing = state.requestId != null
+                    )
+
+                    state.copy(
+                        plannedLoadingAt = load,
+                        plannedUnloadingAt = unload
+                    )
                 }
             }
 
             override fun changePlannedUnloadingAt(value: String) {
+                val newUnload = DateTimeCoordinator.parse(value) ?: return
+
                 fieldsUiStateMutable.update { state ->
-                    state.copy(plannedUnloadingAt = value)
+
+                    val (load, unload) = DateTimeCoordinator.updateUnload(
+                        currentLoad = state.plannedLoadingAt,
+                        newUnload = newUnload,
+                        isEditing = state.requestId != null
+                    )
+
+                    state.copy(
+                        plannedLoadingAt = load,
+                        plannedUnloadingAt = unload
+                    )
                 }
             }
 
@@ -191,29 +217,17 @@ class ChangeRequestViewModel(
                 plannedLoadingAt: String,
                 plannedUnloadingAt: String
             ) {
-                with(validator) {
-                    fieldsUiStateMutable.update { state ->
-                        state.copy(
-                            companyEmailErrorMessage = validationEmailMessage(companyEmail),
-                            companyPhoneErrorMessage = companyPhone?.let {
-                                validationPhoneNumberMessage(
-                                    it
-                                )
-                            }
-                                ?: "",
-                            cargoWeightErrorMessage = validationWeightMessage(cargoWeight),
-                            cargoVolumeErrorMessage = cargoVolume?.let { validationVolumeMessage(it) }
-                                ?: ""
-                        )
-                    }
-                }
+                validateFields(requestId != null)
 
                 with(fieldsUiStateMutable.value) {
                     if (
-                        companyEmailErrorMessage.isEmpty()
-                        && companyPhoneErrorMessage.isEmpty()
-                        && cargoWeightErrorMessage.isEmpty()
-                        && cargoVolumeErrorMessage.isEmpty()
+                        !departureCityError && !destinationCityError && !cargoTypeError
+                        && !companyNameError && companyEmailErrorMessage.isEmpty()
+                        && companyPhoneErrorMessage.isEmpty() && cargoWeightErrorMessage.isEmpty()
+                        && cargoVolumeErrorMessage.isEmpty() && !loadingPointError
+                        && !unloadingPointError
+                        && !plannedLoadingError
+                        && !plannedUnloadingError
                     ) {
                         changeRequestStateMutable.value = FetchResultUiState.Loading
 
@@ -257,9 +271,13 @@ class ChangeRequestViewModel(
                     state.copy(
                         requestId = null,
                         departureCity = null,
+                        departureCityError = false,
                         destinationCity = null,
+                        destinationCityError = false,
                         cargoType = null,
+                        cargoTypeError = false,
                         companyNameFieldValue = "",
+                        companyNameError = false,
                         companyEmailFieldValue = "",
                         companyEmailErrorMessage = "",
                         companyPhoneFieldValue = "",
@@ -272,9 +290,11 @@ class ChangeRequestViewModel(
                         loadingFieldAddressValue = "",
                         loadingFieldLatValue = null,
                         loadingFieldLonValue = null,
+                        loadingPointError = false,
                         unloadingFieldAddressValue = "",
                         unloadingFieldLatValue = null,
                         unloadingFieldLonValue = null,
+                        unloadingPointError = false,
                         additionalInfoFieldValue = "",
                         plannedLoadingAt = "",
                         plannedUnloadingAt = ""
@@ -310,6 +330,33 @@ class ChangeRequestViewModel(
                 fieldsUiStateMutable.value = fieldsUiState
             }
 
+            override fun validateFields(isEditing: Boolean) {
+                fieldsUiStateMutable.update { state ->
+
+                    val dateError = !DateTimeCoordinator.isValid(
+                        state.plannedLoadingAt,
+                        state.plannedUnloadingAt,
+                        isEditing = isEditing
+                    )
+
+                    state.copy(
+                        departureCityError = state.departureCity == null,
+                        destinationCityError = state.destinationCity == null,
+                        cargoTypeError = state.cargoType == null,
+                        companyNameError = state.companyNameFieldValue.isBlank(),
+                        companyEmailErrorMessage = validator.validationEmailMessage(state.companyEmailFieldValue),
+                        companyPhoneErrorMessage = validator.validationPhoneNumberMessage(state.companyPhoneFieldValue),
+                        cargoWeightErrorMessage = validator.validationWeightMessage(state.cargoWeightFieldValue),
+                        cargoVolumeErrorMessage = state.cargoVolumeFieldValue.takeIf { it.isNotBlank() }
+                            ?.let { validator.validationVolumeMessage(it) } ?: "",
+                        loadingPointError = state.loadingFieldLatValue == null,
+                        unloadingPointError = state.unloadingFieldLatValue == null,
+                        plannedLoadingError = dateError,
+                        plannedUnloadingError = dateError
+                    )
+                }
+            }
+
             override fun cancelRequest(requestId: Int) {
                 cancelRequestStateMutable.value = FetchResultUiState.Loading
 
@@ -321,7 +368,7 @@ class ChangeRequestViewModel(
             }
 
             override fun removeRequest(requestId: Int) {
-                removeRequestStateMutable.value = FetchResultUiState.Idle
+                removeRequestStateMutable.value = FetchResultUiState.Loading
 
                 handle(
                     background = { repository.removeRequest(requestId) }

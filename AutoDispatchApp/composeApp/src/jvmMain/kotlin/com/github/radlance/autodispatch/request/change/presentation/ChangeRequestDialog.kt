@@ -61,9 +61,6 @@ import com.github.radlance.autodispatch.request.core.domain.City
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
 
 @Composable
 fun ChangeRequestDialog(
@@ -256,7 +253,7 @@ fun ChangeRequestDialog(
         )
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(isEditRequest, currentFieldsUiState) {
         if (isEditRequest) {
             viewModel.reduce(ChangeRequestEvent.SetupFieldsState(currentFieldsUiState))
         }
@@ -404,7 +401,9 @@ fun ChangeRequestDialog(
                 Button(
                     enabled = !isLoadingChange,
                     onClick = {
-                        firstInvalidAnchor(fieldsUiState)?.let { invalidAnchor ->
+                        viewModel.reduce(ChangeRequestEvent.ValidateFields(isEditRequest))
+                        val latestFieldsUiState = viewModel.fieldsUiState.value
+                        firstInvalidAnchor(latestFieldsUiState)?.let { invalidAnchor ->
                             fieldAnchors[invalidAnchor]?.let { targetY ->
                                 scope.launch {
                                     scrollState.animateScrollTo((targetY - 24).coerceAtLeast(0))
@@ -414,19 +413,19 @@ fun ChangeRequestDialog(
                         }
 
                         if (isEditRequest) {
-                            if (fieldsUiState == currentFieldsUiState) {
+                            if (latestFieldsUiState == currentFieldsUiState) {
                                 requestDismiss()
                                 return@Button
                             }
                         } else {
-                            if (fieldsUiState.requestId != null) {
+                            if (latestFieldsUiState.requestId != null) {
                                 viewModel.reduce(ChangeRequestEvent.ResetChangeState)
                                 requestDismiss()
                                 return@Button
                             }
                         }
 
-                        with(fieldsUiState) {
+                        with(latestFieldsUiState) {
                             viewModel.reduce(
                                 ChangeRequestEvent.ClickCreate(
                                     originId = departureCity!!.id,
@@ -465,73 +464,30 @@ fun ChangeRequestDialog(
 
 private fun firstInvalidAnchor(fieldsUiState: ChangeRequestFieldsUiState): ChangeRequestFieldAnchor? {
     with(fieldsUiState) {
-        if (departureCity == null || destinationCity == null) {
+        if (departureCityError || destinationCityError) {
             return ChangeRequestFieldAnchor.ROUTE
         }
-        if (plannedLoadingAt.isBlank() || plannedUnloadingAt.isBlank()) {
-            return ChangeRequestFieldAnchor.PLANNED_DATE_TIME
-        }
-        if (validatePlannedDateTime(plannedLoadingAt, plannedUnloadingAt) != null) {
-            return ChangeRequestFieldAnchor.PLANNED_DATE_TIME
-        }
         if (
-            companyNameFieldValue.isBlank()
-            || companyEmailFieldValue.isBlank()
-            || companyPhoneFieldValue.isBlank()
+            companyNameError
             || companyEmailErrorMessage.isNotBlank()
             || companyPhoneErrorMessage.isNotBlank()
         ) {
             return ChangeRequestFieldAnchor.CLIENT_INFO
         }
         if (
-            cargoType == null
-            || cargoWeightFieldValue.isBlank()
+            cargoTypeError
             || cargoWeightErrorMessage.isNotBlank()
             || cargoVolumeErrorMessage.isNotBlank()
         ) {
             return ChangeRequestFieldAnchor.CARGO_INFO
         }
-        if (loadingFieldLatValue == null || loadingFieldLonValue == null) {
+        if (loadingPointError) {
             return ChangeRequestFieldAnchor.LOADING_POINT
         }
-        if (unloadingFieldLatValue == null || unloadingFieldLonValue == null) {
+        if (unloadingPointError) {
             return ChangeRequestFieldAnchor.UNLOADING_POINT
         }
     }
 
     return null
-}
-
-private fun validatePlannedDateTime(
-    plannedLoadingAt: String,
-    plannedUnloadingAt: String
-): String? {
-    if (plannedLoadingAt.isBlank()) return "Выберите ожидаемую дату и время загрузки"
-    if (plannedUnloadingAt.isBlank()) return "Выберите ожидаемую дату и время разгрузки"
-
-    val loadingAt = parsePlannedDateTime(plannedLoadingAt)
-        ?: return "Неверный формат даты и времени загрузки"
-    val unloadingAt = parsePlannedDateTime(plannedUnloadingAt)
-        ?: return "Неверный формат даты и времени разгрузки"
-
-    if (loadingAt.isBefore(OffsetDateTime.now())) {
-        return "Дата и время загрузки не должны быть в прошлом"
-    }
-
-    if (unloadingAt.isBefore(loadingAt)) {
-        return "Дата и время разгрузки не могут быть раньше загрузки"
-    }
-
-    return null
-}
-
-private fun parsePlannedDateTime(rawValue: String): OffsetDateTime? {
-    if (rawValue.isBlank()) return null
-
-    return runCatching { OffsetDateTime.parse(rawValue) }.getOrNull()
-        ?: runCatching {
-            val local = LocalDateTime.parse(rawValue)
-            val offset = ZoneId.systemDefault().rules.getOffset(local)
-            OffsetDateTime.of(local, offset)
-        }.getOrNull()
 }

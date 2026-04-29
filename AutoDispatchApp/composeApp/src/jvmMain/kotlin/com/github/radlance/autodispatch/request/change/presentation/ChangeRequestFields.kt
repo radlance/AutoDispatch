@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.request.change.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -29,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -144,59 +147,81 @@ fun ChangeRequestFields(
     }
 
     if (showDatePickerDialog) {
+
         val isLoadingDate = datePickerTarget == DateTarget.LOADING
-        val currentValue = if (isLoadingDate) {
-            fieldsUiState.plannedLoadingAt
-        } else {
-            fieldsUiState.plannedUnloadingAt
-        }
+
+        val loadValue = fieldsUiState.plannedLoadingAt
+        val unloadValue = fieldsUiState.plannedUnloadingAt
 
         PlannedDatePickerDialog(
-            title = if (isLoadingDate) {
+            title = if (isLoadingDate)
                 "Ожидаемая дата загрузки"
-            } else {
-                "Ожидаемая дата разгрузки"
+            else
+                "Ожидаемая дата разгрузки",
+
+            initialDateValue = if (isLoadingDate) loadValue else unloadValue,
+
+            maxDateValue = if (isLoadingDate && unloadValue.isNotBlank())
+                unloadValue else null,
+
+            minDateValue = if (!isLoadingDate && loadValue.isNotBlank())
+                loadValue else null,
+
+            onDismissRequest = {
+                showDatePickerDialog = false
+                datePickerTarget = null
             },
-            initialDateValue = currentValue,
-            onDismissRequest = { showDatePickerDialog = false },
+
             onConfirm = { value ->
                 selectedDateForTimePicker = value
+                showDatePickerDialog = false
                 showTimePickerDialog = true
             }
         )
     }
 
     if (showTimePickerDialog) {
+
         val isLoadingDate = datePickerTarget == DateTarget.LOADING
-        val currentValue = if (isLoadingDate) {
+        val currentValue = if (isLoadingDate)
             fieldsUiState.plannedLoadingAt
-        } else {
+        else
             fieldsUiState.plannedUnloadingAt
-        }
 
         PlannedTimePickerDialog(
-            title = if (isLoadingDate) {
+            title = if (isLoadingDate)
                 "Ожидаемое время загрузки"
-            } else {
-                "Ожидаемое время разгрузки"
-            },
+            else
+                "Ожидаемое время разгрузки",
+
             initialDateTimeValue = currentValue,
+
             onDismissRequest = {
                 showTimePickerDialog = false
                 selectedDateForTimePicker = null
+                datePickerTarget = null
             },
+
             onConfirm = { hour, minute ->
-                val selectedDate = selectedDateForTimePicker
-                    ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-                    ?: rememberParsedDateTime(currentValue)?.toLocalDate()
-                    ?: LocalDate.now()
+
+                val selectedDate = selectedDateForTimePicker!!
+                    .let { LocalDate.parse(it) }
+
                 val value = toServerOffsetDateTimeValue(selectedDate, hour, minute)
+
                 when (datePickerTarget) {
-                    DateTarget.LOADING -> onEvent(ChangeRequestEvent.ChangePlannedLoadingAt(value))
-                    DateTarget.UNLOADING -> onEvent(ChangeRequestEvent.ChangePlannedUnloadingAt(value))
+                    DateTarget.LOADING ->
+                        onEvent(ChangeRequestEvent.ChangePlannedLoadingAt(value))
+
+                    DateTarget.UNLOADING ->
+                        onEvent(ChangeRequestEvent.ChangePlannedUnloadingAt(value))
+
                     null -> Unit
                 }
+
                 selectedDateForTimePicker = null
+                showTimePickerDialog = false
+                datePickerTarget = null
             }
         )
     }
@@ -228,7 +253,8 @@ fun ChangeRequestFields(
                 },
                 hint = stringResource(Res.string.choice_city),
                 modifier = Modifier.weight(1f),
-                isRequired = true
+                isRequired = true,
+                showErrorBorder = fieldsUiState.departureCityError
             ) {
                 Text(
                     text = it,
@@ -249,7 +275,8 @@ fun ChangeRequestFields(
                 },
                 hint = stringResource(Res.string.choice_city),
                 modifier = Modifier.weight(1f),
-                isRequired = true
+                isRequired = true,
+                showErrorBorder = fieldsUiState.destinationCityError
             ) {
                 Text(
                     text = it,
@@ -266,48 +293,52 @@ fun ChangeRequestFields(
                 )
             }
         ) {
-            OutlinedButton(
-                onClick = {
-                    datePickerTarget = DateTarget.LOADING
-                    showDatePickerDialog = true
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Outlined.CalendarMonth, null)
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    text = if (fieldsUiState.plannedLoadingAt.isBlank()) {
-                        "Ожидаемая дата загрузки"
-                    } else {
-                        "Загр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedLoadingAt)}"
+            Column(modifier = Modifier.weight(1f)) {
+                OutlinedButton(
+                    onClick = {
+                        datePickerTarget = DateTarget.LOADING
+                        showDatePickerDialog = true
                     },
-                    fontSize = if (fieldsUiState.plannedLoadingAt.isBlank()) 12.sp else 14.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Outlined.CalendarMonth, null)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = if (fieldsUiState.plannedLoadingAt.isBlank()) {
+                            "Ожидаемая дата загрузки"
+                        } else {
+                            "Загр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedLoadingAt)}"
+                        },
+                        fontSize = if (fieldsUiState.plannedLoadingAt.isBlank()) 12.sp else 14.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
 
             Spacer(Modifier.width(16.dp))
 
-            OutlinedButton(
-                onClick = {
-                    datePickerTarget = DateTarget.UNLOADING
-                    showDatePickerDialog = true
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Outlined.CalendarMonth, null)
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    text = if (fieldsUiState.plannedUnloadingAt.isBlank()) {
-                        "Ожидаемая дата разгрузки"
-                    } else {
-                        "Разгр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedUnloadingAt)}"
+            Column(modifier = Modifier.weight(1f)) {
+                OutlinedButton(
+                    onClick = {
+                        datePickerTarget = DateTarget.UNLOADING
+                        showDatePickerDialog = true
                     },
-                    fontSize = if (fieldsUiState.plannedUnloadingAt.isBlank()) 12.sp else 14.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Outlined.CalendarMonth, null)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = if (fieldsUiState.plannedUnloadingAt.isBlank()) {
+                            "Ожидаемая дата разгрузки"
+                        } else {
+                            "Разгр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedUnloadingAt)}"
+                        },
+                        fontSize = if (fieldsUiState.plannedUnloadingAt.isBlank()) 12.sp else 14.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
 
@@ -342,7 +373,8 @@ fun ChangeRequestFields(
                         ChangeRequestFieldAnchor.CLIENT_INFO,
                         it.positionInParent().y.toInt()
                     )
-                }
+                },
+            errorMessage = if (fieldsUiState.companyNameError) "Введите название компании" else ""
         )
 
         Spacer(Modifier.height(16.dp))
@@ -405,7 +437,8 @@ fun ChangeRequestFields(
                         it.positionInParent().y.toInt()
                     )
                 },
-            isRequired = true
+            isRequired = true,
+            showErrorBorder = fieldsUiState.cargoTypeError
         ) {
             Text(
                 text = it,
@@ -493,11 +526,24 @@ fun ChangeRequestFields(
                         showPointSelectionDialog = true
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = fieldsUiState.departureCity != null
+                    enabled = fieldsUiState.departureCity != null,
+                    border = if (fieldsUiState.loadingPointError && fieldsUiState.departureCity != null) {
+                        BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                    } else {
+                        ButtonDefaults.outlinedButtonBorder(true)
+                    }
                 ) {
                     Icon(Icons.Outlined.NearMe, null)
                     Spacer(Modifier.width(12.dp))
                     Text("Выбрать на карте")
+                }
+                if (fieldsUiState.loadingPointError && fieldsUiState.departureCity != null) {
+                    Text(
+                        text = "Выберите точку погрузки",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
                 }
             } else {
                 Column(
@@ -527,57 +573,72 @@ fun ChangeRequestFields(
 
         }
         Spacer(Modifier.height(16.dp))
-        Text(
-            text = buildAnnotatedString {
-                append(stringResource(Res.string.unloading_point))
-                withStyle(SpanStyle(MaterialTheme.colorScheme.error)) { append(" *") }
-            },
-            modifier = Modifier
-                .padding(bottom = 8.dp)
-                .onGloballyPositioned {
-                    onAnchorPositioned(
-                        ChangeRequestFieldAnchor.UNLOADING_POINT,
-                        it.positionInParent().y.toInt()
-                    )
-                }
-        )
-
-        if (fieldsUiState.unloadingFieldLatValue == null || fieldsUiState.unloadingFieldLonValue == null) {
-            OutlinedButton(
-                onClick = {
-                    pointSelectionTarget = PointTarget.UNLOADING
-                    selectedCity = fieldsUiState.destinationCity
-                    showPointSelectionDialog = true
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = fieldsUiState.destinationCity != null
-            ) {
-                Icon(Icons.Outlined.NearMe, null)
-                Spacer(Modifier.width(12.dp))
-                Text("Выбрать на карте")
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Text(
-                    "Выгрузка: ${fieldsUiState.unloadingFieldAddressValue}",
-                    fontSize = 14.sp
+        Column(
+            modifier = Modifier.onGloballyPositioned {
+                onAnchorPositioned(
+                    ChangeRequestFieldAnchor.UNLOADING_POINT,
+                    it.positionInParent().y.toInt()
                 )
+            }
+        ) {
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(Res.string.unloading_point))
+                    withStyle(SpanStyle(MaterialTheme.colorScheme.error)) { append(" *") }
+                },
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
-                Spacer(Modifier.height(8.dp))
-
+            if (fieldsUiState.unloadingFieldLatValue == null || fieldsUiState.unloadingFieldLonValue == null) {
                 OutlinedButton(
                     onClick = {
-                        onEvent(
-                            ChangeRequestEvent.ChangeUnloading(null)
-                        )
+                        pointSelectionTarget = PointTarget.UNLOADING
+                        selectedCity = fieldsUiState.destinationCity
+                        showPointSelectionDialog = true
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = fieldsUiState.destinationCity != null,
+                    border = if (fieldsUiState.unloadingPointError && fieldsUiState.destinationCity != null) {
+                        BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                    } else {
+                        ButtonDefaults.outlinedButtonBorder(true)
+                    }
                 ) {
-                    Text("Удалить точку")
+                    Icon(Icons.Outlined.NearMe, null)
+                    Spacer(Modifier.width(12.dp))
+                    Text("Выбрать на карте")
+                }
+                if (fieldsUiState.unloadingPointError && fieldsUiState.destinationCity != null) {
+                    Text(
+                        text = "Выберите точку выгрузки",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        "Выгрузка: ${fieldsUiState.unloadingFieldAddressValue}",
+                        fontSize = 14.sp
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            onEvent(
+                                ChangeRequestEvent.ChangeUnloading(null)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Удалить точку")
+                    }
                 }
             }
         }
@@ -603,11 +664,27 @@ fun ChangeRequestFields(
 private fun PlannedDatePickerDialog(
     title: String,
     initialDateValue: String,
+    minDateValue: String? = null,
+    maxDateValue: String? = null,
     onDismissRequest: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
     val initialDate = rememberDatePickerMillis(initialDateValue)
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate)
+    val minDateMillis = minDateValue?.let { rememberDatePickerMillis(it) }
+        ?: LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+    val maxDateMillis = maxDateValue?.let { rememberDatePickerMillis(it) }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialDate,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                val isAfterMin = utcTimeMillis >= minDateMillis
+                val isBeforeMax =
+                    if (maxDateMillis != null) utcTimeMillis <= maxDateMillis else true
+                return isAfterMin && isBeforeMax
+            }
+        }
+    )
 
     SimpleCustomDialog(onDismissRequest = onDismissRequest) { requestDismiss ->
         Surface(
@@ -662,6 +739,7 @@ private fun PlannedTimePickerDialog(
     onConfirm: (hour: Int, minute: Int) -> Unit
 ) {
     val initialDateTime = rememberParsedDateTime(initialDateTimeValue)
+
     val timePickerState = rememberTimePickerState(
         initialHour = initialDateTime?.hour ?: 9,
         initialMinute = initialDateTime?.minute ?: 0,
@@ -682,7 +760,9 @@ private fun PlannedTimePickerDialog(
                     text = title,
                     style = MaterialTheme.typography.titleMedium
                 )
+
                 Spacer(Modifier.height(12.dp))
+
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -692,17 +772,26 @@ private fun PlannedTimePickerDialog(
                         layoutType = TimePickerLayoutType.Vertical
                     )
                 }
+
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
                 ) {
                     Spacer(Modifier.weight(1f))
+
                     TextButton(onClick = requestDismiss) {
                         Text("Отмена")
                     }
+
                     Spacer(Modifier.width(12.dp))
+
                     Button(
                         onClick = {
-                            onConfirm(timePickerState.hour, timePickerState.minute)
+                            onConfirm(
+                                timePickerState.hour,
+                                timePickerState.minute
+                            )
                             requestDismiss()
                         }
                     ) {
@@ -713,13 +802,12 @@ private fun PlannedTimePickerDialog(
         }
     }
 }
-
-private fun rememberDatePickerMillis(rawValue: String): Long {
+private fun rememberDatePickerMillis(rawValue: String): Long? {
     val date = rememberParsedDateTime(rawValue)?.toLocalDate()
         ?: rawValue.takeIf { it.isNotBlank() }
             ?.take(10)
             ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-        ?: LocalDate.now()
+        ?: return null
 
     return date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
 }

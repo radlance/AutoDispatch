@@ -1,7 +1,9 @@
 package com.github.radlance.autodispatch.request.change.presentation
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -59,11 +61,14 @@ fun CustomDropDownMenu(
     hint: String = "",
     isRequired: Boolean = false,
     itemHeight: Dp = 48.dp,
-    dropDownItemContent: @Composable (String) -> Unit,
+    showErrorBorder: Boolean = false,
+    dropDownItemContent: @Composable (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     var searchQuery by remember { mutableStateOf("") }
+    val borderErrorColor by animateColorAsState(
+        if (showErrorBorder) MaterialTheme.colorScheme.error else Color.Transparent
+    )
 
     val filteredList = remember(searchQuery, filterOptions) {
         if (searchQuery.isBlank()) {
@@ -92,7 +97,9 @@ fun CustomDropDownMenu(
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
-            modifier = Modifier.clip(RoundedCornerShape(16.dp))
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .border(width = 1.dp, color = borderErrorColor, shape = RoundedCornerShape(16.dp))
         ) {
             Box(
                 contentAlignment = Alignment.Center,

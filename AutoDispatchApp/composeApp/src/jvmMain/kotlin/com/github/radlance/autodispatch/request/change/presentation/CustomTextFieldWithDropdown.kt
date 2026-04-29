@@ -52,7 +52,8 @@ fun CustomTextFieldWithDropdown(
     dropdownFontSize: TextUnit = TextUnit.Unspecified,
     dropdownMaxLines: Int = 1,
     leadingIcon: ImageVector,
-    showClearButton: Boolean = true
+    showClearButton: Boolean = true,
+    errorMessage: String = ""
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
@@ -118,13 +119,28 @@ fun CustomTextFieldWithDropdown(
                         }
                     }
                     .border(
-                        width = if (isFocused) 1.dp else 0.dp,
-                        color = if (isFocused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        width = if (isFocused || errorMessage.isNotEmpty()) 1.dp else 0.dp,
+                        color = if (errorMessage.isNotEmpty()) {
+                            MaterialTheme.colorScheme.error
+                        } else if (isFocused) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            Color.Transparent
+                        },
                         shape = shape
                     ),
                 singleLine = true,
                 shape = shape
             )
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
 
             if (expanded && suggestions.isNotEmpty()) {
                 Column(
