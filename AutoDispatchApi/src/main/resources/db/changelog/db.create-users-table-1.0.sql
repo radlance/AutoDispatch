@@ -9,5 +9,10 @@ CREATE TABLE users
     avatar_url    VARCHAR(512),
     phone_number  VARCHAR(20),
     role_id       INT REFERENCES role (id),
-    created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    status_id     INT REFERENCES user_status (id) DEFAULT 1,
+    created_by    INT                 NULL REFERENCES users (id),
+    updated_by    INT                 NULL REFERENCES users (id),
+    created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP WITH TIME ZONE,
+    last_login_at TIMESTAMP WITH TIME ZONE
 );

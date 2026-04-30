@@ -5,6 +5,8 @@ databaseChangeLog:
   - include: { file: db/changelog/db.insert-driver-status-data-1.0.sql }
   - include: { file: db/changelog/db.create-city-table-1.0.sql }
   - include: { file: db/changelog/db.insert-city-data-1.0.sql }
+  - include: { file: db/changelog/db.create-user-status-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-user-status-data-1.0.sql }
   - include: { file: db/changelog/db.create-users-table-1.0.sql }
   - include: { file: db/changelog/db.create-vehicle-table-1.0.sql }
   - include: { file: db/changelog/db.add-vehicle-region-code-1.1.sql }
