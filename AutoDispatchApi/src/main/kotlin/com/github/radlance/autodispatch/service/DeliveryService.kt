@@ -10,10 +10,16 @@ import kotlinx.html.p
 class DeliveryService(
     private val deliveryRepository: DeliveryRepository,
     private val requestRepository: RequestRepository,
-    private val notificationPublisher: NotificationPublisher
+    private val notificationPublisher: NotificationPublisher,
+    private val reportService: ReportService
 ) {
 
     private val testCustomerEmail = "manyakindima@outlook.com"
+
+    suspend fun getDetourSheet(deliveryId: Int, driverLogin: String): ReportFile {
+        val delivery = deliveryRepository.delivery(driverLogin, deliveryId)
+        return reportService.generateDetourSheet(delivery)
+    }
 
     suspend fun startDelivery(deliveryId: Int, driverLogin: String) {
         deliveryRepository.startDelivery(deliveryId, driverLogin)
@@ -105,7 +111,7 @@ class DeliveryService(
         pageSize = pageSize,
         page = page
     )
-    
+
     suspend fun driverDeliveryHistory(
         driverId: Int,
         searchQuery: String?,

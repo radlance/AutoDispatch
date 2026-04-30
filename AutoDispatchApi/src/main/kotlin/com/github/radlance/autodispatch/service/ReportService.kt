@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.service
 
+import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.statistics.ReportDateRange
 import com.github.radlance.autodispatch.domain.statistics.ReportFormat
 import com.github.radlance.autodispatch.domain.statistics.ReportPeriod
@@ -15,15 +16,19 @@ import com.lowagie.text.Element
 import com.lowagie.text.Font
 import com.lowagie.text.PageSize
 import com.lowagie.text.Paragraph
+import com.lowagie.text.Phrase
+import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfPCell
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfWriter
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.VerticalAlignment
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.awt.Color
 import java.io.ByteArrayOutputStream
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 data class ReportFile(
     val bytes: ByteArray,
@@ -57,6 +62,117 @@ data class ReportSection(
 class ReportService(
     private val repository: ReportRepository
 ) {
+
+    fun generateDetourSheet(delivery: DeliveryDetailed): ReportFile {
+        val out = ByteArrayOutputStream()
+        val document = Document(PageSize.A4, 40f, 40f, 40f, 40f)
+        PdfWriter.getInstance(document, out)
+        document.open()
+
+        val baseFont = Font.HELVETICA
+        val titleFont = Font(baseFont, 18f, Font.BOLD)
+        val sectionFont = Font(baseFont, 14f, Font.BOLD)
+        val labelFont = Font(baseFont, 10f, Font.BOLD, Color.GRAY)
+        val valueFont = Font(baseFont, 11f, Font.NORMAL)
+
+        val title = Paragraph("Объездной лист №${delivery.requestNumber.orEmpty()}", titleFont)
+        title.alignment = Element.ALIGN_CENTER
+        title.spacingAfter = 20f
+        document.add(title)
+
+        fun addRow(table: PdfPTable, label: String, value: String?) {
+            val labelCell = PdfPCell(Phrase(label, labelFont))
+            labelCell.border = Rectangle.NO_BORDER
+            labelCell.paddingBottom = 6f
+            labelCell.paddingTop = 2f
+
+            val valueCell = PdfPCell(Phrase(if (value.isNullOrBlank()) "—" else value, valueFont))
+            valueCell.border = Rectangle.NO_BORDER
+            valueCell.paddingBottom = 6f
+            valueCell.paddingTop = 2f
+
+            table.addCell(labelCell)
+            table.addCell(valueCell)
+        }
+
+        fun createSection(titleText: String, fillData: (PdfPTable) -> Unit) {
+            val sectionTitle = PdfPTable(1).apply { widthPercentage = 100f }
+            val titleCell = PdfPCell(Phrase(titleText, sectionFont)).apply {
+                border = Rectangle.BOTTOM
+                borderWidthBottom = 1.5f
+                paddingBottom = 5f
+                borderWidthLeft = 0f
+                borderWidthRight = 0f
+                borderWidthTop = 0f
+            }
+            sectionTitle.addCell(titleCell)
+            sectionTitle.setSpacingAfter(10f)
+            document.add(sectionTitle)
+
+            val dataTable = PdfPTable(2).apply {
+                widthPercentage = 100f
+                setWidths(floatArrayOf(1f, 2.5f))
+                setSpacingAfter(20f)
+            }
+
+            fillData(dataTable)
+            document.add(dataTable)
+        }
+
+        createSection("Маршрут") { table ->
+            addRow(table, "Откуда:", delivery.origin)
+            addRow(table, "Куда:", delivery.destination)
+            addRow(table, "План. загрузка:", formatTime(delivery.plannedLoadingAt))
+            addRow(table, "План. разгрузка:", formatTime(delivery.plannedUnloadingAt))
+        }
+
+        createSection("Груз") { table ->
+            addRow(table, "Тип:", delivery.cargo.type.name)
+            addRow(table, "Вес / Объём:", "${delivery.cargo.weight} кг / ${delivery.cargo.volume} м³")
+            delivery.transportationDescription?.takeIf { it.isNotBlank() }?.let {
+                addRow(table, "Описание:", it)
+            }
+        }
+
+        createSection("Клиент") { table ->
+            addRow(table, "Наименование:", delivery.customer.organizationName)
+            addRow(table, "Телефон:", delivery.customer.phoneNumber)
+        }
+
+        delivery.vehicle?.let { vehicle ->
+            createSection("Автомобиль") { table ->
+                addRow(table, "Модель:", vehicle.model)
+                addRow(table, "Гос. номер:", "${vehicle.licensePlate} ${vehicle.regionCode}".trim())
+            }
+        }
+
+        createSection("Диспетчер") { table ->
+            addRow(table, "ФИО:", delivery.dispatcherFullName)
+            addRow(table, "Телефон:", delivery.dispatcherPhoneNumber)
+        }
+
+        val signatureTable = PdfPTable(2).apply {
+            widthPercentage = 100f
+            setSpacingBefore(30f)
+        }
+
+        fun addSignatureBlock(role: String): PdfPCell {
+            return PdfPCell().apply {
+                border = Rectangle.NO_BORDER
+                addElement(Paragraph(role, valueFont))
+                addElement(Paragraph("_______________________", valueFont))
+            }
+        }
+
+        signatureTable.addCell(addSignatureBlock("Груз сдал:"))
+        signatureTable.addCell(addSignatureBlock("Груз принял:"))
+        document.add(signatureTable)
+
+        document.close()
+        val fileName =
+            "detour_sheet_${delivery.requestNumber.orEmpty()}_${OffsetDateTime.now().format(FILE_TIME_FORMAT)}.pdf"
+        return ReportFile(out.toByteArray(), fileName)
+    }
 
     suspend fun generate(request: ReportRequest): ReportFile {
         val range = request.period.toRange()
@@ -181,7 +297,7 @@ class ReportService(
         sections.forEach { section ->
             val sheet = workbook.createSheet(section.title)
             var rowIndex = 0
-            
+
             val maxColumns = section.headers.size.coerceAtLeast(1)
             sheet.addMergedRow(rowIndex, title, titleStyle, 0, maxColumns - 1)
             rowIndex++
@@ -230,16 +346,17 @@ class ReportService(
         PdfWriter.getInstance(document, out)
         document.open()
 
-        val titleFont = Font(Font.HELVETICA, 16f, Font.BOLD)
-        val sectionFont = Font(Font.HELVETICA, 13f, Font.BOLD)
-        val headerFont = Font(Font.HELVETICA, 10f, Font.BOLD)
-        val cellFont = Font(Font.HELVETICA, 10f, Font.NORMAL)
+        val baseFont = Font.HELVETICA
+        val titleFont = Font(baseFont, 16f, Font.BOLD)
+        val sectionFont = Font(baseFont, 13f, Font.BOLD)
+        val headerFont = Font(baseFont, 10f, Font.BOLD)
+        val cellFont = Font(baseFont, 10f, Font.NORMAL)
 
         sections.forEachIndexed { index, section ->
             if (index > 0) {
                 document.newPage()
             }
-            
+
             document.add(Paragraph(title, titleFont))
             document.add(Paragraph(" "))
             document.add(Paragraph(section.title, sectionFont))
@@ -265,6 +382,16 @@ class ReportService(
 
         document.close()
         return out.toByteArray()
+    }
+
+    private fun formatTime(dateString: String?): String {
+        if (dateString.isNullOrBlank()) return "—"
+        return try {
+            val parsed = OffsetDateTime.parse(dateString)
+            parsed.format(DISPLAY_DATE_FORMAT)
+        } catch (_: DateTimeParseException) {
+            dateString
+        }
     }
 
     private fun RequestReportRow.toRequestRow(): List<String> {
@@ -382,6 +509,7 @@ class ReportService(
 
     private companion object {
         private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        private val DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
         private val FILE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
     }
 }

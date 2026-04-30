@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
+import com.github.radlance.autodispatch.platform.rememberFileSaver
 import com.github.radlance.autodispatch.request.core.domain.DocumentType
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -47,6 +49,21 @@ fun DeliveryDetailsScreen(
 ) {
     val requestState by viewModel.deliveryState.collectAsStateWithLifecycle()
     val acceptDeliveryState by viewModel.acceptDeliveryState.collectAsStateWithLifecycle()
+    val detourSheetState by viewModel.detourSheetState.collectAsStateWithLifecycle()
+    val fileSaver = rememberFileSaver()
+
+    LaunchedEffect(detourSheetState) {
+        if (detourSheetState is FetchResultUiState.Success) {
+            val bytes = (detourSheetState as FetchResultUiState.Success).data
+            val currentState = requestState
+            val number = if (currentState is FetchResultUiState.Success) {
+                currentState.data.requestNumber
+            } else deliveryNumber
+            fileSaver.saveAndOpen("detour_sheet_$number.pdf", bytes)
+            viewModel.resetDetourSheetState()
+        }
+    }
+
     val scrollState = rememberScrollState()
     Scaffold(
         modifier = modifier,
@@ -107,7 +124,10 @@ fun DeliveryDetailsScreen(
                             viewModel.fetchDeliveryDetails(deliveryId)
                             viewModel.resetAcceptState()
                         },
-                        acceptDeliveryState = acceptDeliveryState
+                        acceptDeliveryState = acceptDeliveryState,
+                        detourSheetState = detourSheetState,
+                        onDownloadDetourSheetClick = { viewModel.downloadDetourSheet(delivery.id) },
+                        onCloseDetourSheetError = viewModel::resetDetourSheetState
                     )
                 },
                 onError = {

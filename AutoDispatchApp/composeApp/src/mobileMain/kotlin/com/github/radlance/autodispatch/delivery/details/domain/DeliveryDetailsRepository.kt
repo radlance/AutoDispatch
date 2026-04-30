@@ -11,7 +11,7 @@ interface DeliveryDetailsRepository {
 
     suspend fun arriveLoading(deliveryId: Int): FetchResult<Unit, RequestError>
 
-    suspend fun departLoading(deliveryId: Int): FetchResult<Unit, RequestError>
-
     suspend fun arriveUnloading(deliveryId: Int): FetchResult<Unit, RequestError>
+
+    suspend fun detourSheet(deliveryId: Int): FetchResult<ByteArray, RequestError>
 }

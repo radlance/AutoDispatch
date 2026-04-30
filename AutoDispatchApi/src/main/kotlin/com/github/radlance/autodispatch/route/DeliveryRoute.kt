@@ -56,6 +56,22 @@ fun Route.deliveries(service: DeliveryService) {
                 call.respond(HttpStatusCode.OK, service.delivery(login, id))
             }
 
+            get("/{id}/detour-sheet") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                val report = service.getDetourSheet(id, login)
+
+                call.response.header(
+                    HttpHeaders.ContentDisposition,
+                    ContentDisposition.Attachment
+                        .withParameter(ContentDisposition.Parameters.FileName, report.fileName)
+                        .toString()
+                )
+                call.respondBytes(report.bytes, ContentType.Application.Pdf)
+            }
+
             post("/{id}/start") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")

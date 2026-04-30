@@ -71,6 +71,21 @@ class DeliveryDetailsViewModel(
         acceptDeliveryStateMutable.value = FetchResultUiState.Idle
     }
 
+    private val detourSheetStateMutable =
+        MutableStateFlow<FetchResultUiState<ByteArray, RequestError>>(FetchResultUiState.Idle)
+    val detourSheetState = detourSheetStateMutable.asStateFlow()
+
+    fun downloadDetourSheet(deliveryId: Int) {
+        detourSheetStateMutable.value = FetchResultUiState.Loading
+        handle(background = { repository.detourSheet(deliveryId) }) { result ->
+            detourSheetStateMutable.value = result.toUiState()
+        }
+    }
+
+    fun resetDetourSheetState() {
+        detourSheetStateMutable.value = FetchResultUiState.Idle
+    }
+
     fun arriveLoading(deliveryId: Int) {
         updateRouteProgress(
             action = DeliveryRouteAction.ArriveLoading,
@@ -78,17 +93,6 @@ class DeliveryDetailsViewModel(
             applyUpdate = { current, now ->
                 if (current.arrivedLoadingAt != null) current
                 else current.copy(arrivedLoadingAt = now, updatedAt = now)
-            }
-        )
-    }
-
-    fun departLoading(deliveryId: Int) {
-        updateRouteProgress(
-            action = DeliveryRouteAction.DepartLoading,
-            request = { repository.departLoading(deliveryId) },
-            applyUpdate = { current, now ->
-                if (current.actualLoadingAt != null) current
-                else current.copy(actualLoadingAt = now, updatedAt = now)
             }
         )
     }

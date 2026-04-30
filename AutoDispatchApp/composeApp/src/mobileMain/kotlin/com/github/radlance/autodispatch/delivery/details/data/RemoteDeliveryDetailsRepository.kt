@@ -18,7 +18,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.IOException
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 class RemoteDeliveryDetailsRepository(
     private val apiService: ApiServiceMobile,
@@ -26,30 +25,15 @@ class RemoteDeliveryDetailsRepository(
 ) : DeliveryDetailsRepository {
 
     override suspend fun deliveryDetails(deliveryId: Int): FetchResult<DeliveryDetailed, RequestError> {
-        return try {
-            val delivery = apiService.deliveryDetails(deliveryId).toDeliveryDetailed()
-            FetchResult.Success(delivery)
-        } catch (e: ClientRequestException) {
-            val message = e.response.bodyAsText()
-            if (e.response.status == HttpStatusCode.NotFound || e.response.status == HttpStatusCode.Forbidden) {
-                FetchResult.Error(RequestError.InternalError(message))
-            } else {
-                FetchResult.Error(RequestError.BaseError(message))
-            }
-        } catch (_: SocketTimeoutException) {
-            FetchResult.Error(RequestError.BaseError("Таймаут соединения"))
-        } catch (_: IOException) {
-            FetchResult.Error(RequestError.BaseError("Ошибка подключения"))
-        } catch (e: Exception) {
-            FetchResult.Error(RequestError.BaseError(e.message ?: "Неизвестная ошибка"))
+        return safeApiCall {
+            apiService.deliveryDetails(deliveryId).toDeliveryDetailed()
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun acceptDelivery(deliveryId: Int): FetchResult<Unit, RequestError> {
-        return handleDeliveryAction(
-            action = { apiService.startDelivery(deliveryId) }
-        ).also { result ->
+        return safeApiCall {
+            apiService.startDelivery(deliveryId)
+        }.also { result ->
             if (result is FetchResult.Success) {
                 cache.update(deliveryId) {
                     it.copy(
@@ -62,53 +46,33 @@ class RemoteDeliveryDetailsRepository(
     }
 
     override suspend fun arriveLoading(deliveryId: Int): FetchResult<Unit, RequestError> {
-        return handleDeliveryAction { apiService.arriveLoading(deliveryId) }
-    }
-
-    override suspend fun departLoading(deliveryId: Int): FetchResult<Unit, RequestError> {
-        return handleDeliveryAction { apiService.departLoading(deliveryId) }
+        return safeApiCall { apiService.arriveLoading(deliveryId) }
     }
 
     override suspend fun arriveUnloading(deliveryId: Int): FetchResult<Unit, RequestError> {
-        return handleDeliveryAction { apiService.arriveUnloading(deliveryId) }
+        return safeApiCall { apiService.arriveUnloading(deliveryId) }
     }
 
-    private suspend fun handleDeliveryAction(
-        action: suspend () -> Unit
-    ): FetchResult<Unit, RequestError> {
+    override suspend fun detourSheet(deliveryId: Int): FetchResult<ByteArray, RequestError> {
+        return safeApiCall { apiService.detourSheet(deliveryId) }
+    }
+
+    private suspend fun <T> safeApiCall(
+        action: suspend () -> T
+    ): FetchResult<T, RequestError> {
         return try {
-            action()
-            FetchResult.Success(Unit)
+            FetchResult.Success(action())
         } catch (e: ClientRequestException) {
-            val message = e.response.bodyAsText()
-            when (e.response.status) {
+            val response = e.response
+            val message = response.bodyAsText()
+
+            when (response.status) {
                 HttpStatusCode.NotFound, HttpStatusCode.Forbidden -> {
                     FetchResult.Error(RequestError.InternalError(message))
                 }
-
                 HttpStatusCode.Conflict -> {
-                    try {
-                        val errorResponse = e.response.body<ErrorResponse>()
-
-                        when (errorResponse.errorCode) {
-                            "DRIVER_BUSY" -> FetchResult.Error(
-                                RequestError.DriverBusyError(errorResponse.message)
-                            )
-                            "DELIVERY_CANCELED" -> FetchResult.Error(
-                                RequestError.DeliveryCanceledError(errorResponse.message)
-                            )
-                            "WORK_SCHEDULE" -> FetchResult.Error(
-                                RequestError.WorkScheduleError(errorResponse.message)
-                            )
-                            else -> FetchResult.Error(
-                                RequestError.GenericStateError(errorResponse.message)
-                            )
-                        }
-                    } catch (_: Exception) {
-                        FetchResult.Error(RequestError.BaseError(message))
-                    }
+                    parseConflictError(e, message)
                 }
-
                 else -> {
                     FetchResult.Error(RequestError.BaseError(message))
                 }
@@ -119,6 +83,24 @@ class RemoteDeliveryDetailsRepository(
             FetchResult.Error(RequestError.BaseError("Ошибка подключения"))
         } catch (e: Exception) {
             FetchResult.Error(RequestError.BaseError(e.message ?: "Неизвестная ошибка"))
+        }
+    }
+
+    private suspend fun <T> parseConflictError(
+        e: ClientRequestException,
+        fallbackMessage: String
+    ): FetchResult<T, RequestError> {
+        return try {
+            val errorResponse = e.response.body<ErrorResponse>()
+            val error = when (errorResponse.errorCode) {
+                "DRIVER_BUSY" -> RequestError.DriverBusyError(errorResponse.message)
+                "DELIVERY_CANCELED" -> RequestError.DeliveryCanceledError(errorResponse.message)
+                "WORK_SCHEDULE" -> RequestError.WorkScheduleError(errorResponse.message)
+                else -> RequestError.GenericStateError(errorResponse.message)
+            }
+            FetchResult.Error(error)
+        } catch (_: Exception) {
+            FetchResult.Error(RequestError.BaseError(fallbackMessage))
         }
     }
 }

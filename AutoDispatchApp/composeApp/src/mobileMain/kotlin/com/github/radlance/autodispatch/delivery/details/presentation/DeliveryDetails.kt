@@ -126,6 +126,9 @@ fun DeliveryDetails(
     navigateUp: () -> Unit,
     fetchDeliveryDetails: () -> Unit,
     acceptDeliveryState: FetchResultUiState<Unit, RequestError>,
+    detourSheetState: FetchResultUiState<ByteArray, RequestError>,
+    onDownloadDetourSheetClick: () -> Unit,
+    onCloseDetourSheetError: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, contentColor) = deliveryStatusColors(delivery.status)
@@ -136,8 +139,10 @@ fun DeliveryDetails(
     var fullscreenIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var lastImageRetryAttempt by remember { mutableStateOf(0L) }
 
-    val isLoading = acceptDeliveryState is FetchResultUiState.Loading
+    val isLoading =
+        acceptDeliveryState is FetchResultUiState.Loading || detourSheetState is FetchResultUiState.Loading
     val error = (acceptDeliveryState as? FetchResultUiState.Error)?.error
+    val detourError = (detourSheetState as? FetchResultUiState.Error)?.error
 
     AppBackHandler {
         val currentNavigateUp =
@@ -207,6 +212,29 @@ fun DeliveryDetails(
             confirmButton = {
                 TextButton(
                     onClick = onDismiss
+                ) {
+                    Text(text = "ОК", color = contentColor)
+                }
+            }
+        )
+    }
+
+    detourError?.let {
+        AlertDialog(
+            onDismissRequest = onCloseDetourSheetError,
+            icon = {
+                Icon(imageVector = Icons.Outlined.WarningAmber, contentDescription = null)
+            },
+            title = {
+                Text(text = "Ошибка")
+            },
+            text = {
+                Text(text = it.message)
+            },
+            dismissButton = {},
+            confirmButton = {
+                TextButton(
+                    onClick = onCloseDetourSheetError
                 ) {
                     Text(text = "ОК", color = contentColor)
                 }
@@ -401,6 +429,7 @@ fun DeliveryDetails(
                             onContinueDeliveryClick = onContinueDeliveryClick,
                             onRetakeDocumentsClick = onRetakeDocumentsClick,
                             onAcceptClick = { showConfirmDialog = true },
+                            onDownloadDetourSheetClick = onDownloadDetourSheetClick,
                             onContactClick = {
                                 openDialer(delivery.dispatcherPhoneNumber, context)
                             },
@@ -782,6 +811,7 @@ private fun ActionButtons(
     onContinueDeliveryClick: () -> Unit,
     onRetakeDocumentsClick: () -> Unit,
     onAcceptClick: () -> Unit,
+    onDownloadDetourSheetClick: () -> Unit,
     onContactClick: () -> Unit,
     backgroundColor: Color,
     contentColor: Color,
@@ -830,6 +860,21 @@ private fun ActionButtons(
                 Icon(imageVector = Icons.Outlined.AddAPhoto, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
                 Text(text = "Переснять документы")
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+
+        if (deliveryStatusId in 2..7) {
+            OutlinedButton(
+                onClick = onDownloadDetourSheetClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.StickyNote2,
+                    contentDescription = null
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(text = "Запросить объездной лист")
             }
             Spacer(Modifier.height(4.dp))
         }
