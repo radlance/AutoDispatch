@@ -164,7 +164,6 @@ class ReportService(
 
     private fun generateExcel(title: String, sections: List<ReportSection>): ByteArray {
         val workbook = XSSFWorkbook()
-        val sheet = workbook.createSheet("Report")
         val titleFont = workbook.createFont().apply { bold = true; fontHeightInPoints = 14 }
         val headerFont = workbook.createFont().apply { bold = true }
 
@@ -179,14 +178,14 @@ class ReportService(
             verticalAlignment = VerticalAlignment.CENTER
         }
 
-        var maxColumns = sections.maxOfOrNull { it.headers.size } ?: 1
-        if (maxColumns < 1) maxColumns = 1
-
-        var rowIndex = 0
-        sheet.addMergedRow(rowIndex, title, titleStyle, 0, maxColumns - 1)
-        rowIndex++
-
         sections.forEach { section ->
+            val sheet = workbook.createSheet(section.title)
+            var rowIndex = 0
+            
+            val maxColumns = section.headers.size.coerceAtLeast(1)
+            sheet.addMergedRow(rowIndex, title, titleStyle, 0, maxColumns - 1)
+            rowIndex++
+
             rowIndex = sheet.addMergedRow(rowIndex, section.title, headerStyle, 0, section.headers.size - 1)
             rowIndex++
 
@@ -198,7 +197,6 @@ class ReportService(
                     0,
                     section.headers.size - 1
                 )
-                rowIndex++
             } else {
                 val headerRow = sheet.createRow(rowIndex++)
                 section.headers.forEachIndexed { i, header ->
@@ -215,11 +213,10 @@ class ReportService(
                     }
                 }
             }
-            rowIndex++
-        }
 
-        repeat(maxColumns) { col ->
-            sheet.autoSizeColumn(col)
+            repeat(maxColumns) { col ->
+                sheet.autoSizeColumn(col)
+            }
         }
 
         val out = ByteArrayOutputStream()
@@ -238,10 +235,13 @@ class ReportService(
         val headerFont = Font(Font.HELVETICA, 10f, Font.BOLD)
         val cellFont = Font(Font.HELVETICA, 10f, Font.NORMAL)
 
-        document.add(Paragraph(title, titleFont))
-        document.add(Paragraph(" "))
-
-        sections.forEach { section ->
+        sections.forEachIndexed { index, section ->
+            if (index > 0) {
+                document.newPage()
+            }
+            
+            document.add(Paragraph(title, titleFont))
+            document.add(Paragraph(" "))
             document.add(Paragraph(section.title, sectionFont))
             document.add(Paragraph(" "))
 
@@ -261,7 +261,6 @@ class ReportService(
                 }
                 document.add(table)
             }
-            document.add(Paragraph(" "))
         }
 
         document.close()
