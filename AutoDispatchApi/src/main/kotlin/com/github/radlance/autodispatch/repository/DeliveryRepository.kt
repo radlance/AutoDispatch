@@ -452,6 +452,7 @@ class DeliveryRepository(
 
             RequestTable.update({ RequestTable.id eq deliveryId }) {
                 it[statusId] = 6
+                it[rejectionReason] = null
             }
 
             if (documentTypeId == 2) {

@@ -99,6 +99,7 @@ import com.github.radlance.autodispatch.platform.getPlatformContext
 import com.github.radlance.autodispatch.platform.openDialer
 import com.github.radlance.autodispatch.request.core.domain.Cargo
 import com.github.radlance.autodispatch.request.core.domain.Customer
+import com.github.radlance.autodispatch.request.core.domain.DocumentType
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import com.github.radlance.autodispatch.uikit.vector.AppIcon
 import com.github.radlance.autodispatch.uikit.vector.ConversionPathIcon
@@ -338,7 +339,13 @@ fun DeliveryDetails(
                                     .height(100.dp)
                             ) {
                                 itemsIndexed(
-                                    items = delivery.documents.map { it.imageUrl },
+                                    items = delivery.documents.filter {
+                                        if (delivery.actualUnloadingAt == null) {
+                                            it.type == DocumentType.SHIPPING
+                                        } else {
+                                            it.type == DocumentType.ACCEPTANCE
+                                        }
+                                    }.map { it.imageUrl },
                                     key = { idx, _ -> idx }
                                 ) { idx, image ->
 
@@ -822,7 +829,7 @@ private fun ActionButtons(
             ) {
                 Icon(imageVector = Icons.Outlined.AddAPhoto, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
-                Text(text = "Переснять докумены")
+                Text(text = "Переснять документы")
             }
             Spacer(Modifier.height(4.dp))
         }

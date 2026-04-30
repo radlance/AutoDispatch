@@ -267,7 +267,8 @@ fun RequestDetailsSections(
         }
         if ((request.status == RequestStatus.OnCheck
                     || request.status == RequestStatus.Completed
-                    || request.status == RequestStatus.Rejected)
+                    || request.status == RequestStatus.Rejected
+                    || request.status == RequestStatus.InProgress)
             && request.documents.isNotEmpty()
         ) {
             HorizontalDivider(
