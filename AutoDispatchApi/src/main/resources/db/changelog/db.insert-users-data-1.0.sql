@@ -24,4 +24,7 @@ VALUES ('Петров Алексей Владимирович', 'petrov_av', 'pe
        ('Зайцев Юрий Михайлович', 'zaytsev_ym', 'zaytsev_ym@corp.example', 'hash_sim_15', 'salt_15', '+79705678901', 2),
        ('Новиков Дмитрий Алексеевич', 'novikov', 'novikov@corp.example',
         '66544ede7601f7af613c0bbde562d7406da84044bd3d706d5b357ac1d242679d',
-        '9197f6453e0c70924fa3fa071c4ab37bcdcf0978841a8cbb33c7224827f0dd9c', '+79993334455', 2);
+        '9197f6453e0c70924fa3fa071c4ab37bcdcf0978841a8cbb33c7224827f0dd9c', '+79993334455', 2),
+       ('Козлов Алексей Максимович', 'kozlov', 'kozlov@gmail.com',
+        'ff01882956bf55b1c7b382403a5178336ae5d8fd30b0c60ea63e7c3bdc2e1440',
+        '7e3466aae6fbd16787d966be21a175158d9f71f75420207abb2b38d84c1ff7ba', '79999999999', 3);
