@@ -74,6 +74,8 @@ interface ApiServiceJvm : ApiService {
 
     suspend fun approveDocument(requestId: Int)
 
+    suspend fun approveShippingDocument(requestId: Int)
+
     suspend fun drivers(
         page: Int,
         pageSize: Int,
@@ -254,6 +256,10 @@ internal class KtorApiServiceJvm(
 
     override suspend fun approveDocument(requestId: Int) {
         httpClient.post("documents/$requestId/approve")
+    }
+
+    override suspend fun approveShippingDocument(requestId: Int) {
+        httpClient.post("documents/$requestId/approve-shipping")
     }
 
     override suspend fun drivers(

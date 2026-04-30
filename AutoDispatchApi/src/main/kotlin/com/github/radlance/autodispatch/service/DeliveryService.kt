@@ -57,7 +57,17 @@ class DeliveryService(
         deliveryId: Int,
         driverLogin: String,
         imageUrls: List<String>
-    ) = deliveryRepository.uploadDeliveryDocuments(
+    ) = deliveryRepository.uploadAcceptanceDocuments(
+        deliveryId,
+        driverLogin,
+        imageUrls
+    )
+
+    suspend fun uploadShippingDocuments(
+        deliveryId: Int,
+        driverLogin: String,
+        imageUrls: List<String>
+    ) = deliveryRepository.uploadShippingDocuments(
         deliveryId,
         driverLogin,
         imageUrls
@@ -75,11 +85,13 @@ class DeliveryService(
     suspend fun retakeDocuments(
         deliveryId: Int,
         driverLogin: String,
-        imageUrls: List<String>
+        imageUrls: List<String>,
+        documentTypeId: Int
     ) = deliveryRepository.retakeDeliveryDocuments(
         deliveryId,
         driverLogin,
-        imageUrls
+        imageUrls,
+        documentTypeId
     )
 
     suspend fun deliveryHistory(

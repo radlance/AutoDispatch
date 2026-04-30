@@ -65,6 +65,12 @@ class RemoteChangeRequestRepository(
         apiService.approveDocument(requestId = requestId)
     }
 
+    override suspend fun approveShippingDocument(
+        requestId: Int
+    ): FetchResult<Unit, String> = handleRequest.handle {
+        apiService.approveShippingDocument(requestId)
+    }
+
     override suspend fun unassignDriver(requestId: Int): FetchResult<Unit, RequestError> =
         handleRequest.handleClassified {
             apiService.unassignDriver(requestId = requestId)

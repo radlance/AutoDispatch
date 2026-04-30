@@ -14,9 +14,15 @@ class DocumentsRepository {
         }
     }
 
-    suspend fun approveDocument(requestId: Int) = loggedTransaction {
+    suspend fun approveFinalDocuments(requestId: Int) = loggedTransaction {
         RequestTable.update({ RequestTable.id eq requestId }) {
             it[statusId] = 4
+        }
+    }
+
+    suspend fun approveShippingDocuments(requestId: Int) = loggedTransaction {
+        RequestTable.update({ RequestTable.id eq requestId }) {
+            it[statusId] = 3
         }
     }
 }

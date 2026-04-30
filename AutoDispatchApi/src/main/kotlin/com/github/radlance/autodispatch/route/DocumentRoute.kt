@@ -21,6 +21,14 @@ fun Route.documents(service: DocumentsService) {
                 call.respond(HttpStatusCode.OK)
             }
 
+            post("/{id}/approve-shipping") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid request ID")
+
+                service.approveShippingDocuments(id)
+                call.respond(HttpStatusCode.OK)
+            }
+            
             post("/{id}/reject") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid request ID")

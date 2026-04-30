@@ -20,5 +20,7 @@ interface ChangeRequestRepository {
 
     suspend fun approveDocument(requestId: Int): FetchResult<Unit, String>
 
+    suspend fun approveShippingDocument(requestId: Int): FetchResult<Unit, String>
+
     suspend fun unassignDriver(requestId: Int): FetchResult<Unit, RequestError>
 }

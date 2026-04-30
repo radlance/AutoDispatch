@@ -384,9 +384,16 @@ class ChangeRequestViewModel(
                 }
             }
 
-            override fun approveDocument(requestId: Int) {
+            override fun approveDocument(requestId: Int, isShipping: Boolean) {
                 approveDocumentsStateMutable.value = FetchResultUiState.Loading
-                handle(background = { repository.approveDocument(requestId) }) {
+
+                handle(background = {
+                    if (isShipping) {
+                        repository.approveShippingDocument(requestId)
+                    } else {
+                        repository.approveDocument(requestId)
+                    }
+                }) {
                     approveDocumentsStateMutable.value = it.toUiState()
                 }
             }

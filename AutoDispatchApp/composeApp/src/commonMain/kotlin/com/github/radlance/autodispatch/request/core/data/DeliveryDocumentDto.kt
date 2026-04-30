@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class DeliveryDocumentDto(
     val id: Int,
     val imageUrl: String,
-    val uploadedAt: String
+    val uploadedAt: String,
+    val typeId: Int
 )

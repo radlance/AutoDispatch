@@ -18,10 +18,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.radlance.autodispatch.common.domain.RequestStatus
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
@@ -34,12 +36,15 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DeliveryConfirmationScreen(
     deliveryId: Int,
-    retake: Boolean,
+    action: DeliveryConfirmationAction,
     navigateUp: () -> Unit,
     navigateToSuccessDeliveryScreen: (DeliveryDetailed) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {
+    LaunchedEffect(deliveryId) {
+        viewModel.fetchDeliveryDetails(deliveryId)
+    }
     val scrollState = rememberScrollState()
     val requestState by viewModel.deliveryState.collectAsStateWithLifecycle()
     Scaffold(
@@ -47,8 +52,7 @@ fun DeliveryConfirmationScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    val text = if (retake) "Повторная отправка" else "Прибытие на место"
-                    Text(text = text)
+                    Text(text = action.title)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateUp) {
@@ -73,7 +77,7 @@ fun DeliveryConfirmationScreen(
                     DeliveryDetailsShimmer()
                 },
                 onSuccess = { delivery ->
-                    if (delivery.status.id != 3 && !(retake && delivery.status.id == 7)) {
+                    if (delivery.status != RequestStatus.InProgress && !(action is DeliveryConfirmationAction.Retake && delivery.status == RequestStatus.Rejected)) {
                         AlertDialog(
                             onDismissRequest = navigateUp,
                             icon = {
@@ -99,7 +103,7 @@ fun DeliveryConfirmationScreen(
                         )
                     }
                     DeliveryConfirmation(
-                        retake = retake,
+                        action = action,
                         navigateUp = navigateUp,
                         navigateToSuccessDeliveryScreen = {
                             navigateToSuccessDeliveryScreen(delivery)

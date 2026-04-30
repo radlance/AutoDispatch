@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.request.core.domain.DocumentType
 import com.github.radlance.autodispatch.delivery.core.data.DeliveryDto
 import com.github.radlance.autodispatch.delivery.details.data.DeliveryDetailedDto
 import com.github.radlance.autodispatch.profile.data.ProfileDetailsDto
@@ -32,7 +33,13 @@ interface ApiServiceMobile : ApiService {
 
     suspend fun completeDelivery(deliveryId: Int, formData: List<PartData>)
 
-    suspend fun retakeDocument(deliveryId: Int, formData: List<PartData>)
+    suspend fun shipDocuments(deliveryId: Int, formData: List<PartData>)
+
+    suspend fun retakeDocument(
+        deliveryId: Int,
+        formData: List<PartData>,
+        type: DocumentType
+    )
 
     suspend fun history(
         searchQuery: String?,
@@ -89,21 +96,30 @@ internal class KtorApiServiceMobile(
         deliveryId: Int,
         formData: List<PartData>
     ) {
-
         httpClient.submitFormWithBinaryData(
             url = "deliveries/$deliveryId/upload-documents",
             formData = formData
         )
     }
 
+    override suspend fun shipDocuments(deliveryId: Int, formData: List<PartData>) {
+        httpClient.submitFormWithBinaryData(
+            url = "deliveries/$deliveryId/upload-shipping-documents",
+            formData = formData
+        )
+    }
+
     override suspend fun retakeDocument(
         deliveryId: Int,
-        formData: List<PartData>
+        formData: List<PartData>,
+        type: DocumentType
     ) {
         httpClient.submitFormWithBinaryData(
             url = "deliveries/$deliveryId/retake-documents",
             formData = formData
-        )
+        ) {
+            url.parameters.append("typeId", type.id.toString())
+        }
     }
 
     override suspend fun history(

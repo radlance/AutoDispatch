@@ -14,6 +14,7 @@ import com.github.radlance.autodispatch.domain.common.Status
 import com.github.radlance.autodispatch.domain.delivery.Delivery
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDetailed
 import com.github.radlance.autodispatch.domain.delivery.DeliveryDocument
+import com.github.radlance.autodispatch.domain.document.DocumentType
 import com.github.radlance.autodispatch.domain.history.DriverHistory
 import com.github.radlance.autodispatch.domain.request.Cargo
 import com.github.radlance.autodispatch.domain.request.CargoType
@@ -142,7 +143,8 @@ class DeliveryRepository(
             .select(
                 DeliveryDocumentTable.id,
                 DeliveryDocumentTable.imageUrl,
-                DeliveryDocumentTable.uploadedAt
+                DeliveryDocumentTable.uploadedAt,
+                DeliveryDocumentTable.typeId
             )
             .where { AssignmentTable.requestId eq deliveryId }
             .orderBy(DeliveryDocumentTable.uploadedAt, SortOrder.DESC)
@@ -150,7 +152,8 @@ class DeliveryRepository(
                 DeliveryDocument(
                     id = docRow[DeliveryDocumentTable.id].value,
                     imageUrl = docRow[DeliveryDocumentTable.imageUrl],
-                    uploadedAt = docRow[DeliveryDocumentTable.uploadedAt]?.toString()
+                    uploadedAt = docRow[DeliveryDocumentTable.uploadedAt]?.toString(),
+                    typeId = docRow[DeliveryDocumentTable.typeId].value
                 )
             }
 
@@ -271,7 +274,32 @@ class DeliveryRepository(
         }
     }
 
-    suspend fun uploadDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
+    suspend fun uploadShippingDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
+        loggedTransaction {
+            val assignmentId = validateAndGetAssignmentId(
+                deliveryId,
+                driverLogin,
+                allowedStatuses = listOf(3),
+                canceledStatus = 5,
+                unexpectedStatusMessage = { number, _ ->
+                    "Доставка $number отменена или недоступна."
+                }
+            )
+
+            RequestTable.update({ RequestTable.id eq deliveryId }) {
+                it[statusId] = 6
+                it[updatedAt] = CurrentTimestampWithTimeZone
+                it[actualLoadingAt] = CurrentTimestampWithTimeZone
+            }
+
+            DeliveryDocumentTable.batchInsert(imageUrls) { url ->
+                this[DeliveryDocumentTable.assignmentId] = assignmentId
+                this[DeliveryDocumentTable.imageUrl] = url
+                this[DeliveryDocumentTable.typeId] = 1
+            }
+        }
+
+    suspend fun uploadAcceptanceDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
         loggedTransaction {
 
             val assignmentId = validateAndGetAssignmentId(
@@ -304,6 +332,7 @@ class DeliveryRepository(
             DeliveryDocumentTable.batchInsert(imageUrls) { url ->
                 this[DeliveryDocumentTable.assignmentId] = assignmentId
                 this[DeliveryDocumentTable.imageUrl] = url
+                this[DeliveryDocumentTable.typeId] = 2
             }
         }
 
@@ -393,7 +422,12 @@ class DeliveryRepository(
         }
     }
 
-    suspend fun retakeDeliveryDocuments(deliveryId: Int, driverLogin: String, imageUrls: List<String>) =
+    suspend fun retakeDeliveryDocuments(
+        deliveryId: Int,
+        driverLogin: String,
+        imageUrls: List<String>,
+        documentTypeId: Int
+    ) =
         loggedTransaction {
 
             val assignmentId = validateAndGetAssignmentId(
@@ -407,21 +441,23 @@ class DeliveryRepository(
             )
 
             DeliveryDocumentTable.deleteWhere {
-                this.assignmentId eq assignmentId
+                (this.assignmentId eq assignmentId) and (this.typeId eq documentTypeId)
             }
 
             DeliveryDocumentTable.batchInsert(imageUrls) { url ->
                 this[DeliveryDocumentTable.assignmentId] = assignmentId
                 this[DeliveryDocumentTable.imageUrl] = url
+                this[DeliveryDocumentTable.typeId] = documentTypeId
             }
 
             RequestTable.update({ RequestTable.id eq deliveryId }) {
                 it[statusId] = 6
-                it[rejectionReason] = null
             }
 
-            AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
-                it[completedAt] = CurrentTimestampWithTimeZone
+            if (documentTypeId == 2) {
+                AssignmentTable.update({ AssignmentTable.requestId eq deliveryId }) {
+                    it[completedAt] = CurrentTimestampWithTimeZone
+                }
             }
         }
 

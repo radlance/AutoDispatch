@@ -109,14 +109,28 @@ fun Route.deliveries(service: DeliveryService) {
                 call.respond(HttpStatusCode.OK)
             }
 
-            post("/{id}/retake-documents") {
+            post("/{id}/upload-shipping-documents") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
 
                 val login = call.claimByNameOrUnauthorized<String>("login")
 
                 call.processImagesUpload(uploadDir) { urls ->
-                    service.retakeDocuments(id, login, urls)
+                    service.uploadShippingDocuments(id, login, urls)
+                }
+
+                call.respond(HttpStatusCode.OK)
+            }
+
+            post("/{id}/retake-documents") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid delivery ID")
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+                val typeId = call.request.queryParameters["typeId"]?.toIntOrNull()
+
+                call.processImagesUpload(uploadDir) { urls ->
+                    service.retakeDocuments(id, login, urls, typeId ?: 2)
                 }
 
                 call.respond(HttpStatusCode.OK)

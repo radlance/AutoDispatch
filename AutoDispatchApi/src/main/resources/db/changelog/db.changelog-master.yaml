@@ -27,6 +27,8 @@ databaseChangeLog:
   - include: { file: db/changelog/db.create-driver-status-update-trigger.sql }
   - include: { file: db/changelog/db.insert-assignment-data-1.0.sql }
   - include: { file: db/changelog/db.insert-driver-data-1.0.sql }
+  - include: { file: db/changelog/db.create-delivery-document-type-table-1.0.sql }
+  - include: { file: db/changelog/db.insert-delivery-document-type-data-1.0.sql }
   - include: { file: db/changelog/db.create-delivery-document-table-1.0.sql }
   - include: { file: db/changelog/db.create-driver-shift-table-1.2.sql }
   - include: { file: db/changelog/db.insert-driver-shift-data-1.2.sql }

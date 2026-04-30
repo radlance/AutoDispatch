@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationAction
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationScreen
 import com.github.radlance.autodispatch.delivery.confirmation.presentation.SuccessUploadScreen
 import com.github.radlance.autodispatch.delivery.core.presentation.DeliveryScreen
@@ -107,9 +108,14 @@ fun HomeNavGraph(
                     navigateUp = navController::navigateUp,
                     deliveryId = deliveryId,
                     deliveryNumber = deliveryNumber,
-                    navigateToDeliveryConfirmation = {
+                    navigateToDeliveryConfirmation = { type ->
                         navController.navigate(
-                            DeliveryConfirmation(deliveryId = deliveryId, retake = true)
+                            DeliveryConfirmation(
+                                deliveryId = deliveryId,
+                                deliveryConfirmationActionString = Json.encodeToString<DeliveryConfirmationAction>(
+                                    DeliveryConfirmationAction.Retake(type)
+                                )
+                            )
                         )
                     },
                     viewModel = deliveryDetailsViewModel
@@ -123,9 +129,14 @@ fun HomeNavGraph(
                     deliveryId = deliveryId,
                     deliveryNumber = args.deliveryNumber,
                     navigateUp = navController::navigateUp,
-                    navigateToDeliveryConfirmation = {
+                    navigateToDeliveryConfirmation = { action ->
                         navController.navigate(
-                            DeliveryConfirmation(deliveryId = deliveryId, retake = false)
+                            DeliveryConfirmation(
+                                deliveryId = deliveryId,
+                                deliveryConfirmationActionString = Json.encodeToString<DeliveryConfirmationAction>(
+                                    action
+                                )
+                            )
                         )
                     },
                     viewModel = deliveryDetailsViewModel
@@ -136,7 +147,7 @@ fun HomeNavGraph(
                 val args = it.toRoute<DeliveryConfirmation>()
                 DeliveryConfirmationScreen(
                     deliveryId = args.deliveryId,
-                    retake = args.retake,
+                    action = Json.decodeFromString<DeliveryConfirmationAction>(args.deliveryConfirmationActionString),
                     navigateUp = navController::navigateUp,
                     navigateToSuccessDeliveryScreen = { delivery ->
                         val json = Json.encodeToString(delivery)

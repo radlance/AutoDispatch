@@ -72,7 +72,10 @@ data class DeliveryRoute(
 
 @Destination
 @Serializable
-data class DeliveryConfirmation(val deliveryId: Int, val retake: Boolean) : HomeDestination
+data class DeliveryConfirmation(
+    val deliveryId: Int,
+    val deliveryConfirmationActionString: String
+) : HomeDestination
 
 @Destination
 @Serializable

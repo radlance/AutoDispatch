@@ -30,6 +30,7 @@ import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.delivery.domain.RequestError
+import com.github.radlance.autodispatch.request.core.domain.DocumentType
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -39,7 +40,7 @@ fun DeliveryDetailsScreen(
     deliveryId: Int,
     deliveryNumber: String,
     navigateToDeliveryRoute: () -> Unit,
-    navigateToDeliveryConfirmation: () -> Unit,
+    navigateToDeliveryConfirmation: (docType: DocumentType) -> Unit,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
@@ -91,7 +92,14 @@ fun DeliveryDetailsScreen(
                         scrollState = scrollState,
                         delivery = delivery,
                         onContinueDeliveryClick = navigateToDeliveryRoute,
-                        onRetakeDocumentsClick = navigateToDeliveryConfirmation,
+                        onRetakeDocumentsClick = {
+                            val type = if (delivery.actualUnloadingAt == null) {
+                                DocumentType.SHIPPING
+                            } else {
+                                DocumentType.ACCEPTANCE
+                            }
+                            navigateToDeliveryConfirmation(type)
+                        },
                         onAcceptClick = { viewModel.acceptDelivery(delivery.id) },
                         onCloseError = viewModel::resetAcceptState,
                         navigateUp = navigateUp,

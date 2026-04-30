@@ -257,7 +257,8 @@ class RequestRepository(
                     AssignmentTable.requestId,
                     DeliveryDocumentTable.id,
                     DeliveryDocumentTable.imageUrl,
-                    DeliveryDocumentTable.uploadedAt
+                    DeliveryDocumentTable.uploadedAt,
+                    DeliveryDocumentTable.typeId
                 )
                 .where { AssignmentTable.requestId inList requestIds }
                 .orderBy(DeliveryDocumentTable.uploadedAt, SortOrder.DESC)
@@ -267,7 +268,8 @@ class RequestRepository(
                     val doc = DeliveryDocument(
                         id = row[DeliveryDocumentTable.id].value,
                         imageUrl = row[DeliveryDocumentTable.imageUrl],
-                        uploadedAt = row[DeliveryDocumentTable.uploadedAt]?.toString()
+                        uploadedAt = row[DeliveryDocumentTable.uploadedAt]?.toString(),
+                        typeId = row[DeliveryDocumentTable.typeId].value
                     )
 
                     requestId to doc

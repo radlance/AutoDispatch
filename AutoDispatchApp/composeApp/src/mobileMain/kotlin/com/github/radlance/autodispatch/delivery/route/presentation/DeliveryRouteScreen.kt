@@ -31,6 +31,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.delivery
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationAction
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsShimmer
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.RequestError
@@ -44,7 +45,7 @@ fun DeliveryRouteScreen(
     deliveryId: Int,
     deliveryNumber: String,
     navigateUp: () -> Unit,
-    navigateToDeliveryConfirmation: () -> Unit,
+    navigateToDeliveryConfirmation: (action: DeliveryConfirmationAction) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeliveryDetailsViewModel = koinViewModel()
 ) {

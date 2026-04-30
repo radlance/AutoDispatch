@@ -59,9 +59,10 @@ import com.github.radlance.autodispatch.request.change.presentation.ChangeReques
 import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestViewModel
 import com.github.radlance.autodispatch.request.core.domain.CargoType
 import com.github.radlance.autodispatch.request.core.domain.City
+import com.github.radlance.autodispatch.request.core.domain.DocumentType
 import com.github.radlance.autodispatch.request.core.domain.Request
-import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.coroutines.launch
+import kotlinx.datetime.toJavaLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.OffsetDateTime
@@ -79,6 +80,8 @@ fun RequestDetailsPanel(
     modifier: Modifier = Modifier,
     viewModel: ChangeRequestViewModel = koinViewModel()
 ) {
+    val hasAcceptanceDocs = request.documents.any { it.type == DocumentType.ACCEPTANCE }
+
     val cancelRequestState by viewModel.cancelRequestState.collectAsState()
     val rejectDocumentsState by viewModel.rejectDocumentsState.collectAsState()
     val approveDocumentsState by viewModel.approveDocumentsState.collectAsState()
@@ -408,7 +411,12 @@ fun RequestDetailsPanel(
                             )
                         }
                     }
-                    Text(text = "Вы уверены, что хотите одобрить документы по этой заявке? После одобрения заявка будет завершена.")
+                    val text = if (hasAcceptanceDocs) {
+                        "Вы уверены, что хотите одобрить документы по этой заявке? После одобрения заявка будет завершена."
+                    } else {
+                        "Вы уверены, что хотите одобрить документы погрузки? После одобрения водитель сможет продолжить транспортировку груза."
+                    }
+                    Text(text = text)
                 }
                 LaunchedEffect(approveDocumentsState) {
                     if (approveDocumentsState is FetchResultUiState.Success) {
@@ -430,7 +438,8 @@ fun RequestDetailsPanel(
                     onClick = {
                         viewModel.reduce(
                             ChangeRequestEvent.ClickApproveDocument(
-                                requestId = request.id
+                                requestId = request.id,
+                                isShipping = !hasAcceptanceDocs
                             )
                         )
                     },

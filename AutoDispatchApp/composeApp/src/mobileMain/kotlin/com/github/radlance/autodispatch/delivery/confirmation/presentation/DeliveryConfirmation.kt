@@ -75,7 +75,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.radlance.autodispatch.common.presentation.AppBackHandler
 import com.github.radlance.autodispatch.common.presentation.WarningCard
-import com.github.radlance.autodispatch.common.utils.toStringAddress
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.platform.MapPoint
 import com.github.radlance.autodispatch.platform.createCameraPermissionController
@@ -90,7 +89,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun DeliveryConfirmation(
-    retake: Boolean,
+    action: DeliveryConfirmationAction,
     navigateUp: () -> Unit,
     navigateToSuccessDeliveryScreen: () -> Unit,
     delivery: DeliveryDetailed,
@@ -98,6 +97,7 @@ fun DeliveryConfirmation(
     modifier: Modifier = Modifier,
     viewModel: DeliveryConfirmationViewModel = koinViewModel()
 ) {
+    var calledOnce by rememberSaveable { mutableStateOf(false) }
     var showBackDialog by remember { mutableStateOf(false) }
     var showConfirmationDialog by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
@@ -132,8 +132,11 @@ fun DeliveryConfirmation(
 
     completeDeliveryState.Reduce(
         onSuccess = {
-            viewModel.resetState()
-            navigateToSuccessDeliveryScreen()
+            if (!calledOnce) {
+                viewModel.resetState()
+                navigateToSuccessDeliveryScreen()
+                calledOnce = true
+            }
         },
         onLoading = {
             Dialog(onDismissRequest = {}) {
@@ -243,11 +246,7 @@ fun DeliveryConfirmation(
                     onClick = {
                         showConfirmationDialog = false
 
-                        viewModel.completeDelivery(
-                            deliveryId = delivery.id,
-                            documents = documents,
-                            retake = retake
-                        )
+                        action.action(viewModel, delivery.id, documents)
                     }
                 ) { Text(text = "Отправить") }
             },
@@ -280,7 +279,7 @@ fun DeliveryConfirmation(
                         icon = Icons.Outlined.ErrorOutline,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        message = "Сделайте фото документа о доставке (накладная, ТТН). Фотография должна быть чёткой и читаемой."
+                        message = action.warningMessage
                     )
                     Spacer(Modifier.height(24.dp))
                     Card {
@@ -294,17 +293,17 @@ fun DeliveryConfirmation(
                                         )
                                     }
                                     Spacer(Modifier.width(12.dp))
-                                    Text("Точка разгрузки")
+                                    Text(action.locationTitle)
                                 }
                             }
                             Column(Modifier.padding(horizontal = 18.dp)) {
                                 Text(
-                                    text = delivery.unloadingPoint.toStringAddress(),
+                                    text = action.getAddress(delivery),
                                     fontSize = 14.sp
                                 )
                                 OutlinedButton(
                                     onClick = {
-                                        selectedAddress = delivery.unloadingPoint.toStringAddress()
+                                        selectedAddress = action.getAddress(delivery)
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()

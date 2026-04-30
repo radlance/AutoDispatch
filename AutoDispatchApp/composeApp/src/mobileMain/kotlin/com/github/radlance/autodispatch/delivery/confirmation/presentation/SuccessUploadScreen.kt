@@ -144,7 +144,7 @@ fun SuccessUploadScreen(
                 icon = Icons.Outlined.ErrorOutline,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                message = "Диспетчер проверит качество фотографий и подтвердит завершение доставки.",
+                message = "Диспетчер проверит качество фотографий и определит дальнейший статус доставки.",
             )
             Column {
                 Button(onClick = navigateToDeliveryList, modifier = Modifier.fillMaxWidth()) {

@@ -154,10 +154,13 @@ interface ChangeRequestEvent : Event {
         }
     }
 
-    class ClickApproveDocument(private val requestId: Int): ChangeRequestEvent {
+    class ClickApproveDocument(
+        private val requestId: Int,
+        private val isShipping: Boolean
+    ): ChangeRequestEvent {
 
         override fun apply(action: CreateRequestAction) {
-            action.approveDocument(requestId)
+            action.approveDocument(requestId, isShipping)
         }
     }
 
@@ -281,7 +284,7 @@ interface CreateRequestAction {
 
     fun rejectDocument(requestId: Int, rejectReason: String)
 
-    fun approveDocument(requestId: Int)
+    fun approveDocument(requestId: Int, isShipping: Boolean)
 
     fun unassignDriver(requestId: Int)
 

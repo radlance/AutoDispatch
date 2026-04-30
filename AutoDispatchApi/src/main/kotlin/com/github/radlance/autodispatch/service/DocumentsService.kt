@@ -17,7 +17,7 @@ class DocumentsService(
     private val testDriverEmail = "dmanyakin@yandex.ru"
 
     suspend fun approveDocuments(requestId: Int) {
-        documentsRepository.approveDocument(requestId)
+        documentsRepository.approveFinalDocuments(requestId)
 
         val contacts = requestRepository.getNotificationData(requestId) ?: return
 
@@ -64,6 +64,42 @@ class DocumentsService(
                 email = testDriverEmail,
                 subject = "Доставка №${contacts.reqNumber} завершена",
                 body = driverBody
+            )
+        )
+    }
+
+    suspend fun approveShippingDocuments(requestId: Int) {
+        documentsRepository.approveShippingDocuments(requestId)
+
+        val contacts = requestRepository.getNotificationData(requestId) ?: return
+
+        val driverBody = EmailTemplateBuilder.driver(
+            title = "Документы погрузки приняты"
+        ) {
+            p { +"Документы по заявке №${contacts.reqNumber} успешно прошли проверку." }
+            p { +"Вы можете приступать к транспортировке груза в пункт назначения." }
+        }
+
+        notificationPublisher.publish(
+            EmailNotificationEvent(
+                email = testDriverEmail,
+                subject = "Заявка №${contacts.reqNumber}: проверка пройдена",
+                body = driverBody
+            )
+        )
+
+        val customerBody = EmailTemplateBuilder.customer(
+            title = "Груз в пути"
+        ) {
+            p { +"Документы по заявке №${contacts.reqNumber} проверены диспетчером." }
+            p { +"Груз успешно принят к перевозке и направляется в пункт выгрузки." }
+        }
+
+        notificationPublisher.publish(
+            EmailNotificationEvent(
+                email = testCustomerEmail,
+                subject = "Заявка №${contacts.reqNumber}: груз отправлен",
+                body = customerBody
             )
         )
     }

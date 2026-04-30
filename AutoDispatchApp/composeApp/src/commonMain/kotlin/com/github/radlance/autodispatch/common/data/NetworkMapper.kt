@@ -23,6 +23,7 @@ import com.github.radlance.autodispatch.request.core.domain.DeliveryDocument
 import com.github.radlance.autodispatch.request.core.domain.Point
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
+import com.github.radlance.autodispatch.request.core.domain.toDocumentType
 import io.ktor.client.request.forms.formData
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
@@ -171,7 +172,8 @@ fun DeliveryDocumentDto.toDeliveryDocument(): DeliveryDocument {
     return DeliveryDocument(
         id = id,
         imageUrl = imageUrl.asImageUrl(),
-        uploadedAt = uploadedAt.toLocalDateTimeFromUtc()
+        uploadedAt = uploadedAt.toLocalDateTimeFromUtc(),
+        type = typeId.toDocumentType()
     )
 }
 

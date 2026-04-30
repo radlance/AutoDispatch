@@ -56,6 +56,7 @@ import com.github.radlance.autodispatch.common.utils.formatKg
 import com.github.radlance.autodispatch.common.utils.formatM3
 import com.github.radlance.autodispatch.common.utils.toSimpleDateWithTimeString
 import com.github.radlance.autodispatch.common.utils.toStringAddress
+import com.github.radlance.autodispatch.delivery.confirmation.presentation.DeliveryConfirmationAction
 import com.github.radlance.autodispatch.delivery.details.domain.DeliveryDetailed
 import com.github.radlance.autodispatch.delivery.details.presentation.DeliveryDetailsViewModel
 import com.github.radlance.autodispatch.delivery.domain.RequestError
@@ -84,7 +85,7 @@ import kotlin.math.sqrt
 fun DeliveryRoute(
     scrollState: ScrollState,
     delivery: DeliveryDetailed,
-    navigateToDeliveryConfirmation: () -> Unit,
+    navigateToDeliveryConfirmation: (action: DeliveryConfirmationAction) -> Unit,
     onActionSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     deliveryViewModel: DeliveryDetailsViewModel,
@@ -130,7 +131,7 @@ fun DeliveryRoute(
 
     val buttonText = when (action) {
         RouteAction.ArriveLoading -> "Прибыл на погрузку"
-        RouteAction.DepartLoading -> "Отправился с погрузки"
+        RouteAction.DepartLoading -> "Загрузить документы"
         RouteAction.ArriveUnloading -> "Прибыл на разгрузку"
         RouteAction.UploadDocuments -> "Загрузить документы"
     }
@@ -294,9 +295,13 @@ fun DeliveryRoute(
             onArrivedPlaceClick = {
                 when (action) {
                     RouteAction.ArriveLoading -> deliveryViewModel.arriveLoading(delivery.id)
-                    RouteAction.DepartLoading -> deliveryViewModel.departLoading(delivery.id)
+                    RouteAction.DepartLoading -> navigateToDeliveryConfirmation(
+                        DeliveryConfirmationAction.Shipment
+                    )
                     RouteAction.ArriveUnloading -> deliveryViewModel.arriveUnloading(delivery.id)
-                    RouteAction.UploadDocuments -> navigateToDeliveryConfirmation()
+                    RouteAction.UploadDocuments -> navigateToDeliveryConfirmation(
+                        DeliveryConfirmationAction.Acceptance
+                    )
                 }
             },
             arrivedButtonEnabled = uiState.value.enabled && !isActionLoading,
@@ -597,7 +602,7 @@ private fun ActionButtons(
         OutlinedButton(onClick = onRefreshLocationClick, modifier = Modifier.fillMaxWidth()) {
             Icon(imageVector = Icons.Outlined.NearMe, contentDescription = null)
             Spacer(Modifier.width(12.dp))
-            Text(text = "Обновить геологацию")
+            Text(text = "Обновить геолокацию")
         }
         Spacer(Modifier.height(12.dp))
         Button(
