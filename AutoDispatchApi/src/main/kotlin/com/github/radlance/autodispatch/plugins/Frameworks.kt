@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.plugins
 
+import com.github.radlance.autodispatch.di.adminModule
 import com.github.radlance.autodispatch.di.authModule
 import com.github.radlance.autodispatch.di.deliveryModule
 import com.github.radlance.autodispatch.di.documentModule
@@ -37,7 +38,8 @@ fun Application.configureDi() {
             documentModule,
             driverModule,
             vehicleModule,
-            statisticsModule
+            statisticsModule,
+            adminModule
         )
     }
 }

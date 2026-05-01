@@ -26,7 +26,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
         login = login,
         fullName = fullName,
         phoneNumber = phoneNumber,
-        isDispatcher = roleId == 1,
+        isDispatcher = roleId.value == 1,
         createdAt = createdAt?.toString(),
     )
 
@@ -37,7 +37,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
         salt = salt,
         fullName = fullName,
         phoneNumber = phoneNumber,
-        roleId = roleId,
+        roleId = roleId.value,
         createdAt = createdAt?.toHttpDateString()
     )
 }

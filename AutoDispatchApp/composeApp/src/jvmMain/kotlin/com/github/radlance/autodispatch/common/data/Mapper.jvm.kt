@@ -1,9 +1,17 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.admin.data.UserDetailedDto
+import com.github.radlance.autodispatch.admin.data.UserManagementFiltersDto
+import com.github.radlance.autodispatch.admin.data.UserShortDto
+import com.github.radlance.autodispatch.admin.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.domain.UserManagementFilters
+import com.github.radlance.autodispatch.admin.domain.UserShort
+import com.github.radlance.autodispatch.admin.domain.toUserStatus
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.common.domain.toDriverStatus
 import com.github.radlance.autodispatch.common.domain.toRequestStatus
+import com.github.radlance.autodispatch.common.domain.toUserRole
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.core.data.DriverWorkShiftDto
 import com.github.radlance.autodispatch.driver.core.domain.Driver
@@ -21,14 +29,14 @@ import com.github.radlance.autodispatch.request.change.domain.ChangeRequest
 import com.github.radlance.autodispatch.request.change.domain.Coords
 import com.github.radlance.autodispatch.request.change.domain.PointDetailed
 import com.github.radlance.autodispatch.request.core.data.CityDto
-import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.core.data.RequestFiltersDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.UserFilterDto
 import com.github.radlance.autodispatch.request.core.data.VehicleDto
 import com.github.radlance.autodispatch.request.core.domain.City
-import com.github.radlance.autodispatch.request.core.domain.Filters
 import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.request.core.domain.RequestFilters
 import com.github.radlance.autodispatch.request.core.domain.UserFilter
 import com.github.radlance.autodispatch.request.core.domain.Vehicle
 import com.github.radlance.autodispatch.statistics.data.DashboardStatisticsDto
@@ -59,8 +67,8 @@ fun TablePaginatedResultDto<RequestDto>.toPaginatedResultRequest(): TablePaginat
     )
 }
 
-fun FiltersDto.toFilters(): Filters {
-    return Filters(
+fun RequestFiltersDto.toRequestFilters(): RequestFilters {
+    return RequestFilters(
         cities = cities.map { it.toCity() },
         cargoTypes = cargoTypes.map { it.toCargoType() },
         statuses = statuses.map { it.id.toRequestStatus() },
@@ -220,6 +228,48 @@ fun ReverseAddressDto.belongsTo(selectedCity: String): Boolean {
         town?.equals(selectedCity, ignoreCase = true) == true -> true
         else -> false
     }
+}
+
+fun UserManagementFiltersDto.toUserManagementFilters(): UserManagementFilters {
+    return UserManagementFilters(
+        statuses = statuses.map { it.id.toUserStatus() },
+        roles = roles.map { it.id.toUserRole() }
+    )
+}
+
+fun TablePaginatedResultDto<UserDetailedDto>.toPaginatedResultUserDetailed(): TablePaginatedResult<UserDetailed> {
+    return TablePaginatedResult(
+        items = items.map { it.toUserDetailed() },
+        totalCount = totalCount
+    )
+}
+
+private fun UserDetailedDto.toUserDetailed(): UserDetailed {
+    return UserDetailed(
+        id = id,
+        login = login,
+        email = email,
+        fullName = fullName,
+        phoneNumber = phoneNumber,
+        avatarUrl = avatarUrl,
+        status = status.id.toUserStatus(),
+        role = role.id.toUserRole(),
+        createdBy = createdBy?.toUserShort(),
+        updatedBy = updatedBy?.toUserShort(),
+        createdAt = createdAt.toLocalDateTimeFromUtc(),
+        updatedAt = updatedAt?.toLocalDateTimeFromUtc(),
+        lastLoginAt = lastLoginAt?.toLocalDateTimeFromUtc()
+    )
+}
+
+private fun UserShortDto.toUserShort(): UserShort {
+    return UserShort(
+        id = id,
+        login = login,
+        fullName = fullName,
+        phoneNumber = phoneNumber,
+        avatarUrl = avatarUrl
+    )
 }
 
 private fun StatItemDto.toStatItem(): StatItem {

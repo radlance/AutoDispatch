@@ -1,12 +1,12 @@
 package com.github.radlance.autodispatch.request.core.presentation
 
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
-import com.github.radlance.autodispatch.request.core.domain.Filters
+import com.github.radlance.autodispatch.request.core.domain.RequestFilters
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 
 data class RequestScreenState(
-    val filters: FetchResultUiState<Filters, String> = FetchResultUiState.Loading,
+    val filters: FetchResultUiState<RequestFilters, String> = FetchResultUiState.Loading,
     val requestsResultState: FetchResultUiState<TablePaginatedResult<Request>, String> = FetchResultUiState.Loading,
 
     val query: String = "",

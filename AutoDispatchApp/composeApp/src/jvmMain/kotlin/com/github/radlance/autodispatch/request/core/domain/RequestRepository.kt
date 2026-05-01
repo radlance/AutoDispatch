@@ -5,7 +5,7 @@ import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 
 interface RequestRepository {
 
-    suspend fun filters(): FetchResult<Filters, String>
+    suspend fun filters(): FetchResult<RequestFilters, String>
 
     suspend fun requests(
         page: Int = 1,

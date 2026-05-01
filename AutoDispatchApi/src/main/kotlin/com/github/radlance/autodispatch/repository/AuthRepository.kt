@@ -11,20 +11,32 @@ import com.github.radlance.autodispatch.util.loggedTransaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertReturning
+import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.time.Instant
 
 class AuthRepository {
     suspend fun create(user: RegisterUser, salt: String): User = loggedTransaction {
-        UserEntity.new {
-            login = user.login
-            email = user.email
-            passwordHash = user.password
-            this.salt = salt
-            fullName = user.fullName
-            phoneNumber = user.phoneNumber
-            roleId = user.roleId
-        }.toUser()
+        val user = UserTable.insertReturning {
+            it[login] = user.login
+            it[email] = user.email
+            it[passwordHash] = user.password
+            it[this.salt] = salt
+            it[fullName] = user.fullName
+            it[phoneNumber] = user.phoneNumber
+            it[roleId] = user.roleId
+        }.first()
+
+        User(
+            id = user[UserTable.id].value,
+            login = user[UserTable.login],
+            fullName = user[UserTable.fullName],
+            phoneNumber = user[UserTable.phoneNumber],
+            isDispatcher = user[UserTable.roleId].value == 1,
+            createdAt = user[UserTable.createdAt]?.toString()
+        )
     }
 
     suspend fun getUserByLogin(login: String): UserWithPassword? = loggedTransaction {
@@ -41,6 +53,10 @@ class AuthRepository {
             it[this.userId] = userId
             it[this.expiresAt] = Instant.now().plusMillis(expiresInMs)
             it[this.createdAt] = Instant.now()
+        }
+
+        UserTable.update({ UserTable.id eq userId }) {
+            it[lastLoginAt] = CurrentTimestampWithTimeZone
         }
     }
 

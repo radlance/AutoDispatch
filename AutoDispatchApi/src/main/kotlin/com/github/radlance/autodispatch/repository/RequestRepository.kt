@@ -23,7 +23,7 @@ import com.github.radlance.autodispatch.domain.request.CargoType
 import com.github.radlance.autodispatch.domain.request.CreateRequest
 import com.github.radlance.autodispatch.domain.request.Customer
 import com.github.radlance.autodispatch.domain.request.DriverRequest
-import com.github.radlance.autodispatch.domain.request.Filters
+import com.github.radlance.autodispatch.domain.request.RequestFilters
 import com.github.radlance.autodispatch.domain.request.NotificationContacts
 import com.github.radlance.autodispatch.domain.request.Point
 import com.github.radlance.autodispatch.domain.request.Request
@@ -285,7 +285,7 @@ class RequestRepository(
         TablePaginatedResult(items = items, totalCount = total)
     }
 
-    suspend fun filters(): Filters = loggedTransaction {
+    suspend fun filters(): RequestFilters = loggedTransaction {
         val cities = CityEntity.all().map { it.toCity() }
         val cargoTypes = CargoTypeEntity.all().map { it.toCargoType() }
         val statuses = RequestStatusEntity.all().map { it.toRequestStatus() }
@@ -312,7 +312,7 @@ class RequestRepository(
                 )
             }
 
-        Filters(cities, cargoTypes, statuses, drivers, vehicles)
+        RequestFilters(cities, cargoTypes, statuses, drivers, vehicles)
     }
 
     private fun getOrganizationId(customerName: String, email: String, phone: String): EntityID<Int> {

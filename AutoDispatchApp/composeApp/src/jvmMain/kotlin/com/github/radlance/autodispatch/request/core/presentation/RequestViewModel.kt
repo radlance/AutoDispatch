@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
+import com.github.radlance.autodispatch.common.presentation.applyFilterSelection
 import com.github.radlance.autodispatch.common.presentation.toUiState
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import kotlinx.coroutines.Job
@@ -78,7 +79,7 @@ class RequestViewModel(
         val statusIds = applyFilterSelection(
             selectedNames = state.selectedStatuses,
             allItems = filters.statuses,
-            nameSelector = { it.name },
+            nameSelector = { it.title },
             idSelector = { it.id }
         )
 
@@ -260,16 +261,4 @@ class RequestViewModel(
             triggerRequestLoad()
         }
     }
-}
-
-private inline fun <T> applyFilterSelection(
-    selectedNames: List<String>,
-    allItems: List<T>,
-    crossinline nameSelector: (T) -> String,
-    crossinline idSelector: (T) -> Int
-): List<Int> {
-    if (selectedNames.isEmpty()) return emptyList()
-
-    val selectedIds = allItems.filter { nameSelector(it) in selectedNames }.map(idSelector)
-    return if (selectedIds.size == allItems.size) emptyList() else selectedIds
 }

@@ -1,9 +1,11 @@
 package com.github.radlance.autodispatch.plugins
 
+import com.github.radlance.autodispatch.repository.AdminRepository
 import com.github.radlance.autodispatch.repository.DriverRepository
 import com.github.radlance.autodispatch.repository.ProfileRepository
 import com.github.radlance.autodispatch.repository.StatisticsRepository
 import com.github.radlance.autodispatch.repository.VehicleRepository
+import com.github.radlance.autodispatch.route.admin
 import com.github.radlance.autodispatch.route.auth
 import com.github.radlance.autodispatch.route.deliveries
 import com.github.radlance.autodispatch.route.documents
@@ -31,6 +33,7 @@ fun Application.configureRouting() {
     val vehicleRepository by inject<VehicleRepository>()
     val statisticsRepository by inject<StatisticsRepository>()
     val reportService by inject<ReportService>()
+    val adminRepository by inject<AdminRepository>()
 
     routing {
         route("/api") {
@@ -42,6 +45,7 @@ fun Application.configureRouting() {
             driver(driverRepository)
             vehicle(vehicleRepository)
             statistics(statisticsRepository, reportService)
+            admin(adminRepository)
         }
     }
 }

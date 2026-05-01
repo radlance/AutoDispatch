@@ -12,7 +12,7 @@ enum class RequestStatus(
     OnCheck(6, "На проверке"),
     Rejected(7, "Отклонена");
 
-    companion object Companion {
+    companion object {
         fun fromId(id: Int?): RequestStatus? =
             entries.firstOrNull { it.id == id }
     }
@@ -20,5 +20,5 @@ enum class RequestStatus(
 
 fun Int.toRequestStatus(): RequestStatus =
     RequestStatus.fromId(this)
-        ?: error("Unknown delivery status id=$this")
+        ?: error("Unknown request status id=$this")
 

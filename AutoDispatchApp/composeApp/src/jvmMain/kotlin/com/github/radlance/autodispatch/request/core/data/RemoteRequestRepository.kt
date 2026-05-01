@@ -2,10 +2,10 @@ package com.github.radlance.autodispatch.request.core.data
 
 import com.github.radlance.autodispatch.common.data.ApiServiceJvm
 import com.github.radlance.autodispatch.common.data.HandleRequest
-import com.github.radlance.autodispatch.common.data.toFilters
+import com.github.radlance.autodispatch.common.data.toRequestFilters
 import com.github.radlance.autodispatch.common.data.toPaginatedResultRequest
 import com.github.radlance.autodispatch.common.domain.FetchResult
-import com.github.radlance.autodispatch.request.core.domain.Filters
+import com.github.radlance.autodispatch.request.core.domain.RequestFilters
 import com.github.radlance.autodispatch.request.core.domain.Request
 import com.github.radlance.autodispatch.request.core.domain.RequestRepository
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
@@ -14,8 +14,8 @@ class RemoteRequestRepository(
     private val apiService: ApiServiceJvm,
     private val handleRequest: HandleRequest
 ) : RequestRepository {
-    override suspend fun filters(): FetchResult<Filters, String> = handleRequest.handle {
-        apiService.filters().toFilters()
+    override suspend fun filters(): FetchResult<RequestFilters, String> = handleRequest.handle {
+        apiService.requestFilters().toRequestFilters()
     }
 
     override suspend fun requests(

@@ -5,6 +5,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.radlance.autodispatch.core.presentation.App
+import com.github.radlance.autodispatch.di.adminModule
 import com.github.radlance.autodispatch.di.authModule
 import com.github.radlance.autodispatch.di.changeRequestModule
 import com.github.radlance.autodispatch.di.commonModule
@@ -48,7 +49,8 @@ fun main() = application {
             driverVehicleModule,
             vehicleUnassignmentModule,
             statisticsModule,
-            settingsModule
+            settingsModule,
+            adminModule
         )
     }
     Window(

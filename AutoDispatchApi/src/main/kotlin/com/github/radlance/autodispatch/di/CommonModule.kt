@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.di
 
+import com.github.radlance.autodispatch.repository.AdminRepository
 import com.github.radlance.autodispatch.repository.AuthRepository
 import com.github.radlance.autodispatch.repository.DeliveryRepository
 import com.github.radlance.autodispatch.repository.DocumentsRepository
@@ -51,7 +52,7 @@ val profileModule
         singleOf(::ProfileRepository)
     }
 
-val Application.scheduleModule
+val scheduleModule
     get() = module {
         single<Clock> { Clock.systemDefaultZone() }
         singleOf(::DriverScheduleGuard)
@@ -92,4 +93,9 @@ val statisticsModule
         singleOf(::StatisticsRepository)
         singleOf(::ReportRepository)
         singleOf(::ReportService)
+    }
+
+val adminModule
+    get() = module {
+        singleOf(::AdminRepository)
     }

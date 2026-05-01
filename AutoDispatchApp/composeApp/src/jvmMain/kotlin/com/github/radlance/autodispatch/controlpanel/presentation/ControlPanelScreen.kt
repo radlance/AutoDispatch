@@ -286,7 +286,9 @@ fun ControlPanelScreen(
     ) {
         if (userRole == UserRole.Admin) {
             AdminNavGraph(
-                navigationState = navigationState
+                navigationState = navigationState,
+                loadProfileUiState = loadProfileUiState,
+                onReloadProfile = viewModel::loadProfile,
             )
         } else {
             DrawerNavGraph(

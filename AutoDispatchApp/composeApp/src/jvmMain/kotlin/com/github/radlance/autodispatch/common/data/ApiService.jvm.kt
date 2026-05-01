@@ -1,5 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
+import com.github.radlance.autodispatch.admin.data.UserDetailedDto
+import com.github.radlance.autodispatch.admin.data.UserManagementFiltersDto
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
 import com.github.radlance.autodispatch.driver.request.data.DriverRequestDto
@@ -10,8 +12,8 @@ import com.github.radlance.autodispatch.request.change.data.PointDetailedDto
 import com.github.radlance.autodispatch.request.change.data.RejectDocumentDto
 import com.github.radlance.autodispatch.request.change.data.ReverseDto
 import com.github.radlance.autodispatch.request.core.data.CustomerDto
-import com.github.radlance.autodispatch.request.core.data.FiltersDto
 import com.github.radlance.autodispatch.request.core.data.RequestDto
+import com.github.radlance.autodispatch.request.core.data.RequestFiltersDto
 import com.github.radlance.autodispatch.request.core.data.TablePaginatedResultDto
 import com.github.radlance.autodispatch.request.core.data.VehicleDto
 import com.github.radlance.autodispatch.statistics.data.DashboardStatisticsDto
@@ -32,7 +34,7 @@ import io.ktor.client.request.url
 
 interface ApiServiceJvm : ApiService {
 
-    suspend fun filters(): FiltersDto
+    suspend fun requestFilters(): RequestFiltersDto
 
     suspend fun requests(
         page: Int,
@@ -124,6 +126,16 @@ interface ApiServiceJvm : ApiService {
     suspend fun statistics(): DashboardStatisticsDto
 
     suspend fun downloadReport(request: DownloadReportRequestDto): ByteArray
+
+    suspend fun userManagementFilters(): UserManagementFiltersDto
+
+    suspend fun usersDetailed(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?,
+        statusIds: List<Int>,
+        roleIds: List<Int>
+    ): TablePaginatedResultDto<UserDetailedDto>
 }
 
 internal class KtorApiServiceJvm(
@@ -131,7 +143,7 @@ internal class KtorApiServiceJvm(
     private val apiService: ApiService
 ) : ApiServiceJvm, ApiService by apiService {
 
-    override suspend fun filters(): FiltersDto {
+    override suspend fun requestFilters(): RequestFiltersDto {
         return httpClient.get("requests/filters").body()
     }
 
@@ -362,6 +374,32 @@ internal class KtorApiServiceJvm(
     override suspend fun downloadReport(request: DownloadReportRequestDto): ByteArray {
         return httpClient.post("statistics/report") {
             setBody(request)
+        }.body()
+    }
+
+    override suspend fun userManagementFilters(): UserManagementFiltersDto {
+        return httpClient.get("admin/filters").body()
+    }
+
+    override suspend fun usersDetailed(
+        page: Int,
+        pageSize: Int,
+        searchQuery: String?,
+        statusIds: List<Int>,
+        roleIds: List<Int>
+    ): TablePaginatedResultDto<UserDetailedDto> {
+        return httpClient.get("admin/users") {
+            parameter("page", page.toString())
+            parameter("pageSize", pageSize.toString())
+
+            searchQuery?.let { parameter("search", it) }
+
+            if (statusIds.isNotEmpty()) {
+                parameter("statusIds", statusIds.joinToString(","))
+            }
+            if (roleIds.isNotEmpty()) {
+                parameter("roleIds", roleIds.joinToString(","))
+            }
         }.body()
     }
 }

@@ -29,11 +29,13 @@
     <string name="log_in_to_the_system">Вход в систему…</string>
     <string name="create">Создать</string>
     <string name="search_by_requests">Поиск по заявкам…</string>
+    <string name="search_by_users">Поиск по пользователям…</string>
     <string name="all_requests">Все заявки</string>
     <string name="route">Маршрут</string>
     <string name="cargo_type">Тип груза</string>
     <string name="date">Дата</string>
     <string name="status">Статус</string>
+    <string name="role">Роль</string>
     <string name="driver">Водитель</string>
     <string name="vehicle">Автомобиль</string>
     <string name="request">Заявка</string>

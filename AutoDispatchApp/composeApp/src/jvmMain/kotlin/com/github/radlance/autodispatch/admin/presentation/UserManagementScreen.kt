@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.request.core.presentation
+package com.github.radlance.autodispatch.admin.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -35,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,16 +50,17 @@ import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.retry
-import autodispatch.composeapp.generated.resources.search_by_requests
+import autodispatch.composeapp.generated.resources.search_by_users
+import com.github.radlance.autodispatch.admin.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.domain.UserManagementFilters
 import com.github.radlance.autodispatch.common.presentation.AppBackHandler
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
 import com.github.radlance.autodispatch.common.presentation.ErrorMessage
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
-import com.github.radlance.autodispatch.request.change.presentation.ChangeRequestDialog
-import com.github.radlance.autodispatch.request.core.domain.RequestFilters
-import com.github.radlance.autodispatch.request.core.domain.Request
+import com.github.radlance.autodispatch.request.core.presentation.BottomPagingBar
+import com.github.radlance.autodispatch.request.core.presentation.rememberDataTableScrollbarAdapter
 import com.seanproctor.datatable.DataTableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -69,63 +69,41 @@ import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun RequestsScreen(
+fun UserManagementScreen(
     loadProfileUiState: FetchResultUiState<User, String>,
     onReloadProfile: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: RequestViewModel = koinViewModel()
+    viewModel: UserManagementViewModel = koinViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.triggerRequestLoad()
-    }
-    var showCreationDialog by rememberSaveable { mutableStateOf(false) }
-    var showRequestDetailsPanel by rememberSaveable { mutableStateOf(false) }
+    var showUserDetailsPanel by rememberSaveable { mutableStateOf(false) }
     var showSearchFilters by rememberSaveable { mutableStateOf(false) }
-    var selectedRequest by rememberSaveable { mutableStateOf<Request?>(null) }
+    var selectedUser by rememberSaveable { mutableStateOf<UserDetailed?>(null) }
 
-    val requestsUiState by viewModel.requestScreenState.collectAsState()
-    val pageIndex = requestsUiState.pageIndex
-    val pageSize = requestsUiState.pageSize
-    val query = requestsUiState.query
-    val selectedDepartureCities = requestsUiState.selectedDepartureCities
-    val selectedDestinationCities = requestsUiState.selectedDestinationCities
-    val selectedCargoTypes = requestsUiState.selectedCargoTypes
-    val selectedStatuses = requestsUiState.selectedStatuses
-    val selectedDrivers = requestsUiState.selectedDrivers
-    val selectedVehicles = requestsUiState.selectedVehicles
+    val screenState by viewModel.userManagementScreenState.collectAsState()
+    val pageIndex = screenState.pageIndex
+    val pageSize = screenState.pageSize
+    val query = screenState.query
+    val selectedRoles = screenState.selectedRoles
+    val selectedStatuses = screenState.selectedStatuses
 
     val dataTableState = remember { DataTableState() }
     val scope = rememberCoroutineScope()
 
     AppBackHandler {
-        if (showRequestDetailsPanel) {
-            showRequestDetailsPanel = false
+        if (showUserDetailsPanel) {
+            showUserDetailsPanel = false
         }
     }
 
     Row(modifier = modifier.fillMaxSize()) {
-
         Column(modifier = Modifier.weight(1f)) {
-            requestsUiState.filters.Reduce(
+            screenState.filters.Reduce(
                 onLoading = {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator()
                     }
                 },
                 onSuccess = { filters ->
-                    if (showCreationDialog) {
-                        ChangeRequestDialog(
-                            cities = filters.cities,
-                            cargoTypes = filters.cargoTypes,
-                            onDismiss = {
-                                showCreationDialog = false
-                            },
-                            onSuccessCreateRequest = {
-                                viewModel.onRequestChanged()
-                            }
-                        )
-                    }
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -135,7 +113,7 @@ fun RequestsScreen(
                         CustomTextField(
                             value = query,
                             onValueChange = viewModel::onQueryChanged,
-                            placeholder = stringResource(Res.string.search_by_requests),
+                            placeholder = stringResource(Res.string.search_by_users),
                             leadingIcon = Icons.Default.Search,
                             labelText = null,
                             height = TextFieldDefaults.MinHeight,
@@ -160,7 +138,7 @@ fun RequestsScreen(
                         }
                         Spacer(Modifier.width(16.dp))
                         Button(
-                            onClick = { showCreationDialog = true }
+                            onClick = { /* TODO: Creation not required yet */ }
                         ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
@@ -173,24 +151,13 @@ fun RequestsScreen(
                         enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
                         exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
                     ) {
-                        RequestFilters(
-                            selectedDepartureCities = selectedDepartureCities,
-                            selectedDestinationCities = selectedDestinationCities,
-                            selectedCargoTypes = selectedCargoTypes,
+                        UserManagementFilters(
                             selectedStatuses = selectedStatuses,
-                            selectedDrivers = selectedDrivers,
-                            selectedVehicles = selectedVehicles,
-                            cities = filters.cities,
-                            filterCargoTypes = filters.cargoTypes,
-                            filterStatuses = filters.statuses,
-                            filterDrivers = filters.drivers,
-                            filterVehicles = filters.vehicles,
-                            onDepartureCitiesChanged = viewModel::onDepartureCitiesChanged,
-                            onDestinationCitiesChanged = viewModel::onDestinationCitiesChanged,
-                            onCargoTypesChanged = viewModel::onCargoTypesChanged,
+                            selectedRoles = selectedRoles,
+                            statuses = filters.statuses,
+                            roles = filters.roles,
                             onStatusesChanged = viewModel::onStatusesChanged,
-                            onDriversChanged = viewModel::onDriversChanged,
-                            onVehiclesChanged = viewModel::onVehiclesChanged,
+                            onRolesChanged = viewModel::onRolesChanged,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .animateContentSize(
@@ -202,22 +169,20 @@ fun RequestsScreen(
                         )
                     }
 
-                    requestsUiState.requestsResultState.Reduce(
-                        onSuccess = { request ->
-                            val requestsToShow = request.items
-                            selectedRequest?.let { selected ->
-                                val foundRequest =
-                                    requestsToShow.find { r -> r.requestNumber == selected.requestNumber }
-
-                                if (foundRequest == null) {
-                                    selectedRequest = null
-                                    showRequestDetailsPanel = false
-                                } else if (foundRequest != selected) {
-                                    selectedRequest = foundRequest
+                    screenState.usersResultState.Reduce(
+                        onSuccess = { usersResult ->
+                            val usersToShow = usersResult.items
+                            selectedUser?.let { selected ->
+                                val foundUser = usersToShow.find { u -> u.id == selected.id }
+                                if (foundUser == null) {
+                                    selectedUser = null
+                                    showUserDetailsPanel = false
+                                } else if (foundUser != selected) {
+                                    selectedUser = foundUser
                                 }
                             }
 
-                            if (requestsToShow.isEmpty()) {
+                            if (usersToShow.isEmpty()) {
                                 EmptySearchPlaceholder(
                                     modifier = Modifier
                                         .weight(1f)
@@ -226,20 +191,20 @@ fun RequestsScreen(
                             } else {
                                 Column(modifier = Modifier.fillMaxSize()) {
                                     Box(modifier = Modifier.weight(1f)) {
-                                        RequestTable(
-                                            requests = requestsToShow,
-                                            onRequestClick = { req ->
-                                                showRequestDetailsPanel =
-                                                    if (req == selectedRequest) {
-                                                        !showRequestDetailsPanel
+                                        UserManagementTable(
+                                            users = usersToShow,
+                                            onUserClick = { user ->
+                                                showUserDetailsPanel =
+                                                    if (user == selectedUser) {
+                                                        !showUserDetailsPanel
                                                     } else true
 
-                                                selectedRequest = req
+                                                selectedUser = user
                                             },
                                             dataTableState = dataTableState,
                                             pageIndex = pageIndex,
-                                            selectedRequest = selectedRequest,
-                                            showPanel = showRequestDetailsPanel,
+                                            selectedUser = selectedUser,
+                                            showPanel = showUserDetailsPanel,
                                             pageSize = pageSize
                                         )
 
@@ -253,7 +218,7 @@ fun RequestsScreen(
                                         )
                                     }
 
-                                    val totalCount = request.totalCount.toInt()
+                                    val totalCount = usersResult.totalCount.toInt()
                                     val start = min(pageIndex * pageSize + 1, totalCount)
                                     val end = min(start + pageSize - 1, totalCount)
                                     val pageCount = (totalCount + pageSize - 1) / pageSize
@@ -277,23 +242,23 @@ fun RequestsScreen(
                             }
                         },
                         onLoading = {
-                            val previous = requestsUiState.lastSuccessfulRequests
-                            val requestsToShow = previous?.items ?: emptyList()
+                            val previous = screenState.lastSuccessfulRequest
+                            val usersToShow = previous?.items ?: emptyList()
                             Column(modifier = Modifier.fillMaxSize()) {
                                 Box(modifier = Modifier.weight(1f)) {
-                                    RequestTable(
-                                        requests = requestsToShow,
-                                        onRequestClick = { req ->
-                                            showRequestDetailsPanel = if (req == selectedRequest) {
-                                                !showRequestDetailsPanel
+                                    UserManagementTable(
+                                        users = usersToShow,
+                                        onUserClick = { user ->
+                                            showUserDetailsPanel = if (user == selectedUser) {
+                                                !showUserDetailsPanel
                                             } else true
 
-                                            selectedRequest = req
+                                            selectedUser = user
                                         },
                                         dataTableState = dataTableState,
                                         pageIndex = pageIndex,
-                                        selectedRequest = selectedRequest,
-                                        showPanel = showRequestDetailsPanel,
+                                        selectedUser = selectedUser,
+                                        showPanel = showUserDetailsPanel,
                                         pageSize = pageSize
                                     )
 
@@ -379,24 +344,20 @@ fun RequestsScreen(
                     )
                 }
             )
-
         }
-        val success = (requestsUiState.filters as? FetchResultUiState.Success<RequestFilters>)?.data
+
+        val success =
+            (screenState.filters as? FetchResultUiState.Success<UserManagementFilters>)?.data
         success?.let {
             AnimatedVisibility(
-                visible = showRequestDetailsPanel,
+                visible = showUserDetailsPanel,
                 enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
                 exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
             ) {
-                val request = selectedRequest
-                if (request != null) {
-                    RequestDetailsPanel(
-                        cities = success.cities,
-                        cargoTypes = success.cargoTypes,
-                        onSuccessCreateRequest = viewModel::onRequestChanged,
-                        onClosePanel = { showRequestDetailsPanel = false },
-                        request = request,
-                        modifier = Modifier
+                val user = selectedUser
+                if (user != null) {
+                    Box(
+                        Modifier
                             .fillMaxHeight()
                             .width(350.dp)
                     )

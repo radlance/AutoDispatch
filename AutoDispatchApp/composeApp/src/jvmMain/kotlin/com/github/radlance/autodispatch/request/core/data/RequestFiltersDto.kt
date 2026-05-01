@@ -4,7 +4,7 @@ import com.github.radlance.autodispatch.common.data.StatusDto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FiltersDto(
+data class RequestFiltersDto(
     val cities: List<CityDto>,
     val cargoTypes: List<CargoTypeDto>,
     val statuses: List<StatusDto>,
