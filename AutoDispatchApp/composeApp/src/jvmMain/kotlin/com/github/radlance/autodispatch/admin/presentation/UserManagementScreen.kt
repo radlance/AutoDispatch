@@ -356,8 +356,10 @@ fun UserManagementScreen(
             ) {
                 val user = selectedUser
                 if (user != null) {
-                    Box(
-                        Modifier
+                    UserManagementDetailsPanel(
+                        user = user,
+                        onClosePanel = { showUserDetailsPanel = false },
+                        modifier = Modifier
                             .fillMaxHeight()
                             .width(350.dp)
                     )

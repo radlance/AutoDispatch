@@ -164,7 +164,7 @@ fun UserManagementTable(
 }
 
 @Composable
-private fun UserStatusBadge(status: UserStatus) {
+fun UserStatusBadge(status: UserStatus) {
     val palette = MaterialTheme.statusPalette
     val (bgColor, textColor) = when (status) {
         UserStatus.Active -> palette.successBg to palette.successText
