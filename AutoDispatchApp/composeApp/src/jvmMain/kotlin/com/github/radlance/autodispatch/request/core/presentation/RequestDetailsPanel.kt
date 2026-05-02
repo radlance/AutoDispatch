@@ -75,7 +75,7 @@ fun RequestDetailsPanel(
     cities: List<City>,
     cargoTypes: List<CargoType>,
     onClosePanel: () -> Unit,
-    onSuccessCreateRequest: () -> Unit,
+    onSuccessChangeRequest: () -> Unit,
     request: Request,
     modifier: Modifier = Modifier,
     viewModel: ChangeRequestViewModel = koinViewModel()
@@ -115,7 +115,7 @@ fun RequestDetailsPanel(
     if (showStateErrorDialog) {
         val onDismiss: () -> Unit = {
             showStateErrorDialog = false
-            onSuccessCreateRequest()
+            onSuccessChangeRequest()
             scope.launch {
                 scrollState.animateScrollTo(0)
             }
@@ -155,7 +155,7 @@ fun RequestDetailsPanel(
                 cities = cities,
                 cargoTypes = cargoTypes,
                 onDismiss = { showEditDialog = false },
-                onSuccessCreateRequest = onSuccessCreateRequest,
+                onSuccessCreateRequest = onSuccessChangeRequest,
                 onStateError = {
                     showStateErrorDialog = true
                     stateErrorMessage = it
@@ -191,7 +191,7 @@ fun RequestDetailsPanel(
         DriverAssignmentDialog(
             onDismiss = { showDriverAssignmentDialog = false },
             onSuccessAssignDriver = {
-                onSuccessCreateRequest()
+                onSuccessChangeRequest()
                 scope.launch {
                     scrollState.animateScrollTo(0)
                 }
@@ -265,7 +265,7 @@ fun RequestDetailsPanel(
                 }
                 LaunchedEffect(cancelRequestState) {
                     if (cancelRequestState is FetchResultUiState.Success) {
-                        onSuccessCreateRequest()
+                        onSuccessChangeRequest()
                         requestDismiss()
                     }
                 }
@@ -344,7 +344,7 @@ fun RequestDetailsPanel(
                 }
                 LaunchedEffect(rejectDocumentsState) {
                     if (rejectDocumentsState is FetchResultUiState.Success) {
-                        onSuccessCreateRequest()
+                        onSuccessChangeRequest()
                         requestDismiss()
                         scope.launch {
                             scrollState.animateScrollTo(0)
@@ -420,7 +420,7 @@ fun RequestDetailsPanel(
                 }
                 LaunchedEffect(approveDocumentsState) {
                     if (approveDocumentsState is FetchResultUiState.Success) {
-                        onSuccessCreateRequest()
+                        onSuccessChangeRequest()
                         requestDismiss()
                         scope.launch {
                             scrollState.animateScrollTo(0)
@@ -497,7 +497,7 @@ fun RequestDetailsPanel(
                 }
                 LaunchedEffect(driverUnassignmentState) {
                     if (driverUnassignmentState is FetchResultUiState.Success) {
-                        onSuccessCreateRequest()
+                        onSuccessChangeRequest()
                         requestDismiss()
                         scope.launch {
                             scrollState.animateScrollTo(0)

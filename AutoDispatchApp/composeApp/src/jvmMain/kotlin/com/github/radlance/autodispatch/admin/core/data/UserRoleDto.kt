@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.data
+package com.github.radlance.autodispatch.admin.core.data
 
 import kotlinx.serialization.Serializable
 

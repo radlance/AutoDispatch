@@ -1,8 +1,8 @@
-package com.github.radlance.autodispatch.admin.data
+package com.github.radlance.autodispatch.admin.core.data
 
-import com.github.radlance.autodispatch.admin.domain.UserDetailed
-import com.github.radlance.autodispatch.admin.domain.UserManagementFilters
-import com.github.radlance.autodispatch.admin.domain.UserManagementRepository
+import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementFilters
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementRepository
 import com.github.radlance.autodispatch.common.data.ApiServiceJvm
 import com.github.radlance.autodispatch.common.data.HandleRequest
 import com.github.radlance.autodispatch.common.data.toPaginatedResultUserDetailed

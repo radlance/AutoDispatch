@@ -1,7 +1,7 @@
-package com.github.radlance.autodispatch.admin.presentation
+package com.github.radlance.autodispatch.admin.core.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.github.radlance.autodispatch.admin.domain.UserManagementRepository
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementRepository
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.presentation.BaseViewModel
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
@@ -62,13 +62,14 @@ class UserManagementViewModel(
             idSelector = { it.id }
         )
 
-        val params = LastUsersRequestParams(
-            page = state.pageIndex,
-            pageSize = state.pageSize,
-            searchQuery = searchQuery,
-            statusIds = statusIds,
-            roleIds = roleIds
-        )
+        val params =
+            LastUsersRequestParams(
+                page = state.pageIndex,
+                pageSize = state.pageSize,
+                searchQuery = searchQuery,
+                statusIds = statusIds,
+                roleIds = roleIds
+            )
         userManagementScreenStateMutable.update { it.copy(lastAttemptedRequest = params) }
 
         loadUsers(
@@ -182,6 +183,12 @@ class UserManagementViewModel(
                 roleIds = lastParams.roleIds
             )
         } else {
+            triggerRequestLoad()
+        }
+    }
+
+    fun onUsersChanged() {
+        if (userManagementScreenStateMutable.value.usersResultState is FetchResultUiState.Success) {
             triggerRequestLoad()
         }
     }

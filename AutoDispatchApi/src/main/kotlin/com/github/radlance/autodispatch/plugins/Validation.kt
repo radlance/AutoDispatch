@@ -140,5 +140,12 @@ fun Application.configureValidation() {
         exception<Throwable> { call, cause ->
             call.respondText(status = HttpStatusCode.InternalServerError, text = "Internal Server Error: $cause")
         }
+
+        exception<IllegalStateException> { call, cause ->
+            call.respondText(
+                status = HttpStatusCode.Conflict,
+                text = cause.message ?: "State conflict"
+            )
+        }
     }
 }

@@ -39,16 +39,30 @@ class AuthService(
     }
 
     suspend fun login(user: LoginUser): LoginResponse {
+
         val existingUser = authRepository.getUserByLogin(user.login)
-            ?: throw MissingCredentialException("Incorrect login or password")
+            ?: throw MissingCredentialException("Неверный логин или пароль")
+
+        if (existingUser.statusId == 2) {
+            throw MissingCredentialException("Пользователь заблокирован")
+        }
 
         val isValidPassword = hashingService.verify(
             value = user.password,
-            saltedHash = SaltedHash(existingUser.passwordHash, existingUser.salt)
+            saltedHash = SaltedHash(
+                existingUser.passwordHash,
+                existingUser.salt
+            )
         )
-        if (!isValidPassword) throw MissingCredentialException("Incorrect login or password")
 
-        val accessToken = tokenService.generateAccessToken(userLogin = user.login)
+        if (!isValidPassword) {
+            throw MissingCredentialException("Incorrect login or password")
+        }
+
+        val accessToken = tokenService.generateAccessToken(
+            userLogin = user.login
+        )
+
         val refreshToken = tokenService.generateRefreshToken()
 
         authRepository.saveRefreshToken(

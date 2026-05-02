@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.presentation
+package com.github.radlance.autodispatch.admin.core.presentation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -18,8 +18,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.status
-import com.github.radlance.autodispatch.admin.domain.UserDetailed
-import com.github.radlance.autodispatch.admin.domain.UserStatus
+import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserStatus
 import com.github.radlance.autodispatch.common.utils.toSimpleDateString
 import com.github.radlance.autodispatch.request.core.presentation.CustomPaginationDataTable
 import com.github.radlance.autodispatch.uikit.theme.statusPalette
@@ -142,7 +142,9 @@ fun UserManagementTable(
                     )
                 }
                 cell {
-                    UserStatusBadge(status = item.status)
+                    UserStatusBadge(
+                        status = item.status
+                    )
                 }
                 cell {
                     Text(

@@ -76,8 +76,4 @@ class AuthRepository {
     suspend fun deleteRefreshToken(token: String): Boolean = loggedTransaction {
         RefreshTokenTable.deleteWhere { RefreshTokenTable.token eq token } > 0
     }
-
-    suspend fun deleteAllRefreshTokensByUserId(userId: Int) = loggedTransaction {
-        RefreshTokenTable.deleteWhere { RefreshTokenTable.userId eq userId }
-    }
 }

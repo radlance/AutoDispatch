@@ -11,5 +11,6 @@ data class UserWithPassword(
     val fullName: String,
     val phoneNumber: String,
     val roleId: Int,
+    val statusId: Int,
     val createdAt: String?
 )

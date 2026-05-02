@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.domain
+package com.github.radlance.autodispatch.admin.core.domain
 
 import com.github.radlance.autodispatch.common.domain.FetchResult
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult

@@ -1,7 +1,7 @@
-package com.github.radlance.autodispatch.admin.presentation
+package com.github.radlance.autodispatch.admin.core.presentation
 
-import com.github.radlance.autodispatch.admin.domain.UserDetailed
-import com.github.radlance.autodispatch.admin.domain.UserManagementFilters
+import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementFilters
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 

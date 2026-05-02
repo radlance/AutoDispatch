@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.github.radlance.autodispatch.admin.presentation.UserManagementScreen
+import com.github.radlance.autodispatch.admin.core.presentation.UserManagementScreen
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
 

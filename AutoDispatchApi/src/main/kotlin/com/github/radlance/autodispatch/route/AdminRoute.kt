@@ -44,6 +44,50 @@ fun Route.admin(repository: AdminRepository) {
                 val filters = repository.filters()
                 call.respond(HttpStatusCode.OK, filters)
             }
+
+            patch("/users/{id}/block") {
+
+                val adminLogin = call.claimByNameOrUnauthorized<String>("login")
+
+                val userId = call.parameters["id"]?.toIntOrNull()
+
+                if (userId == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Invalid user id"
+                    )
+                    return@patch
+                }
+
+                repository.blockUser(
+                    userId = userId,
+                    login = adminLogin
+                )
+
+                call.respond(HttpStatusCode.OK)
+            }
+
+            patch("/users/{id}/unblock") {
+
+                val login = call.claimByNameOrUnauthorized<String>("login")
+
+                val userId = call.parameters["id"]?.toIntOrNull()
+
+                if (userId == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Invalid user id"
+                    )
+                    return@patch
+                }
+
+                repository.unblockUser(
+                    userId = userId,
+                    login = login
+                )
+
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

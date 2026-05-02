@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.presentation
+package com.github.radlance.autodispatch.admin.core.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -51,8 +51,8 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.search_by_users
-import com.github.radlance.autodispatch.admin.domain.UserDetailed
-import com.github.radlance.autodispatch.admin.domain.UserManagementFilters
+import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementFilters
 import com.github.radlance.autodispatch.common.presentation.AppBackHandler
 import com.github.radlance.autodispatch.common.presentation.CustomTextField
 import com.github.radlance.autodispatch.common.presentation.EmptySearchPlaceholder
@@ -359,6 +359,7 @@ fun UserManagementScreen(
                     UserManagementDetailsPanel(
                         user = user,
                         onClosePanel = { showUserDetailsPanel = false },
+                        onSuccessChangeUser = viewModel::onUsersChanged,
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(350.dp)

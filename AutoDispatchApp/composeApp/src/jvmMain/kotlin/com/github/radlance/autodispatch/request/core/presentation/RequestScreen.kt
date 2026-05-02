@@ -393,7 +393,7 @@ fun RequestsScreen(
                     RequestDetailsPanel(
                         cities = success.cities,
                         cargoTypes = success.cargoTypes,
-                        onSuccessCreateRequest = viewModel::onRequestChanged,
+                        onSuccessChangeRequest = viewModel::onRequestChanged,
                         onClosePanel = { showRequestDetailsPanel = false },
                         request = request,
                         modifier = Modifier

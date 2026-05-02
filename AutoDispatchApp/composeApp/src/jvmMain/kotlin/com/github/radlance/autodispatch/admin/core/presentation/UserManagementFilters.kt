@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.presentation
+package com.github.radlance.autodispatch.admin.core.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,7 @@ import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.extended_search
 import autodispatch.composeapp.generated.resources.role
 import autodispatch.composeapp.generated.resources.status
-import com.github.radlance.autodispatch.admin.domain.UserStatus
+import com.github.radlance.autodispatch.admin.core.domain.UserStatus
 import com.github.radlance.autodispatch.common.domain.UserRole
 import com.github.radlance.autodispatch.request.core.presentation.FilterDialogSelector
 import org.jetbrains.compose.resources.stringResource

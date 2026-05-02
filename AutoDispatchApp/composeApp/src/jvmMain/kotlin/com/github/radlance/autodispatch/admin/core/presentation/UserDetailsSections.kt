@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.presentation
+package com.github.radlance.autodispatch.admin.core.presentation
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
@@ -17,7 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
 import autodispatch.composeapp.generated.resources.status
-import com.github.radlance.autodispatch.admin.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserStatus
 import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
 import com.github.radlance.autodispatch.common.presentation.LabeledValue
 import com.github.radlance.autodispatch.common.presentation.SECTION_GAP
@@ -29,6 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 fun UserDetailsSection(
     scrollState: ScrollState,
     user: UserDetailed,
+    onBlockUser: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -37,7 +39,9 @@ fun UserDetailsSection(
     ) {
         Spacer(modifier = Modifier.height(SECTION_GAP))
         Section(header = stringResource(Res.string.status)) {
-            UserStatusBadge(status = user.status)
+            UserStatusBadge(
+                status = user.status
+            )
         }
 
         HorizontalDivider(
@@ -125,10 +129,14 @@ fun UserDetailsSection(
         Spacer(modifier = Modifier.height(12.dp))
         Row {
             Button(
-                onClick = {},
+                onClick = onBlockUser,
                 modifier = Modifier.weight(1f).padding(end = 6.dp)
             ) {
-                Text(text = "Заблокировать")
+                val text = if (user.status == UserStatus.Blocked) {
+                    "Разблокировать"
+                } else "Заблокировать"
+
+                Text(text = text)
             }
 
             Button(

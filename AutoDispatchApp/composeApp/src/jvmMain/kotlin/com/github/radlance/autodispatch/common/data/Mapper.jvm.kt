@@ -1,12 +1,12 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.admin.data.UserDetailedDto
-import com.github.radlance.autodispatch.admin.data.UserManagementFiltersDto
-import com.github.radlance.autodispatch.admin.data.UserShortDto
-import com.github.radlance.autodispatch.admin.domain.UserDetailed
-import com.github.radlance.autodispatch.admin.domain.UserManagementFilters
-import com.github.radlance.autodispatch.admin.domain.UserShort
-import com.github.radlance.autodispatch.admin.domain.toUserStatus
+import com.github.radlance.autodispatch.admin.core.data.UserDetailedDto
+import com.github.radlance.autodispatch.admin.core.data.UserManagementFiltersDto
+import com.github.radlance.autodispatch.admin.core.data.UserShortDto
+import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementFilters
+import com.github.radlance.autodispatch.admin.core.domain.UserShort
+import com.github.radlance.autodispatch.admin.core.domain.toUserStatus
 import com.github.radlance.autodispatch.common.domain.ListPaginatedResult
 import com.github.radlance.autodispatch.common.domain.TablePaginatedResult
 import com.github.radlance.autodispatch.common.domain.toDriverStatus

@@ -8,6 +8,7 @@ import com.github.radlance.autodispatch.core.presentation.App
 import com.github.radlance.autodispatch.di.adminModule
 import com.github.radlance.autodispatch.di.authModule
 import com.github.radlance.autodispatch.di.changeRequestModule
+import com.github.radlance.autodispatch.di.changeUserModule
 import com.github.radlance.autodispatch.di.commonModule
 import com.github.radlance.autodispatch.di.controlPanelModule
 import com.github.radlance.autodispatch.di.dataStoreModule
@@ -50,7 +51,8 @@ fun main() = application {
             vehicleUnassignmentModule,
             statisticsModule,
             settingsModule,
-            adminModule
+            adminModule,
+            changeUserModule
         )
     }
     Window(

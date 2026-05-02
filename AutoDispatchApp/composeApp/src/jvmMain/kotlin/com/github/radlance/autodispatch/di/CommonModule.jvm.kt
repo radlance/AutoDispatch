@@ -1,8 +1,11 @@
 package com.github.radlance.autodispatch.di
 
-import com.github.radlance.autodispatch.admin.data.RemoteUserManagementRepository
-import com.github.radlance.autodispatch.admin.domain.UserManagementRepository
-import com.github.radlance.autodispatch.admin.presentation.UserManagementViewModel
+import com.github.radlance.autodispatch.admin.change.data.RemoteChangeUserRepository
+import com.github.radlance.autodispatch.admin.change.domain.ChangeUserRepository
+import com.github.radlance.autodispatch.admin.change.preentation.ChangeUserViewModel
+import com.github.radlance.autodispatch.admin.core.data.RemoteUserManagementRepository
+import com.github.radlance.autodispatch.admin.core.domain.UserManagementRepository
+import com.github.radlance.autodispatch.admin.core.presentation.UserManagementViewModel
 import com.github.radlance.autodispatch.common.data.ApiServiceJvm
 import com.github.radlance.autodispatch.common.data.KtorApiServiceJvm
 import com.github.radlance.autodispatch.controlpanel.data.RemoteControlPanelRepository
@@ -138,6 +141,12 @@ val statisticsModule
 
 val adminModule
     get() = module {
-        singleOf(::RemoteUserManagementRepository).bind< UserManagementRepository>()
+        singleOf(::RemoteUserManagementRepository).bind<UserManagementRepository>()
         viewModelOf(::UserManagementViewModel)
+    }
+
+val changeUserModule
+    get() = module {
+        singleOf(::RemoteChangeUserRepository).bind<ChangeUserRepository>()
+        viewModelOf(::ChangeUserViewModel)
     }

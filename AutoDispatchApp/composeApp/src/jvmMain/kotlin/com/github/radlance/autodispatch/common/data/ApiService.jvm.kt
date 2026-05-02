@@ -1,7 +1,7 @@
 package com.github.radlance.autodispatch.common.data
 
-import com.github.radlance.autodispatch.admin.data.UserDetailedDto
-import com.github.radlance.autodispatch.admin.data.UserManagementFiltersDto
+import com.github.radlance.autodispatch.admin.core.data.UserDetailedDto
+import com.github.radlance.autodispatch.admin.core.data.UserManagementFiltersDto
 import com.github.radlance.autodispatch.driver.core.data.DriverDto
 import com.github.radlance.autodispatch.driver.history.data.DriverHistoryDto
 import com.github.radlance.autodispatch.driver.request.data.DriverRequestDto
@@ -136,6 +136,10 @@ interface ApiServiceJvm : ApiService {
         statusIds: List<Int>,
         roleIds: List<Int>
     ): TablePaginatedResultDto<UserDetailedDto>
+
+    suspend fun blockUser(userId: Int)
+
+    suspend fun unblockUser(userId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -401,5 +405,13 @@ internal class KtorApiServiceJvm(
                 parameter("roleIds", roleIds.joinToString(","))
             }
         }.body()
+    }
+
+    override suspend fun blockUser(userId: Int) {
+        httpClient.patch("admin/users/$userId/block")
+    }
+
+    override suspend fun unblockUser(userId: Int) {
+        httpClient.patch("admin/users/$userId/unblock")
     }
 }

@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.domain
+package com.github.radlance.autodispatch.admin.core.domain
 
 data class UserShort(
     val id: Int,

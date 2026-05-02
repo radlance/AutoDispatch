@@ -1,5 +1,6 @@
 package com.github.radlance.autodispatch.repository
 
+import com.github.radlance.autodispatch.database.table.RefreshTokenTable
 import com.github.radlance.autodispatch.database.table.RoleTable
 import com.github.radlance.autodispatch.database.table.UserStatusTable
 import com.github.radlance.autodispatch.database.table.UserTable
@@ -21,14 +22,21 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.OrOp
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.countDistinct
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.javatime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.sql.lowerCase
+import org.jetbrains.exposed.sql.update
 
-class AdminRepository {
+class AdminRepository(
+    private val authRepository: AuthRepository
+) {
 
     private fun joinBaseQuery(createdBy: Alias<UserTable>, updatedBy: Alias<UserTable>): Join =
         UserTable
@@ -180,7 +188,7 @@ class AdminRepository {
         val query = joinBaseQuery(createdBy, updatedBy)
 
         val conditions = mutableListOf<Op<Boolean>>()
-        
+
         conditions += UserTable.login neq excludeLogin
 
         if (statusIds.isNotEmpty()) conditions += UserTable.statusId inList statusIds
@@ -197,7 +205,7 @@ class AdminRepository {
         val items = query
             .select(selectColumns(createdBy, updatedBy))
             .where(where)
-            .orderBy(Coalesce(UserTable.updatedAt, UserTable.createdAt))
+            .orderBy(Coalesce(UserTable.updatedAt, UserTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .limit(pageSize)
             .offset(offset)
             .map { row -> mapUserDetailedRow(row) }
@@ -225,5 +233,73 @@ class AdminRepository {
                 )
             }
         )
+    }
+
+    suspend fun blockUser(
+        userId: Int,
+        login: String
+    ) {
+        updateUserStatus(
+            userId = userId,
+            statusId = BLOCKED_STATUS_ID,
+            updatedByUserLogin = login
+        )
+    }
+
+    suspend fun unblockUser(
+        userId: Int,
+        login: String
+    ) {
+        updateUserStatus(
+            userId = userId,
+            statusId = ACTIVE_STATUS_ID,
+            updatedByUserLogin = login
+        )
+    }
+
+    suspend fun updateUserStatus(
+        userId: Int,
+        statusId: Int,
+        updatedByUserLogin: String
+    ) = loggedTransaction {
+
+        val updatedByUser = authRepository.getUserByLogin(updatedByUserLogin)
+
+        if (updatedByUser?.id?.let { userId == it } ?: true) {
+            throw IllegalStateException("You cannot change your own status")
+        }
+
+        val user = UserTable
+            .select(
+                UserTable.id,
+                UserTable.statusId
+            )
+            .where { UserTable.id eq userId }
+            .singleOrNull()
+            ?: throw NoSuchElementException("User not found")
+
+        val currentStatusId = user[UserTable.statusId].value
+
+        if (currentStatusId == statusId) {
+            when (statusId) {
+                BLOCKED_STATUS_ID -> throw IllegalStateException("User already blocked")
+                ACTIVE_STATUS_ID -> throw IllegalStateException("User already active")
+            }
+        }
+
+        UserTable.update({ UserTable.id eq userId }) {
+            it[this.statusId] = statusId
+            it[updatedBy] = updatedByUser.id
+            it[updatedAt] = CurrentTimestampWithTimeZone
+        }
+
+        RefreshTokenTable.deleteWhere {
+            RefreshTokenTable.userId eq userId
+        }
+    }
+
+    private companion object {
+        const val ACTIVE_STATUS_ID = 1
+        const val BLOCKED_STATUS_ID = 2
     }
 }

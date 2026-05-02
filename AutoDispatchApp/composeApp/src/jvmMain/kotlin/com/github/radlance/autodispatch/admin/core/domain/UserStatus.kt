@@ -1,4 +1,4 @@
-package com.github.radlance.autodispatch.admin.domain
+package com.github.radlance.autodispatch.admin.core.domain
 
 enum class UserStatus(
     val id: Int,

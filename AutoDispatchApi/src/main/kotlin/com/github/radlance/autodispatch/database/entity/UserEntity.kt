@@ -19,6 +19,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
     var fullName by UserTable.fullName
     var phoneNumber by UserTable.phoneNumber
     var roleId by UserTable.roleId
+    val statusId by UserTable.statusId
     private val createdAt by UserTable.createdAt
 
     fun toUser(): User = User(
@@ -38,6 +39,7 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id) {
         fullName = fullName,
         phoneNumber = phoneNumber,
         roleId = roleId.value,
+        statusId = statusId.value,
         createdAt = createdAt?.toHttpDateString()
     )
 }

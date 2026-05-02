@@ -93,11 +93,11 @@
     <string name="assign">Назначить</string>
     <string name="reassign">Переназначить</string>
     <string name="request_cancellation">Отмена заявки</string>
-    <string name="you_want_to_cancel_request">Вы уверены что хотите отменить заявку</string>
+    <string name="you_want_to_cancel_request">Вы уверены, что хотите отменить заявку</string>
     <string name="cancel_variant">Отменить</string>
     <string name="by_page">На странице: </string>
     <string name="exit">Выход</string>
-    <string name="you_want_to_logout">Вы уверены что хотите выйти из учетной записи?</string>
+    <string name="you_want_to_logout">Вы уверены, что хотите выйти из учетной записи?</string>
     <string name="logout">Выйти</string>
     <string name="log_in_to_app">Войдите в приложение</string>
     <string name="deliveries">Доставки</string>
