@@ -36,6 +36,16 @@ class ChangeUserViewModel(
         }
     }
 
+    fun deleteUser(userId: Int) {
+        blockUserStateMutable.value = FetchResultUiState.Loading
+
+        handle(
+            background = { repository.deleteUser(userId) }
+        ) {
+            blockUserStateMutable.value = it.toUiState()
+        }
+    }
+
     fun resetBlockState() {
         blockUserStateMutable.value = FetchResultUiState.Idle
     }

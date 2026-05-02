@@ -10,6 +10,7 @@ data class DriverStatsDto(
     val driverName: String,
     val phoneNumber: String?,
     val driverStatus: StatusDto,
+    val userStatus: StatusDto,
     val vehicleModel: String?,
     val vehicleLicensePlate: String?,
     val vehicleRegionCode: String?,

@@ -47,6 +47,10 @@ class AuthService(
             throw MissingCredentialException("Пользователь заблокирован")
         }
 
+        if (existingUser.statusId == 3) {
+            throw MissingCredentialException("Неверный логин или пароль")
+        }
+
         val isValidPassword = hashingService.verify(
             value = user.password,
             saltedHash = SaltedHash(
@@ -56,7 +60,7 @@ class AuthService(
         )
 
         if (!isValidPassword) {
-            throw MissingCredentialException("Incorrect login or password")
+            throw MissingCredentialException("Неверный логин или пароль")
         }
 
         val accessToken = tokenService.generateAccessToken(

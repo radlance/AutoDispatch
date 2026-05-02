@@ -63,6 +63,7 @@ fun UserManagementDetailsPanel(
     rememberCoroutineScope()
 
     var showBLockDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showBLockDialog) {
         val isLoading = blockUserState is FetchResultUiState.Loading
@@ -146,6 +147,78 @@ fun UserManagementDetailsPanel(
         )
     }
 
+    if (showDeleteDialog) {
+        val isLoading = blockUserState is FetchResultUiState.Loading
+        val error = (blockUserState as? FetchResultUiState.Error)?.error
+
+        CustomDialog(
+            allowDismiss = !isLoading,
+            onDismissRequest = {
+                showDeleteDialog = false
+            },
+            onFinish = viewModel::resetBlockState,
+            title = {
+                Text(
+                    text = "Удаление пользователя",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            content = { requestDismiss ->
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    error?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Warning,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    Text(
+                        buildAnnotatedString {
+                            append("Вы уверены, что хотите удалить пользователя ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(user.email)
+                            }
+                            append("?")
+                        }
+                    )
+                }
+                LaunchedEffect(blockUserState) {
+                    if (blockUserState is FetchResultUiState.Success) {
+                        onSuccessChangeUser()
+                        requestDismiss()
+                    }
+                }
+            },
+            buttons = { requestDismiss ->
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = requestDismiss, enabled = !isLoading) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+                Spacer(Modifier.width(14.dp))
+                Button(
+                    onClick = { viewModel.deleteUser(user.id) },
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Удалить")
+                }
+            }
+        )
+    }
+
     DefaultPointerSelectionContainer {
         Column(modifier = modifier.padding(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -168,6 +241,9 @@ fun UserManagementDetailsPanel(
                     user = user,
                     onBlockUser = {
                         showBLockDialog = true
+                    },
+                    onDeleteUser = {
+                        showDeleteDialog = true
                     }
                 )
                 VerticalScrollbar(

@@ -193,7 +193,11 @@ class AdminRepository(
 
         conditions += UserTable.login neq excludeLogin
 
-        if (statusIds.isNotEmpty()) conditions += UserTable.statusId inList statusIds
+        if (statusIds.isNotEmpty()) {
+            conditions += UserTable.statusId inList statusIds
+        } else {
+            conditions += UserTable.statusId neq DELETED_STATUS_ID
+        }
         if (roleIds.isNotEmpty()) conditions += UserTable.roleId inList roleIds
         if (!searchQuery.isNullOrBlank()) conditions += buildSearchConditions(searchQuery, createdBy, updatedBy)
 
@@ -219,12 +223,14 @@ class AdminRepository(
         UserManagementFilters(
             statuses = UserStatusTable.select(
                 UserStatusTable.id, UserStatusTable.name
-            ).map {
-                Status(
-                    id = it[UserStatusTable.id].value,
-                    name = it[UserStatusTable.name]
-                )
-            },
+            )
+                .where { UserStatusTable.id neq DELETED_STATUS_ID }
+                .map {
+                    Status(
+                        id = it[UserStatusTable.id].value,
+                        name = it[UserStatusTable.name]
+                    )
+                },
             roles = RoleTable.select(
                 RoleTable.id,
                 RoleTable.name
@@ -259,6 +265,17 @@ class AdminRepository(
         )
     }
 
+    suspend fun deleteUser(
+        userId: Int,
+        login: String
+    ) {
+        updateUserStatus(
+            userId = userId,
+            statusId = DELETED_STATUS_ID,
+            updatedByUserLogin = login
+        )
+    }
+
     suspend fun updateUserStatus(
         userId: Int,
         statusId: Int,
@@ -286,6 +303,7 @@ class AdminRepository(
             when (statusId) {
                 BLOCKED_STATUS_ID -> throw IllegalStateException("User already blocked")
                 ACTIVE_STATUS_ID -> throw IllegalStateException("User already active")
+                DELETED_STATUS_ID -> throw IllegalStateException("User already deleted")
             }
         }
 
@@ -303,5 +321,6 @@ class AdminRepository(
     private companion object {
         const val ACTIVE_STATUS_ID = 1
         const val BLOCKED_STATUS_ID = 2
+        const val DELETED_STATUS_ID = 3
     }
 }

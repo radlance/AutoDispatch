@@ -7,4 +7,6 @@ interface ChangeUserRepository {
     suspend fun blockUser(userId: Int): FetchResult<Unit, String>
 
     suspend fun unblockUser(userId: Int): FetchResult<Unit, String>
+
+    suspend fun deleteUser(userId: Int): FetchResult<Unit, String>
 }

@@ -6,6 +6,7 @@ import com.github.radlance.autodispatch.database.table.DriverStatusTable
 import com.github.radlance.autodispatch.database.table.DriverTable
 import com.github.radlance.autodispatch.database.table.RequestStatusTable
 import com.github.radlance.autodispatch.database.table.RequestTable
+import com.github.radlance.autodispatch.database.table.UserStatusTable
 import com.github.radlance.autodispatch.database.table.UserTable
 import com.github.radlance.autodispatch.database.table.VehicleTable
 import com.github.radlance.autodispatch.domain.common.ListPaginatedResult
@@ -31,6 +32,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.countDistinct
@@ -55,25 +57,28 @@ class DriverRepository(
         val baseQuery = DriverTable
             .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
+            .join(UserStatusTable, JoinType.INNER, UserTable.statusId, UserStatusTable.id)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
             .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
             .join(RequestStatusTable, JoinType.LEFT, RequestTable.statusId, RequestStatusTable.id)
 
-        val condition: Op<Boolean> =
-            if (!searchQuery.isNullOrBlank()) {
-                val pattern = "%${searchQuery.trim().lowercase()}%"
-                OrOp(
-                    listOf(
-                        UserTable.fullName.lowerCase() like pattern,
-                        UserTable.phoneNumber.lowerCase() like pattern,
-                        VehicleTable.model.lowerCase() like pattern,
-                        VehicleTable.licensePlate.lowerCase() like pattern
-                    )
+        val conditions = mutableListOf<Op<Boolean>>()
+        conditions += UserTable.statusId neq 3
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = "%${searchQuery.trim().lowercase()}%"
+            conditions += OrOp(
+                listOf(
+                    UserTable.fullName.lowerCase() like pattern,
+                    UserTable.phoneNumber.lowerCase() like pattern,
+                    VehicleTable.model.lowerCase() like pattern,
+                    VehicleTable.licensePlate.lowerCase() like pattern
                 )
-            } else {
-                Op.TRUE
-            }
+            )
+        }
+
+        val condition = AndOp(conditions)
 
         val total = baseQuery
             .select(UserTable.id.countDistinct())
@@ -91,6 +96,8 @@ class DriverRepository(
                 UserTable.phoneNumber,
                 DriverStatusTable.id,
                 DriverStatusTable.name,
+                UserStatusTable.id,
+                UserStatusTable.name,
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
@@ -103,9 +110,12 @@ class DriverRepository(
             .groupBy(
                 UserTable.id,
                 UserTable.fullName,
+                UserTable.avatarUrl,
                 UserTable.phoneNumber,
                 DriverStatusTable.id,
                 DriverStatusTable.name,
+                UserStatusTable.id,
+                UserStatusTable.name,
                 VehicleTable.id,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
@@ -165,6 +175,10 @@ class DriverRepository(
                         id = first[DriverStatusTable.id].value,
                         name = first[DriverStatusTable.name]
                     ),
+                    userStatus = Status(
+                        id = first[UserStatusTable.id].value,
+                        name = first[UserStatusTable.name]
+                    ),
                     vehicle = vehicle,
                     deliveriesStats = deliveriesStats,
                     workSchedule = emptyList()
@@ -205,11 +219,13 @@ class DriverRepository(
         val joinQuery = DriverTable
             .join(UserTable, JoinType.INNER, DriverTable.userId, UserTable.id)
             .join(DriverStatusTable, JoinType.INNER, DriverTable.statusId, DriverStatusTable.id)
+            .join(UserStatusTable, JoinType.INNER, UserTable.statusId, UserStatusTable.id)
             .join(AssignmentTable, JoinType.LEFT, DriverTable.userId, AssignmentTable.driverId)
             .join(VehicleTable, JoinType.LEFT, DriverTable.vehicleId, VehicleTable.id)
             .join(RequestTable, JoinType.LEFT, AssignmentTable.requestId, RequestTable.id)
 
         val conditions = mutableListOf<Op<Boolean>>()
+        conditions += UserTable.statusId neq 3
 
         if (!searchQuery.isNullOrBlank()) {
             val pattern = "%${searchQuery.trim().lowercase()}%"
@@ -233,6 +249,8 @@ class DriverRepository(
                 UserTable.phoneNumber,
                 DriverStatusTable.id,
                 DriverStatusTable.name,
+                UserStatusTable.id,
+                UserStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
                 VehicleTable.regionCode,
@@ -248,6 +266,8 @@ class DriverRepository(
                 UserTable.phoneNumber,
                 DriverStatusTable.id,
                 DriverStatusTable.name,
+                UserStatusTable.id,
+                UserStatusTable.name,
                 VehicleTable.model,
                 VehicleTable.licensePlate,
                 VehicleTable.regionCode,
@@ -275,6 +295,10 @@ class DriverRepository(
                 driverStatus = Status(
                     id = row[DriverStatusTable.id].value,
                     name = row[DriverStatusTable.name]
+                ),
+                userStatus = Status(
+                    id = row[UserStatusTable.id].value,
+                    name = row[UserStatusTable.name]
                 ),
                 vehicleModel = row[VehicleTable.model],
                 vehicleLicensePlate = row[VehicleTable.licensePlate],
@@ -352,6 +376,7 @@ class DriverRepository(
         val conditions = mutableListOf<Op<Boolean>>()
 
         conditions.add(DriverTable.vehicleId.isNull())
+        conditions.add(UserTable.statusId neq 3)
 
         if (!searchQuery.isNullOrBlank()) {
             val pattern = "%${searchQuery.trim().lowercase()}%"

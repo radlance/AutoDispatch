@@ -140,6 +140,8 @@ interface ApiServiceJvm : ApiService {
     suspend fun blockUser(userId: Int)
 
     suspend fun unblockUser(userId: Int)
+
+    suspend fun deleteUser(userId: Int)
 }
 
 internal class KtorApiServiceJvm(
@@ -413,5 +415,9 @@ internal class KtorApiServiceJvm(
 
     override suspend fun unblockUser(userId: Int) {
         httpClient.patch("admin/users/$userId/unblock")
+    }
+
+    override suspend fun deleteUser(userId: Int) {
+        httpClient.patch("admin/users/$userId/delete")
     }
 }

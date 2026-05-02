@@ -88,6 +88,27 @@ fun Route.admin(repository: AdminRepository) {
 
                 call.respond(HttpStatusCode.OK)
             }
+
+            patch("/users/{id}/delete") {
+                val login = call.claimByNameOrUnauthorized<String>("login")
+
+                val userId = call.parameters["id"]?.toIntOrNull()
+
+                if (userId == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Invalid user id"
+                    )
+                    return@patch
+                }
+
+                repository.deleteUser(
+                    userId = userId,
+                    login = login
+                )
+
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

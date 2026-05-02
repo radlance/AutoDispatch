@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.admin.core.domain.UserStatus
 import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.common.utils.formatLicensePlate
 import com.github.radlance.autodispatch.request.assignment.domain.DriverStats
@@ -118,13 +119,32 @@ fun DriverAssignmentCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (!driverStats.isWorkingNow) {
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Сейчас вне графика",
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 12.sp
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (!driverStats.isWorkingNow) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Сейчас вне графика",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (driverStats.userStatus == UserStatus.Blocked) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                        ) {
+                            Text(
+                                text = "Заблокирован",
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

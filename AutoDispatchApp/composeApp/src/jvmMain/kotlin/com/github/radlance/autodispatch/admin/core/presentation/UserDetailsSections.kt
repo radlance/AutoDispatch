@@ -31,6 +31,7 @@ fun UserDetailsSection(
     scrollState: ScrollState,
     user: UserDetailed,
     onBlockUser: () -> Unit,
+    onDeleteUser: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -146,7 +147,7 @@ fun UserDetailsSection(
             }
 
             Button(
-                onClick = {},
+                onClick = onDeleteUser,
                 modifier = Modifier.weight(1f).padding(end = 6.dp)
             ) {
                 Text(text = "Удалить")

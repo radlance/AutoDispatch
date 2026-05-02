@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.radlance.autodispatch.admin.core.domain.UserStatus
 import com.github.radlance.autodispatch.common.presentation.DriverStatusWithColor
 import com.github.radlance.autodispatch.common.presentation.ITEM_GAP
 import com.github.radlance.autodispatch.common.presentation.InfoRow
@@ -119,6 +120,22 @@ fun DriverDetailsSections(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(vertical = ITEM_GAP)
         )
+
+        if (driver.userStatus == UserStatus.Blocked) {
+            Box(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "Заблокирован",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(ITEM_GAP))
+        }
 
         DriverStatusWithColor(status = driver.status, fontSize = 12.sp)
         HorizontalDivider(

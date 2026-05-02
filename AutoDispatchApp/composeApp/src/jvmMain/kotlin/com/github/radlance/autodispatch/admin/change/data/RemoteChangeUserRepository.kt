@@ -17,4 +17,8 @@ class RemoteChangeUserRepository(
     override suspend fun unblockUser(userId: Int): FetchResult<Unit, String> = handleRequest.handle {
         apiService.unblockUser(userId)
     }
+
+    override suspend fun deleteUser(userId: Int): FetchResult<Unit, String> = handleRequest.handle {
+        apiService.deleteUser(userId)
+    }
 }

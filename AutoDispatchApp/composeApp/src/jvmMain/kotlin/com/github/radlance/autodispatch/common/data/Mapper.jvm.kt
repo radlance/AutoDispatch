@@ -106,6 +106,7 @@ private fun DriverStatsDto.toDriverStats(): DriverStats {
         driverName = driverName,
         phoneNumber = phoneNumber,
         driverStatus = driverStatus.id.toDriverStatus(),
+        userStatus = userStatus.id.toUserStatus(),
         vehicleModel = vehicleModel,
         vehicleLicensePlate = vehicleLicensePlate,
         vehicleRegionCode = vehicleRegionCode,
@@ -326,6 +327,7 @@ private fun DriverDto.toDriver(): Driver {
         avatarUrl = avatarUrl?.asImageUrl(),
         phoneNumber = phoneNumber,
         status = status.id.toDriverStatus(),
+        userStatus = userStatus.id.toUserStatus(),
         vehicle = vehicle?.toVehicle(),
         deliveriesStats = deliveriesStats.toDeliveriesStats(),
         workSchedule = workSchedule.toDriverWorkShifts()
