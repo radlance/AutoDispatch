@@ -79,19 +79,27 @@ fun UserDetailsSection(
         )
         Section(header = "Активность") {
             LabeledValue(
+                label = "Последний вход",
+                value = user.lastLoginAt?.toSimpleDateWithTimeString() ?: "—"
+            )
+            Spacer(modifier = Modifier.height(ITEM_GAP))
+            LabeledValue(
                 label = "Дата регистрации",
                 value = user.createdAt.toSimpleDateWithTimeString()
             )
             user.createdBy?.let {
+                Spacer(modifier = Modifier.height(ITEM_GAP))
                 Section(header = "Кем создан") {
                     LabeledValue(
                         label = "ФИО",
                         value = user.createdBy.fullName
                     )
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = "Логин",
                         value = user.createdBy.login
                     )
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = "Номер телефона",
                         value = user.createdBy.phoneNumber
@@ -104,26 +112,24 @@ fun UserDetailsSection(
                 value = user.updatedAt?.toSimpleDateWithTimeString() ?: "—"
             )
             user.updatedBy?.let {
+                Spacer(modifier = Modifier.height(ITEM_GAP))
                 Section(header = "Кем обновлён") {
                     LabeledValue(
                         label = "ФИО",
                         value = user.updatedBy.fullName
                     )
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = "Логин",
                         value = user.updatedBy.login
                     )
+                    Spacer(modifier = Modifier.height(ITEM_GAP))
                     LabeledValue(
                         label = "Номер телефона",
                         value = user.updatedBy.phoneNumber
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(ITEM_GAP))
-            LabeledValue(
-                label = "Последний вход",
-                value = user.lastLoginAt?.toSimpleDateWithTimeString() ?: "—"
-            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))

@@ -75,20 +75,22 @@ class AdminRepository(
     )
 
     private fun mapUserDetailedRow(
-        row: ResultRow
+        row: ResultRow,
+        createdBy: Alias<UserTable>,
+        updatedBy: Alias<UserTable>
     ): UserDetailed {
 
-        val createdById = UserTable.id.alias("created_by_id")
-        val createdByLogin = UserTable.login.alias("created_by_login")
-        val createdByFullName = UserTable.fullName.alias("created_by_full_name")
-        val createdByPhone = UserTable.phoneNumber.alias("created_by_phone_number")
-        val createdByAvatar = UserTable.avatarUrl.alias("created_by_avatar_url")
+        val createdById = createdBy[UserTable.id].alias("created_by_id")
+        val createdByLogin = createdBy[UserTable.login].alias("created_by_login")
+        val createdByFullName = createdBy[UserTable.fullName].alias("created_by_full_name")
+        val createdByPhone = createdBy[UserTable.phoneNumber].alias("created_by_phone_number")
+        val createdByAvatar = createdBy[UserTable.avatarUrl].alias("created_by_avatar_url")
 
-        val updatedById = UserTable.id.alias("updated_by_id")
-        val updatedByLogin = UserTable.login.alias("updated_by_login")
-        val updatedByFullName = UserTable.fullName.alias("updated_by_full_name")
-        val updatedByPhone = UserTable.phoneNumber.alias("updated_by_phone_number")
-        val updatedByAvatar = UserTable.avatarUrl.alias("updated_by_avatar_url")
+        val updatedById = updatedBy[UserTable.id].alias("updated_by_id")
+        val updatedByLogin = updatedBy[UserTable.login].alias("updated_by_login")
+        val updatedByFullName = updatedBy[UserTable.fullName].alias("updated_by_full_name")
+        val updatedByPhone = updatedBy[UserTable.phoneNumber].alias("updated_by_phone_number")
+        val updatedByAvatar = updatedBy[UserTable.avatarUrl].alias("updated_by_avatar_url")
 
         fun mapShortUser(
             idExpr: ExpressionWithColumnTypeAlias<EntityID<Int>>,
@@ -208,7 +210,7 @@ class AdminRepository(
             .orderBy(Coalesce(UserTable.updatedAt, UserTable.createdAt), SortOrder.DESC_NULLS_LAST)
             .limit(pageSize)
             .offset(offset)
-            .map { row -> mapUserDetailedRow(row) }
+            .map { row -> mapUserDetailedRow(row, createdBy, updatedBy) }
 
         TablePaginatedResult(items = items, totalCount = total)
     }
