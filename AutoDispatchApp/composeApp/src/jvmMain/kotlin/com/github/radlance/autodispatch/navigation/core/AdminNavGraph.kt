@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import com.github.radlance.autodispatch.admin.core.presentation.UserManagementScreen
 import com.github.radlance.autodispatch.common.presentation.FetchResultUiState
 import com.github.radlance.autodispatch.profile.domain.User
+import com.github.radlance.autodispatch.settings.presentation.SettingsScreen
 
 @Composable
 fun AdminNavGraph(
@@ -40,6 +41,10 @@ fun AdminNavGraph(
                 loadProfileUiState = loadProfileUiState,
                 onReloadProfile = onReloadProfile
             )
+        }
+
+        composable<Settings> {
+            SettingsScreen()
         }
     }
 }

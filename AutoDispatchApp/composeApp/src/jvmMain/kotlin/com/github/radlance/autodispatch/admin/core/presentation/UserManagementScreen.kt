@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.Button
@@ -48,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import autodispatch.composeapp.generated.resources.Res
-import autodispatch.composeapp.generated.resources.create
 import autodispatch.composeapp.generated.resources.retry
 import autodispatch.composeapp.generated.resources.search_by_users
 import com.github.radlance.autodispatch.admin.core.domain.UserDetailed
@@ -135,14 +133,6 @@ fun UserManagementScreen(
                                 imageVector = Icons.Outlined.FilterAlt,
                                 contentDescription = null
                             )
-                        }
-                        Spacer(Modifier.width(16.dp))
-                        Button(
-                            onClick = { /* TODO: Creation not required yet */ }
-                        ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(Res.string.create))
                         }
                     }
 

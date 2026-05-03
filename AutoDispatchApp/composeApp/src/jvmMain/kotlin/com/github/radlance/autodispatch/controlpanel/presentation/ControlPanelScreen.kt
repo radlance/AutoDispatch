@@ -82,7 +82,7 @@ fun ControlPanelScreen(
     val loadProfileUiState by viewModel.loadProfileUiState.collectAsState()
     var selectedItem by rememberSaveable { mutableStateOf(0) }
 
-    val items = if (userRole == UserRole.Admin) listOf(Users)
+    val items = if (userRole == UserRole.Admin) listOf(Users, Settings)
     else listOf(
         Requests,
         Drivers,

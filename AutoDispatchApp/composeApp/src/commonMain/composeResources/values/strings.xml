@@ -11,7 +11,7 @@
     <string name="password">Пароль</string>
     <string name="sign_in">Войти в систему</string>
     <string name="auto_request">АвтоЗаявка</string>
-    <string name="control_panel">Панель диспетчера</string>
+    <string name="control_panel">Панель управления</string>
     <string name="ok">ОК</string>
     <string name="session_expired">Сессия истекла</string>
     <string name="session_expired_description">Сессия истекла, вам необходимо снова войти в систему, чтобы продолжить использование приложения</string>
