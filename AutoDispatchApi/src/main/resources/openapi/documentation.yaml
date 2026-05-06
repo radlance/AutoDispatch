@@ -1,23 +1,2189 @@
 openapi: "3.0.3"
 info:
-  title: "Application API"
-  description: "Application API"
+  title: "AutoDispatch API"
+  description: "API for AutoDispatch logistics management system"
   version: "1.0.0"
 servers:
-  - url: "http://0.0.0.0:8080"
+  - url: "http://localhost:8084"
+    description: "Local development server"
+
 paths:
-  /:
-    get:
-      description: "Hello World!"
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
       responses:
-        "200":
-          description: "OK"
+        '200':
+          description: User registered successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Hello World!"
+                $ref: '#/components/schemas/User'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login and get tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+
+  /auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '401':
+          description: Session expired or invalid
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Get paginated list of users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: statusIds
+          in: query
+          description: Comma-separated list of status IDs
+          schema:
+            type: string
+        - name: roleIds
+          in: query
+          description: Comma-separated list of role IDs
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailedTablePaginatedResult'
+
+  /admin/filters:
+    get:
+      tags:
+        - Admin
+      summary: Get user management filters
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Filters for user management
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserManagementFilters'
+
+  /admin/users/{id}/block:
+    patch:
+      tags:
+        - Admin
+      summary: Block a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User blocked successfully
+        '400':
+          description: Invalid user ID
+
+  /admin/users/{id}/unblock:
+    patch:
+      tags:
+        - Admin
+      summary: Unblock a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User unblocked successfully
+        '400':
+          description: Invalid user ID
+
+  /admin/users/{id}/delete:
+    patch:
+      tags:
+        - Admin
+      summary: Delete a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User deleted successfully
+        '400':
+          description: Invalid user ID
+
+  /deliveries:
+    get:
+      tags:
+        - Deliveries
+      summary: Get driver's deliveries
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 5
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of deliveries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryListPaginatedResult'
+
+  /deliveries/{id}/details:
+    get:
+      tags:
+        - Deliveries
+      summary: Get delivery details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Delivery details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryDetailed'
+
+  /deliveries/{id}/detour-sheet:
+    get:
+      tags:
+        - Deliveries
+      summary: Get delivery detour sheet (PDF)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /deliveries/{id}/start:
+    post:
+      tags:
+        - Deliveries
+      summary: Start delivery
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Delivery started
+
+  /deliveries/{id}/arrive-loading:
+    post:
+      tags:
+        - Deliveries
+      summary: Mark arrival at loading point
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status updated
+
+  /deliveries/{id}/depart-loading:
+    post:
+      tags:
+        - Deliveries
+      summary: Mark departure from loading point
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status updated
+
+  /deliveries/{id}/arrive-unloading:
+    post:
+      tags:
+        - Deliveries
+      summary: Mark arrival at unloading point
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status updated
+
+  /deliveries/{id}/upload-documents:
+    post:
+      tags:
+        - Deliveries
+      summary: Upload acceptance documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Documents uploaded
+
+  /deliveries/{id}/upload-shipping-documents:
+    post:
+      tags:
+        - Deliveries
+      summary: Upload shipping documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Documents uploaded
+
+  /deliveries/{id}/retake-documents:
+    post:
+      tags:
+        - Deliveries
+      summary: Retake documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: typeId
+          in: query
+          schema:
+            type: integer
+            default: 2
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Documents updated
+
+  /deliveries/history/my:
+    get:
+      tags:
+        - Deliveries
+      summary: Get current driver's delivery history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 5
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of history items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverHistoryListPaginatedResult'
+
+  /deliveries/history/{driverId}:
+    get:
+      tags:
+        - Deliveries
+      summary: Get specific driver's delivery history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 5
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of history items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverHistoryListPaginatedResult'
+
+  /documents/{id}/approve:
+    post:
+      tags:
+        - Documents
+      summary: Approve acceptance documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Documents approved
+
+  /documents/{id}/approve-shipping:
+    post:
+      tags:
+        - Documents
+      summary: Approve shipping documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Documents approved
+
+  /documents/{id}/reject:
+    post:
+      tags:
+        - Documents
+      summary: Reject documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectDocumentDto'
+      responses:
+        '200':
+          description: Documents rejected
+
+  /drivers:
+    get:
+      tags:
+        - Drivers
+      summary: Get paginated list of drivers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of drivers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverTablePaginatedResult'
+
+  /drivers/assignments:
+    get:
+      tags:
+        - Drivers
+      summary: Get drivers with assignment stats
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of driver stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverStatsTablePaginatedResult'
+
+  /drivers/without-vehicle:
+    get:
+      tags:
+        - Drivers
+      summary: Get drivers without assigned vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of drivers without vehicle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverWithoutCarTablePaginatedResult'
+
+  /drivers/{id}/schedule:
+    get:
+      tags:
+        - Drivers
+      summary: Get driver's work schedule
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Work schedule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DriverWorkShift'
+    put:
+      tags:
+        - Drivers
+      summary: Update driver's work schedule
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverWorkScheduleRequest'
+      responses:
+        '200':
+          description: Schedule updated
+
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Get current user's profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /profile/details:
+    get:
+      tags:
+        - Profile
+      summary: Get current user's detailed profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Detailed profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDetails'
+
+  /profile/avatar:
+    post:
+      tags:
+        - Profile
+      summary: Upload profile avatar
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar uploaded
+    delete:
+      tags:
+        - Profile
+      summary: Delete profile avatar
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Avatar deleted
+
+  /requests:
+    get:
+      tags:
+        - Requests
+      summary: Get paginated list of requests with filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: originCityIds
+          in: query
+          description: Comma-separated list of city IDs
+          schema:
+            type: string
+        - name: destinationCityIds
+          in: query
+          description: Comma-separated list of city IDs
+          schema:
+            type: string
+        - name: cargoTypeIds
+          in: query
+          description: Comma-separated list of cargo type IDs
+          schema:
+            type: string
+        - name: statusIds
+          in: query
+          description: Comma-separated list of status IDs
+          schema:
+            type: string
+        - name: driverIds
+          in: query
+          description: Comma-separated list of driver IDs
+          schema:
+            type: string
+        - name: vehicleIds
+          in: query
+          description: Comma-separated list of vehicle IDs
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestTablePaginatedResult'
+    post:
+      tags:
+        - Requests
+      summary: Create a new request
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequest'
+      responses:
+        '201':
+          description: Request created
+
+  /requests/filters:
+    get:
+      tags:
+        - Requests
+      summary: Get request filters
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Filters for requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestFilters'
+
+  /requests/customers:
+    get:
+      tags:
+        - Requests
+      summary: Search customers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+
+  /requests/{id}:
+    put:
+      tags:
+        - Requests
+      summary: Edit a request
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequest'
+      responses:
+        '200':
+          description: Request updated
+    delete:
+      tags:
+        - Requests
+      summary: Remove a request
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request removed
+
+  /requests/{id}/cancel:
+    put:
+      tags:
+        - Requests
+      summary: Cancel request assignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Assignment cancelled
+
+  /requests/{id}/assign:
+    post:
+      tags:
+        - Requests
+      summary: Assign driver to request
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRequest'
+      responses:
+        '201':
+          description: Driver assigned
+    put:
+      tags:
+        - Requests
+      summary: Reassign driver to request
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRequest'
+      responses:
+        '200':
+          description: Driver reassigned
+    delete:
+      tags:
+        - Requests
+      summary: Unassign driver from request
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Driver unassigned
+
+  /requests/available:
+    get:
+      tags:
+        - Requests
+      summary: Get available requests for driver
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 3
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of available requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestListPaginatedResult'
+
+  /statistics:
+    get:
+      tags:
+        - Statistics
+      summary: Get dashboard statistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatistics'
+
+  /statistics/report:
+    post:
+      tags:
+        - Statistics
+      summary: Generate a report
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  /vehicles:
+    get:
+      tags:
+        - Vehicles
+      summary: Get paginated list of vehicles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleDetailedTablePaginatedResult'
+
+  /vehicles/unassigned:
+    get:
+      tags:
+        - Vehicles
+      summary: Get unassigned vehicles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of unassigned vehicles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleDetailedTablePaginatedResult'
+
+  /vehicles/{id}/assignment:
+    post:
+      tags:
+        - Vehicles
+      summary: Assign driver to vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRequest'
+      responses:
+        '200':
+          description: Driver assigned
+    patch:
+      tags:
+        - Vehicles
+      summary: Reassign driver to vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRequest'
+      responses:
+        '200':
+          description: Driver reassigned
+
+  /vehicles/assignment/{driverId}:
+    delete:
+      tags:
+        - Vehicles
+      summary: Unassign driver from vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Driver unassigned
+
+  /open-delivery/{id}:
+    get:
+      tags:
+        - Deliveries
+      summary: Deep link to open delivery in app
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: number
+          in: query
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to app deep link
+        '400':
+          description: Missing ID
+
 components:
-  schemas: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Common Schemas
+    Status:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    # Auth Schemas
+    LoginUser:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+          format: password
+      required:
+        - login
+        - password
+
+    RegisterUser:
+      type: object
+      properties:
+        login:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        roleId:
+          type: integer
+      required:
+        - login
+        - email
+        - password
+        - fullName
+        - phoneNumber
+        - roleId
+
+    AuthTokens:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      required:
+        - accessToken
+        - refreshToken
+
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+        - refreshToken
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        login:
+          type: string
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        isDispatcher:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - login
+        - fullName
+        - phoneNumber
+        - isDispatcher
+
+    # Admin Schemas
+    UserRole:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    UserShort:
+      type: object
+      properties:
+        id:
+          type: integer
+        login:
+          type: string
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - login
+        - fullName
+        - phoneNumber
+
+    UserDetailed:
+      allOf:
+        - $ref: '#/components/schemas/UserShort'
+        - type: object
+          properties:
+            email:
+              type: string
+              format: email
+            status:
+              $ref: '#/components/schemas/Status'
+            role:
+              $ref: '#/components/schemas/UserRole'
+            createdBy:
+              $ref: '#/components/schemas/UserShort'
+              nullable: true
+            updatedBy:
+              $ref: '#/components/schemas/UserShort'
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+              nullable: true
+            lastLoginAt:
+              type: string
+              format: date-time
+              nullable: true
+          required:
+            - email
+            - status
+            - role
+            - createdAt
+
+    UserManagementFilters:
+      type: object
+      properties:
+        statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Status'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+      required:
+        - statuses
+        - roles
+
+    # Pagination Schemas
+    UserDetailedTablePaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDetailed'
+        totalCount:
+          type: integer
+          format: int64
+      required:
+        - items
+        - totalCount
+
+    # Delivery Schemas
+    Point:
+      type: object
+      properties:
+        address:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+      required:
+        - lat
+        - lon
+
+    Delivery:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: '#/components/schemas/Status'
+        loadingPoint:
+          $ref: '#/components/schemas/Point'
+        unloadingPoint:
+          $ref: '#/components/schemas/Point'
+        cargoWeight:
+          type: number
+          format: double
+          nullable: true
+        cargoTypeName:
+          type: string
+          nullable: true
+        plannedUnloadingAt:
+          type: string
+          format: date-time
+          nullable: true
+        actualUnloadingAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        requestNumber:
+          type: string
+          nullable: true
+      required:
+        - id
+        - loadingPoint
+        - unloadingPoint
+
+    DeliveryListPaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - hasMore
+
+    DeliveryDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+        imageUrl:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+          nullable: true
+        typeId:
+          type: integer
+      required:
+        - id
+        - imageUrl
+        - typeId
+
+    DeliveryDetailed:
+      allOf:
+        - $ref: '#/components/schemas/Delivery'
+        - type: object
+          properties:
+            origin:
+              type: string
+              nullable: true
+            destination:
+              type: string
+              nullable: true
+            transportationDescription:
+              type: string
+              nullable: true
+            plannedLoadingAt:
+              type: string
+              format: date-time
+              nullable: true
+            arrivedLoadingAt:
+              type: string
+              format: date-time
+              nullable: true
+            actualLoadingAt:
+              type: string
+              format: date-time
+              nullable: true
+            arrivedUnloadingAt:
+              type: string
+              format: date-time
+              nullable: true
+            cargo:
+              $ref: '#/components/schemas/Cargo'
+            dispatcherFullName:
+              type: string
+            dispatcherPhoneNumber:
+              type: string
+            customer:
+              $ref: '#/components/schemas/Customer'
+            vehicle:
+              $ref: '#/components/schemas/Vehicle'
+            rejectionReason:
+              type: string
+              nullable: true
+            documents:
+              type: array
+              items:
+                $ref: '#/components/schemas/DeliveryDocument'
+          required:
+            - cargo
+            - dispatcherFullName
+            - dispatcherPhoneNumber
+            - customer
+
+    # Request Schemas
+    CargoType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    Cargo:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/CargoType'
+        weight:
+          type: number
+          format: double
+        volume:
+          type: number
+          format: double
+          nullable: true
+        description:
+          type: string
+          nullable: true
+      required:
+        - type
+        - weight
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+        organizationName:
+          type: string
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+      required:
+        - id
+        - organizationName
+        - email
+        - phoneNumber
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        model:
+          type: string
+        licensePlate:
+          type: string
+        regionCode:
+          type: string
+        payloadCapacity:
+          type: integer
+      required:
+        - id
+        - model
+        - licensePlate
+        - regionCode
+        - payloadCapacity
+
+    AssignRequest:
+      type: object
+      properties:
+        driverId:
+          type: integer
+      required:
+        - driverId
+
+    CreateRequest:
+      type: object
+      properties:
+        loadingAddress:
+          type: string
+          nullable: true
+        loadingLat:
+          type: number
+          format: double
+        loadingLon:
+          type: number
+          format: double
+        unloadingAddress:
+          type: string
+          nullable: true
+        unloadingLat:
+          type: number
+          format: double
+        unloadingLon:
+          type: number
+          format: double
+        cargoTypeId:
+          type: integer
+        cargoWeight:
+          type: number
+          format: double
+        cargoVolume:
+          type: number
+          format: double
+          nullable: true
+        cargoDescription:
+          type: string
+          nullable: true
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+          format: email
+        customerPhone:
+          type: string
+        originId:
+          type: integer
+          nullable: true
+        destinationId:
+          type: integer
+          nullable: true
+        transportationDescription:
+          type: string
+          nullable: true
+        plannedLoadingAt:
+          type: string
+          format: date-time
+        plannedUnloadingAt:
+          type: string
+          format: date-time
+      required:
+        - loadingLat
+        - loadingLon
+        - unloadingLat
+        - unloadingLon
+        - cargoTypeId
+        - cargoWeight
+        - customerName
+        - customerEmail
+        - customerPhone
+        - plannedLoadingAt
+        - plannedUnloadingAt
+
+    Request:
+      allOf:
+        - $ref: '#/components/schemas/DeliveryDetailed'
+        - type: object
+          properties:
+            driverId:
+              type: integer
+              nullable: true
+            driverFullName:
+              type: string
+              nullable: true
+
+    RequestTablePaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Request'
+        totalCount:
+          type: integer
+          format: int64
+      required:
+        - items
+        - totalCount
+
+    RequestListPaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Request'
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - hasMore
+
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    UserFilter:
+      type: object
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+      required:
+        - id
+        - fullName
+
+    RequestFilters:
+      type: object
+      properties:
+        cities:
+          type: array
+          items:
+            $ref: '#/components/schemas/City'
+        cargoTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CargoType'
+        statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Status'
+        drivers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserFilter'
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+      required:
+        - cities
+        - cargoTypes
+        - statuses
+        - drivers
+        - vehicles
+
+    # Driver Schemas
+    DeliveriesStats:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+        activeCount:
+          type: integer
+        completedCount:
+          type: integer
+        canceledCount:
+          type: integer
+        onCheckCount:
+          type: integer
+        rejectedCount:
+          type: integer
+      required:
+        - totalCount
+        - activeCount
+        - completedCount
+        - canceledCount
+        - onCheckCount
+        - rejectedCount
+
+    DriverWorkShift:
+      type: object
+      properties:
+        dayOfWeek:
+          type: integer
+          description: "1 (Monday) to 7 (Sunday)"
+        startTime:
+          type: string
+          format: time
+          example: "08:00"
+        endTime:
+          type: string
+          format: time
+          example: "17:00"
+      required:
+        - dayOfWeek
+        - startTime
+        - endTime
+
+    DriverWorkScheduleRequest:
+      type: object
+      properties:
+        shifts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverWorkShift'
+      required:
+        - shifts
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+        userStatus:
+          $ref: '#/components/schemas/Status'
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+        deliveriesStats:
+          $ref: '#/components/schemas/DeliveriesStats'
+        workSchedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverWorkShift'
+      required:
+        - id
+        - fullName
+        - phoneNumber
+        - status
+        - userStatus
+        - deliveriesStats
+        - workSchedule
+
+    DriverTablePaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Driver'
+        totalCount:
+          type: integer
+          format: int64
+      required:
+        - items
+        - totalCount
+
+    DriverStats:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        driverName:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        driverStatus:
+          $ref: '#/components/schemas/Status'
+        userStatus:
+          $ref: '#/components/schemas/Status'
+        vehicleModel:
+          type: string
+          nullable: true
+        vehicleLicensePlate:
+          type: string
+          nullable: true
+        vehicleRegionCode:
+          type: string
+          nullable: true
+        vehiclePayloadCapacity:
+          type: integer
+          nullable: true
+        totalAssignedRequests:
+          type: integer
+          format: int64
+        workSchedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverWorkShift'
+        isWorkingNow:
+          type: boolean
+        scheduleHint:
+          type: string
+      required:
+        - driverId
+        - driverName
+        - driverStatus
+        - userStatus
+        - totalAssignedRequests
+        - workSchedule
+        - isWorkingNow
+        - scheduleHint
+
+    DriverStatsTablePaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverStats'
+        totalCount:
+          type: integer
+          format: int64
+      required:
+        - items
+        - totalCount
+
+    DriverWithoutCar:
+      type: object
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        totalDeliveries:
+          type: integer
+      required:
+        - id
+        - fullName
+        - phoneNumber
+        - totalDeliveries
+
+    DriverWithoutCarTablePaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverWithoutCar'
+        totalCount:
+          type: integer
+          format: int64
+      required:
+        - items
+        - totalCount
+
+    # History Schemas
+    DriverHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: '#/components/schemas/Status'
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+        originCity:
+          type: string
+        destinationCity:
+          type: string
+        loadingPoint:
+          $ref: '#/components/schemas/Point'
+        unloadingPoint:
+          $ref: '#/components/schemas/Point'
+        cargoTypeName:
+          type: string
+        assignedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        requestNumber:
+          type: string
+      required:
+        - id
+        - status
+        - vehicle
+        - originCity
+        - destinationCity
+        - loadingPoint
+        - unloadingPoint
+        - cargoTypeName
+        - assignedAt
+        - completedAt
+        - requestNumber
+
+    DriverHistoryListPaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverHistory'
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - hasMore
+
+    # Profile Schemas
+    ProfileDetails:
+      type: object
+      properties:
+        fullName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        deliveriesStats:
+          $ref: '#/components/schemas/DeliveriesStats'
+        phoneNumber:
+          type: string
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+      required:
+        - fullName
+        - deliveriesStats
+        - phoneNumber
+
+    # Statistics Schemas
+    StatItem:
+      type: object
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+          format: int64
+      required:
+        - label
+        - count
+
+    TopDriverStat:
+      type: object
+      properties:
+        fullName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        completedAssignments:
+          type: integer
+          format: int64
+        currentStatus:
+          $ref: '#/components/schemas/Status'
+      required:
+        - fullName
+        - completedAssignments
+        - currentStatus
+
+    PopularRouteStat:
+      type: object
+      properties:
+        originCity:
+          type: string
+        destinationCity:
+          type: string
+        requestCount:
+          type: integer
+          format: int64
+      required:
+        - originCity
+        - destinationCity
+        - requestCount
+
+    GeneralStats:
+      type: object
+      properties:
+        totalRequests:
+          type: integer
+          format: int64
+        completedRequests:
+          type: integer
+          format: int64
+        totalVehicles:
+          type: integer
+          format: int64
+        totalDrivers:
+          type: integer
+          format: int64
+      required:
+        - totalRequests
+        - completedRequests
+        - totalVehicles
+        - totalDrivers
+
+    DashboardStatistics:
+      type: object
+      properties:
+        general:
+          $ref: '#/components/schemas/GeneralStats'
+        requestsByStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatItem'
+        requestsByCargoType:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatItem'
+        driversByStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatItem'
+        vehiclesByStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatItem'
+        topDrivers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopDriverStat'
+        popularRoutes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PopularRouteStat'
+      required:
+        - general
+        - requestsByStatus
+        - requestsByCargoType
+        - driversByStatus
+        - vehiclesByStatus
+        - topDrivers
+        - popularRoutes
+
+    ReportType:
+      type: string
+      enum: [ALL, REQUESTS, DRIVERS, VEHICLES]
+
+    ReportFormat:
+      type: string
+      enum: [EXCEL, PDF, CSV]
+
+    ReportPeriod:
+      type: string
+      enum: [TODAY, LAST_7_DAYS, LAST_30_DAYS]
+
+    ReportRequest:
+      type: object
+      properties:
+        reportType:
+          $ref: '#/components/schemas/ReportType'
+        format:
+          $ref: '#/components/schemas/ReportFormat'
+        period:
+          $ref: '#/components/schemas/ReportPeriod'
+      required:
+        - reportType
+        - format
+        - period
+
+    # Vehicle Schemas
+    VehicleDetailed:
+      type: object
+      properties:
+        id:
+          type: integer
+        model:
+          type: string
+        licensePlate:
+          type: string
+        regionCode:
+          type: string
+        payloadCapacity:
+          type: integer
+        driverFullName:
+          type: string
+          nullable: true
+      required:
+        - id
+        - model
+        - licensePlate
+        - regionCode
+        - payloadCapacity
+
+    VehicleDetailedTablePaginatedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleDetailed'
+        totalCount:
+          type: integer
+          format: int64
+      required:
+        - items
+        - totalCount
+
+    # Other
+    RejectDocumentDto:
+      type: object
+      properties:
+        reason:
+          type: string
+      required:
+        - reason
