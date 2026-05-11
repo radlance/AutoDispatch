@@ -58,7 +58,7 @@ AutoDispatch/
 │   ├── docker-compose-*.yaml  # Docker deployment configurations
 │   └── build.gradle.kts       # Backend build script
 ├── AutoDispatchApp/           # Multiplatform Client App
-│   ├── composeApp/            # Shared UI and logic (commonMain, androidMain, iosMain, jvmMain)
+│   ├── composeApp/            # Shared UI and logic (commonMain, androidMain, iosMain, jvmMain, mobileMain)
 │   ├── androidApp/            # Android-specific entry point
 │   ├── iosApp/                # iOS-specific entry point (SwiftUI)
 │   └── build.gradle.kts       # Multiplatform build script
