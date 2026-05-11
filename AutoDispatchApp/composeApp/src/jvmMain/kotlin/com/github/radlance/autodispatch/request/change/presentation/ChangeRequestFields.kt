@@ -305,7 +305,7 @@ fun ChangeRequestFields(
                     Spacer(Modifier.width(12.dp))
                     Text(
                         text = if (fieldsUiState.plannedLoadingAt.isBlank()) {
-                            "Ожидаемая дата загрузки"
+                            "Дата загрузки"
                         } else {
                             "Загр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedLoadingAt)}"
                         },
@@ -330,7 +330,7 @@ fun ChangeRequestFields(
                     Spacer(Modifier.width(12.dp))
                     Text(
                         text = if (fieldsUiState.plannedUnloadingAt.isBlank()) {
-                            "Ожидаемая дата разгрузки"
+                            "Дата разгрузки"
                         } else {
                             "Разгр.: ${formatPlannedDateTimeLabel(fieldsUiState.plannedUnloadingAt)}"
                         },

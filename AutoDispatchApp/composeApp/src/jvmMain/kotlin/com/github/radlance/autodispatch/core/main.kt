@@ -29,7 +29,9 @@ import com.github.radlance.autodispatch.di.vehicleUnassignmentModule
 import org.koin.core.context.startKoin
 import java.awt.Dimension
 
-fun main() = application {
+fun main() {
+    java.util.Locale.setDefault(java.util.Locale("ru", "RU"))
+    application {
     startKoin {
         modules(
             dataStoreModule,
@@ -63,4 +65,5 @@ fun main() = application {
         window.minimumSize = Dimension(1100, 750)
         App()
     }
+}
 }
