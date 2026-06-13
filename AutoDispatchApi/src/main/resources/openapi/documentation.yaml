@@ -4,7 +4,7 @@ info:
   description: "API for AutoDispatch logistics management system"
   version: "1.0.0"
 servers:
-  - url: "http://localhost:8084"
+  - url: "http://localhost:8084/api"
     description: "Local development server"
 
 paths:
