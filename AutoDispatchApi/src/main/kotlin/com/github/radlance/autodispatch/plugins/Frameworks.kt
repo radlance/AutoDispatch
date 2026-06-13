@@ -46,7 +46,7 @@ fun Application.configureDi() {
 
 fun Application.configureBroker() {
     install(RabbitMQ) {
-        uri = System.getenv("RABBIT_URI") ?: "amqp://guest:guest@localhost:5672"
+        uri = System.getenv("RABBIT_URI") ?: "amqp://guest:guest@127.0.0.1:5672"
         defaultConnectionName = "AutoDispatch-Service"
     }
 

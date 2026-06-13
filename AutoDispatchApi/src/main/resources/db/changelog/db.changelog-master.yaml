@@ -11,6 +11,7 @@ databaseChangeLog:
   - include: { file: db/changelog/db.create-vehicle-table-1.0.sql }
   - include: { file: db/changelog/db.add-vehicle-region-code-1.1.sql }
   - include: { file: db/changelog/db.insert-vehicle-data-1.0.sql }
+  - include: { file: db/changelog/db.create-updated-at-function.sql }
   - include: { file: db/changelog/db.create-driver-table-1.0.sql }
   - include: { file: db/changelog/db.create-driver-update-trigger-1.0.sql }
   - include: { file: db/changelog/db.insert-driver-trigger-1.0.sql }

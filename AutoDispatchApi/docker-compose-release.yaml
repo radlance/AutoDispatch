@@ -11,6 +11,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       MODE: release
       DB_URL: jdbc:postgresql://db:5432/auto_dispatch_api
