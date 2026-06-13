@@ -5,8 +5,11 @@ import com.github.radlance.autodispatch.domain.request.EmailNotification
 import com.github.radlance.autodispatch.service.MailService
 import io.github.damir.denis.tudor.ktor.server.rabbitmq.RabbitMQ
 import io.github.damir.denis.tudor.ktor.server.rabbitmq.dsl.*
+import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorServerTelemetry
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import io.opentelemetry.semconv.ServiceAttributes
@@ -16,6 +19,7 @@ import kotlinx.serialization.json.Json
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import java.time.Instant
 
 fun Application.configureDi() {
     install(Koin) {
@@ -109,21 +113,36 @@ fun Application.configureBroker() {
 fun Application.configureMonitoring() {
     val serviceName = environment.config.propertyOrNull("ktor.application.id")?.getString() ?: "AutoDispatchApi"
 
-    val openTelemetry = initOpenTelemetry(serviceName)
+    val openTelemetry = getOpenTelemetry(serviceName)
 
     install(KtorServerTelemetry) {
         setOpenTelemetry(openTelemetry)
+        knownMethods(HttpMethod.DefaultMethods)
+        capturedRequestHeaders(HttpHeaders.UserAgent)
+        spanKindExtractor {
+            if (httpMethod == HttpMethod.Post) {
+                SpanKind.PRODUCER
+            } else {
+                SpanKind.CLIENT
+            }
+        }
+        attributesExtractor {
+            onStart {
+                attributes.put("start-time", System.currentTimeMillis())
+            }
+            onEnd {
+                attributes.put("end-time", Instant.now().toEpochMilli())
+            }
+        }
     }
 }
 
+fun getOpenTelemetry(serviceName: String): OpenTelemetry {
 
-private fun initOpenTelemetry(serviceName: String): OpenTelemetry {
-    return AutoConfiguredOpenTelemetrySdk.builder()
-        .addResourceCustomizer { oldResource, _ ->
-            oldResource.toBuilder()
-                .put(ServiceAttributes.SERVICE_NAME, serviceName)
-                .build()
-        }
-        .build()
-        .openTelemetrySdk
+    return AutoConfiguredOpenTelemetrySdk.builder().addResourceCustomizer { oldResource, _ ->
+        oldResource.toBuilder()
+            .putAll(oldResource.attributes)
+            .put(ServiceAttributes.SERVICE_NAME, serviceName)
+            .build()
+    }.build().openTelemetrySdk
 }

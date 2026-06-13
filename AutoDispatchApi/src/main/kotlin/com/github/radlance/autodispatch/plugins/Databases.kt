@@ -9,7 +9,6 @@ import liquibase.resource.ClassLoaderResourceAccessor
 import org.jetbrains.exposed.sql.Database
 import java.sql.Connection
 import java.sql.DriverManager
-import org.postgresql.Driver
 
 fun Application.configureDatabases(config: ApplicationConfig) {
     val url = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/auto_dispatch_api"
@@ -18,18 +17,16 @@ fun Application.configureDatabases(config: ApplicationConfig) {
 
     log.info("Connecting to postgres database at $url")
 
-    // Explicitly use the PostgreSQL Driver class to register it
-    val driver = Driver()
-    val props = java.util.Properties()
-    props.setProperty("user", user)
-    props.setProperty("password", password)
-    val connection = driver.connect(url, props) ?: throw java.sql.SQLException("Could not connect to database")
+    val driver = config.property("database.driver").getString()
 
     Database.connect(
-        { connection }
+        url = url,
+        user = user,
+        password = password,
+        driver = driver
     )
 
-    runLiquibaseMigrations(connection)
+    runLiquibaseMigrations(DriverManager.getConnection(url, user, password))
 }
 
 private fun Application.runLiquibaseMigrations(connection: Connection) {

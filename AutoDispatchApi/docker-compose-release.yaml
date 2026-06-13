@@ -13,8 +13,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      otel-collector:
-        condition: service_started
     environment:
       DB_URL: jdbc:postgresql://db:5432/auto_dispatch_api
       RABBIT_URI: amqp://guest:guest@rabbitmq:5672
@@ -23,6 +21,21 @@ services:
       OTEL_METRICS_EXPORTER: otlp
       OTEL_TRACES_EXPORTER: otlp
       OTEL_LOGS_EXPORTER: none
+
+  grafana-lgtm:
+    image: grafana/otel-lgtm:latest
+    networks:
+      default:
+        aliases:
+          - otel-collector
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped
 
   nginx:
     container_name: auto_dispatch_nginx
