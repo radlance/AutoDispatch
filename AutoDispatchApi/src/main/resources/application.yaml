@@ -5,7 +5,7 @@ ktor:
   deployment:
     port: 8084
 database:
-  driver: org.postgresql.Driver
+  driver: io.opentelemetry.instrumentation.jdbc.OpenTelemetryDriver
   url: ${DB_URL}
   user: postgres
   password: 1

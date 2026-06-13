@@ -4,6 +4,7 @@ import com.github.radlance.autodispatch.plugins.configureBroker
 import com.github.radlance.autodispatch.plugins.configureDatabases
 import com.github.radlance.autodispatch.plugins.configureDi
 import com.github.radlance.autodispatch.plugins.configureHTTP
+import com.github.radlance.autodispatch.plugins.configureMonitoring
 import com.github.radlance.autodispatch.plugins.configureRouting
 import com.github.radlance.autodispatch.plugins.configureSecurity
 import com.github.radlance.autodispatch.plugins.configureSerialization
@@ -16,6 +17,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    configureMonitoring()
     configureDatabases(config = environment.config)
     configureDi()
     configureBroker()

@@ -12,6 +12,11 @@ application {
 }
 
 dependencies {
+    implementation(libs.opentelemetry.ktor)
+    implementation(libs.opentelemetry.autoconfigure)
+    implementation(libs.opentelemetry.exporter.otlp)
+    implementation(libs.opentelemetry.jdbc)
+    implementation(libs.opentelemetry.logback)
     implementation(libs.ktor.server.html.builder)
     implementation(libs.kotlinx.html)
     implementation(libs.kotlin.css)

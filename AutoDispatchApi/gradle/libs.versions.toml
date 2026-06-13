@@ -11,8 +11,15 @@ commonCodec = "1.19.0"
 kotlinx-html = "0.12.0"
 poi = "5.4.0"
 openpdf = "2.0.4"
+otelCore = "1.47.0"
+otelInstr = "2.18.1-alpha"
 
 [libraries]
+opentelemetry-ktor = { module = "io.opentelemetry.instrumentation:opentelemetry-ktor-3.0", version.ref = "otelInstr" }
+opentelemetry-autoconfigure = { module = "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure", version.ref = "otelCore" }
+opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "otelCore" }
+opentelemetry-jdbc = { module = "io.opentelemetry.instrumentation:opentelemetry-jdbc", version.ref = "otelInstr" }
+opentelemetry-logback = { module = "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0", version.ref = "otelInstr" }
 ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html", version.ref = "kotlinx-html" }
 kotlin-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-css-jvm", version = "2025.6.4" }
