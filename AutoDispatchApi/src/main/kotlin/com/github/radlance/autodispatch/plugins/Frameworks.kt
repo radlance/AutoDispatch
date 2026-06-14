@@ -140,9 +140,11 @@ fun Application.configureMonitoring() {
 fun getOpenTelemetry(serviceName: String): OpenTelemetry {
 
     return AutoConfiguredOpenTelemetrySdk.builder().addResourceCustomizer { oldResource, _ ->
-        oldResource.toBuilder()
-            .putAll(oldResource.attributes)
+        val customResource = io.opentelemetry.sdk.resources.Resource.builder()
             .put(ServiceAttributes.SERVICE_NAME, serviceName)
+            .put(io.opentelemetry.api.common.AttributeKey.stringKey("service.instance.id"), serviceName)
             .build()
+        
+        oldResource.merge(customResource)
     }.build().openTelemetrySdk
 }
