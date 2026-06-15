@@ -23,6 +23,14 @@ services:
       OTEL_TRACES_EXPORTER: otlp
       OTEL_LOGS_EXPORTER: none
 
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:1@db:5432/auto_dispatch_api?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
+
   prometheus:
     image: prom/prometheus
     restart: always
@@ -32,6 +40,7 @@ services:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     links:
       - api
+      - postgres_exporter
 
   grafana:
     image: grafana/grafana
