@@ -41,6 +41,7 @@ services:
     links:
       - api
       - postgres_exporter
+      - rabbitmq
 
   grafana:
     image: grafana/grafana
@@ -85,6 +86,7 @@ services:
     image: rabbitmq:3-management-alpine
     volumes:
       - rabbit_data:/var/lib/rabbitmq
+      - ./observability/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_running" ]
       interval: 5s
