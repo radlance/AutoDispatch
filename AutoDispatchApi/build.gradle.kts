@@ -12,11 +12,13 @@ application {
 }
 
 dependencies {
+    implementation(libs.micrometr.registry.prometheus)
+    implementation(libs.ktor.server.call.id)
+    implementation(libs.ktor.server.call.logging)
+    implementation(libs.ktor.server.micrometr)
     implementation(libs.opentelemetry.ktor)
     implementation(libs.opentelemetry.autoconfigure)
     implementation(libs.opentelemetry.exporter.otlp)
-    implementation(libs.opentelemetry.jdbc)
-    implementation(libs.opentelemetry.logback)
     implementation(libs.ktor.server.html.builder)
     implementation(libs.kotlinx.html)
     implementation(libs.kotlin.css)

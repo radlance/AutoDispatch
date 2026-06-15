@@ -13,13 +13,16 @@ poi = "5.4.0"
 openpdf = "2.0.4"
 otelCore = "1.47.0"
 otelInstr = "2.18.1-alpha"
+prometheus = "1.17.0"
 
 [libraries]
+micrometr-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "prometheus" }
+ktor-server-micrometr = { module = "io.ktor:ktor-server-metrics-micrometer", version.ref = "ktor" }
+ktor-server-call-id = { module = "io.ktor:ktor-server-call-id", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
 opentelemetry-ktor = { module = "io.opentelemetry.instrumentation:opentelemetry-ktor-3.0", version.ref = "otelInstr" }
-opentelemetry-autoconfigure = { module = "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure", version.ref = "otelCore" }
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "otelCore" }
-opentelemetry-jdbc = { module = "io.opentelemetry.instrumentation:opentelemetry-jdbc", version.ref = "otelInstr" }
-opentelemetry-logback = { module = "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0", version.ref = "otelInstr" }
+opentelemetry-autoconfigure = { module = "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure", version.ref = "otelCore" }
 ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html", version.ref = "kotlinx-html" }
 kotlin-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-css-jvm", version = "2025.6.4" }
