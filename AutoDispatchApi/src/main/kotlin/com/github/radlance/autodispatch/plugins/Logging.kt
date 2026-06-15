@@ -55,6 +55,7 @@ fun Application.configureLogging() {
     }
 
     val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    appMicrometerRegistry.config().commonTags("application", "AutoDispatchApi")
     install(MicrometerMetrics) {
         registry = appMicrometerRegistry
 
