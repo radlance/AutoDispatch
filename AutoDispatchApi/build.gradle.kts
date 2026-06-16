@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.openpdf)
     implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.ktor.server.config.yaml)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)

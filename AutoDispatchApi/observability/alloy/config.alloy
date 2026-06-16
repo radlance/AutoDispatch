@@ -1,0 +1,130 @@
+// =============================================================================
+// Grafana Alloy Configuration — AutoDispatch
+// Based on: grafana/alloy-scenarios/log-collection-docker
+//
+// Pipeline: discovery.docker → discovery.relabel → loki.source.docker
+//           → loki.process → loki.write
+// =============================================================================
+
+// ----------------------------------------------------------------------------
+// 1. Discovery — find all running Docker containers
+// ----------------------------------------------------------------------------
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// ----------------------------------------------------------------------------
+// 2. Relabel — extract useful metadata as Loki labels
+// ----------------------------------------------------------------------------
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.containers.targets
+
+  // Container name (strip leading slash)
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // Docker Compose service name
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  // Docker Compose project name
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+
+  // Log stream (stdout / stderr)
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 3. Source — collect logs from Docker containers via Docker API
+// ----------------------------------------------------------------------------
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.relabel.docker_logs.output
+  forward_to    = [loki.process.docker_logs.receiver]
+  relabel_rules = discovery.relabel.docker_logs.rules
+}
+
+// ----------------------------------------------------------------------------
+// 4. Process — parse, enrich, and filter logs
+// ----------------------------------------------------------------------------
+loki.process "docker_logs" {
+  // Parse Docker JSON log format (unwrap Docker's outer JSON envelope)
+  stage.docker {}
+
+  // Parse JSON logs from the API (logstash-logback-encoder format)
+  // NOTE: call-id has a hyphen — must use JMESPath quoted-identifier: "\"call-id\""
+  stage.json {
+    expressions = {
+      level   = "level",
+      logger  = "logger_name",
+      message = "message",
+      thread  = "thread_name",
+      call_id = "\"call-id\"",
+      stack   = "stack_trace",
+    }
+  }
+
+  // Promote log level to a Loki label (for JSON API logs)
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
+
+  // For API service — replace log line with clean structured message
+  stage.match {
+    selector = "{service=\"api\"}"
+
+    stage.output {
+      source = "message"
+    }
+  }
+
+  // Fallback: detect level from plaintext logs (PostgreSQL, RabbitMQ, Nginx)
+  // PostgreSQL levels: LOG, NOTICE, DETAIL, HINT, STATEMENT, CONTEXT
+  stage.match {
+    selector = "{level=\"\"}"
+
+    stage.regex {
+      expression = "(?i)(?P<level>ERROR|FATAL|PANIC|WARN|WARNING|INFO|DEBUG|TRACE|CRITICAL|NOTICE|LOG|DETAIL|HINT)"
+    }
+
+    stage.labels {
+      values = {
+        level = "",
+      }
+    }
+  }
+
+  // Drop empty log lines
+  stage.drop {
+    expression          = "^\\s*$"
+    drop_counter_reason = "empty_line"
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+// ----------------------------------------------------------------------------
+// 5. Write — ship logs to Loki
+// ----------------------------------------------------------------------------
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    environment = "production",
+    app         = "auto-dispatch",
+  }
+}

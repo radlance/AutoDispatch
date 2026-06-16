@@ -22,6 +22,8 @@ services:
       OTEL_METRICS_EXPORTER: none
       OTEL_TRACES_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
+    labels:
+      logging: "true"
 
   postgres_exporter:
     image: prometheuscommunity/postgres-exporter
@@ -43,17 +45,58 @@ services:
       - postgres_exporter
       - rabbitmq
 
+  # ---- Logging Stack ----
+
+  loki:
+    image: grafana/loki:3.5.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki-config.yaml:/etc/loki/loki-config.yaml
+      - loki_data:/loki
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --output-document=- http://localhost:3100/ready | grep -q ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  alloy:
+    image: grafana/alloy:v1.9.1
+    container_name: alloy
+    volumes:
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+    ports:
+      - "12345:12345"
+    depends_on:
+      loki:
+        condition: service_healthy
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana
     ports:
       - "3000:3000"
     user: "104"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
       - ./observability/grafana:/etc/grafana/provisioning
       - ./observability/grafana/provisioning:/etc/grafana/provisioning
     links:
       - api
       - prometheus
+      - loki
 
   nginx:
     container_name: auto_dispatch_nginx
@@ -104,4 +147,6 @@ volumes:
   uploaded_files:
   tmp_db:
   rabbit_data:
+  loki_data:
   lgtm_data:
+
