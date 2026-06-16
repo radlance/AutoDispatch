@@ -16,11 +16,11 @@ services:
     environment:
       DB_URL: jdbc:postgresql://db:5432/auto_dispatch_api
       RABBIT_URI: amqp://guest:guest@rabbitmq:5672
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      MODE: release
       OTEL_RESOURCE_ATTRIBUTES: "service.name=AutoDispatchApi,service.instance.id=AutoDispatchApi"
       OTEL_SERVICE_NAME: AutoDispatchApi
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: none
+      OTEL_TRACES_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
 
   postgres_exporter:
@@ -65,6 +65,13 @@ services:
       - uploaded_files:/uploads:ro
     depends_on:
       - api
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    command:
+      - '--nginx.scrape-uri=http://nginx/stub_status'
+    depends_on:
+      - nginx
 
   db:
     container_name: postgres_db
